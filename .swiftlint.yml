@@ -1,0 +1,162 @@
+# SwiftLint Base Configuration — ForgeKit Portfolio
+# Shared across all 116+ app repos. Do NOT modify per-app without documenting why.
+# Version: 1.0 (2026-04-25)
+# Requires: SwiftLint 0.63.2+ via SimplyDanny/SwiftLintPlugins
+
+# ─── Disabled Default Rules ───────────────────────────────────────────
+disabled_rules:
+  - trailing_whitespace        # Noisy, handled by SwiftFormat/editor
+  - todo                       # We use TODO markers intentionally during dev
+  - orphaned_doc_comment       # False positives with Swift macros
+  - type_name                  # Portfolio uses short names (e.g., DDA, FSM, HUD)
+  - identifier_name            # Same — short domain names are fine
+  - nesting                    # SwiftUI builders nest deeply by design
+  - inclusive_language          # False positives on "master" in Git contexts
+  - blanket_disable_command    # We use targeted disable/enable pairs
+
+# ─── Opt-In Rules ────────────────────────────────────────────────────
+opt_in_rules:
+  # Bug prevention (ERRORS)
+  - force_unwrapping
+  - private_swiftui_state
+  - unhandled_throwing_task
+
+  # Code quality
+  - empty_count
+  - empty_string
+  - first_where
+  - last_where
+  - contains_over_first_not_nil
+  - contains_over_filter_count
+  - flatmap_over_map_reduce
+  - toggle_bool
+  - unused_parameter
+  - fatal_error_message
+  - prefer_self_in_static_references
+  - prefer_self_type_over_type_of_self
+
+  # Style
+  - sorted_imports
+  - implicit_return
+  - closure_body_length
+  - multiline_arguments
+  - multiline_parameters
+  - vertical_whitespace_closing_braces
+
+  # Testing
+  - final_test_case
+  - single_test_class
+
+# ─── Rule Configuration ──────────────────────────────────────────────
+force_unwrapping:
+  severity: error
+
+force_cast:
+  severity: error
+
+force_try:
+  severity: error
+
+line_length:
+  warning: 140
+  error: 200
+  ignores_comments: true
+  ignores_urls: true
+  ignores_interpolated_strings: true
+
+function_body_length:
+  warning: 60
+  error: 100
+
+file_length:
+  warning: 500
+  error: 800
+  ignore_comment_only_lines: true
+
+type_body_length:
+  warning: 300
+  error: 500
+
+cyclomatic_complexity:
+  warning: 10
+  error: 20
+  ignores_case_statements: true
+
+closure_body_length:
+  warning: 30
+  error: 50
+
+large_tuple:
+  warning: 3
+  error: 4
+
+function_parameter_count:
+  warning: 6
+  error: 8
+
+# ─── Custom Rules (Portfolio Conventions) ─────────────────────────────
+custom_rules:
+  no_combine_import:
+    name: "No Combine"
+    regex: 'import Combine'
+    message: "Combine is prohibited. Use async/await instead. See CLAUDE.md."
+    severity: error
+
+  no_scenekit_import:
+    name: "No SceneKit"
+    regex: 'import SceneKit'
+    message: "SceneKit is deprecated (WWDC 2025). Use RealityKit for 3D or SpriteKit for 2D."
+    severity: error
+
+  no_any_view:
+    name: "No AnyView"
+    regex: 'AnyView\s*\('
+    message: "AnyView erases type info and hurts performance. Use @ViewBuilder, Group, or conditional modifiers."
+    severity: error
+
+  no_unchecked_sendable:
+    name: "No @unchecked Sendable"
+    regex: '@unchecked Sendable'
+    message: "Fix the isolation issue properly instead of bypassing Sendable checks."
+    severity: error
+
+  no_parameterless_animation:
+    name: "No Parameterless .animation()"
+    regex: '\.animation\(\)'
+    message: "Parameterless .animation() is deprecated. Use .animation(.default, value:) with an explicit value."
+    severity: warning
+
+  no_accessibility_label_on_buttons:
+    name: "No .accessibilityLabel on Buttons"
+    regex: '\.accessibilityLabel\('
+    message: "Use .accessibilityHint() instead — .accessibilityLabel() on buttons breaks XCUITest matching."
+    severity: warning
+
+  no_uiscreen_main:
+    name: "No UIScreen.main"
+    regex: 'UIScreen\.main'
+    message: "UIScreen.main is deprecated (iOS 26). Use UITraitCollection.current.displayScale."
+    severity: warning
+
+  no_query_in_views:
+    name: "No @Query in Views"
+    regex: '@Query\s'
+    message: "Use modelContext.fetch(FetchDescriptor) in onAppear instead. @Query causes cascading re-renders."
+    severity: warning
+
+# ─── Paths ────────────────────────────────────────────────────────────
+excluded:
+  - "*/DerivedData/*"
+  - "*/build/*"
+  - "*/.build/*"
+  - "*/Pods/*"
+  - "*/Package.swift"
+  - "*/Packages/*"
+
+included:
+  - "Sources"
+  - "Tests"
+  # App targets use standard Xcode structure
+  - "${APP_NAME}"
+  - "${APP_NAME}Tests"
+  - "${APP_NAME}UITests"

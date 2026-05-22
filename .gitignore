@@ -1,0 +1,191 @@
+# =============================================================================
+# Portfolio .gitignore
+# Based on: github/gitignore/Swift.gitignore + best practices (2026)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# macOS
+# -----------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+*~
+
+# Files that might appear at the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# iCloud sync placeholders
+*.icloud
+
+# -----------------------------------------------------------------------------
+# Xcode — User Settings
+# -----------------------------------------------------------------------------
+xcuserdata/
+*.xcuserstate
+IDEWorkspaceChecks.plist
+
+# -----------------------------------------------------------------------------
+# Xcode — Build Artifacts
+# -----------------------------------------------------------------------------
+build/
+builds/
+DerivedData/
+*.moved-aside
+*.xcactivitylog
+
+# -----------------------------------------------------------------------------
+# Xcode — Project Internals (deny-all, whitelist essentials)
+# Only track project.pbxproj, xcshareddata/, and workspace contents
+# -----------------------------------------------------------------------------
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata/
+
+# WorkspaceSettings can cause noise between Xcode versions
+**/xcshareddata/WorkspaceSettings.xcsettings
+
+# -----------------------------------------------------------------------------
+# Xcode — Legacy Settings (older Xcode versions, can still appear)
+# -----------------------------------------------------------------------------
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# -----------------------------------------------------------------------------
+# Xcode — Merge & SCM Artifacts
+# -----------------------------------------------------------------------------
+*.xccheckout
+*.xcscmblueprint
+
+# -----------------------------------------------------------------------------
+# Obj-C/Swift Specific
+# -----------------------------------------------------------------------------
+*.hmap
+*.swp
+
+# -----------------------------------------------------------------------------
+# App Packaging
+# -----------------------------------------------------------------------------
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcarchive
+
+# -----------------------------------------------------------------------------
+# Playgrounds
+# -----------------------------------------------------------------------------
+timeline.xctimeline
+playground.xcworkspace
+
+# -----------------------------------------------------------------------------
+# Swift Package Manager
+# NOTE: Package.resolved is intentionally tracked (deterministic builds for apps)
+# -----------------------------------------------------------------------------
+.build/
+.swiftpm/xcode/xcuserdata/
+.swiftpm/xcode/package.xcworkspace/xcuserdata/
+SourcePackages/
+
+# -----------------------------------------------------------------------------
+# Secrets & Credentials
+# NEVER commit secrets — use .env.example as a template
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.keystore
+*.mobileprovision
+
+# -----------------------------------------------------------------------------
+# Claude Code — Selective ignore
+# Commit: .claude/settings.json, .claude/rules/, .claude/skills/, .claude/agents/
+# Ignore: settings.local.json (personal), worktrees (ephemeral)
+# -----------------------------------------------------------------------------
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
+
+# -----------------------------------------------------------------------------
+# Code Coverage & Test Results
+# -----------------------------------------------------------------------------
+*.profdata
+*.profraw
+*.xcresult
+*.gcno
+CodeCoverage/
+
+# -----------------------------------------------------------------------------
+# SwiftData / CoreData Runtime Artifacts
+# Safety net — these normally live in the app container, not the project tree
+# -----------------------------------------------------------------------------
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# -----------------------------------------------------------------------------
+# Crash Reports & Diagnostics
+# -----------------------------------------------------------------------------
+*.crash
+*.ips
+
+# -----------------------------------------------------------------------------
+# TestFlight / App Store Upload
+# -----------------------------------------------------------------------------
+*.itmsp
+
+# -----------------------------------------------------------------------------
+# Linting & Formatting Caches
+# -----------------------------------------------------------------------------
+.swiftlint/
+.swiftformat
+
+# -----------------------------------------------------------------------------
+# CocoaPods (not currently used — kept for future reference)
+# -----------------------------------------------------------------------------
+# Pods/
+
+# -----------------------------------------------------------------------------
+# Carthage (not currently used — kept for future reference)
+# -----------------------------------------------------------------------------
+# Carthage/Checkouts
+Carthage/Build/
+
+# -----------------------------------------------------------------------------
+# Fastlane (not currently used — kept for future reference)
+# -----------------------------------------------------------------------------
+# fastlane/report.xml
+# fastlane/Preview.html
+# fastlane/screenshots/**/*.png
+# fastlane/test_output
+
+# -----------------------------------------------------------------------------
+# Code Injection (InjectionForXcode)
+# -----------------------------------------------------------------------------
+iOSInjectionProject/
