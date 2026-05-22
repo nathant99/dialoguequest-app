@@ -13,6 +13,7 @@
 .Spotlight-V100
 .Trashes
 Icon?
+!icons/
 *~
 
 # Files that might appear at the root of a volume
