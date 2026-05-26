@@ -4,9 +4,13 @@ Shared SPM framework at `../forgekit/`. Apps import only the modules they need.
 
 ## Versioning
 
-ForgeKit uses **semantic versioning** with annotated git tags (current: **0.86.0** shipped 2026-05-19, pre-1.0). Breaking changes are expected before 1.0.
+ForgeKit uses **semantic versioning** with annotated git tags (current: **0.94.0** shipped 2026-05-24, pre-1.0). Breaking changes are expected before 1.0. **`forgekit/Docs/CHANGELOG.md` is authoritative** — labsmith rule/CLAUDE.md text drifts; verify CHANGELOG before quoting a specific version.
 
-**0.86.0 highlights (DIR/FEDC API gap closure)** — 7 new types in `ForgeDevelopmental` + `ForgeModels` + `ForgeGamification`: `EmotionSnapshot` (Shared/ForgeModels; closed-enum `.Source` for COPPA-safe affect data), `AffectCalibrator` (actor; DIR-informed DDA), `CoRegulationEngine` (actor; 6-move palette), `SensoryRamp` (actor; silent → ambient → foreground → full), `FEDCDemonstrationRecord` + `UserFEDCProfile` (value types; append-only capacity ledger), `FEDCPromptContext` (value type; `.scaffoldingSupplement() -> String` for AI prompts), plus `StreakManager.recordSession(emotionSnapshot:suppressOnDistress:distressSuppressionThreshold:)` overload + new `StreakResult.heldUnderDistress` case. 53 new tests, all passing. **Apps switching exhaustive `StreakResult` switches must add `.heldUnderDistress` arm or `@unknown default`** — `ExtendedStreakManager` forwards as `.sameDay` so apps using the wrapper are unaffected.
+**0.94.0 — `ForgeClassroom` module shipped** (LiveKit-Cloud-backed v1 live classroom). 0.86→0.94 added 7 new client modules: `ForgeAvatar` / `ForgeBranding` / `ForgeClassroom` / `ForgeColoringMode` / `ForgeManagedConfiguration` / `ForgeMiniGames` / `ForgePuzzles` + 1 new server module: `ForgeClassroomServer`. Module count: 57 total (45 client + 10 server + 2 shared).
+
+**0.89.0 — `DyadicPair` API shipped** (unblocks MindForge / SafetyForge / CardForge / GrammarForge pass-and-play retrofits; lives in `ForgePassAndPlay`).
+
+**0.86.0 — DIR/FEDC API gap closure** — 7 new affect-aware types in `ForgeDevelopmental` + `ForgeModels`: `EmotionSnapshot`, `AffectCalibrator`, `CoRegulationEngine`, `SensoryRamp`, `FEDCDemonstrationRecord`, `UserFEDCProfile`, `FEDCPromptContext` + `StreakManager.recordSession(emotionSnapshot:...)` overload + new `StreakResult.heldUnderDistress` case. Apps switching exhaustive `StreakResult` switches must add `.heldUnderDistress` arm OR `@unknown default` — `ExtendedStreakManager` forwards as `.sameDay` so apps using the wrapper are unaffected.
 
 **0.85.0** added Linux platform support via `#if canImport(CoreGraphics)` guard in `AvatarLayer`.
 
@@ -18,8 +22,8 @@ ForgeKit uses **semantic versioning** with annotated git tags (current: **0.86.0
 
 ```
 forgekit/Sources/
-├── Client/   39 modules — UI, gameplay, persistence, on-device AI, accessibility, avatars
-├── Server/    9 modules — Hummingbird 2 actors, middleware, matchmaking, email (0.65.0)
+├── Client/   45 modules — UI, gameplay, persistence, on-device AI, accessibility, avatars, classroom
+├── Server/   10 modules — Hummingbird 2 actors, middleware, matchmaking, email, classroom
 └── Shared/    2 modules — ForgeModels, ForgeServerDTOs (consumed by both)
 ```
 
@@ -27,9 +31,9 @@ Public API and product names are unchanged — apps still write `.product(name: 
 
 ## Remote GitHub Dependency (Default)
 
-`Libraries/Package.swift` uses `.package(url: "https://github.com/nathant99/forgekit.git", from: "0.86.0")` — pin to minimum version, allows multiple app workspaces open simultaneously. After a ForgeKit release, `File > Packages > Update to Latest Package Versions` in each consuming workspace.
+`Libraries/Package.swift` uses `.package(url: "https://github.com/nathant99/forgekit.git", from: "0.94.0")` — pin to minimum version, allows multiple app workspaces open simultaneously. After a ForgeKit release, `File > Packages > Update to Latest Package Versions` in each consuming workspace.
 
-**Migration from `branch: "main"`**: Replace `branch: "main"` with `from: "0.86.0"` in `Libraries/Package.swift`. This pins to the current release and auto-resolves compatible updates (0.80.x, 0.81.0, etc. up to 1.0.0).
+**Migration from `branch: "main"`**: Replace `branch: "main"` with `from: "0.94.0"` in `Libraries/Package.swift`. This pins to the current release and auto-resolves compatible updates (up to 1.0.0).
 
 ### Local Development Fallback
 
