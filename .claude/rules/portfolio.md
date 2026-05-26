@@ -44,6 +44,24 @@ done
 
 If `--ff-only` fails for any repo, stop and investigate — it means there are local uncommitted changes or diverged history that needs manual resolution.
 
+### CRITICAL: Verify Cross-Repo PRs Merged Before Claiming SHIPPED
+
+After every cross-repo PR (spark-anvil-site, app repos, forgekit, forgesync, forgeplay), confirm the merge:
+
+```bash
+gh pr merge <number> --merge --delete-branch
+gh pr view <number> --json state,mergedAt
+```
+
+State must be `MERGED`. Three incidents have hit labsmith via orphan-PR bugs:
+- Round 70 #377 (LiveKit DECISION on PR #208 — recovered via PR #213)
+- Round 73 (classroom slots PR title-mismatch on PR #220)
+- Round 76 #392 (beta-testing surface on PR #86 — recovered today)
+
+Common cause: bg agent creates feature branch + PR, but the agent process ends before `gh pr merge` runs (or fails with `UNSTABLE` due to non-blocking CI checks). Agent reports are NOT authoritative for merge state — the main session must verify.
+
+Before closing any cross-repo round: `gh pr list --state open --author "@me" --repo <repo>` to audit. See `.claude/rules/workflow.md` § "CRITICAL: Verify PR Merged Before Claiming SHIPPED" for full pattern.
+
 ## Cross-Repo Handoff Protocol
 
 App sessions and labsmith communicate via paired handoff docs in each repo's `docs/` (or `Docs/`) directory. App sessions don't read labsmith repo state directly — labsmith and apps coordinate by writing handoff docs into each other's repos.

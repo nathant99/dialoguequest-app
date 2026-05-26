@@ -18,6 +18,51 @@
 - Push feature branches to `origin` for PR creation: `git push -u origin feature/<name>`
 - When labsmith distributes shared rule updates while a feature branch is active, merge `main` into the feature branch to pick them up
 
+## Auto-Cycle Default (Multi-Commit Work)
+
+**For multi-commit / multi-round work in labsmith (and any session-recurrent autocycle pattern the user has established), the DEFAULT loop is `branch → commit → push → gh pr create → gh pr merge --merge --delete-branch → verify` — no per-step confirmation prompts.** This applies when:
+
+- The user has previously approved an autocycle pattern in the session (e.g., "go with your recs", "pre-approved", "start next round")
+- The change is research / documentation / queue update / planning (low-risk; reversible via git)
+- The PR is in a labsmith-owned repo (labsmith / spark-anvil-site per Round 76 scope-rule change)
+
+**Do NOT auto-cycle for**:
+- Cross-repo PRs touching app-repo Swift source code (still scope-rule-bound; app sessions own implementation)
+- Force-pushes, --no-verify, rebase --interactive, or any destructive op
+- Production deployment / DNS / hosting changes
+- First-time scope-rule changes (those need explicit user "go")
+
+Codified in memory `feedback_branch_workflow.md`. The verify step (`gh pr view <n> --json state,mergedAt`) is REQUIRED per the rule below; auto-cycle does not skip verification.
+
+## CRITICAL: Verify PR Merged Before Claiming SHIPPED
+
+**Never mark a PR "SHIPPED" until you have confirmed the merge.** This rule was codified after 3 orphan-PR incidents in labsmith (Round 70 #377 LiveKit DECISION on PR #208; Round 73 PR title-mismatch on PR #220; Round 76 #392 beta-testing surface on PR #86) where queue docs falsely claimed "SHIPPED" while the PR sat OPEN on its feature branch.
+
+**Required verification after every PR creation**:
+
+```bash
+gh pr merge <number> --merge --delete-branch
+# Then verify:
+gh pr view <number> --json state,mergedAt
+# State must be MERGED. mergedAt must be non-null.
+```
+
+If `gh pr merge` returns "Pull Request is not mergeable" (status `UNSTABLE`):
+- Check what's blocking: `gh pr view <number> --json mergeStateStatus,statusCheckRollup`
+- If it's a non-blocking CI check (Cloudflare Workers build IN_PROGRESS, optional lints), use `--admin` to merge
+- If it's a real failure or merge conflict, fix before merging — do NOT close the round with the PR still OPEN
+
+**Before closing any multi-PR round**:
+
+```bash
+# Audit any feature branches that haven't been merged
+gh pr list --state open --author "@me"
+```
+
+If the queue claims SHIPPED but `gh pr list --state open` shows the branch, the round is NOT actually closed. Fix immediately by merging or marking IN-FLIGHT.
+
+**Common failure mode**: bg agents create a feature branch + PR but the agent process ends before `gh pr merge` runs (or runs but check-blocks). The agent's report says "shipped" but the merge never happened. **The main session must verify** — agent reports are not authoritative for merge state.
+
 ## Development Practices
 
 - Use plan mode for non-trivial features — explore the codebase, design the approach, get approval before writing code

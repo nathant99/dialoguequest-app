@@ -2,22 +2,42 @@
 
 The studio brand (Spark & Anvil) ships a company website at `spark-and-anvil.com` (planned domain) that introduces parents/educators/press/kids to the 131-app portfolio.
 
-## Scope of labsmith for the website
+## Scope of labsmith for the website (UPDATED 2026-05-25)
+
+**Labsmith owns the website end-to-end.** The app-repo scope rule (labsmith ≠ implementation) does NOT apply to the website because the site is markup/content (Astro + Tailwind + TypeScript data files), not portfolio Swift app code. Per user 2026-05-25: "web site is not really code so it's okay" + "you own the website."
 
 Labsmith owns:
 
 - **Brand assets**: palette, typography, logo (generated 2026-05-20 to `Branding/Logo/PNG/`), brand guidelines
 - **Research + plans**: `Docs/RESEARCH_SPARK_ANVIL_WEBSITE.md`, `Docs/PLAN_SPARK_ANVIL_WEBSITE.md`, `Docs/PLAN_SPARK_ANVIL_LOGO.md`, `Docs/DECISION_FIGMA_FOR_SPARK_ANVIL_WEBSITE.md`
 - **Content sourcing**: per-app taglines + descriptions + curriculum mapping sourced from each app's `CLAUDE.md` and `Docs/`
-- **Asset reuse choreography**: which existing per-app assets surface on the website (icons, mascots, jokes, backdrops, modecards, portraits, M9 avatar accessories)
+- **Asset reuse choreography**: which existing per-app assets surface on the website
+- **Site code itself**: Astro pages, Tailwind config, TypeScript data files, build scripts at `/Volumes/Data/Projects/GitHub/spark-anvil-site/`
+- **PRs against `spark-anvil-site`**: open, ship, merge from labsmith session
 
 Labsmith does NOT own:
 
-- The website code itself — lives in a separate repo at `/Volumes/Data/Projects/GitHub/spark-anvil-site/` (scaffolded 2026-05-20)
 - Site deployment / DNS / hosting accounts (Cloudflare Pages — user-managed)
-- The website's own Claude Code session (the executor for ongoing Phases 3-7 of the plan; see `spark-anvil-site/CLAUDE.md`)
+- Production domain configuration (Cloudflare account-level)
 
-This mirrors the app-repo scope rule: labsmith = research + docs + assets; per-repo CC session = implementation.
+### Workflow
+
+When making site changes from labsmith:
+
+1. `cd ../spark-anvil-site && git pull --ff-only` (always pull first)
+2. Branch: `feature/<topic>` in the site repo
+3. Edit `src/pages/*.astro`, `src/data/*.ts`, `tailwind.config.js`, etc. directly
+4. `npm install` if needed; `npm run build` to verify
+5. `gh pr create` + `gh pr merge --merge --delete-branch` from the site repo
+6. Pair with a labsmith doc update if the change reflects a research/plan delta
+
+### Handoff doc convention (legacy + audit trail)
+
+`spark-anvil-site/Docs/HANDOFF_FROM_LABSMITH_*.md` docs are NO LONGER required for site work (labsmith implements directly). They MAY still be authored when:
+- A major IA change deserves a durable audit-trail artifact (e.g., the Reflect-pillar 4th-modality rollout)
+- The change spans multiple sessions and the next session needs a self-contained brief
+
+If the change is small (palette tweak, copy edit, new page from existing pattern), skip the handoff doc — just ship the PR.
 
 ## Asset reuse policy
 
