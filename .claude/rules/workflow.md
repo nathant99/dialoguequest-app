@@ -112,6 +112,38 @@ gh pr merge <n> --merge --delete-branch --admin
 
 Pattern proven across Round 91 #468 + #469 (68 cross-repo PRs total).
 
+## Architecture Decision Records (MADR convention)
+
+**When a non-trivial decision is made — author a MADR.** Industry-standard Markdown Architecture Decision Record format. Captures the decision + alternatives + consequences in a durable, scannable form so future sessions don't re-litigate.
+
+**When to author**:
+- Non-trivial architectural / process / scope choice with alternatives considered
+- Reversal of a prior decision (use `supersedes:` front-matter)
+- Standing rule that affects future work (e.g., scope-rule changes, methodology rule changes)
+- Defer / no-action decision that needs to be documented so future sessions don't re-litigate
+
+**When NOT to author**:
+- Tactical fixes (commit messages suffice)
+- Routine queue items (those live in the work queue)
+- Research artifacts (those go in `RESEARCH_*.md` docs; the MADR may cite the research)
+
+**Format**: `Docs/ADR-NNN_<TITLE_SLUG>.md` with YAML front-matter (`status`, `last-reviewed`, `adr-id`, optional `supersedes` / `superseded-by`). Body sections: `## Status` → `## Context` → `## Decision` → `## Alternatives considered` → `## Consequences` (Positive / Negative / Reversibility) → `## References`.
+
+**Index**: `Docs/ADR_INDEX.md` is the canonical list of ADRs + the template + the relationship between MADR-numbered docs and the historical `DECISION_*.md` docs (ADR-001 through ADR-007 are the 7 pre-MADR `DECISION_*.md` files; ADR-008+ are post-Round-95 MADRs).
+
+**Existing `DECISION_*.md` docs** (7 total, all pre-MADR) are NOT renamed retroactively — they're reclassified as ADR-001 through ADR-007 in the index. Backfilling front-matter on them is a deferred / opportunistic task.
+
+## Cross-Repo Audit Methodology (4 rules — ADR-011)
+
+When authoring or refreshing a cross-repo handoff / portfolio audit, apply these 4 rules jointly. Codified after Round 96 #487 surfaced that the Round 89 #458 audit mis-classified 3 already-shipped items as OPEN — see ADR-011.
+
+1. **Pull-first (mandatory)**: `git pull --ff-only` every target repo BEFORE the first grep / read. If `--ff-only` fails on any repo, abort the audit and surface the failure. Stale local clones are the #1 audit failure mode (Round 89 #458 root cause).
+2. **Pair-check (1:1 keyword matching)**: for every `HANDOFF_FROM_APP_*.md` (or `HANDOFF_FROM_FORGEKIT_*.md`) found, grep the same repo for sibling `HANDOFF_FROM_LABSMITH_*.md` files. Use keyword-overlap (Jaccard ≥ 0.5), not exact-name match — the `_SHIPPED` suffix convention means filenames diverge. An app-side request is **only** OPEN-NEEDS-LABSMITH-ACTION if it has NO paired sibling response.
+3. **Split-row granularity**: if a request bundles ≥ 2 distinct asks (signaled by "AND" in the filename OR multiple `##` subsections in the body), split the audit row into N sub-rows (e.g., A52a + A52b). Each sub-row independently classified — captures partial-ship state.
+4. **Freshness horizon**: every audit doc gets a `freshness-horizon: <N days>` field in YAML front-matter (default 7 days). OPEN rows older than the horizon are auto-flagged "needs-re-verification"; rounds attempting to action them MUST first re-pull + re-pair-check.
+
+See `Docs/ADR-011_AUDIT_METHODOLOGY_PULL_PAIR_SPLIT.md` for the full rationale + alternatives considered + migration path.
+
 ## Development Practices
 
 - Use plan mode for non-trivial features — explore the codebase, design the approach, get approval before writing code
