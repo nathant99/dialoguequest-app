@@ -255,6 +255,24 @@ Locked-in portfolio policy — see `labsmith/Docs/DECISION_AVATAR_EDIT_AUTHORITY
 - **Naming**: keep local cosmetics out of the `Avatar*` namespace — use `AppMascot…`, `AppNamePlate…`, `AppHUDPalette…`. Reserve `Avatar*` for the canonical types in `ForgeModels` + `ForgeAvatar`
 - **No hand-rolled avatar editors** — don't build a per-app skin/hair/outfit picker that bypasses `AvatarStudioView`. Fragments the portfolio look and doubles maintenance
 
+## Cast asset filename convention (DN methodology)
+
+For apps with a DN cast bundled via `ForgeIllustrations`, cast assets MUST use a **flat-bundle filename convention** with a `cast_` prefix:
+
+```
+Packages/Libraries/Sources/AppFeature/Resources/Illustrations/
+├── cast_<character_slug>_<pose>.webp
+├── cast_etyma_demonstrating.webp
+├── cast_lexa_thinking.webp
+```
+
+**Why**:
+- `ForgeIllustrations.IllustrationRegistry` resolves via `Bundle.module` flat lookup; subdirectory paths fail silently
+- The `cast_` prefix disambiguates cast members from existing mascot files (`<mascot_name>_<pose>.webp`)
+- Per-character poses share the prefix so registry filtering can group by character (`registry.assets(prefix: "cast_etyma_")`)
+
+Codified per QuillSpell `HANDOFF_FROM_APP_CAST_FILENAME_CONVENTION.md` (Round 93 #479-A42, 2026-05-27). Applies to all DN-cast retrofit apps.
+
 ## Common Gotchas
 
 - **`ForgeUI.CorrectFeedbackModifier`**: parameter is `isActive:`, **NOT** `trigger:`
