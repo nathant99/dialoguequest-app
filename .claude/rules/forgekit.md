@@ -4,9 +4,21 @@ Shared SPM framework at `../forgekit/`. Apps import only the modules they need.
 
 ## Versioning
 
-ForgeKit uses **semantic versioning** with annotated git tags (current: **0.94.0** shipped 2026-05-24, pre-1.0). Breaking changes are expected before 1.0. **`forgekit/Docs/CHANGELOG.md` is authoritative** — labsmith rule/CLAUDE.md text drifts; verify CHANGELOG before quoting a specific version.
+ForgeKit uses **semantic versioning** with annotated git tags (current: **0.99.1** shipped 2026-05-26, pre-1.0). Breaking changes are expected before 1.0. **`forgekit/Docs/CHANGELOG.md` is authoritative** — labsmith rule/CLAUDE.md text drifts; verify CHANGELOG before quoting a specific version.
 
-**0.94.0 — `ForgeClassroom` module shipped** (LiveKit-Cloud-backed v1 live classroom). 0.86→0.94 added 7 new client modules: `ForgeAvatar` / `ForgeBranding` / `ForgeClassroom` / `ForgeColoringMode` / `ForgeManagedConfiguration` / `ForgeMiniGames` / `ForgePuzzles` + 1 new server module: `ForgeClassroomServer`. Module count: 57 total (45 client + 10 server + 2 shared).
+**0.99.1 — patch-only** test rewrite (`ForgeAIGeneratorTests` → `ForgeAIContentCachePublicAPITests`).
+
+**0.99.0 — `ReflectionPromptModifier` + `ReflectionPromptStorage` shipped** (ForgeUI + ForgePersistence; closes Move R2 — journal hooks / structured reflection prompts for ~22 Reflect-pillar apps).
+
+**0.98.0 — `CastEncounter` primitive shipped** (`ForgePersistence`; SwiftData `@Model` + `CastEncounterStore` actor; closes DN-D12 longitudinal cast progression for ~37 high-priority adopters).
+
+**0.97.0 — `CastDialog` primitive shipped** (`ForgeAI`; FoundationModels-backed cast voice with reviewer-signoff gating + ForgeServerSafety moderation pipeline; closes DN-D3 for ~26 non-trauma + ~25-30 trauma-adjacent apps).
+
+**0.96.0 — `ForgeServerLeaderboard` module shipped** (NEW 11th server module; zero-dep `LeaderboardStore` protocol + `InMemoryLeaderboardStore` reference impl; PostgresLeaderboardStore deferred to forgesync Phase 6; closes Move T8 async leaderboard for ~31 apps).
+
+**0.95.0 — `HubContributionConfig.togetherMode` field shipped** + `TogetherMode.Archetype` enum (5 cases: passAndPlay / cooperativePair / bystanderRoleplay / classroomLive / asyncLeaderboard; closes Move T10 for 4 aggregator + ~30 source apps).
+
+**0.94.0 — `ForgeClassroom` module shipped** (LiveKit-Cloud-backed v1 live classroom). 0.86→0.94 added 7 new client modules: `ForgeAvatar` / `ForgeBranding` / `ForgeClassroom` / `ForgeColoringMode` / `ForgeManagedConfiguration` / `ForgeMiniGames` / `ForgePuzzles` + 1 new server module: `ForgeClassroomServer`. Module count post-0.99: **58 total** (45 client + 11 server + 2 shared).
 
 **0.89.0 — `DyadicPair` API shipped** (unblocks MindForge / SafetyForge / CardForge / GrammarForge pass-and-play retrofits; lives in `ForgePassAndPlay`).
 
@@ -22,8 +34,8 @@ ForgeKit uses **semantic versioning** with annotated git tags (current: **0.94.0
 
 ```
 forgekit/Sources/
-├── Client/   45 modules — UI, gameplay, persistence, on-device AI, accessibility, avatars, classroom
-├── Server/   10 modules — Hummingbird 2 actors, middleware, matchmaking, email, classroom
+├── Client/   45 modules — UI, gameplay, persistence, on-device AI, accessibility, avatars, classroom, reflection
+├── Server/   11 modules — Hummingbird 2 actors, middleware, matchmaking, email, classroom, leaderboard
 └── Shared/    2 modules — ForgeModels, ForgeServerDTOs (consumed by both)
 ```
 
@@ -31,9 +43,9 @@ Public API and product names are unchanged — apps still write `.product(name: 
 
 ## Remote GitHub Dependency (Default)
 
-`Libraries/Package.swift` uses `.package(url: "https://github.com/nathant99/forgekit.git", from: "0.94.0")` — pin to minimum version, allows multiple app workspaces open simultaneously. After a ForgeKit release, `File > Packages > Update to Latest Package Versions` in each consuming workspace.
+`Libraries/Package.swift` uses `.package(url: "https://github.com/nathant99/forgekit.git", from: "0.99.0")` — pin to minimum version, allows multiple app workspaces open simultaneously. After a ForgeKit release, `File > Packages > Update to Latest Package Versions` in each consuming workspace.
 
-**Migration from `branch: "main"`**: Replace `branch: "main"` with `from: "0.94.0"` in `Libraries/Package.swift`. This pins to the current release and auto-resolves compatible updates (up to 1.0.0).
+**Migration from `branch: "main"`**: Replace `branch: "main"` with `from: "0.99.0"` in `Libraries/Package.swift`. This pins to the current release and auto-resolves compatible updates (up to 1.0.0).
 
 ### Local Development Fallback
 
