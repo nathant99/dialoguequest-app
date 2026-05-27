@@ -63,6 +63,55 @@ If the queue claims SHIPPED but `gh pr list --state open` shows the branch, the 
 
 **Common failure mode**: bg agents create a feature branch + PR but the agent process ends before `gh pr merge` runs (or runs but check-blocks). The agent's report says "shipped" but the merge never happened. **The main session must verify** — agent reports are not authoritative for merge state.
 
+## CRITICAL: Stagger Background Agents — Never 4+ in Parallel
+
+**Spawn background agents one at a time (sequentially), not 4+ simultaneously.** Codified after a Round 90 (2026-05-27) incident where 4 parallel `run_in_background: true` agents all hit the Anthropic API rate-limit cap within ~12 minutes wall-clock with zero/minimal work completed across the wave. Round 91 (same day) re-ran the same 4 work items staggered (1 at a time) and shipped all 4 successfully — total ~552K agent tokens, no rate-limit caps.
+
+### Empirical pattern
+
+| Strategy | Outcome | Tokens spent |
+|---|---|---|
+| **4 bg agents parallel** (Round 90) | ALL 4 capped within 12 min; #466 hygiene got furthest at 2,999 tokens / 59 tool calls — others 400-1,000 tokens each | ~5K total before cap |
+| **1 bg agent at a time** (Round 91) | 3 of 3 completed cleanly: #468 P0 fix (180K tokens / 48 tools / 54 min) + #469 Wave D (272K / 74 / 34 min) + #470 Gemma research (75K / 41 / 14 min) | ~552K total, no caps |
+
+### Recommended workflow
+
+For multi-bg-agent rounds:
+
+1. **Spawn agent #1** in background via `Agent({run_in_background: true})`
+2. **Do main-session foreground work in parallel** — independent docs, queue updates, drift fixes, planning. Main session and bg agent run on separate token budgets
+3. **Wait for the `<task-notification>` completion message** for agent #1 (do NOT poll; the system notifies)
+4. **Spawn agent #2** once #1 completes
+5. **Repeat** for #3, #4, etc.
+
+### Why parallel saturates
+
+Background agents share the same Anthropic API limit pool as the main session. Each agent's first turn does discovery (reads, greps, doc surveys) consuming 5-20K tokens. Four parallel discoveries = 20-80K tokens within minutes, saturating the limit before any productive work lands. Sequential spawning lets each agent run its discovery + work phases without competing for the same window.
+
+### Exceptions
+
+- **2 bg agents parallel** is usually safe if both have small scopes (≤ ~50K tokens estimated each; ≤ 30 tool calls)
+- **Foreground main-session work alongside 1 bg agent** is the canonical pattern — exploit it for productivity. Round 91 main session shipped 3 PRs (#315 / #316 / #318) in parallel with #468 running
+- **Quick utility agents** (e.g., a focused grep across the portfolio that returns in 1-2 tool calls) can run in parallel without saturating
+
+### Companion gotcha: shared working tree contention
+
+Background agents and the main session **share the same working tree on the filesystem** — `git status` shows files staged by either side. If the main session runs `git add <specific-file> && git commit`, but another agent has staged different files concurrently, `git commit` includes ALL staged files. Observed Round 90 #466's AGENTS.md getting committed to #465's PR.
+
+**Mitigation**: when running main-session work in parallel with a bg agent, use **branches** (not staged files on main) and explicit `git add <path>` per file. Don't trust `git status` cleanliness between bg-agent operations.
+
+### Companion utility: `--admin` for non-blocking CI
+
+When `gh pr merge` reports `UNSTABLE`:
+
+```bash
+gh pr view <n> --json mergeStateStatus,statusCheckRollup
+# If only non-blocking checks (Cloudflare Workers IN_PROGRESS, optional lints):
+gh pr merge <n> --merge --delete-branch --admin
+```
+
+Pattern proven across Round 91 #468 + #469 (68 cross-repo PRs total).
+
 ## Development Practices
 
 - Use plan mode for non-trivial features — explore the codebase, design the approach, get approval before writing code
