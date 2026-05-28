@@ -205,6 +205,39 @@ Labsmith **owns portfolio-wide asset generation**. Apps don't run Gemini Nano Ba
 | `terravoyage-app` | themed SFX audio (7 CAFs) | Plan + defer | Same plan doc; deferred until Lyria API access or 2nd app demand |
 | `geometryforge-app` | (implicit via Wave 30 commits) topic-thumbnail illustrations | Generated immediately via existing pipeline | Bundled to app repo as on-demand fill |
 
+## App Implementation Ranking Methodology (Round 106 #518; codified Round 114 #535)
+
+When labsmith needs to produce a forward-looking ranking of which portfolio apps to BUILD next (founder-direct sequencing or routine ranking refresh), use the **6-axis weighted composite formula** codified in `Docs/DECISION_APP_RANKING_COMPOSITE_SCORING_2026-05-28.md`:
+
+```
+composite_0_100 = normalize(
+    (ImplReadiness      × 0.25) +
+    (DN_maturity        × 0.20) +
+    (PillarPRIMARYcount × 0.20) +
+    (AssetReadiness     × 0.15) +
+    (PillarDeepening    × 0.10) +
+    (StrategicValue     × 0.10)
+)
+```
+
+Each axis scored 0-3 or 0-5 per the per-axis scale (see `DECISION_APP_RANKING_COMPOSITE_SCORING_2026-05-28.md` for full per-axis rubrics).
+
+**Trauma-gate is a FLAG, not a score reducer.** Apps marked trauma-gated retain their natural composite score but display a 🛑 marker. This separates **build-readiness** (what the composite measures) from **gating** (a binary blocker). Trauma-gated apps re-enter their natural rank position when the gate clears (R0 reviewer signoff per ADR-012).
+
+**Anti-criteria flags** are surfaced separately from the composite (recent-churn / known-blocker / asset-gap / dn-partial / retired-marker). They don't reduce score; they surface the dominant blocker per app for the remediation roadmap.
+
+**Data sources** (no fresh 140-repo pull required — these audit docs ARE the data):
+- `Docs/AUDIT_IMPLEMENTATION_READINESS.md` (11-criteria per-app readiness)
+- `Docs/AUDIT_PORTFOLIO_PILLAR_TAGGING.md` (PRIMARY/SECONDARY pillar classification)
+- `Docs/AUDIT_APP_REPOS_DN_HANDOFF_STATUS.md` (DN handoff coverage)
+- `Docs/AUDIT_PILLAR_DEEPENING_PER_APP.md` (per-app deepening moves)
+- `Docs/AUDIT_PORTFOLIO_INVENTORY_RECONCILIATION_2026-05-26.md` (canonical 140-app list)
+- `spark-anvil-site/src/data/apps.generated.ts` (canonical `modes` + `distributedNarrative` + `dnCast`)
+
+**Reference deliverable**: `Docs/AUDIT_APP_IMPLEMENTATION_RANKING_DN_5PILLAR_2026-05-28.md` (Round 106 #518) — Top-4 tied at 90.0 (CubeSensei / CuriosityQuest / FractionForge / SaffronLab READY NOW); Top-20 at 71.7-90.0; Bottom-15 + remediation paths.
+
+**When to use this formula**: founder asks "which apps should we build next?" or routine quarterly portfolio-sequencing refresh. Single ranking doc per refresh date; do NOT fragment into V1/V2 alternates (Round 106 surfaced V2 as a subagent-generated alternate; V1 is canonical per the DECISION doc).
+
 ## ForgeKit
 
 All portfolio apps share a common SPM framework at `../forgekit/` (49 modules, semver 0.75.0+; sources soft-split into `Client/` + `Server/` + `Shared/`). Apps import only the modules they need. See `@.claude/rules/forgekit.md` for the full module catalog.
