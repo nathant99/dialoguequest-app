@@ -106,6 +106,20 @@ SAMHSA TIP 57 (2014) six principles + Eggleston et al. (2025) digital TI design 
 - Subject-matter expert / community sensitivity reviewer for every trauma-adjacent unit (preferred; pragmatic minimum is one external review per major unit)
 - Symbolic-distance first-pass framing (preferred for ages 9–11; can be optional for ages 12+ depending on curriculum framing)
 
+**Trauma-adjacent art generation** (amended per ADR-012, Round 104 #506, 2026-05-28):
+
+External R0 sensitivity-reviewer signoff is the **preferred path** for trauma-adjacent art gen, but **founder-ADR-approved AI gen is an accepted alternative** subject to ALL of the following constraints:
+
+1. **Single-instance ADR per gen wave** — author `Docs/ADR-NNN_<topic>.md` documenting the wave's scope + cost + visual-audit results + decision rationale. Founder ACK in the ADR's "Status: ACCEPTED" line is the signoff.
+2. **4/4 random-sample visual audit** using the `Read` tool per memory `feedback_read_tool_sees_images.md` BEFORE distribution. Audit must confirm the chunky-cartoon TI register holds.
+3. **No realistic distress imagery** (no tears, blood, body wounds, panic-coded facial expressions); **no lean-coded body imagery** for body-image-risk apps; **no Indigenous TEK appropriation** for Indigenous-content clusters; **no specific cultural-deity references** for religion/origin-myth apps.
+4. **Trauma-adjacent CONTENT** (cast dialogue / mentor posture / off-ramp copy / hint scaffolding / question-kit text) STILL requires R0 reviewer signoff — this amendment only carves out the **art axis**. R0 signoff remains load-bearing for the content axis.
+5. The ADR notes which app cluster(s) the gen covers + what R0 reviewer signoff (if any) is preserved for downstream content work.
+
+**Why this carve-out**: SAMHSA TIP 57's actual load-bearing concerns are off-ramps + mentor posture + content framing — not visual art per se. The portfolio's chunky-cartoon visual register inherently avoids realistic distress imagery, so the art axis is the lowest-risk axis. R0 signoff is preserved where it's actually load-bearing (content).
+
+**Reversibility**: a future ADR can supersede ADR-012 to re-tighten the rule. Each founder-ADR-approved gen wave creates an audit trail for retrospective review.
+
 ## Cross-references
 
 - `labsmith/.claude/rules/ai-content.md` — AI-generated content accuracy policy (TI applies on top of accuracy)
