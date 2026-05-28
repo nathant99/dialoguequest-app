@@ -133,14 +133,15 @@ Pattern proven across Round 91 #468 + #469 (68 cross-repo PRs total).
 
 **Existing `DECISION_*.md` docs** (7 total, all pre-MADR) are NOT renamed retroactively — they're reclassified as ADR-001 through ADR-007 in the index. Backfilling front-matter on them is a deferred / opportunistic task.
 
-## Cross-Repo Audit Methodology (4 rules — ADR-011)
+## Cross-Repo Audit Methodology (5 rules — ADR-011)
 
-When authoring or refreshing a cross-repo handoff / portfolio audit, apply these 4 rules jointly. Codified after Round 96 #487 surfaced that the Round 89 #458 audit mis-classified 3 already-shipped items as OPEN — see ADR-011.
+When authoring or refreshing a cross-repo handoff / portfolio audit, apply these 5 rules jointly. Rules 1-4 codified after Round 96 #487 surfaced that the Round 89 #458 audit mis-classified 3 already-shipped items as OPEN. Rule 5 added Round 112 #532 after Round 109 #529 documented a portfolio-wide finding (R3 "both surfaces" reference impl) in an audit doc that future sessions wouldn't naturally find. See ADR-011.
 
 1. **Pull-first (mandatory)**: `git pull --ff-only` every target repo BEFORE the first grep / read. If `--ff-only` fails on any repo, abort the audit and surface the failure. Stale local clones are the #1 audit failure mode (Round 89 #458 root cause).
 2. **Pair-check (1:1 keyword matching)**: for every `HANDOFF_FROM_APP_*.md` (or `HANDOFF_FROM_FORGEKIT_*.md`) found, grep the same repo for sibling `HANDOFF_FROM_LABSMITH_*.md` files. Use keyword-overlap (Jaccard ≥ 0.5), not exact-name match — the `_SHIPPED` suffix convention means filenames diverge. An app-side request is **only** OPEN-NEEDS-LABSMITH-ACTION if it has NO paired sibling response.
 3. **Split-row granularity**: if a request bundles ≥ 2 distinct asks (signaled by "AND" in the filename OR multiple `##` subsections in the body), split the audit row into N sub-rows (e.g., A52a + A52b). Each sub-row independently classified — captures partial-ship state.
 4. **Freshness horizon**: every audit doc gets a `freshness-horizon: <N days>` field in YAML front-matter (default 7 days). OPEN rows older than the horizon are auto-flagged "needs-re-verification"; rounds attempting to action them MUST first re-pull + re-pair-check.
+5. **Audit-to-canonical-propagation**: when an audit yields a portfolio-wide finding — a new pattern, reference implementation, policy clarification, or methodology rule — the round-close MUST include propagation to relevant canonical references BEFORE closing the round. Canonical refs are: (a) `.claude/rules/*.md` (loaded into every CC session), (b) `Docs/TEMPLATE_*.md` (read by implementing sessions), (c) `Docs/DECISION_*.md` / `Docs/ADR-*.md` (canonical policy artifacts). Audit docs alone are insufficient — they decay in visibility, and future sessions read rules/template/decision-doc, not audit-doc history. If portfolio rule sync is needed after a `.claude/rules/*.md` update, run `scripts/copy_rules_to_repos.sh --apply` in the same or immediately following round.
 
 See `Docs/ADR-011_AUDIT_METHODOLOGY_PULL_PAIR_SPLIT.md` for the full rationale + alternatives considered + migration path.
 
