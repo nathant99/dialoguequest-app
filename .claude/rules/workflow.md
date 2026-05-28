@@ -155,9 +155,11 @@ See `Docs/ADR-011_AUDIT_METHODOLOGY_PULL_PAIR_SPLIT.md` for the full rationale +
 - All tests must pass before committing
 - Commit working checkpoints during multi-step features — not just at the end
 
-### CRITICAL: Save Research & Plans to Docs/ Immediately
+### CRITICAL: Save Research, Plans, and Audits to Docs/ Immediately
 
-Every time you do research (web search, codebase analysis, design exploration) or create a feature plan, write it to a file in `Docs/` BEFORE presenting results or implementing changes. Never leave research or plans only in conversation context.
+Every time you do research (web search, codebase analysis, design exploration), create a feature plan, or run an audit (handoff coverage, asset state, ranking, sweep, color-scheme alignment, anything that produces a structured finding), write it to a file in `Docs/` BEFORE presenting results or implementing changes. Never leave research / plans / audits only in conversation context or in temp locations (`/tmp/`, scratch files).
+
+**Audit-specific** (codified Round 119 #544 user-direct): every audit must persist in the repo at `Docs/AUDIT_<TOPIC>_<DATE>.md`. NEVER store audit results in `/tmp/` or as untracked files. The audit doc is the durable artifact; conversation context is ephemeral. This applies to labsmith audits (`labsmith/Docs/AUDIT_*.md`) AND per-app audits (`<app>-app/docs/AUDIT_*.md`). YAML front-matter recommended: `status` + `date` + `round` + `freshness-horizon`.
 
 ### CRITICAL: Update CLAUDE.md After Every Implementation
 
@@ -194,3 +196,4 @@ When gating content behind progression, all four channels must agree:
 2. Gray tint applied
 3. Interaction disabled
 4. `accessibilityHint` explains unlock requirement
+<!-- END LABSMITH-SYNCED CONTENT -->
