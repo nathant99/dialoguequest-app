@@ -97,3 +97,4 @@ When labsmith next syncs `.claude/rules/` across all 131 apps, this rule propaga
 - Apple HIG / Xcode docs: "External changes" file watcher behavior, generally documented in Xcode help
 - Internal incident: triggered the original portfolio rule "Cannot edit `.pbxproj` while Xcode is open" in `spm-architecture.md`
 - Internal incident (2026-05-19): user noted the agent IS inside the workspace and any direct Xcode-file edit risks restarting the workspace and losing context — leading to this rule
+<!-- END LABSMITH-SYNCED CONTENT -->

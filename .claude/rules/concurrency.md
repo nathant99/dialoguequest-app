@@ -41,3 +41,4 @@
 - Use **`@concurrent`** for CPU-bound work (question shuffling, score aggregation)
 - Graceful shutdown via **`ServiceLifecycle`**
 - All WebSocket messages are Codable enums (tagged union pattern) encoded as JSON
+<!-- END LABSMITH-SYNCED CONTENT -->

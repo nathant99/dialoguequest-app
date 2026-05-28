@@ -24,3 +24,4 @@
 - All AI-generated content is draft until verified — never ship unreviewed AI output
 - Known risk areas: spelling/grammar rules, science facts with specific numbers, math examples, historical dates
 - Use hedging language when uncertain: "usually", "often", "in most cases"
+<!-- END LABSMITH-SYNCED CONTENT -->

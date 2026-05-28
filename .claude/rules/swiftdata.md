@@ -58,3 +58,4 @@
 - `@Bindable` for two-way `$bindings` on passed-in `@Observable`/`@Model`
 - No `State(initialValue:)` in `init` — captures only first value
 - Computed properties in `@Observable` must derive from tracked stored properties only
+<!-- END LABSMITH-SYNCED CONTENT -->

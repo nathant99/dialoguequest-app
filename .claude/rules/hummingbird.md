@@ -60,3 +60,4 @@ Conventions for Hummingbird 2 servers (ForgeSync, future `forgeplay`, and any pe
 - **Don't construct test contexts manually** — see rule 7.
 - **Don't trust client-supplied tenant identifiers** — see rule 16. Always derive tenant from the URL prefix (middleware-resolved) or from JWT claims (server-validated).
 - **Don't `fatalError` in tenant-supplied handlers** — `fatalError` kills the whole process. Use `throw` with `HTTPResponseError` instead. This is the load-bearing property that lets one Hummingbird process host many tenants.
+<!-- END LABSMITH-SYNCED CONTENT -->

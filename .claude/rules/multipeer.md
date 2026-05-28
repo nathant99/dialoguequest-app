@@ -185,3 +185,4 @@ public nonisolated func session(_ session: MCSession, didReceive data: Data,
 - **visionOS 26.0 betas**: iPad↔visionOS MultipeerConnectivity connection regression. Test on real hardware.
 - **iOS 26.2+ GameCenter**: Leaderboard submission broken; turn-based matchmaker not showing existing matches. Implement local cache + retry.
 - **MultipeerConnectivity opaque errors**: `MCSessionStateNotConnected` doesn't say why. Log raw error codes; don't show to kids.
+<!-- END LABSMITH-SYNCED CONTENT -->

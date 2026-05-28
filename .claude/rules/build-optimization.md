@@ -87,3 +87,4 @@ Diagnose slow builds:
 - **`swift test` CLI** creates `.build/` artifacts that conflict with Xcode — delete `Libraries/.build/` if Xcode can't load the package
 - **SwiftLint build plugin** — currently suspended (crashes on Xcode 26). Must be commented out in all `Package.swift` files. See `.claude/rules/swiftlint.md`
 - **Missing `-warn-long-*` cleanup** — these flags add overhead; only enable during investigation, remove after fixing bottlenecks
+<!-- END LABSMITH-SYNCED CONTENT -->

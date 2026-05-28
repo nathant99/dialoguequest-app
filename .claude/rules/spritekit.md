@@ -61,3 +61,4 @@ Call `configureVisuals()` AFTER `addChild(node)` in the scene — never in the n
 
 - **SpriteKit is in maintenance mode** — no new API since ~iOS 10. Plan for GateForge/Godot contingency for future portfolio apps
 - **iOS 26 SpriteKit framerate regression** — fixed in 26.2, regressed in 26.3/26.4. Monitor release notes for fixes
+<!-- END LABSMITH-SYNCED CONTENT -->

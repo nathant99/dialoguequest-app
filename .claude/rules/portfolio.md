@@ -241,3 +241,4 @@ Each axis scored 0-3 or 0-5 per the per-axis scale (see `DECISION_APP_RANKING_CO
 ## ForgeKit
 
 All portfolio apps share a common SPM framework at `../forgekit/` (49 modules, semver 0.75.0+; sources soft-split into `Client/` + `Server/` + `Shared/`). Apps import only the modules they need. See `@.claude/rules/forgekit.md` for the full module catalog.
+<!-- END LABSMITH-SYNCED CONTENT -->

@@ -148,3 +148,4 @@ Stack of states for "return to previous" semantics. SwiftUI's `NavigationStack` 
 - Use `@State` + struct for view-local machines; `@Observable` class for shared/injected state
 - State transitions must happen on MainActor (UI state). Async side effects via `Task {}`
 - `nonisolated` on `*Machine` structs in SPM packages with default MainActor isolation (same rule as other value types)
+<!-- END LABSMITH-SYNCED CONTENT -->

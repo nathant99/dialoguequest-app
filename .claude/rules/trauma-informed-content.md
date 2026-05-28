@@ -133,3 +133,4 @@ External R0 sensitivity-reviewer signoff is the **preferred path** for trauma-ad
 - Eggleston, M., Jones, E. P., Khan, N., Romani, W. A., McQuillan, K., Otero, J., & Chen, E. (2025). A scoping review of trauma-informed care principles applied in design and technology. *Digital Health*, 11. https://doi.org/10.1177/20552076251360925
 - Stoltenburg, S., et al. (2024). STRYV365 peak team and Brain agents: Teacher perspectives on school impact of a trauma-informed, social-emotional learning approach for students facing adverse childhood experiences. *Frontiers in Psychology*. PMC11494034.
 - *JMIR Pediatrics and Parenting* (2024). Digital health innovations for ACE mitigation narrative review.
+<!-- END LABSMITH-SYNCED CONTENT -->

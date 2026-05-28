@@ -290,3 +290,4 @@ Codified per QuillSpell `HANDOFF_FROM_APP_CAST_FILENAME_CONVENTION.md` (Round 93
 - **Type name collisions** — qualify fully when both app modules and ForgeKit define the same type name (e.g., `Models.Expression` vs `Foundation.Expression`, `AppFeature.AppPhase` vs `ForgeNavigation.AppPhase`)
 - **`@retroactive` not needed within same package** — conformances to ForgeKit protocols from targets in the same `Libraries` package are NOT retroactive. `@retroactive` in this case is a compile error
 - **Fix isolation in ForgeKit, not in app code** — if a ForgeKit value type causes "call to main actor-isolated initializer in nonisolated context", mark it `nonisolated struct` IN the ForgeKit repo. Don't work around it in app code
+<!-- END LABSMITH-SYNCED CONTENT -->

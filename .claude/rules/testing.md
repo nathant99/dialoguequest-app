@@ -87,3 +87,4 @@ Always prefer MCP tools over `xcodebuild` when Xcode is open:
 - **Ranged confirmations** (`confirmation(expectedCount: 5...10)`) — async event-based tests
 - **Raw identifier display names** — `` @Test func `Student earns badge`() `` — backtick names become display names
 - **Exit tests** (`#expect(processExitsWith: .failure)`) — **macOS/Linux only**, won't compile for iOS
+<!-- END LABSMITH-SYNCED CONTENT -->

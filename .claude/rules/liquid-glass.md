@@ -32,3 +32,4 @@ Tab bars shrink on scroll to focus content, expand on scroll-back. Verify naviga
 - Glass morphing (`.glassEffectID`) works between navigation transitions — use for seamless tab/nav animations
 - Respect `.glassEffectTransition` for Reduce Animations accessibility setting
 - Icon Composer (standalone app) creates Liquid Glass icons with light/dark/tinted/clear variants
+<!-- END LABSMITH-SYNCED CONTENT -->

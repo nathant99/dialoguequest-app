@@ -41,3 +41,4 @@ When apps make significant changes, `PermissionKit` requires parental consent fo
 | Jul 1, 2026 | Louisiana | Age category sharing |
 
 Monitor state-level requirements — they may exceed federal COPPA minimums.
+<!-- END LABSMITH-SYNCED CONTENT -->

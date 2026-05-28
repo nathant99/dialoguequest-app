@@ -7,3 +7,4 @@ Learned from CuriosityQuest.
 3. **`@Entry` macro** for environment values instead of verbose `EnvironmentKey` boilerplate
 4. **`ContentUnavailableView`** for empty states; **`containerRelativeFrame`** over `GeometryReader` when possible
 5. **No `AnyView`** — Use `@ViewBuilder`, `Group`, or conditional modifiers instead
+<!-- END LABSMITH-SYNCED CONTENT -->

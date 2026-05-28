@@ -107,3 +107,4 @@ Each per-app page renders `dnCast.members[]` as a "Meet the cast" section. The a
 - `.claude/rules/trauma-informed-content.md` — trauma-informed-design rules that DN handoffs adhere to
 - `.claude/rules/portfolio.md` — cross-repo handoff protocol that DN retrofits use
 - `Docs/PLAN_GAMBITTALES_DN_ENHANCEMENT.md` — second-pass enhancement methodology (Storytime Chess-inspired)
+<!-- END LABSMITH-SYNCED CONTENT -->

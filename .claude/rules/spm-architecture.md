@@ -220,3 +220,4 @@ Incremental "strangler fig" approach — don't rewrite, gradually extract:
 7. Thin the app target to shell-only
 
 Each step is a single PR. App builds and tests must pass at every step.
+<!-- END LABSMITH-SYNCED CONTENT -->

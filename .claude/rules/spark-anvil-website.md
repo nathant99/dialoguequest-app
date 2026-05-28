@@ -124,3 +124,4 @@ Per `RESEARCH_SPARK_ANVIL_WEBSITE.md`, third-party certifications (iKeepSafe COP
 - `Docs/REGISTRY_APP_HERO_COLORS.md` — per-app theming source
 - `Docs/RESEARCH_CURRICULUM_STANDARDS_MAPPING.md` — curriculum chips source
 - `Docs/DESIGN_BRAND_ARCHITECTURE.md` — brand architecture rules (must apply across portfolio + website)
+<!-- END LABSMITH-SYNCED CONTENT -->

@@ -52,3 +52,4 @@ For existing repos with many violations, use SwiftLint's baseline feature:
 swiftlint lint --reporter baseline > .swiftlint.baseline.yml
 ```
 This suppresses all existing violations. New code must comply. Fix baseline violations incrementally.
+<!-- END LABSMITH-SYNCED CONTENT -->

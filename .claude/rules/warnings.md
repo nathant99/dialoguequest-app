@@ -65,3 +65,4 @@ Learned from CuriosityQuest. Maintain zero-warning builds.
 - **Unused results** — Use `_ =` for intentionally discarded results; remove truly unused `let` bindings
 - **Redundant nil coalescing** — Don't use `?? default` on non-optional values
 - **Unused guard bindings** — `guard y != nil` not `guard let x = y` when x is unused
+<!-- END LABSMITH-SYNCED CONTENT -->

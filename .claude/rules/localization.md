@@ -16,3 +16,4 @@ Learned from CubeSensei. Apply when adding `.xcstrings` string catalogs.
 ## String Catalog Gotchas
 
 - **Symbol collision**: Two keys differing only in capitalization generate the same symbol — use identical casing or remove one (also in `warnings.md`)
+<!-- END LABSMITH-SYNCED CONTENT -->
