@@ -243,16 +243,16 @@ Each axis scored 0-3 or 0-5 per the per-axis scale (see `DECISION_APP_RANKING_CO
 When auditing an app's color-scheme alignment to its canonical palette (`docs/DESIGN_ART_DIRECTION.md` § Color Palette), the audit grep pattern MUST catch BOTH SwiftUI color-token forms:
 
 ```bash
-# CORRECT pattern (catches both forms):
-grep -rE "Color\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)|\.foregroundStyle\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)|\.tint\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)|\.fill\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)|\.background\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)|\.glassEffect\(\.regular\.tint\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)"
+# CORRECT pattern v2 (Round 137 #568 extension — adds named-param `color: .X` form):
+grep -rE "Color\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)|\.(foregroundStyle|tint|fill|background)\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)|\.glassEffect\(\.regular\.tint\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)|color: \.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)"
 
-# WRONG pattern (Round 118 #540 incident — caught only explicit Color.X form):
+# WRONG pattern v1 (Round 118 #540 incident — caught only explicit Color.X form):
 grep -rE "Color\.(blue|purple|orange|red|green)"
 ```
 
 **Why**: SwiftUI accepts both `Color.blue` (explicit) and `.blue` (shorthand) in styling contexts. The shorthand is heavily used in `.foregroundStyle(.blue)`, `.tint(.blue)`, `.fill(.blue)`, `.background(.blue)`, `.glassEffect(.regular.tint(.blue))`. Audit grep that catches only `Color.X` misses ~50% of real violations.
 
-**Empirical evidence**: Round 118 #540 audit table covered 8 CQ files cleanly (CQ session swept them per R126 ACK), but Round 133 #567 founder visual review found ~15 additional violations in `DailyDashboardView+*` + `TexasMapView+*` — entirely from the shorthand form. Phase 2 sweep filed via R133 #567.
+**Empirical evidence**: Round 118 #540 audit table covered 8 CQ files cleanly (CQ session swept them per R126 ACK), but Round 133 #567 founder visual review found ~15 additional violations in `DailyDashboardView+*` + `TexasMapView+*` — entirely from the shorthand form. Phase 2 sweep filed via R133 #567. **Round 137 #568 extension**: Hero tab review found 13 additional violations including 12 from the `color: .X` **named-parameter** form (e.g., `StatCard(... color: .purple)`, `ProfileMenuRow(... color: .teal)`) that the Phase 2 grep also missed. Phase 3 sweep filed via R137 #568. Grep pattern v2 now catches all three forms (`Color.X` explicit / `.X` modifier shorthand / `color: .X` named-param).
 
 **Codification candidate for audit-script v6+**: extend `scripts/cross_repo_handoff_audit.py` (if/when expanded to color-scheme audits) with both-form regex. For now: human-discipline grep pattern documented here.
 
