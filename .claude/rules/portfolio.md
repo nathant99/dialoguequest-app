@@ -238,6 +238,45 @@ Each axis scored 0-3 or 0-5 per the per-axis scale (see `DECISION_APP_RANKING_CO
 
 **When to use this formula**: founder asks "which apps should we build next?" or routine quarterly portfolio-sequencing refresh. Single ranking doc per refresh date; do NOT fragment into V1/V2 alternates (Round 106 surfaced V2 as a subagent-generated alternate; V1 is canonical per the DECISION doc).
 
+## Color Scheme Audit Methodology (Round 133 #567; codified after R118 incomplete-sweep incident)
+
+When auditing an app's color-scheme alignment to its canonical palette (`docs/DESIGN_ART_DIRECTION.md` § Color Palette), the audit grep pattern MUST catch BOTH SwiftUI color-token forms:
+
+```bash
+# CORRECT pattern (catches both forms):
+grep -rE "Color\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)|\.foregroundStyle\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)|\.tint\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)|\.fill\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)|\.background\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)|\.glassEffect\(\.regular\.tint\(\.(blue|purple|teal|cyan|indigo|mint|orange|red|green|yellow|pink|brown)\)"
+
+# WRONG pattern (Round 118 #540 incident — caught only explicit Color.X form):
+grep -rE "Color\.(blue|purple|orange|red|green)"
+```
+
+**Why**: SwiftUI accepts both `Color.blue` (explicit) and `.blue` (shorthand) in styling contexts. The shorthand is heavily used in `.foregroundStyle(.blue)`, `.tint(.blue)`, `.fill(.blue)`, `.background(.blue)`, `.glassEffect(.regular.tint(.blue))`. Audit grep that catches only `Color.X` misses ~50% of real violations.
+
+**Empirical evidence**: Round 118 #540 audit table covered 8 CQ files cleanly (CQ session swept them per R126 ACK), but Round 133 #567 founder visual review found ~15 additional violations in `DailyDashboardView+*` + `TexasMapView+*` — entirely from the shorthand form. Phase 2 sweep filed via R133 #567.
+
+**Codification candidate for audit-script v6+**: extend `scripts/cross_repo_handoff_audit.py` (if/when expanded to color-scheme audits) with both-form regex. For now: human-discipline grep pattern documented here.
+
+**When this rule applies**:
+- Any color-scheme audit (per-app or portfolio-wide) per `Docs/AUDIT_PORTFOLIO_COLOR_SCHEME_ALIGNMENT_<date>.md` pattern
+- Any color-refresh handoff per `HANDOFF_FROM_LABSMITH_COLOR_SCHEME_REFRESH.md` template
+- Verify-before-list audits checking color-scheme alignment of recommendation lists
+
+## Debug Logging (Round 138 #569; lifted from CuriosityQuest 2026-05-28)
+
+Portfolio standard for adding extensive debug logging to detect unexpected runtime behaviors in iOS apps + Hummingbird servers. The single biggest source of "the app didn't crash but something was wrong" bug reports is a swallowed `try?` or a silent fallback path — detection logging makes those paths visible without changing their semantics.
+
+**Canonical rule**: `.claude/rules/debug-logging.md` (477 lines). Codifies: categorized logger from day one (not sprinkled `print()`), category-to-bug-class mapping, auto-included diagnostic context (thread / caller / surface), production-safety (`#if DEBUG`-gated iOS / env-gated server verbose), the `didSet` pattern for state-machine coverage, replace-silent-`try?` discipline, surface-wiring playbook (iOS app shell / tab views / network services / Multipeer / SwiftData / state machines + server controllers / WebSocket / Gemini / safety / admin ops), 11-step categorization decision tree, when NOT to add logging, pre-PR checklist, AND a 2026 production-observability section covering Apple `Logger` migration triggers + privacy-by-default (always-redact list) + audit-logs-≠-debug-logs separation (with retention by regulation: COPPA ~6yr / GDPR data-minimization / PCI 12mo / SOX 7yr) + Swift OTel graduation path + silent-failure detection for AI paths (span schemas) + performance instrumentation (`OSSignposter` + `withSpan`).
+
+**Research provenance**: `Docs/RESEARCH_RUNTIME_BEHAVIOR_AUDIT_LOGGING_2026.md` — 30 sources surveyed across 4 domains (Apple unified logging / Swift server observability / audit-vs-debug compliance / silent-failure + agent observability). 6 codified findings, each mapped to a CuriosityQuest reference impl + a future bug class.
+
+**Reference impls** (canonical templates per portfolio rule):
+- iOS: `curiosityquest-app/Packages/Libraries/Sources/Services/DebugLog.swift` (single-seam emitter, 7 categories, `#if DEBUG`-gated, zero-overhead release builds)
+- Server (Hummingbird): `curiosityquest-app/Server/CuriosityQuestServer/Sources/Services/DebugFileLog.swift` (8 categories, file+stdout, env-gated verbose)
+
+**Per-app adoption**: each app decides when to wire categorized logging (CQ is the reference impl, not a forced migration). Use the canonical template above as the starting point; adapt categories to the app's surface area (e.g., apps without network can drop `.network`; apps with pass-and-play add `.multipeer`).
+
+**Lift provenance**: CQ shipped the rule + research in PRs #114-#121; filed `HANDOFF_FROM_APP_LIFT_DEBUG_LOGGING_RULE.md` Round 138 #569 requesting portfolio lift. Labsmith lifted + propagated via `scripts/copy_rules_to_repos.sh --apply` in the same round.
+
 ## ForgeKit
 
 All portfolio apps share a common SPM framework at `../forgekit/` (49 modules, semver 0.75.0+; sources soft-split into `Client/` + `Server/` + `Shared/`). Apps import only the modules they need. See `@.claude/rules/forgekit.md` for the full module catalog.
