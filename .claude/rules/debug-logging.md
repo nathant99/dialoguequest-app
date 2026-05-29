@@ -476,4 +476,51 @@ The raw 2026-05-28 research findings (the reasoning behind each of the 6 § "Bey
 - [Microservices Observability: Distributed Tracing 2026](https://dasroot.net/posts/2026/03/microservices-observability-distributed-tracing-logging-2026/) — AIOps trends, MTTR improvements from trace-based observability
 - [Agent observability complete guide 2026 (Braintrust)](https://www.braintrust.dev/articles/agent-observability-complete-guide-2026) — minimum viable span schema for AI agents (tool / reasoning / retry / fallback)
 - [The complete guide to LLM observability 2026 (Portkey)](https://portkey.ai/blog/the-complete-guide-to-llm-observability/) — quality-aware alerting, drift detection
+
+## Real-world cascade lessons (R151 #583; lifted from CQ TTS cascade 2026-05-29)
+
+Codified after CuriosityQuest TTS cascade (PRs #130 → #138) walked through 7 distinct root causes stacked on top of each other. The instrumentation pattern paid off — pre-existing per-chunk SSE + TTS lifecycle logs (PR #130) and body-sniff cap (PR #136) were what made the next layer's bug observable.
+
+### Body-sniff sizing — default 1500-2000 bytes, not 200
+
+When adding a `#if DEBUG` body-content log line for non-200 responses:
+
+```swift
+// ❌ Too small — upstream JSON error bodies routinely exceed 200B
+let sample = String(data: data.prefix(200), encoding: .utf8) ?? "<binary>"
+
+// ✅ Canonical
+let sample = String(data: data.prefix(1500), encoding: .utf8) ?? "<binary>"
+```
+
+**Cost-benefit**: 1.5KB log line on rare error paths costs nothing; one-glance diagnosis vs an extra PR round-trip when the upstream error JSON exceeds the cap. CQ PR #136 (200 → 1500) directly enabled PR #137 (disable gzip on TTS).
+
+### Auth header consistency check — first diagnostic for "silently fails"
+
+When an endpoint "silently fails" (200 status but empty body, or 401 with no clear cause), the first diagnostic is **comparing its auth header set against every other server-facing client in the codebase**. The outlier is usually the bug.
+
+```bash
+# Find auth-header attachment sites across the iOS service layer
+grep -rn 'X-API-Key\|Authorization' Packages/Libraries/Sources/Services/
+
+# The endpoint missing the header (or using a stale one) is the silent-failure source.
+```
+
+CQ PR #131 fix: TTS endpoint was missing `X-API-Key`. Discovered by comparing TTSService.swift's header set against ContentService / TutorService / GeminiService.
+
+### "Don't declare fixed until end-to-end terminal success log appears"
+
+In a layered system, each fix can reveal the next layer. **Write "next test should show X" rather than "this should be the final fix"** until the observable success log line is in hand.
+
+CQ TTS cascade had 7 PRs before the terminal success log (`[TTS] playback started; duration=2.4s`) appeared. Every PR before #138 felt like "the final fix" until the next layer surfaced.
+
+### Pre-instrument before diagnosis
+
+The cascade worked because PRs #130 (per-chunk SSE + TTS lifecycle) and #136 (1500-byte body sniff) were already in place when the layered bugs surfaced. **The debug-logging rule's "wire instrumentation early" pattern paid full cost back on the first real diagnostic.** Don't wait for a bug to wire diagnostic logs; wire them when the code is first authored.
+
+### Cross-references
+
+- `labsmith/.claude/rules/audio-pipeline.md` — companion rule from the same cascade (gzip + WAV-wrap + OSStatus FourCC)
+- `labsmith/.claude/rules/forgekit.md` § Server `/version` endpoint — sibling lift from same cascade
+- `labsmith/Docs/RESEARCH_TTS_AUDIO_PIPELINE_CASCADE_2026-05-29.md` — full 8-lesson cascade table + per-layer diagnosis methodology
 <!-- END LABSMITH-SYNCED CONTENT -->

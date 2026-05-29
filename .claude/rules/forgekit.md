@@ -285,6 +285,91 @@ PRIMARY-cluster apps consistently ship **8 themed accessories** with a uniform `
 
 **Exceptions to portfolio-canonical**: apps where accessory cosmetics don't fit the surface (e.g., reflective-pillar apps where identity-customization would dilute the journaling register; trauma-gated apps where avatar cosmetics could undermine off-ramps). Each exception documented per-app via TECHNICAL_DESIGN.md.
 
+## Server `/version` endpoint (R151 #582; lifted from CuriosityQuest 2026-05-29)
+
+Every portfolio server MUST expose a `GET /api/v1/version` endpoint behind the existing `X-API-Key` middleware. Codified after CQ TTS cascade (PRs #130 → #138) where build-identity ambiguity ("is PR #132 actually deployed?") blocked diagnosis for hours across 6+ debug cycles.
+
+### Pattern
+
+| Endpoint | Auth | Body | Why |
+|---|---|---|---|
+| `GET /health` | none | `{"server":"ok",...}` | Load-balancer probe — public, minimal, fast |
+| `GET /api/v1/version` | `X-API-Key` | `{version, versionFull, branch, builtAt}` | Deploy verification — clients have the key, no public exposure |
+
+### Security guardrail (CVE-2026-29787)
+
+**Public `/health` MUST NOT contain build/system info** (commit SHA, OS version, language version, hardware specs, etc.). CVE-2026-29787 (mcp-memory-service, filed 2026) was for exactly this anti-pattern — leaking OS/runtime/hardware specs via unauthenticated health endpoint. **Authenticated `/version` is the right place** for build metadata; behind the existing API-key middleware, exposure is limited to clients that already authenticate.
+
+### Implementation recipe
+
+1. **Committed placeholder file** `Sources/BuildInfo.swift`:
+
+```swift
+public enum BuildInfo {
+    public static let gitSHA: String = "dev-local"
+    public static let gitSHAFull: String = "dev-local"
+    public static let builtAt: String = "dev-local"
+    public static let gitBranch: String = "dev-local"
+}
+```
+
+2. **Dockerfile** overwrites the file with real metadata before `swift build`:
+
+```dockerfile
+ARG RAILWAY_GIT_COMMIT_SHA=""
+ARG RAILWAY_GIT_BRANCH=""
+RUN BUILD_SHA="${RAILWAY_GIT_COMMIT_SHA:-dev-local}" && \
+    BUILD_SHA_SHORT=$(echo "${BUILD_SHA}" | cut -c1-7) && \
+    BUILD_BRANCH="${RAILWAY_GIT_BRANCH:-dev-local}" && \
+    BUILD_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ") && \
+    cat > Sources/BuildInfo.swift <<EOF
+import Foundation
+public enum BuildInfo {
+    public static let gitSHA: String = "${BUILD_SHA_SHORT}"
+    public static let gitSHAFull: String = "${BUILD_SHA}"
+    public static let builtAt: String = "${BUILD_TIMESTAMP}"
+    public static let gitBranch: String = "${BUILD_BRANCH}"
+}
+EOF
+```
+
+3. **Route registration** inside the existing API-key-protected group:
+
+```swift
+apiGroup.get("version") { _, _ -> [String: String] in
+    return [
+        "version": BuildInfo.gitSHA,
+        "versionFull": BuildInfo.gitSHAFull,
+        "branch": BuildInfo.gitBranch,
+        "builtAt": BuildInfo.builtAt
+    ]
+}
+```
+
+### Platform-specific env var names
+
+The Dockerfile recipe assumes Railway. Other platforms expose the SHA under different env var names:
+
+| Platform | Env var |
+|---|---|
+| Railway | `RAILWAY_GIT_COMMIT_SHA` + `RAILWAY_GIT_BRANCH` |
+| Render | `RENDER_GIT_COMMIT` |
+| Fly.io | `FLY_GIT_COMMIT` (or `--build-arg` from CI) |
+| GitHub Actions | `GITHUB_SHA` |
+| Generic Docker | `--build-arg GIT_SHA=$(git rev-parse HEAD)` |
+
+### Reference impl
+
+CuriosityQuestServer (CQ PR #135):
+- `Server/CuriosityQuestServer/Sources/BuildInfo.swift` — committed placeholder
+- `Server/CuriosityQuestServer/Dockerfile` — Railway recipe
+- `Server/CuriosityQuestServer/Sources/Application+build.swift` — route registration
+
+### Cross-references
+
+- `labsmith/Docs/RESEARCH_SERVER_VERSION_ENDPOINT_2026-05-29.md` — sources + security analysis + methodology lesson
+- `labsmith/.claude/rules/audio-pipeline.md` — companion rule from the same CQ cascade
+
 ## Cast asset filename convention (DN methodology)
 
 For apps with a DN cast bundled via `ForgeIllustrations`, cast assets MUST use a **flat-bundle filename convention** with a `cast_` prefix:
