@@ -258,30 +258,32 @@ Locked-in portfolio policy — see `labsmith/Docs/DECISION_AVATAR_EDIT_AUTHORITY
 - **Naming**: keep local cosmetics out of the `Avatar*` namespace — use `AppMascot…`, `AppNamePlate…`, `AppHUDPalette…`. Reserve `Avatar*` for the canonical types in `ForgeModels` + `ForgeAvatar`
 - **No hand-rolled avatar editors** — don't build a per-app skin/hair/outfit picker that bypasses `AvatarStudioView`. Fragments the portfolio look and doubles maintenance
 
-### Play-cluster 8-accessory convention (R147 #578; surfaced via Wave A R141/R144/R145 audits 2026-05-29)
+### Portfolio-canonical 8-accessory convention (R147 #578 + R150 #581 upgrade to portfolio-canonical)
 
-Play-PRIMARY apps consistently ship **8 themed accessories** with a uniform `lowercase_underscore` naming convention. Codified after R141 (QuillSpell) + R144 (GrammarForge) + R145 (ReadQuest) Wave A audits all surfaced the same 8-accessory pattern with `Resources/AvatarShared/accessories/` bundle location.
+PRIMARY-cluster apps consistently ship **8 themed accessories** with a uniform `lowercase_underscore` naming convention. **Upgraded from "recommendation outside Play" to portfolio-canonical at R150 #581** after corroboration across 5 of 6 audited apps spanning 3 clusters:
 
-**Per-app reference packs** (cluster: Play; theme: app-specific writing/language craft):
+| App | Cluster | Theme | Status |
+|---|---|---|---|
+| QuillSpell | Play | Word Wizard | ✅ |
+| GrammarForge | Play | Grammar | ✅ (`comma_charm` / `editing_pen` / `editor_satchel` / `grammar_book` / `parts_of_speech_pin` / `punctuation_pendant` / `scholar_cap_red` / `syntax_scarf`) |
+| ReadQuest | Play | Reading | ✅ (`bookmark_charm` / `comprehension_pendant` / `library_satchel` / `narrative_scarf` / `open_book` / `page_marker_pin` / `reading_glasses` / `story_beanie_blue`) |
+| BeatForge | Create | Music/beat | ✅ R148 corroboration (`band_jacket_red` / `beat_pin_quarternote` / `boombox_charm` / `drumstick_pair` / `headphones_red` / `snapback_hat_blue` / `tambourine_hand` / `vinyl_pin`) |
+| BridgeForge | Science/STEM | Civil engineering | ✅ R150 corroboration (`blueprint_roll_civil` / `blueprint_satchel_steel` / `civil_engineer_vest` / `drafting_set` / `engineer_beanie_steel` / `engineer_hardhat_blue` / `load_pin` / `truss_pendant`) |
+| FossilForge | Science/STEM | (paleontology) | ❌ — pack not generated yet |
 
-| App | Theme | 8 accessories |
-|---|---|---|
-| QuillSpell | Word Wizard | (8 themed accessories surfaced via `AvatarAssetCatalog(appBundles: [Bundle.module])`) |
-| GrammarForge | Grammar | `comma_charm` / `editing_pen` / `editor_satchel` / `grammar_book` / `parts_of_speech_pin` / `punctuation_pendant` / `scholar_cap_red` / `syntax_scarf` |
-| ReadQuest | Reading | `bookmark_charm` / `comprehension_pendant` / `library_satchel` / `narrative_scarf` / `open_book` / `page_marker_pin` / `reading_glasses` / `story_beanie_blue` |
-
-**Convention rules**:
+**Convention rules** (portfolio-canonical):
 - **Bundle location**: `Libraries/Sources/SharedUI/Resources/AvatarShared/accessories/` (flat-bundle for `AvatarAssetCatalog(appBundles:)` resolution)
 - **File format**: `.webp` at 256×256 with alpha
 - **Naming**: `lowercase_underscore.webp`; no app-prefix (the bundle scope provides per-app uniqueness)
-- **Pack size**: target 8 per app for visual variety + balanced picker layout in `.full` mode (8 fits cleanly in 2×4 or 4×2 grid)
-- **Theme cohesion**: all 8 should reflect the app's curricular surface area (writing-craft / reading-craft / etc.) so picker selections feel like identity-curation, not random cosmetics
+- **Pack size**: 8 per app for visual variety + balanced picker layout in `.full` mode (8 fits cleanly in 2×4 or 4×2 grid)
+- **Theme cohesion**: all 8 should reflect the app's curricular surface area (writing-craft / engineering / etc.) so picker selections feel like identity-curation, not random cosmetics
+- **Cost ceiling**: ~$0.36 generation cost per app via standard accessory pipeline (per `portfolio.md` § Asset generation ownership)
 
-**Why 8 not other counts**: 8 is the empirical convergent count across 3 independent Play-PRIMARY apps. Provides visual balance (2×4 / 4×2 grids), enough variety for personalization, small enough to fit in `~0.36 cost` accessory-generation pipeline ceiling per `portfolio.md` § Asset generation ownership.
+**Why 8 not other counts**: empirical convergent count across 5 independent apps spanning 3 clusters. Provides visual balance (2×4 / 4×2 grids), enough variety for personalization, small enough to fit in ~$0.36 generation cost ceiling.
 
-**Adoption pattern for new Play-PRIMARY apps**: when scaffolding, plan for 8 themed accessories from day one. Generate via standard accessory pipeline (~$0.36 ceiling). Wire through R3 both-surfaces `AvatarStudioSheet.swift` (per R147 #578 plan template). Reference template impl: `quillspell-app/Packages/Libraries/Sources/AppFeature/AvatarStudioSheet.swift`.
+**Adoption pattern for new PRIMARY-cluster apps**: when scaffolding, plan for 8 themed accessories from day one. Generate via standard accessory pipeline. Wire through `AvatarStudioSheet.swift` per per-cluster recommendation (Play: R3 both-surfaces / Create: `.full`-direct / Science/STEM: `.full`-direct or R3 if identity-cosmetics-heavy). Reference template impl: `quillspell-app/Packages/Libraries/Sources/AppFeature/AvatarStudioSheet.swift`.
 
-**Extension to non-Play clusters**: optional. Science / Adventure / Together / Create / Reflect PRIMARY apps MAY ship themed accessories if the app's identity loop justifies cosmetics (e.g., CubeSensei Create-PRIMARY ships rubik-themed accessories). The 8-count convention is a *recommendation*, not a *requirement*, outside the Play cluster.
+**Exceptions to portfolio-canonical**: apps where accessory cosmetics don't fit the surface (e.g., reflective-pillar apps where identity-customization would dilute the journaling register; trauma-gated apps where avatar cosmetics could undermine off-ramps). Each exception documented per-app via TECHNICAL_DESIGN.md.
 
 ## Cast asset filename convention (DN methodology)
 

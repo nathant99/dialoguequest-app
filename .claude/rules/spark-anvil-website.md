@@ -114,12 +114,42 @@ Trust signals visible above-the-fold on home + `/for-parents`:
 
 Per `RESEARCH_SPARK_ANVIL_WEBSITE.md`, third-party certifications (iKeepSafe COPPA, Common Sense Privacy Seal, KidSAFE) are aspirational v2+ goals — pursue once portfolio has shipping apps + revenue justifies audit fees.
 
+## Liquid Glass policy (ADR-014, Round 149 #580, 2026-05-29)
+
+The website adopts a **HYBRID** Liquid-Glass-inspired accent layer: chunky-cartoon brand register remains the primary visual identity; 3-5 narrowly-scoped accent surfaces use mature Glassmorphism 2.0 (semi-opaque overlay + `backdrop-filter: blur(8-16px)` + thin border). **No SVG-displacement refraction** — Chromium-only, broken on mobile Safari, GPU-expensive on school iPads. See `Docs/ADR-014_HYBRID_LIQUID_GLASS_WEBSITE.md` + `Docs/RESEARCH_LIQUID_GLASS_WEBSITE_2026-05-29.md` for the full decision + 29-source research.
+
+**Authorized glass surfaces** (all live in `src/styles/global.css` + `src/components/Nav.astro`):
+
+| Utility | Where | Pattern |
+|---|---|---|
+| Sticky top nav | `Nav.astro` | `bg-warm/85 backdrop-blur-md border-b border-anvil/10` (+ dark variant) |
+| `.btn-glass` | Secondary CTAs over imagery | `bg-white/25 backdrop-blur-md border border-white/40` |
+| `.card-glass` | Hero / feature overlay cards | `bg-warm/70 backdrop-blur-lg border border-warm/40 rounded-2xl` |
+| `.chip-glass` | Tags / badges over hero color bands | `bg-white/30 backdrop-blur-sm border border-white/40` |
+
+**Hard constraints**:
+
+1. ≤ 3 concurrent active glass panels per page (2026 production guidance — `backdrop-filter` forces GPU screen-buffer copy + blur + paste; > ~50 instances crash mobile browsers)
+2. Body text NEVER on glass — text sits on solid surfaces inside the glass card
+3. WCAG AA contrast verified at light + dark mode + multiple scroll positions
+4. `@media (prefers-reduced-transparency: reduce)` MUST collapse all glass to solid brand-palette colors
+5. `@media (prefers-reduced-motion: reduce)` MUST drop any glass-morph transitions
+6. Pages OFF-LIMITS to glass (always solid): `donate.astro`, `privacy.astro`, `terms.astro`, `annual-report.astro`, `for-parents.astro` body, `for-educators.astro` body, `press.astro`, `mission.astro`, `about.astro`, `board.astro`. Trust-sell + legal + long-form copy stays solid
+7. Primary CTAs (`btn-primary`) stay solid — trust + max contrast
+
+**Reversibility is HIGH** — removing the layer is a 5-line revert of `global.css` + `Nav.astro`. If field metrics surface AA failures or perf issues on school devices, revert without ceremony.
+
+**When updating the policy**: edit `Docs/ADR-014_HYBRID_LIQUID_GLASS_WEBSITE.md` + this section + open a labsmith PR. The site itself is the implementation source of truth for the actual utility class definitions.
+
 ## Cross-references
 
 - `Docs/RESEARCH_SPARK_ANVIL_WEBSITE.md` — research synthesis (~2026-05-20 web search + competitive analysis)
+- `Docs/RESEARCH_LIQUID_GLASS_WEBSITE_2026-05-29.md` — Liquid Glass website research synthesis (Round 149 #580; 29 sources)
+- `Docs/ADR-014_HYBRID_LIQUID_GLASS_WEBSITE.md` — hybrid Liquid Glass accent adoption decision
 - `Docs/PLAN_SPARK_ANVIL_WEBSITE.md` — 7-phase Astro build plan, 3-week v1 launch
 - `Docs/PLAN_SPARK_ANVIL_LOGO.md` — logo design plan (Concept C selected)
 - `Docs/DECISION_FIGMA_FOR_SPARK_ANVIL_WEBSITE.md` — no Figma for v1
+- `.claude/rules/liquid-glass.md` — native iOS 26 Liquid Glass APIs (portfolio-side; distinct from web-side hybrid policy above)
 - `Branding/` — brand asset directory
 - `Docs/REGISTRY_APP_HERO_COLORS.md` — per-app theming source
 - `Docs/RESEARCH_CURRICULUM_STANDARDS_MAPPING.md` — curriculum chips source
