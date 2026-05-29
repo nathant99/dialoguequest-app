@@ -41,4 +41,72 @@
 - Use **`@concurrent`** for CPU-bound work (question shuffling, score aggregation)
 - Graceful shutdown via **`ServiceLifecycle`**
 - All WebSocket messages are Codable enums (tagged union pattern) encoded as JSON
+
+## Timer.scheduledTimer + `Task { @MainActor in }` on @Observable @MainActor classes — the `_dispatch_assert_queue_fail` Heisenbug class
+
+**Symptom**: `_dispatch_assert_queue_fail` / `EXC_BREAKPOINT (code=1, brk #0x1)` on a non-main thread (typically Thread 4-8 — a Swift cooperative-pool worker). Crash surfaces after **minutes** of normal app use, often during navigation-heavy sessions. Pre-crash log lines show all `@Observable` state mutations on `[thread=main]` so the crash looks unrelated. Adding `print` statements may temporarily mask it (timing-sensitive Heisenbug). Stack trace bottom shows `_dispatch_log` → `_dispatch_assert_queue_fail`.
+
+**Root cause**: `Timer.scheduledTimer` fires on the main runloop. Wrapping the callback body in `Task { @MainActor in self?.tick() }` schedules onto the Swift cooperative-pool, which then hops back to MainActor via continuation resumption. The `@Observable` registrar's queue-identity assertion (introduced by `@Observable`'s macro-generated setter) checks `dispatch_assert_queue(.main)` which validates the **actual dispatch queue identity**, not the Swift actor. The cooperative-pool resumption can land on a queue that isn't the canonical main dispatch queue → assertion fires → trap.
+
+**Fix**: `DispatchQueue.main.async { [weak self] in self?.tick() }`. Timer is already on main runloop, so `DispatchQueue.main.async` is a no-op queue-identity-wise but keeps the call on the canonical main dispatch queue the `@Observable` registrar checks against. Reference impl (curiosityquest-app): `SessionTimerService.startTimer` + `CampfireFocusService.startTimer` (post-PR #123, 2026-05-28).
+
+```swift
+// ❌ Anti-pattern — eventually crashes Thread N with _dispatch_assert_queue_fail
+timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+    Task { @MainActor [weak self] in
+        self?.tick()    // mutates @Observable state
+    }
+}
+
+// ✅ Canonical
+timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+    DispatchQueue.main.async { [weak self] in
+        self?.tick()
+    }
+}
+```
+
+**Generalization**: same rule applies to any callback that runs on the main runloop but isn't `@MainActor`-isolated — including `CADisplayLink`, `CFRunLoopTimer`, `DispatchSource.makeTimerSource(queue: .main)` callbacks, etc. If the body mutates a `@Observable @MainActor` property, use `DispatchQueue.main.async`, NOT `Task { @MainActor in }`.
+
+**Extension to SpriteKit scenes** (curiosityquest-app PR #124 + #125 swept 7 sites across 6 SKScene files 2026-05-28): the same Heisenbug class fires on a different thread (Thread 27 in CQ's case, vs Thread 6 for the timer case) when an `SKScene` subclass uses `Task { @MainActor [weak self] in try? await Task.sleep(for: .milliseconds(N)); ... }` inside a tap/touch handler to schedule the "advance to next round after a brief delay" flow. The `Task.sleep` resumption races the SpriteKit scheduler queue identity check.
+
+Use `SKScene.run(.wait(forDuration:))` — the SpriteKit-native scheduling that respects the scene's update queue:
+
+```swift
+// ❌ Anti-pattern — eventually crashes Thread N with _dispatch_assert_queue_fail
+//    after enough tap-advance cycles
+Task { @MainActor [weak self] in
+    try? await Task.sleep(for: .milliseconds(800))
+    guard let self else { return }
+    self.currentRound += 1
+    self.loadRound()
+}
+
+// ✅ Canonical
+run(.wait(forDuration: 0.8)) { [weak self] in
+    guard let self else { return }
+    self.currentRound += 1
+    self.loadRound()
+}
+```
+
+**Sweep grep** (run periodically to catch new regressions):
+
+```bash
+grep -rn 'Task\s*{\s*@MainActor' Packages/Libraries/Sources/GameEngine | grep -B1 -A2 'Task.sleep'
+```
+
+Zero hits is the expected steady state.
+
+### Diagnostic checklist for `_dispatch_assert_queue_fail` on a non-main thread
+
+When this crash class surfaces (CuriosityQuest or any portfolio app), walk this list before guessing:
+
+1. **Confirm the crash is dispatch-asserted vs Swift-asserted**: stack bottom shows `_dispatch_assert_queue_fail` (libdispatch) OR `swift_task_assert_queue` (Swift runtime). Different fix paths.
+2. **Identify the thread**: `bt` in lldb; the trapping thread's stack shows the racing call. Top frame is usually `@Observable` synthesized setter (`_<propname>` accessor) or `swift_task_continuation_resume`.
+3. **Grep recent `@Observable @MainActor` services** for `Timer.scheduledTimer` / `CADisplayLink` / `URLSession(delegateQueue: nil)` / NWPathMonitor callbacks. Specifically look for `Task { @MainActor in }` inside those callback bodies.
+4. **Check the `nonisolated func` set** for delegate methods (`MCSessionDelegate`, `URLSessionWebSocketDelegate`, `AVSpeechSynthesizerDelegate`, etc.). Confirm each one uses `DispatchQueue.main.async { [weak self] in }` — not `Task { @MainActor in }`.
+5. **Inspect log context**: does `[thread=main]` precede the crash for every `@Observable` write, or is one off-main? `DebugLog`'s thread tag is decisive here.
+
+Reference research: `labsmith/Docs/RESEARCH_DISPATCH_ASSERT_QUEUE_FAIL_HEISENBUG_2026-05-28.md` — full CQ diagnosis trail + symptom-vs-reality table + pre-crash log signature pattern.
 <!-- END LABSMITH-SYNCED CONTENT -->
