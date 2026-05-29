@@ -25,7 +25,9 @@ Gemini 2.5 TTS (and several other audio APIs) returns `audio/L16;codec=pcm;rate=
 
 **Reference impl**: `curiosityquest-app/Server/CuriosityQuestServer/Sources/Services/GeminiService.swift` (PR #138, 2026-05-29) — see `wrapPCMInWAV(pcmData:sampleRate:channels:bitsPerSample:)` and `extractSampleRate(fromMimeType:default:)`.
 
-**Future**: `ForgeServerAudio` module candidate. Containing `wrapPCMInWAV` + `Accept-Encoding: identity` request-builder helpers so portfolio servers using audio APIs share the implementation. Trigger: 2nd portfolio server adopts audio API (CQ is sole user today).
+**Future** (R168 #602 update; CQ App-side handoff `HANDOFF_FROM_APP_LIFT_FORGESERVERAUDIO_MODULE.md`): `ForgeServerAudio` module candidate, **proposed by CQ 2026-05-29**. Containing `wrapPCMInWAV` + `extractSampleRate` + optional `transcodeIfPCM` helpers + `Accept-Encoding: identity` request-builder helpers, so portfolio servers using audio APIs share the implementation. Pure value-type API; no Hummingbird / async-http-client dependency. CQ's reference impl in `Server/CuriosityQuestServer/Sources/Services/GeminiService.swift:808-857` is ready for verbatim extraction.
+
+**Status**: DEFERRED to dedicated ForgeKit-release round (likely R170+). Module work + tests + version bump + downstream CQ migration is too much scope for a typical lift round. Trigger to expedite: 2nd portfolio server adopts a raw-PCM TTS API (CQ is sole user today).
 
 ## iOS: OSStatus → ASCII FourCC for AVFoundation errors
 

@@ -155,6 +155,20 @@ See `Docs/ADR-011_AUDIT_METHODOLOGY_PULL_PAIR_SPLIT.md` for the full rationale +
 - All tests must pass before committing
 - Commit working checkpoints during multi-step features — not just at the end
 
+### CRITICAL: Pull origin BEFORE freshness queries (in-repo or cross-repo)
+
+When the user asks any "freshness" question — *"any new handoff?"*, *"what changed?"*, *"any open PRs?"*, *"what's the current status?"*, *"what did labsmith ship?"*, *"cq might have new X"* — the **first tool call must be `git pull --ff-only`** before any filesystem inspection (`ls`, `Grep`, `Read`).
+
+Why: filesystem queries return ground truth for the LOCAL commit, not for origin. Concurrent labsmith / app sessions ship handoffs + rule updates frequently (5 labsmith PRs landed during a single CQ session 2026-05-29). Answering a freshness query from stale main produces a wrong answer dressed up as authoritative.
+
+Trigger phrases: "any new", "what's open", "what changed", "what landed", "is there new", "current status", "what's pending", "might have new". When any of these appear with a freshness verb, **pull first, query second**.
+
+If `--ff-only` fails (diverged history), surface that to the user before continuing — don't auto-rebase / auto-merge without acknowledgment.
+
+This is the in-repo analog of the cross-repo Rule 1 in § "Cross-Repo Audit Methodology" + `.claude/rules/portfolio.md` § "Pull Before ANY Cross-Repo Read". Same underlying principle: **never answer a freshness question from stale state**.
+
+Codified 2026-05-29 by CQ session after user-direct: agent answered "any new handoff?" from stale main (2 labsmith PRs behind) and user had to ask "did you pull origin?" to surface the omission. Lifted to labsmith canonical R168 #600.
+
 ### CRITICAL: Save Research, Plans, and Audits to Docs/ Immediately
 
 Every time you do research (web search, codebase analysis, design exploration), create a feature plan, or run an audit (handoff coverage, asset state, ranking, sweep, color-scheme alignment, anything that produces a structured finding), write it to a file in `Docs/` BEFORE presenting results or implementing changes. Never leave research / plans / audits only in conversation context or in temp locations (`/tmp/`, scratch files).
