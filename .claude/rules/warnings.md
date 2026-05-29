@@ -60,6 +60,26 @@ Learned from CuriosityQuest. Maintain zero-warning builds.
 
 - **Concurrent `xcodebuild` commands lock the build database** — Never run two `xcodebuild` commands in parallel against the same DerivedData. Use MCP `BuildProject`/`RunSomeTests` instead, or run sequentially
 
+## Privacy-Gated Frameworks (Info.plist usage descriptions)
+
+iOS hard-crashes the process with `"This app has crashed because it attempted to access privacy-sensitive data without a usage description"` the moment a privacy-gated API is invoked without the corresponding `Info.plist` key. The crash is not a Swift exception and cannot be caught. **Always** gate access via a cached `Bundle.main.object(forInfoDictionaryKey:) as? String` check — when empty/nil, every entry point becomes a no-op so the app doesn't crash. Reference impl (curiosityquest-app): `Packages/Libraries/Sources/Services/SpeechRecognitionService.swift` § `hasMicrophoneUsageDescription`. Per `xcode-agent-safety.md`, the agent cannot write `Info.plist` from disk — user must add the description via Xcode GUI (target → Info tab) when the gated feature is actually desired.
+
+| Framework / API | Info.plist key | Notes |
+|---|---|---|
+| `AVAudioApplication.requestRecordPermission()`, `AVAudioSession(.record / .playAndRecord)`, `AVAudioEngine.inputNode` | `NSMicrophoneUsageDescription` | Voice input, audio capture. |
+| `SFSpeechRecognizer`, `SFSpeechURLRecognitionRequest` | `NSSpeechRecognitionUsageDescription` | Add defensively alongside microphone even when using on-device alternatives (WhisperKit, etc.) — App Store review expects both keys when either framework is linked. |
+| `NWBrowser`, `MultipeerConnectivity`, any Bonjour discovery | `NSLocalNetworkUsageDescription` + `NSBonjourServices` array | See `multipeer.md` for service-type naming rules. |
+| `AVCaptureDevice` (camera) | `NSCameraUsageDescription` | Camera-based features. |
+| `CLLocationManager` | `NSLocationWhenInUseUsageDescription` | Location. |
+| `EKEventStore` (Calendar) | `NSCalendarsUsageDescription` | Calendar. |
+
+Also: `@Observable` classes cannot use `lazy var` for stored properties — the macro rewrites `var` into accessor pairs which is incompatible with `lazy` storage. Use `@ObservationIgnored private lazy var` to opt the property out of observation tracking.
+
+## Entitlement-Gated Frameworks
+
+- **`NSUbiquitousKeyValueStore.default`** — Any access (read, write, or `.synchronize()`) traps the process with `BUG IN CLIENT OF KVS: Trying to initialize NSUbiquitousKeyValueStore without a store identifier` + `_dispatch_assert_queue_fail` + `EXC_BREAKPOINT` when the binary lacks the `com.apple.developer.ubiquity-kvstore-identifier` entitlement. The trap is from libdispatch and cannot be caught by Swift. **Always** gate access via a cached `static let` entitlement probe. The `SecTask*` C symbols are NOT bridged through Swift's `import Security` umbrella on iOS (`import Security.SecTask` also fails — "No such module"), so the working pattern is `dlsym(RTLD_DEFAULT /* (-2) */, "SecTaskCopyValueForEntitlement")` plus `dlsym(... "SecTaskCreateFromSelf")`, then `unsafeBitCast` to `@convention(c)` typealiases. When unavailable, make every public KV method a no-op so the app doesn't crash. Reference impl (curiosityquest-app): `Packages/Libraries/Sources/Services/PurchaseReceiptService.swift` § `isUbiquityKVStoreAvailable`. Per `xcode-agent-safety.md`, the agent cannot write `.entitlements` files from disk — user must wire the entitlement via Xcode GUI when iCloud-KV is actually desired.
+- **`CKContainer`, `NSFileCoordinator` for iCloud Drive, HomeKit, HealthKit, App Groups** — same pattern: entitlement-gate access at the service singleton's static-let level; no-op when missing.
+
 ## Code Quality
 
 - **Unused results** — Use `_ =` for intentionally discarded results; remove truly unused `let` bindings
