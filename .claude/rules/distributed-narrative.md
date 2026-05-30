@@ -100,22 +100,34 @@ Each per-app page renders `dnCast.members[]` as a "Meet the cast" section. The a
 
 `apps.generated.ts dnCast.intro` is a 1-2 sentence framing of WHY the cast exists for that app — keep it kid-and-parent readable, no jargon.
 
-## DN-S — Story-per-character requirement (R170 #604; portfolio-wide)
+## DN-S — Chapter-depth story per character (R170 #604 + R172 #606 escalation)
 
-**Per user-direct override 2026-05-29**, DN cast members now require an explicit STORY in addition to behavioral primitive embodiment. This is the **Storytime-Chess-depth** spec adopted portfolio-wide.
+**Per user-direct override 2026-05-29 ("expand to chapter depth for each cast member; audience: 9-14")**, DN cast members now require a **CHAPTER** (800-1500 words at age-9-14 register) in addition to behavioral primitive embodiment. This escalates the R170 paragraph-depth spec to full Storytime-Chess-depth chapters, calibrated to ages 9-14 (NOT preschool 3-7).
 
 Each character requires:
 
-1. **Backstory** — 1-2 paragraphs (origin: why they embody their primitive, what tradition/world they're from)
-2. **Voice register** — 1-paragraph guidance + 3-5 sample lines (how they speak; tics, vocabulary, common phrases)
-3. **Arc across kits** — 16-bullet evolution (one per kit; does the character develop / learn / change?)
-4. **Relationships** — at minimum 1 alliance + 1 tension with other cast members
+1. **Chapter** — **800-1500 words** at age-9-14 register (Magic Tree House / Wimpy Kid / Roald Dahl). Structure: opening hook (~150w) → origin/formative moment (~400w) → encounter revealing primitive (~400w) → present-day role / why they teach (~250-400w)
+2. **Voice register** — 1-paragraph guidance + 3-5 sample lines
+3. **Arc across kits** — 16-bullet evolution (one per kit)
+4. **Relationships** — at minimum 1 alliance + 1 tension
 
-Optional but recommended: cultural-context note, voice-acting note, visual evolution.
+Optional: cultural-context note, voice-acting note, visual evolution.
+
+### Audience register (LOAD-BEARING)
+
+Audience: **ages 9-14**. Calibrated per `PLAN_GAMBITTALES_DN_ENHANCEMENT.md` § A.4:
+
+- **Tone**: warmly absurd with subtext — NOT "silly silly silly" preschool register (Storytime Chess 3-7 reserved), NOT adult-dense literary
+- **Humor**: dry, situational, character-driven
+- **Stakes**: clear but kid-scaled — intellectual conflict / friendship strain / growing-up; NOT romance / mortality / existential dread
+- **Trust**: chapter trusts the 9-14 reader's intelligence; doesn't condescend; doesn't lecture
+- **Length**: 800-1500 words — Magic Tree House / Wimpy Kid / Roald Dahl single-sitting range
+
+Reference books: Roald Dahl, Jeff Kinney, Mary Pope Osborne, Lois Lowry, Beverly Cleary, Kate DiCamillo.
 
 **Reference impl**: GambitTales (`Docs/PLAN_GAMBITTALES_DN_ENHANCEMENT.md` — 10 chars at this depth).
 
-**Rollout via 7 waves** prioritized by cluster cohesion + existing partial-story content + high-value differentiation surfaces. See `Docs/PLAN_DN_S_STORY_PER_CHARACTER_WAVES.md`. Apply R166 #598 **0.30 multiplier** to budget projections for verify-before-action savings.
+**Rollout via 7 waves** prioritized by cluster cohesion + existing partial-story content + high-value differentiation surfaces. See `Docs/PLAN_DN_S_STORY_PER_CHARACTER_WAVES.md`. **Budget at chapter depth**: ~700 chapters × 1.5h authoring × R166 0.30 multiplier = **~315h portfolio-wide**. Per-round budget: ~5-8h.
 
 **Sequencing constraints**:
 - R0 reviewer signoff required for trauma-gated apps (story axis NOT covered by ADR-012 art-axis carve-out)
