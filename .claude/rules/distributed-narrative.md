@@ -100,11 +100,39 @@ Each per-app page renders `dnCast.members[]` as a "Meet the cast" section. The a
 
 `apps.generated.ts dnCast.intro` is a 1-2 sentence framing of WHY the cast exists for that app — keep it kid-and-parent readable, no jargon.
 
+## DN-S — Story-per-character requirement (R170 #604; portfolio-wide)
+
+**Per user-direct override 2026-05-29**, DN cast members now require an explicit STORY in addition to behavioral primitive embodiment. This is the **Storytime-Chess-depth** spec adopted portfolio-wide.
+
+Each character requires:
+
+1. **Backstory** — 1-2 paragraphs (origin: why they embody their primitive, what tradition/world they're from)
+2. **Voice register** — 1-paragraph guidance + 3-5 sample lines (how they speak; tics, vocabulary, common phrases)
+3. **Arc across kits** — 16-bullet evolution (one per kit; does the character develop / learn / change?)
+4. **Relationships** — at minimum 1 alliance + 1 tension with other cast members
+
+Optional but recommended: cultural-context note, voice-acting note, visual evolution.
+
+**Reference impl**: GambitTales (`Docs/PLAN_GAMBITTALES_DN_ENHANCEMENT.md` — 10 chars at this depth).
+
+**Rollout via 7 waves** prioritized by cluster cohesion + existing partial-story content + high-value differentiation surfaces. See `Docs/PLAN_DN_S_STORY_PER_CHARACTER_WAVES.md`. Apply R166 #598 **0.30 multiplier** to budget projections for verify-before-action savings.
+
+**Sequencing constraints**:
+- R0 reviewer signoff required for trauma-gated apps (story axis NOT covered by ADR-012 art-axis carve-out)
+- Character name registry MUST be checked before DN-S authoring (no name collisions)
+- Anti-credentialism gate per CQ `CONTENT_STYLE_GUIDE.md` § 4.5 applies to anxiety-safe register cast (Linger / Notice / etc.)
+
+**For existing Wave-0/1/2 retrofit apps**: DN-S retrofit is per-app handoff in `docs/HANDOFF_FROM_LABSMITH_DN_S_STORY_PER_CHARACTER.md`. Verify-before-action FIRST — many apps already have partial story content that just needs codification.
+
+**For new apps SPAWNing post-R170**: DN-S is required from day one. Author backstory + voice + arc + relationships alongside the initial cast definition.
+
 ## Cross-references
 
-- `Docs/GUIDE_DISTRIBUTED_NARRATIVE_METHODOLOGY.md` — full methodology spec (Bruner + Habgood references)
+- `Docs/GUIDE_DISTRIBUTED_NARRATIVE_METHODOLOGY.md` — full methodology spec (Bruner + Habgood references) + § DN-S
+- `Docs/PLAN_DN_S_STORY_PER_CHARACTER_WAVES.md` — DN-S 7-wave rollout plan (R170 #604)
+- `Docs/RESEARCH_STORYTIME_CHESS_CHARACTER_STORIES_VS_DN_2026-05-29.md` — DN-S research foundation (R169 #603)
 - `Docs/REGISTRY_PORTFOLIO_CHARACTER_NAMES.md` — canonical character/mentor registry
 - `.claude/rules/trauma-informed-content.md` — trauma-informed-design rules that DN handoffs adhere to
 - `.claude/rules/portfolio.md` — cross-repo handoff protocol that DN retrofits use
-- `Docs/PLAN_GAMBITTALES_DN_ENHANCEMENT.md` — second-pass enhancement methodology (Storytime Chess-inspired)
+- `Docs/PLAN_GAMBITTALES_DN_ENHANCEMENT.md` — DN-S reference template
 <!-- END LABSMITH-SYNCED CONTENT -->
