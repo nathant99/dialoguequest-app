@@ -32,12 +32,12 @@ This kickoff round (R225) ships:
 | Character | Status | File |
 |---|---|---|
 | Sprig | ✅ FULL CHAPTER | `Docs/dn-s/chapters/sprig.md` (~870 words, R225) |
-| Glance | OUTLINE | R226+ |
-| Weigh | OUTLINE | R226+ |
-| Brogue | OUTLINE | R226+ |
-| Rest | OUTLINE | R226+ |
+| Glance | ✅ FULL CHAPTER | `Docs/dn-s/chapters/glance.md` (~815 words, R226) |
+| Weigh | ✅ FULL CHAPTER | `Docs/dn-s/chapters/weigh.md` (~810 words, R226) |
+| Brogue | OUTLINE | R227+ |
+| Rest | OUTLINE | R227+ |
 
-**Progress**: 🚧 **1 of 5 cast at full chapter depth (20%)**. Total ~870 words. Disposition: DialogueQuest DN-S kickoff shipped; R226+ continues authoring.
+**Progress**: 🚧 **3 of 5 cast at full chapter depth (60%)**. Total ~2,495 words. Disposition: DialogueQuest DN-S in progress; R227 ships final 2 chapters → DialogueQuest 100% COMPLETE.
 
 ## Cast OUTLINES
 
