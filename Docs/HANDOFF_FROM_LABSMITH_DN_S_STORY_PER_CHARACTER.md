@@ -1,11 +1,11 @@
 ---
-status: OPEN-NEEDS-APP-REVIEW
+status: SHIPPED
 date: 2026-05-30
-round: Round 225 #659
+round: Round 227 #661 (kickoff R225 #659)
 direction: labsmith → app
 freshness-horizon: 60d
 parent-decision: labsmith/Docs/PLAN_DN_S_STORY_PER_CHARACTER_WAVES.md (R170 #604 + R172 #606 chapter depth)
-sibling-impl: Wave 3 — 6 apps 100% complete (QuillSpell + GrammarForge + LyricForge + HaikuQuest + MotifLab + CharacterForge); DialogueQuest is Wave 3 7th app
+sibling-impl: Wave 3 — 7 apps 100% complete (QuillSpell + GrammarForge + LyricForge + HaikuQuest + MotifLab + CharacterForge + DialogueQuest)
 ---
 
 # Handoff from Labsmith — DialogueQuest DN-S Chapter-per-Character Authoring
@@ -34,10 +34,10 @@ This kickoff round (R225) ships:
 | Sprig | ✅ FULL CHAPTER | `Docs/dn-s/chapters/sprig.md` (~870 words, R225) |
 | Glance | ✅ FULL CHAPTER | `Docs/dn-s/chapters/glance.md` (~815 words, R226) |
 | Weigh | ✅ FULL CHAPTER | `Docs/dn-s/chapters/weigh.md` (~810 words, R226) |
-| Brogue | OUTLINE | R227+ |
-| Rest | OUTLINE | R227+ |
+| Brogue | ✅ FULL CHAPTER | `Docs/dn-s/chapters/brogue.md` (~810 words, R227) |
+| Rest | ✅ FULL CHAPTER | `Docs/dn-s/chapters/rest.md` (~815 words, R227) |
 
-**Progress**: 🚧 **3 of 5 cast at full chapter depth (60%)**. Total ~2,495 words. Disposition: DialogueQuest DN-S in progress; R227 ships final 2 chapters → DialogueQuest 100% COMPLETE.
+**Progress**: 🎉 **5 of 5 cast at full chapter depth (100% — DIALOGUEQUEST DN-S COMPLETE)**. Total ~4,120 words. Disposition: DialogueQuest DN-S SHIPPED.
 
 ## Cast OUTLINES
 
@@ -87,4 +87,4 @@ Brogue's *old-country accent* is **deliberately non-specific** per the original 
 
 ---
 
-**Disposition**: 🚧 OPEN — 1 full reference chapter (Sprig) + 4 outlines + relationship matrix + cultural-sensitivity note. R226+ authors remaining 4 chapters.
+**Disposition**: ✅ SHIPPED — 5 of 5 cast at full chapter depth. DialogueQuest DN-S COMPLETE.
