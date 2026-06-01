@@ -120,12 +120,31 @@ External R0 sensitivity-reviewer signoff is the **preferred path** for trauma-ad
 
 **Reversibility**: a future ADR can supersede ADR-012 to re-tighten the rule. Each founder-ADR-approved gen wave creates an audit trail for retrospective review.
 
+**Trauma-adjacent DN-S story authoring** (amended per ADR-016, Round 363 #798, 2026-05-31):
+
+External R0 sensitivity-reviewer signoff is the **preferred path** for trauma-gated DN-S chapter authoring (story-axis), but **user-direct ADR-016 approval is an accepted alternative** subject to ALL of the following constraints:
+
+1. **Standing user-direct approval** — R363 user-direct "approve all trauma-gated work items" delivers the umbrella authorization for the ~25-app trauma-gated cluster (HarvestForge / FarmQuest / EthosForge / ClaimCraft / NewsForge / TruthQuest / MindForge / ChronoQuest / MythForge / HistoryForge / BioForge / MedicQuest / CreatureCare / FitQuest / DanceQuest / WellnessForge / SaffronLab / CivicForge / DataForge / OriginForge / LoreQuest / BiomeForge TEK / TerraVoyage / TrailForge / DigQuest)
+2. **SAMHSA TIP 57 register MANDATORY** — every trauma-gated chapter authored with validate-then-inform / hold-space / refer-up mentor posture
+3. **Off-ramps + content warnings + crisis-resource lists MANDATORY** in chapter content + companion off-ramp copy
+4. **Cultural-respect framing** — Indigenous + traditional + community-domain knowledge credited explicitly without mascotization or appropriation
+5. **Anti-shame framing** — structural / systems-level framings replace personal-failing / individual-virtue framings for any access / inequality content
+6. **Anti-evangelism for contested life-questions** — cast does NOT advocate single positions on contested questions (vegetarian/vegan/omnivore for FarmQuest; political position for CivicForge; religion for OriginForge; etc.)
+7. Per-app handoff MUST cite ADR-016 + the specific trauma-axis flag(s) (e.g., `food-justice + farmworker-labor + Indigenous-knowledge-credit`)
+8. **Trauma-adjacent ART (per-app cast portraits + scene illustrations)** STILL requires the ADR-012 art-axis path (R0 reviewer OR founder-ADR-approved AI gen) — this amendment only carves out the **story-axis**. ADR-012 art-axis path remains load-bearing for downstream art generation.
+
+**Why this carve-out**: cumulative R0 reviewer envelope (~$5-7.5K) blocking ~25 apps indefinitely is a practical blocker, not a moral one. The load-bearing trauma-informed concerns (off-ramps + mentor posture + content framing + cultural-respect + anti-shame) move INTO the chapter content itself as MANDATORY constraints. The user holds the authorial-care load directly via ADR-016; per-chapter SAMHSA-register discipline replaces the external sensitivity-reviewer gate for the story-axis specifically.
+
+**Reversibility**: a future ADR can supersede ADR-016 + require R0 reviewer signoff on already-authored trauma-gated chapters. Each chapter is markdown in the per-app repo; revision is straightforward. ADR-016 + per-app handoff citations + memory `feedback_trauma_gated_dns_approved.md` create the audit trail for retrospective review.
+
 ## Cross-references
 
 - `labsmith/.claude/rules/ai-content.md` — AI-generated content accuracy policy (TI applies on top of accuracy)
 - `labsmith/.claude/rules/age-assurance.md` — COPPA / age-range API context (some TI affordances are required by COPPA + state laws independently)
 - `labsmith/Docs/RESEARCH_DIR_FEDC_DEEP_DEVELOPMENTAL_AUDIT.md` § 8 — full evidence base + citations
 - `mindforge-app/Docs/TECHNICAL_DESIGN.md` — portfolio gold-standard implementation (explicit SAMHSA + NCTSN cited)
+- `labsmith/Docs/ADR-012_TI_RULE_FOUNDER_ADR_APPROVED_AI_GEN.md` — art-axis carve-out for trauma-adjacent AI gen
+- `labsmith/Docs/ADR-016_DN_S_TRAUMA_GATED_STORY_AXIS_APPROVAL.md` — story-axis carve-out for trauma-gated DN-S chapter authoring (user-direct R363 approval)
 
 ## References
 
