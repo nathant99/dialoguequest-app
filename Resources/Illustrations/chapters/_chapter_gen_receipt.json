@@ -1,0 +1,85 @@
+{
+  "app": "dialoguequest",
+  "mode": "chapters",
+  "generated_at": "2026-06-01T17:28:16",
+  "total_estimated_cost_usd": 0.895,
+  "actual_cost_usd": 0.8950000000000001,
+  "chapters_count": 5,
+  "results": [
+    {
+      "asset": "chapters/brogue_opener",
+      "model": "gemini-3-pro-image-preview",
+      "cost": 0.134,
+      "ok": true,
+      "path": "/Volumes/Data/Projects/GitHub/dialoguequest-app/Resources/Illustrations/chapters/chapter_brogue_opener.png"
+    },
+    {
+      "asset": "chapters/brogue_spot",
+      "model": "gemini-3.1-flash-image-preview",
+      "cost": 0.045,
+      "ref_locked": true,
+      "ok": true,
+      "path": "/Volumes/Data/Projects/GitHub/dialoguequest-app/Resources/Illustrations/chapters/chapter_brogue_spot.png"
+    },
+    {
+      "asset": "chapters/glance_opener",
+      "model": "gemini-3-pro-image-preview",
+      "cost": 0.134,
+      "ok": true,
+      "path": "/Volumes/Data/Projects/GitHub/dialoguequest-app/Resources/Illustrations/chapters/chapter_glance_opener.png"
+    },
+    {
+      "asset": "chapters/glance_spot",
+      "model": "gemini-3.1-flash-image-preview",
+      "cost": 0.045,
+      "ref_locked": true,
+      "ok": true,
+      "path": "/Volumes/Data/Projects/GitHub/dialoguequest-app/Resources/Illustrations/chapters/chapter_glance_spot.png"
+    },
+    {
+      "asset": "chapters/rest_opener",
+      "model": "gemini-3-pro-image-preview",
+      "cost": 0.134,
+      "ok": true,
+      "path": "/Volumes/Data/Projects/GitHub/dialoguequest-app/Resources/Illustrations/chapters/chapter_rest_opener.png"
+    },
+    {
+      "asset": "chapters/rest_spot",
+      "model": "gemini-3.1-flash-image-preview",
+      "cost": 0.045,
+      "ref_locked": true,
+      "ok": true,
+      "path": "/Volumes/Data/Projects/GitHub/dialoguequest-app/Resources/Illustrations/chapters/chapter_rest_spot.png"
+    },
+    {
+      "asset": "chapters/sprig_opener",
+      "model": "gemini-3-pro-image-preview",
+      "cost": 0.134,
+      "ok": true,
+      "path": "/Volumes/Data/Projects/GitHub/dialoguequest-app/Resources/Illustrations/chapters/chapter_sprig_opener.png"
+    },
+    {
+      "asset": "chapters/sprig_spot",
+      "model": "gemini-3.1-flash-image-preview",
+      "cost": 0.045,
+      "ref_locked": true,
+      "ok": true,
+      "path": "/Volumes/Data/Projects/GitHub/dialoguequest-app/Resources/Illustrations/chapters/chapter_sprig_spot.png"
+    },
+    {
+      "asset": "chapters/weigh_opener",
+      "model": "gemini-3-pro-image-preview",
+      "cost": 0.134,
+      "ok": true,
+      "path": "/Volumes/Data/Projects/GitHub/dialoguequest-app/Resources/Illustrations/chapters/chapter_weigh_opener.png"
+    },
+    {
+      "asset": "chapters/weigh_spot",
+      "model": "gemini-3.1-flash-image-preview",
+      "cost": 0.045,
+      "ref_locked": true,
+      "ok": true,
+      "path": "/Volumes/Data/Projects/GitHub/dialoguequest-app/Resources/Illustrations/chapters/chapter_weigh_spot.png"
+    }
+  ]
+}
