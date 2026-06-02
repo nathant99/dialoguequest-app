@@ -44,6 +44,35 @@ done
 
 If `--ff-only` fails for any repo, stop and investigate — it means there are local uncommitted changes or diverged history that needs manual resolution.
 
+### CRITICAL: Per-repo pull-then-audit BEFORE work, ONE AT A TIME (R420 #910; user-direct 2026-06-01)
+
+**For each target repo in a multi-repo workflow, perform pull-then-audit SEQUENTIALLY — not batched — BEFORE any work touches that repo.** Reinforced per user-direct 2026-06-01 R420 ("pull origin for each repo, one at a time before auditing and doing work").
+
+Required per-repo sequence (one at a time, in order, output shown):
+
+```bash
+cd /Volumes/Data/Projects/GitHub/<app>-app
+git checkout main              # ensure on main (NOT a leftover feature branch)
+git pull --ff-only              # pull origin/main; refuses if diverged
+git status -s                   # audit: must be clean (no uncommitted changes)
+git log -1 --format='%h %s'     # verify HEAD; sanity-check what you're branching from
+```
+
+Display the output for each step so the audit is visible. Only proceed to branching + work when:
+
+- ✅ Current branch is `main`
+- ✅ `git pull --ff-only` returns "Already up to date." OR a clean fast-forward
+- ✅ `git status -s` is empty (zero uncommitted files)
+- ✅ HEAD matches the expected baseline (no unexpected commits since last interaction)
+
+**If any step fails**, STOP and surface the discrepancy to the user before proceeding.
+
+**Why one-at-a-time matters**: batched pulls hide per-repo failures behind aggregate success messages. The user explicitly called out the failure mode at R420 #910 after observing that batched pulls obscured the audit signal. Per-repo sequential pulls make any divergence + uncommitted-state issue visible at the moment it surfaces.
+
+**When per-repo audit applies**: every cross-repo work item that will write to a target app repo. NOT just the first repo in a batch; EVERY repo in the batch, in order, individually. The cost of redundant pulls is ~5 seconds per repo; the cost of acting on stale state is reconciliation work.
+
+**Companion**: pair with § Verify Cross-Repo PRs Merged Before Claiming SHIPPED below — pull-audit-then-work on the inbound side; merge-then-verify on the outbound side.
+
 ### CRITICAL: Verify Cross-Repo PRs Merged Before Claiming SHIPPED
 
 After every cross-repo PR (spark-anvil-site, app repos, forgekit, forgesync, forgeplay), confirm the merge:
@@ -159,9 +188,28 @@ A common case: app needs custom art / audio / icon / illustration assets that la
 
 **Apps in the interim**: always ship a placeholder. The handoff is async — don't block your release on labsmith picking it up.
 
-### Asset generation ownership + handoff requirement (2026-05-19 STANDING RULE)
+### Asset generation ownership + handoff requirement (2026-05-19 STANDING RULE; reinforced 2026-06-01 R410 #888)
 
-Labsmith **owns portfolio-wide asset generation**. Apps don't run Gemini Nano Banana Pro/Flash, Lyria 3, or any other generative pipeline — labsmith runs them per `GUIDE_ILLUSTRATION_PIPELINE.md`. Cost discipline: stay within published ceilings (mascot: ~$0.27/app, accessory pack: ~$0.36/app, full illustration set: depends on app's question-kit topic density).
+Labsmith **owns portfolio-wide asset generation — ALL asset classes, no exceptions** (user-direct 2026-06-01 "you own the audio generation. you own all asset generation"). Apps don't run any generative pipeline: not Gemini Nano Banana Pro/Flash, not Lyria 3, not ElevenLabs/Resemble/Play.ht voice gen, not any future asset-gen vendor. Labsmith runs them per `GUIDE_ILLUSTRATION_PIPELINE.md` + pipeline-specific guides.
+
+**Covered asset classes** (non-exhaustive; labsmith owns ALL):
+
+| Class | Pipeline | Vendor | Ceiling (per-app) |
+|---|---|---|---|
+| Mascot illustrations | `GUIDE_ILLUSTRATION_PIPELINE.md` | Gemini Nano Banana Pro | ~$0.27 |
+| Joke / topic / backdrop / modecard illustrations | `GUIDE_ILLUSTRATION_PIPELINE.md` | Gemini Nano Banana Flash | varies by kit density |
+| Cast portraits | sub-pipeline of illustrations | Gemini Nano Banana Pro | ~$0.27/char |
+| Chapter illustrations | ADR-017 + ADR-018 | Gemini Pro (opener) + Flash (spot) | ~$0.50/chapter (2 per chapter) |
+| Avatar accessories | `scripts/copy_avatar_accessories_to_repos.sh` | Gemini Nano Banana Pro | ~$0.36/pack |
+| Biome tiles | `Resources/CustomArt/<app>/biome_tiles.json` | Gemini Flash | varies |
+| Audio SFX | Lyria 3 / Gemini SFX | Google | ~$0.10/clip |
+| **Audio drama (Phase 2 DN-S)** | `PLAN_DN_S_PHASE_2_AUDIO_DRAMA.md` (R395 #819) | **Google Cloud TTS (canonical) + ElevenLabs (Phase 2A pilot A/B)** per R410 #888 | ~$0.20/drama Google TTS Wavenet; ~$30-100/drama ElevenLabs; Phase 2B vendor lock-in decided post-pilot |
+| Particle specs | future pipeline | TBD | TBD |
+| Lottie celebrations | curated; not gen | N/A (hand-authored / sourced) | N/A |
+
+**Pre-generation discipline** (R409 #882): for audio drama specifically, content is **pre-generated labsmith-side + bundled as static `.caf` per app**. Apps play from local Bundle only — no streaming, no runtime gen, no server round-trip. Inherits to future audio assets unless explicitly superseded by ADR. See `Docs/PLAN_DN_S_PHASE_2_AUDIO_DRAMA.md` § Load-bearing architectural directive.
+
+Cost discipline: stay within published per-class ceilings. New asset classes added to this table when first vendor pipeline is exercised; cost ceiling set per founder approval BEFORE first gen run.
 
 **Standing rule — every asset distribution wave MUST file a per-app handoff doc.** When `scripts/copy_<kind>_to_repos.sh` ships assets to an app's `Resources/` directory, the same wave MUST also file `Docs/HANDOFF_FROM_LABSMITH_<KIND>.md` in that app's repo. The handoff explains:
 

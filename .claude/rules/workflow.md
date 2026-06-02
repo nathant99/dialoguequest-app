@@ -175,6 +175,68 @@ Every time you do research (web search, codebase analysis, design exploration), 
 
 **Audit-specific** (codified Round 119 #544 user-direct): every audit must persist in the repo at `Docs/AUDIT_<TOPIC>_<DATE>.md`. NEVER store audit results in `/tmp/` or as untracked files. The audit doc is the durable artifact; conversation context is ephemeral. This applies to labsmith audits (`labsmith/Docs/AUDIT_*.md`) AND per-app audits (`<app>-app/docs/AUDIT_*.md`). YAML front-matter recommended: `status` + `date` + `round` + `freshness-horizon`.
 
+### CRITICAL: Pre-work origin verification (parallel-session collision avoidance)
+
+**Before doing WORK that produces files in an app repo (asset generation, illustration distribution, audio bundles, etc.), `git fetch origin main` for that repo AND verify the target files DON'T already exist on origin.** Codified Round 481 #YYY 2026-06-01 after this session burned ~$5+ on redundant illustration generations where the parallel labsmith session had already shipped the same content to origin.
+
+**Verification pattern**:
+```bash
+cd <app-repo>
+git fetch origin main 2>&1 | tail -1
+# Check if target files already exist on origin
+origin_count=$(git ls-tree -r origin/main <target-dir>/ 2>/dev/null | grep -c <pattern>)
+[ "$origin_count" -gt 0 ] && echo "SKIP — already on origin" || echo "PROCEED — origin empty"
+```
+
+**Why this matters**: when multiple labsmith sessions race the same trauma-gated cluster work (chapter illustrations / cast portraits / audio dramas), the LATE-arriving session generates redundant assets, hits merge conflicts at PR time, closes its own PR as redundant, AND wastes API spend. The pre-work fetch+check eliminates the race.
+
+**Apply to**:
+- Per-app asset generation (`gen_app_illustrations.py --chapters` / `gen_cast_portraits.py` / etc.)
+- Per-app handoff doc creation if a sibling labsmith session may also be authoring
+- Bulk distribution scripts (`copy_*_to_repos.sh`) — though these are typically idempotent
+
+**Don't apply to** (these are fine without pre-fetch):
+- Labsmith-local doc edits (rules / ADRs / audits — single session owns these)
+- Code changes to labsmith scripts
+- Memory file updates
+
+**Companion to** § "CRITICAL: Pull origin BEFORE freshness queries" above. That rule is about READING origin state; this rule is about WRITING after-verification. Both stem from the same principle: never assume your local view matches origin.
+
+**Implementation hook**: pull-and-check can be added to gen scripts as a default-on flag. Until then, the pattern is human-discipline-driven.
+
+### CRITICAL: Inventory script discipline — use `find`, not multi-glob `ls`
+
+**For per-app filesystem inventory scripts that check file presence across many repos, use `find -maxdepth N -name PATTERN` per check; never use multi-pattern `ls`.** Codified Round 488 2026-06-02 after the `Docs/AUDIT_DOCS_ONLY_APP_RANKING_2026-06-02.md` inventory bug.
+
+**Anti-pattern**:
+
+```bash
+cast=$(ls "$d"/Resources/Cast/*.webp "$d"/Resources/Illustrations/cast_*.webp 2>/dev/null | wc -l | tr -d ' ')
+```
+
+In zsh under `NO_EXTENDED_GLOB`, when ANY one of multiple glob patterns has no matches, `ls` errors out completely AND outputs nothing → `wc -l = 0`. Result: false-zero report for files that DO exist at the matching path. This bit the R488 docs-only audit by reporting "99/99 missing cast portraits" when the truth was "0/99 missing".
+
+**Canonical**:
+
+```bash
+cast=$(find "$d/Resources/Cast" -maxdepth 2 -name "*.webp" 2>/dev/null | wc -l | tr -d ' ')
+cast2=$(find "$d/Packages/Libraries/Sources/SharedUI/Resources/Cast" -maxdepth 2 -name "*.webp" 2>/dev/null | wc -l | tr -d ' ')
+cast=$((cast + cast2))
+```
+
+`find` returns empty output (not an error) when no matches; `wc -l` correctly returns 0; multi-path checks compose cleanly via summation.
+
+**Companion rule** — when inventory across N apps shows a uniform value for a presence check, **verify against 2-3 sample apps directly** before reporting:
+
+```bash
+# Spot-check the column on 3 known-good apps
+for app in proofquest cubesensei curiosityquest; do
+  ls /Volumes/Data/Projects/GitHub/$app-app/Resources/Cast/*.webp 2>/dev/null | wc -l
+done
+```
+
+If your inventory says "0" but spot-check says "7", the inventory has a bug. **Never publish a portfolio-wide gap count without spot-check verification.**
+
 ### CRITICAL: Update CLAUDE.md After Every Implementation
 
 After every implementation, update CLAUDE.md with any new patterns, anti-patterns, gotchas, or constants discovered. Examples: new rendering constants, API quirks, things that bit you. Future sessions depend on CLAUDE.md being accurate and complete.

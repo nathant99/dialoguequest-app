@@ -55,11 +55,69 @@ When an audio-pipeline issue surfaces, walk this order:
 4. **If `truncatedData` server-side**: gzip decompression race. Disable gzip on the request.
 5. **If endpoint silently 200s with empty body**: check auth-header consistency (the body might have errored upstream + been swallowed). See § "Auth header consistency check" in `debug-logging.md`.
 
+## Labsmith-side pre-gen pipeline (R411 #889; DN-S Phase 2 audio drama)
+
+For **pre-generated audio bundled into apps as static CAF files** (NOT runtime TTS streaming — that's the path above), labsmith owns the gen pipeline end-to-end per `.claude/rules/portfolio.md` § Asset generation ownership.
+
+Canonical script: `scripts/gen_dn_s_audio_drama.py`. Pattern lifted from CQ's `GeminiService.swift` TTS path:
+
+### Authoritative TTS model + auth
+
+- **Model**: `gemini-2.5-flash-preview-tts` via Gemini API (`generativelanguage.googleapis.com`) — same model CQ uses in production
+- **Auth**: `GEMINI_API_KEY` env var, or `~/.config/labsmith/gemini_api_key` (chmod 600) — same key surface as `scripts/gen_app_illustrations.py`
+- **SDK**: `google-genai` Python (`pip3 install google-genai`); `genai.Client(api_key=...).models.generate_content(model=..., config=GenerateContentConfig(response_modalities=["AUDIO"]))`
+- **Pro tier** (`gemini-2.5-pro-preview-tts`) reserved for hero-character voicing where Flash quality is insufficient
+
+### Per-character voice — prompt-driven, NOT cloning
+
+Gemini 2.5 TTS does not clone custom voices (that's Studio-tier Cloud TTS, enterprise). Instead, per-character voice register from `<app>-app/Docs/dn-s/chapters/<char>.md` § Voice register becomes the TTS prompt prefix:
+
+```
+Read the following AS <character>. Voice style: <directive from script>. Pace: slightly slower than normal adult speech; clear and deliberate. Tone: age-9-14 readable; warm but not saccharine; trust the reader's intelligence. Voice register guidance: <voiceRegister text from chapter, ≤300 chars>. Text: <line>
+```
+
+Apps NEVER author this prompt — labsmith does at gen time. The per-character voiceRegister card is the single source of truth.
+
+### Output format chain (updated 2026-06-02 per ADR-022 Q2)
+
+1. Gemini 2.5 TTS returns `audio/L16;codec=pcm;rate=24000` (raw signed-16-bit PCM mono @ 24kHz)
+2. Labsmith concatenates per-line PCM bytes + tracks per-line byte offsets for WebVTT timing
+3. Wrap concatenated PCM in 44-byte RIFF/WAVE header → WAV (port of CQ's `wrapPCMInWAV` in Python at `scripts/gen_dn_s_audio_drama.py:wrap_pcm_in_wav`)
+4. **Triple-emit from the single WAV**:
+   - **`.caf`** (app-bundled; iOS-native): `afconvert -f caff -d aac -b 64000 -c 1 in.wav out.caf`
+   - **`.m4a`** (web-distributed; universal browser support): `afconvert -f m4af -d aac -b 64000 -c 1 in.wav out.m4a`
+   - **`.vtt`** (WebVTT chapter+transcript): per-line PCM offset → timestamp; `<v Character>line text` voice tag for WCAG accessibility + per-speaker player styling
+5. Ship all three (`.caf` + `.m4a` + `.vtt`) + `catalog.json` to `<app>-app/Resources/AudioDramas/<app>/` via cross-repo PR
+6. App-side `ForgeAudio.AudioDramaPlayer` (ForgeKit 0.99.11+) consumes the bundled `.caf` via `Bundle.module`; spark-anvil-site `<AudioDramaPlayer />` component consumes `.m4a` + `.vtt` via static `public/audio/<app>/` serving
+
+**Catalog metadata** (post-ADR-022): `catalog.json` per-drama entries now carry `bundlePath` (CAF), `webM4APath`, `webVTTPath`, and `chapters[]` (array of `{index, startMs, endMs, character}` per line) so consumers can build chapter-marker navigation in either client.
+
+**Legacy CAF backfill** (for the 124 dramas shipped before ADR-022): the gen script only emits the new sibling files going forward. For existing CAFs, backfill via `afconvert -f m4af -d aac -b 64000 -c 1 existing.caf out.m4a` + write a placeholder VTT (or re-run the full gen script for line-accurate VTT timings).
+
+### Cost discipline (R410 #888)
+
+- Gemini 2.5 Flash TTS: ~$0.00-0.20 per drama (within free monthly tier for pilot)
+- Gemini 2.5 Pro TTS: ~$2 per drama (reserve for hero characters)
+- ElevenLabs A/B comparison (Phase 2A only): ~$30-100 per drama
+- Per `.claude/rules/portfolio.md` table, all pre-1.0 audio gen lives within the ~$5K Phase 2 envelope; Gemini's cost-efficiency leaves headroom for Phase 2B etymology triad + ensemble dramas + retry takes
+
+### Script-format convention
+
+Audio drama scripts live at `labsmith/Resources/AudioDramaScripts/<app>/<drama-title>.script.md` with YAML front-matter (`drama-title:` + `app:` + `source-chapter:` + `duration-target-seconds:`) followed by `[CHARACTER, voice-directive]: dialogue` markers. The format is consumed by `gen_dn_s_audio_drama.py` automatically.
+
+### Pre-gen vs runtime — orthogonal axes
+
+If an app needs RUNTIME TTS (kid types a word → server proxies → returns audio mid-session), that's the path documented above in § Server: wrap raw PCM in WAV. NOT this pre-gen path. They share the same Gemini model + same WAV-wrap mechanic, but run at different times by different actors (runtime: app server; pre-gen: labsmith curation).
+
 ## Cross-references
 
 - `labsmith/.claude/rules/debug-logging.md` § Real-world cascade lessons — body-sniff sizing + auth-consistency + "don't declare fixed early" rules
+- `labsmith/.claude/rules/portfolio.md` § Asset generation ownership + handoff requirement — Phase 2 audio drama listed in canonical asset class table
 - `labsmith/Docs/RESEARCH_TTS_AUDIO_PIPELINE_CASCADE_2026-05-29.md` — full 8-lesson cascade table + per-layer diagnosis methodology
-- `curiosityquest-app/Server/CuriosityQuestServer/Sources/Services/GeminiService.swift` (PRs #137 + #138) — gzip-disable + PCM→WAV reference impl
+- `labsmith/Docs/PLAN_DN_S_PHASE_2_AUDIO_DRAMA.md` — parent plan (Option E of DN-S Integration per ADR-019)
+- `labsmith/scripts/gen_dn_s_audio_drama.py` — canonical labsmith-side pre-gen script (R411 #889)
+- `curiosityquest-app/Server/CuriosityQuestServer/Sources/Services/GeminiService.swift` (PRs #137 + #138) — gzip-disable + PCM→WAV reference impl (server runtime path)
 - `curiosityquest-app/Packages/Libraries/Sources/Services/TTSService.swift` (PRs #131 / #134 / #136) — iOS-side body-sniff + timeout diagnostics
+- `forgekit/Sources/Client/ForgeAudio/AudioDramaPlayer.swift` (0.99.11) — app-side bundle player
 - `.claude/rules/forgekit.md` § Server `/version` endpoint — companion observability rule
 <!-- END LABSMITH-SYNCED CONTENT -->

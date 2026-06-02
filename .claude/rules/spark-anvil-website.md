@@ -141,6 +141,53 @@ The website adopts a **HYBRID** Liquid-Glass-inspired accent layer: chunky-carto
 
 **When updating the policy**: edit `Docs/ADR-014_HYBRID_LIQUID_GLASS_WEBSITE.md` + this section + open a labsmith PR. The site itself is the implementation source of truth for the actual utility class definitions.
 
+## DN-S chapter-book pages (Wave 1 SHIPPED 2026-06-02; spark-anvil-site PRs #104 + #105)
+
+The site now ships **663 illustrated chapter-book pages** at `/cast/<app>/<char>` + `/stories` aggregate index. Per `Docs/PLAN_DN_S_WEBSITE_WAVE_1_2026-06-02.md` + `Docs/ADR-022_DN_S_WEBSITE_WAVE_1_OPEN_QUESTIONS.md`. Editing rules below:
+
+### Content source-of-truth
+
+- **DO NOT edit `spark-anvil-site/src/content/chapters/<app>/<char>.md` directly.** They are sync targets, not source. The source-of-truth is `<app>-app/Docs/dn-s/chapters/<char>.md`.
+- To update chapter text: edit the app-repo chapter MD, then re-run `labsmith/scripts/sync_content_to_site.sh --app <slug> --apply`.
+- The sync also distributes chapter illustrations (to `public/chapters/`) + audio M4A + VTT (to `public/audio/`).
+
+### Astro Content Layer schema
+
+- Schema lives at `src/content/config.ts` (Astro 4.16 content-collections API).
+- **Permissive schema required**: chapter front-matter conventions vary across 663 entries; twin/cohort chapters use `primitive (X):` instead of flat `primitive:`. Use `.passthrough()` + make all non-essential fields optional. Only `character` + `app` are hard requirements.
+- Astro 4.x uses `gray-matter` + `js-yaml` for front-matter parsing; **unquoted YAML values with embedded colons / markdown emphasis (`*...*`) / em-dashes fail at parse time.** `labsmith/scripts/normalize_chapter_frontmatter.py` quotes fields known to contain these (`primitive` / `role` / `register` / `audience` / `chapter-round` / `character`) in the SYNC TARGET copies only — source repos stay untouched.
+- Run the normalizer after every sync: `python3 labsmith/scripts/normalize_chapter_frontmatter.py`.
+
+### Reusable components (3 shipped; reused across #1 / #3 / #4 per ADR-022)
+
+- `<ChapterIllustration app="..." char="..." variant="opener|spot|thumbnail" />` — consumes `public/chapters/<app>/chapter_<char>_<variant>.webp`
+- `<SiblingCastStrip app="..." currentChar="..." />` — persistent-sticky on desktop / header-pinned on mobile / `prefers-reduced-motion` fallback; reads `apps.generated.ts dnCast.members`
+- `<AudioDramaPlayer app="..." drama="..." characterName="..." traumaGated={...} traumaAxis={...} />` — HTML5 `<audio>` + WebVTT chapters track + inline interactive transcript with active-line highlight; vanilla JS only (no third-party SDKs; COPPA-safe); WCAG AA keyboard support
+
+### Typography
+
+- **Chapter prose: Lora serif** (locally hosted at `public/fonts/Lora-Variable.ttf`) per ADR-022 Q6.
+- Sans-serif (site default) for chrome / infobox / nav / strips / cards.
+- `chapter-body` class applies the serif + generous line-height + max-width 36rem reading column.
+
+### Trauma-safety per-page surface (per ADR-021)
+
+- 24 chapters across the portfolio are trauma-gated (PASS-CLEARED audits in `Docs/AUDIT_TRAUMA_GATED_AUDIO_*_2026-06-02.md`). Their pages auto-detect via `register` front-matter field (regex match on `trauma|SAMHSA|anti-shame|anti-colonial|cultural-respect|food-justice|sensory-regulation|body-image|crisis|overwhelm|panic`).
+- Trauma-gated pages render: content-warning between opener illustration + body; trauma-tag in infobox; trauma-rating chip in audio player; crisis-resources footer (988 / Childhelp / Crisis Text Line).
+- DO NOT remove these guardrails when editing the chapter-book template; ADR-021 enforces them as load-bearing for the trauma-axis carve-out.
+
+### Audio sibling files (per ADR-022 Q2)
+
+- App repos bundle `.caf` (iOS-native, app-bundled only).
+- Site `public/audio/<app>/` requires `.m4a` (web-distribution; universal browser support) + `.vtt` (WebVTT chapters + transcript).
+- `labsmith/scripts/gen_dn_s_audio_drama.py --apply` now emits all three; legacy CAFs need backfill via `afconvert -f m4af -d aac -b 64000 -c 1 <input>.caf <output>.m4a` + VTT placeholder (better: re-gen).
+
+### Build performance (post Wave 1b)
+
+- 828 total site pages built in ~28s on Astro 4.16 (663 dynamic chapter routes + /stories + existing 24 site pages).
+- Static output mode preserved per existing `astro.config.mjs` lock-in; no SSR adapter added.
+- Build-time content-collection load handles 663 entries cleanly with the permissive schema.
+
 ## Cross-references
 
 - `Docs/RESEARCH_SPARK_ANVIL_WEBSITE.md` — research synthesis (~2026-05-20 web search + competitive analysis)
@@ -154,4 +201,10 @@ The website adopts a **HYBRID** Liquid-Glass-inspired accent layer: chunky-carto
 - `Docs/REGISTRY_APP_HERO_COLORS.md` — per-app theming source
 - `Docs/RESEARCH_CURRICULUM_STANDARDS_MAPPING.md` — curriculum chips source
 - `Docs/DESIGN_BRAND_ARCHITECTURE.md` — brand architecture rules (must apply across portfolio + website)
+- `Docs/PLAN_DN_S_WEBSITE_WAVE_1_2026-06-02.md` — Wave 1 implementation plan (8-stage; mostly shipped 2026-06-02)
+- `Docs/ADR-022_DN_S_WEBSITE_WAVE_1_OPEN_QUESTIONS.md` — Wave 1 decisions (8 questions resolved)
+- `Docs/RESEARCH_DN_S_WEBSITE_INTEGRATION_NEXT_STEPS_2026-06-02.md` — Wave 1 research foundation (24 sources)
+- `Docs/AUDIT_DN_S_6_PILLAR_FINAL_2026-06-02.md` — DN-S 6-pillar coverage baseline + chapter-book content source
+- `labsmith/scripts/sync_content_to_site.sh` — chapter/audio/illustration distribution from app repos
+- `labsmith/scripts/normalize_chapter_frontmatter.py` — YAML normalizer for synced chapter MDs
 <!-- END LABSMITH-SYNCED CONTENT -->
