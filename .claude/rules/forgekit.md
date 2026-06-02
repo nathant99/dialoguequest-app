@@ -390,6 +390,24 @@ Codified per QuillSpell `HANDOFF_FROM_APP_CAST_FILENAME_CONVENTION.md` (Round 93
 
 ## Common Gotchas
 
+- **`AvatarStudioView` requires `getOrCreateForgeID` seeding** (R489 2026-06-02; lifted from CQ `HANDOFF_FROM_APP_LIFT_AVATAR_STORE_FORGEID_SEED.md`) — `AppGroupStore.setAvatar(_:editedAt:)` throws `AppGroupStoreError.forgeIDMissing` (surfaces as cryptic `ForgeSync.AppGroupStoreError error 0`) if no identity has been seeded. `AvatarStudioView` internally calls `setAvatar` on user Save — apps that adopt the editor MUST seed the identity BEFORE the editor opens, via:
+
+  ```swift
+  // Inside your AvatarStudioView host (e.g., ForgeAvatarStudioShell.body):
+  AvatarStudioView(initialConfig: ..., catalog: ..., presentation: ..., appGroupStore: store, onSaved: ..., onCancelled: ...)
+      .task {
+          // CRITICAL: AvatarStudioView internally calls appGroupStore.setAvatar(_:editedAt:)
+          // which throws .forgeIDMissing (= "error 0") unless a ForgeID has already
+          // been created. Seed before the user can interact with Save.
+          let id = await appGroupStore.getOrCreateForgeID(displayName: profile.name)
+          DebugLog.lifecycle("ForgeAvatarStudioShell.task — seeded ForgeID: \(id.id.uuidString)")
+      }
+  ```
+
+  **Why this hits non-ForgeSync apps the hardest**: apps that don't use ForgeSync for XP / streaks / achievements never trigger ForgeID seeding through other code paths (CQ has its own SwiftData-backed `StudentProfile` so this gotcha bit on first AvatarStudioView adoption). `.task` is the canonical SwiftUI hook — runs on view appear, async-friendly, completes before the user can tap Save.
+
+  **`AppGroupStoreError` is single-case** (`forgeIDMissing`) — `case 0 = forgeIDMissing`. The numeric surface in SwiftUI's error toast is the rawValue; if you see `ForgeSync.AppGroupStoreError error 0` anywhere, it's this gotcha. Reference impl: `curiosityquest-app/Packages/Libraries/Sources/SharedUI/Onboarding/ForgeAvatarStudioShell.swift`.
+
 - **`ForgeUI.CorrectFeedbackModifier`**: parameter is `isActive:`, **NOT** `trigger:`
 - **All ForgeKit types are `public`** — app code imports them directly
 - **`ForgeModels` types are value types** — not `@Model`. Apps create their own SwiftData models and convert to/from ForgeModels types
