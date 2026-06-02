@@ -1,0 +1,17 @@
+{
+  "dramas": [
+    {
+      "id": "ee7ccc94-b463-4db7-9b7f-5d0400ea58ae",
+      "title": "Weigh \u2014 The Brass Balance-Scale",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "weigh"
+      ],
+      "durationSeconds": 382.84,
+      "bundlePath": "AudioDramas/dialoguequest/weigh-balance-scale.caf",
+      "chapters": [],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null
+    }
+  ]
+}
