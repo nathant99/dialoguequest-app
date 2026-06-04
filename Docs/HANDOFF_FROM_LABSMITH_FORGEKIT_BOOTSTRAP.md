@@ -30,6 +30,23 @@ This is the **first ForgeKit doc** every app should read when starting integrati
 - You're upgrading from one ForgeKit version to another — see `.claude/rules/forgekit.md` § "Remote GitHub Dependency"
 - Your app is a server-only (Hummingbird 2) target — use `labsmith/Docs/GUIDE_FORGESERVER_ADOPTION.md`
 
+## Sequencing — greenfield (docs-only) vs migration
+
+**If your app is docs-only — just starting first-pass implementation, no local Swift code yet beyond the SPM scaffold**:
+
+✅ **Do this bootstrap FIRST (one ~30-60 min cycle), THEN run feature implementation in parallel.** Because nothing exists yet to migrate, the 8-step migration ladder in `TEMPLATE_PLAN_FORGEKIT_INTEGRATION.md` doesn't apply — your feature work authors directly against ForgeKit types from day one (no future-rewrite debt). Concretely:
+
+1. **Round 1 (this bootstrap)**: SPM `.package(url:)` + 7-module canonical wiring + 5 sanity tests + clean build. Ship a small ForgeKit-only PR.
+2. **Round 2+ (feature implementation, in parallel)**: Author your first feature view, using `ForgeUI` / `ForgeGamification` / `ForgeAI` etc. directly. Your local `Models`, `Services`, `SharedUI`, etc. targets already depend on the right ForgeKit modules from Round 1, so imports resolve.
+
+The collision gotchas (`AppPhase` / `AppTab` / `AvatarConfig`) only bite when local types pre-exist with the same name. For greenfield apps, you control the naming on day one — qualify proactively (use `<AppTarget>.AppPhase` for any local phase enum) or pick distinct names (e.g., `ChemPhase` instead of `AppPhase`).
+
+**If your app has existing local Swift code that overlaps with ForgeKit's module surface (`Rank` / `ProgressionService` / `AnalyticsRecorder` / `AppPhase` / etc.)**:
+
+🚧 **Do this bootstrap first AS A SEPARATE PR**, then run the 8-step migration ladder from `TEMPLATE_PLAN_FORGEKIT_INTEGRATION.md` over subsequent rounds (one step per PR ideally). The bootstrap PR is the same as for greenfield — only ~30-60 min — but downstream feature work + migration runs SEQUENTIALLY (each migration step touches files that feature work may also touch; parallel runs create rebase pain).
+
+**TL;DR**: bootstrap is always first + always small + always one PR. After bootstrap: greenfield apps parallelize (no migration debt to manage); apps-with-pre-existing-code sequentialize the migration ladder over subsequent rounds.
+
 ## Step 1 — Add ForgeKit as an SPM dependency
 
 In `Packages/Libraries/Package.swift` (NOT in the xcodeproj or workspace — see § Common Gotchas):
