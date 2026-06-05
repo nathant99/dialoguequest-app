@@ -9,40 +9,41 @@ chapter-round: Round 226 #660
 status: SHIPPED
 word-count: ~815
 ---
-
 # Chapter 2 — Glance and the Half-Empty Speech-Bubble
 
-Patter met Glance *on a winter day in the high country,* when the wind was sharp and the air was *too cold for most conversations to happen comfortably outdoors.*
+Patter met Glance on a cold winter day. They were in the mountains. The wind blew hard. It was too cold to talk outside for long.
 
-Patter had been *out for a walk* (he walks even in winter) when he had seen *a small arctic-fox-tween* in *a thick blue scarf* sitting on a fallen log. The fox had been *very still.* The scarf had been *very thick.* The fox's *speech-bubble* — which had been *visible above his head* — had been *visibly half-empty.* The lower half had been *blank.* The upper half had contained *the visible word: "Cold."* Beside the speech-bubble had floated *a dotted-line ghost-text* in fainter color reading *"I do not want to talk right now, but I want you to stay."*
+Patter was out walking. He always walked, even in winter. He saw a small arctic fox. The fox wore a thick blue scarf. It sat on a fallen log.
 
-Patter had been *fascinated.* He had said: *"Your speech-bubble has two layers."*
+The fox sat very still. His scarf looked extra thick. A speech bubble floated above his head. It was half-empty. The bottom half was blank. The top half just said: "Cold." Next to the bubble, faint words floated. They were dotted lines, like a ghost. They read: "I do not want to talk right now, but I want you to stay."
 
-The fox had looked up. He had said — in a quiet careful arctic-fox-voice — *"Yes. My name is Glance. I am the subtext-keeper."*
+Patter stared. His eyes got wide. He had never seen anything like it. "Your speech-bubble has two layers," he said.
 
-Patter had said: *"Tell me."*
+The fox looked up slowly. He spoke in a quiet, careful voice. It sounded like a tiny arctic fox. "Yes," he said. "My name is Glance. I keep the **subtext**."
 
-Glance had said: *"What I *say* is what appears in the bubble. What I *mean* is what appears in the ghost-text. The two are usually different. Most real dialogue works this way. People say *one thing* and mean *another thing.* The said thing is the surface. The meant thing is the subtext. Together they are the dialogue."*
+"Tell me," Patter said.
 
-Patter had been *stunned.* He had thought: *this fox IS the principle.* In well-written dialogue, *the explicit lines are only half of the communication.* The other half is *what is implied* — *the relational context, the emotional state, the unspoken history.* Most students Patter coached *wrote only the surface dialogue.* The lines were *technically accurate* but *flat.* They did not *carry* the second layer.
+Glance explained. "What I *say* shows up in the bubble," he said. "What I *mean* shows up in the ghost words." He paused. "They are almost always different." He looked at Patter. "Most real talks work like this." He nodded slowly. "People say one thing. They mean something else." He pointed to his bubble. "The words you hear are the surface. The words you *feel* are the **subtext**." He tapped his scarf. "Both together make the whole talk."
 
-Patter had said: *"Would you come to my pocket-workshop?"*
+Patter's jaw dropped. He just stared at Glance. *This fox is it!* he thought. *He's the whole idea!* Good stories have talking that works like this. The words people *say* are only half of it. The other half is what they *really mean*. It's about how they feel. It's about their past. It's about who they are to each other. Most kids Patter helped only wrote the spoken words. Their lines were correct. But they felt empty. They missed the second layer.
 
-Glance had said: *"I would have to bring my scarf. It is cold even indoors."*
+"Will you come to my pocket workshop?" Patter asked.
 
-Glance had agreed. He has been in the workshop ever since. He sits at the front of the class *in his thick blue scarf.* His speech-bubble is *always visible* with *both layers* — the surface word and the ghost-text. When students draft dialogue, Patter has them *think about what each line's ghost-text would be.* Glance demonstrates by *taking each line* and *showing the surface bubble + the ghost-text* the line actually carries.
+"I'd have to bring my scarf," Glance said. "It's cold even inside."
 
-In Patter's introductory lesson on subtext, he gestures at Glance — who is, as always, *with his half-empty speech-bubble and floating ghost-text* — and says: *"This is Glance. His speech-bubble has two layers. The top half is what he *says.* The bottom half is what he *means.* Together they are the dialogue. Real conversation works this way: people say one thing and mean another. The said and the meant are *both information.* Well-written dialogue carries both."*
+Glance agreed. He has stayed in the workshop since then. He always sits at the front. His thick blue scarf is always on. His speech bubble is always there. You can always see both layers. The spoken word is on top. The ghost words are below. When kids write talks, Patter makes them think. "What would the ghost words be for this line?" he asks. Glance helps them. He takes each line. He shows the top bubble. Then he shows the ghost words that go with it.
 
-He demonstrates. He writes on the board:
+Patter teaches about **subtext**. It's his first lesson on it. He points to Glance. Glance sits there, as always. His bubble is half-empty. His ghost words float nearby. "This is Glance," Patter says. "His speech bubble has two parts." He taps the air. "The top part is what he *says*." He taps lower. "The bottom part is what he *means*." He brings his hands together. "Both parts make the whole talk." He looks at the kids. "Real talks are like this." He nods. "People say one thing. They mean something else." He holds up two fingers. "What they say *and* what they mean are both important." He smiles. "Good writing shows both."
 
-*"I'm fine."*
+He shows them how. He writes on the board:
 
-He says: *"Surface. Now: what is the subtext? *What does the character actually mean?* Possible subtexts:* (1) *I am not fine, but I do not want to talk about it.* (2) *I am fine; please stop asking.* (3) *I am fine; I am only saying this because the polite answer is fine.* (4) *I am angry but I am holding it in.* *The same line carries different subtexts in different contexts.* The reader can usually figure out which subtext is meant — *from the surrounding context, from the relationship, from the character's history.* The line *signals* the subtext without stating it."*
+"I'm fine."
 
-Glance nods. His ghost-text shifts slightly to show one of the four possible subtexts. He says — in his quiet careful voice — *"The said is half. The meant is the other half. Write both. The reader will read both."*
+"That's the surface," Patter says. "Now, what's the **subtext**?" He looks around. "What does the character *really* mean?" He lists ideas. "It could mean: 'I'm not fine, but leave me alone.'" He writes a number 2. "Or: 'I'm fine, so stop asking.'" Number 3. "'I'm fine, because that's what you're supposed to say.'" Number 4. "'I'm mad, but I'm keeping it inside.'" He taps the board. "The same words can mean different things." He explains. "It depends on *when* they say it. It depends on *who* they say it to. It depends on their *past*." He points to the line. "The words *hint* at the **subtext**. They don't just say it."
 
-When students ask Patter whether subtext is hard to write, Patter says — quoting Glance — *"It is not hard. It is *thinking about what the character *means* when they say something.* The said-and-the-meant are usually different in real conversation. Write the said. The meant will emerge from context. The reader will read both layers."*
+Glance nods slowly. His ghost words change. They show one of the four ideas. He speaks in his quiet, careful voice. "What you say is half," he says. "What you mean is the other half." He looks at the kids. "Write both." He nods again. "The reader will get both."
+
+Kids often ask Patter. "Is **subtext** hard to write?" they say. Patter shakes his head. He uses Glance's own words. "It's not hard," Patter says. "You just think about what the character *really* means." He smiles. "What people say and what they mean are almost always different in real talks." He points to the board. "Write what they say." He taps his head. "What they mean will come out of the story." He winks. "The reader will get both parts."
 
 ---
 
