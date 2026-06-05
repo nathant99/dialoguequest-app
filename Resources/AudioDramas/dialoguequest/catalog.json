@@ -3,15 +3,281 @@
     {
       "id": "ee7ccc94-b463-4db7-9b7f-5d0400ea58ae",
       "title": "Weigh \u2014 The Brass Balance-Scale",
+      "titleSlug": "weigh-balance-scale",
       "appSlug": "dialoguequest",
       "sourceChapterSlugs": [
         "weigh"
       ],
-      "durationSeconds": 382.84,
+      "durationSeconds": 421.22,
       "bundlePath": "AudioDramas/dialoguequest/weigh-balance-scale.caf",
-      "chapters": [],
+      "webM4APath": "AudioDramas/dialoguequest/weigh-balance-scale.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/weigh-balance-scale.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 10530,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 10530,
+          "endMs": 17861,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 17861,
+          "endMs": 40152,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 40152,
+          "endMs": 61123,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 61123,
+          "endMs": 65054,
+          "character": "PATTER"
+        },
+        {
+          "index": 6,
+          "startMs": 65054,
+          "endMs": 79705,
+          "character": "WEIGH"
+        },
+        {
+          "index": 7,
+          "startMs": 79705,
+          "endMs": 98196,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 8,
+          "startMs": 98196,
+          "endMs": 115767,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 9,
+          "startMs": 115767,
+          "endMs": 135938,
+          "character": "PATTER"
+        },
+        {
+          "index": 10,
+          "startMs": 135938,
+          "endMs": 140669,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 11,
+          "startMs": 140669,
+          "endMs": 154200,
+          "character": "PATTER"
+        },
+        {
+          "index": 12,
+          "startMs": 154200,
+          "endMs": 166811,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 13,
+          "startMs": 166811,
+          "endMs": 170862,
+          "character": "PATTER"
+        },
+        {
+          "index": 14,
+          "startMs": 170862,
+          "endMs": 178393,
+          "character": "PATTER"
+        },
+        {
+          "index": 15,
+          "startMs": 178393,
+          "endMs": 194844,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 16,
+          "startMs": 194844,
+          "endMs": 198015,
+          "character": "PATTER"
+        },
+        {
+          "index": 17,
+          "startMs": 198015,
+          "endMs": 208266,
+          "character": "PATTER"
+        },
+        {
+          "index": 18,
+          "startMs": 208266,
+          "endMs": 219677,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 19,
+          "startMs": 219677,
+          "endMs": 246808,
+          "character": "PATTER"
+        },
+        {
+          "index": 20,
+          "startMs": 246808,
+          "endMs": 253619,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 21,
+          "startMs": 253619,
+          "endMs": 257030,
+          "character": "STUDENT"
+        },
+        {
+          "index": 22,
+          "startMs": 257030,
+          "endMs": 277841,
+          "character": "WEIGH"
+        },
+        {
+          "index": 23,
+          "startMs": 277841,
+          "endMs": 281452,
+          "character": "STUDENT"
+        },
+        {
+          "index": 24,
+          "startMs": 281452,
+          "endMs": 291863,
+          "character": "WEIGH"
+        },
+        {
+          "index": 25,
+          "startMs": 291863,
+          "endMs": 316273,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 26,
+          "startMs": 316273,
+          "endMs": 335364,
+          "character": "PATTER"
+        },
+        {
+          "index": 27,
+          "startMs": 335364,
+          "endMs": 342735,
+          "character": "WEIGH"
+        },
+        {
+          "index": 28,
+          "startMs": 342735,
+          "endMs": 358946,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 29,
+          "startMs": 358946,
+          "endMs": 361077,
+          "character": "STUDENT"
+        },
+        {
+          "index": 30,
+          "startMs": 361077,
+          "endMs": 367488,
+          "character": "WEIGH"
+        },
+        {
+          "index": 31,
+          "startMs": 367488,
+          "endMs": 387739,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 32,
+          "startMs": 387739,
+          "endMs": 396790,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 33,
+          "startMs": 396790,
+          "endMs": 404081,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 34,
+          "startMs": 404081,
+          "endMs": 408972,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 35,
+          "startMs": 408972,
+          "endMs": 421223,
+          "character": "NARRATOR"
+        }
+      ],
       "moderationSensitivity": "normal",
-      "traumaConstraints": null
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-06-05",
+      "releaseDate": "2026-06-05",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://spark-and-anvil.com/cast/dialoguequest/weigh",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-06-05",
+          "attributionVersion": "v1-pre-2026-06-04",
+          "durationMs": 382840,
+          "bundlePath": "AudioDramas/dialoguequest/weigh-balance-scale-v1-2026-06-05.caf",
+          "webM4APath": "AudioDramas/dialoguequest/weigh-balance-scale-v1-2026-06-05.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/weigh-balance-scale-v1-2026-06-05.vtt"
+        },
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-06-05",
+          "attributionVersion": "v2",
+          "durationMs": 421223,
+          "bundlePath": "AudioDramas/dialoguequest/weigh-balance-scale.caf",
+          "webM4APath": "AudioDramas/dialoguequest/weigh-balance-scale.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/weigh-balance-scale.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 1
     }
   ]
 }
