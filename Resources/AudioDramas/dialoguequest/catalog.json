@@ -278,6 +278,853 @@
         }
       ],
       "canonicalVersionIndex": 1
+    },
+    {
+      "id": "21e9caa8-3c4a-4ef1-92d9-0b44991c9f6d",
+      "title": "Brogue \u2014 The Same Character Speaking Recognizably The Same",
+      "titleSlug": "brogue-voice-consistency",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "brogue"
+      ],
+      "durationSeconds": 194.53,
+      "bundlePath": "AudioDramas/dialoguequest/brogue-voice-consistency.caf",
+      "webM4APath": "AudioDramas/dialoguequest/brogue-voice-consistency.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/brogue-voice-consistency.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 8050,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 8050,
+          "endMs": 15181,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 15181,
+          "endMs": 24272,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 24272,
+          "endMs": 33883,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 33883,
+          "endMs": 40854,
+          "character": "BROGUE"
+        },
+        {
+          "index": 6,
+          "startMs": 40854,
+          "endMs": 52225,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 7,
+          "startMs": 52225,
+          "endMs": 68396,
+          "character": "BROGUE"
+        },
+        {
+          "index": 8,
+          "startMs": 68396,
+          "endMs": 83887,
+          "character": "BROGUE"
+        },
+        {
+          "index": 9,
+          "startMs": 83887,
+          "endMs": 92658,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 10,
+          "startMs": 92658,
+          "endMs": 100749,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 11,
+          "startMs": 100749,
+          "endMs": 113000,
+          "character": "BROGUE"
+        },
+        {
+          "index": 12,
+          "startMs": 113000,
+          "endMs": 121971,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 13,
+          "startMs": 121971,
+          "endMs": 135742,
+          "character": "BROGUE"
+        },
+        {
+          "index": 14,
+          "startMs": 135742,
+          "endMs": 145393,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 15,
+          "startMs": 145393,
+          "endMs": 162444,
+          "character": "BROGUE"
+        },
+        {
+          "index": 16,
+          "startMs": 162444,
+          "endMs": 170775,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 17,
+          "startMs": 170775,
+          "endMs": 178306,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 18,
+          "startMs": 178306,
+          "endMs": 182917,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 19,
+          "startMs": 182917,
+          "endMs": 194528,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-06-07",
+      "releaseDate": "2026-06-07",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://spark-and-anvil.com/cast/dialoguequest/brogue",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-06-07",
+          "attributionVersion": "v2",
+          "durationMs": 194528,
+          "bundlePath": "AudioDramas/dialoguequest/brogue-voice-consistency.caf",
+          "webM4APath": "AudioDramas/dialoguequest/brogue-voice-consistency.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/brogue-voice-consistency.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
+    },
+    {
+      "id": "89676d5c-c51f-4173-b2be-6c62591aab23",
+      "title": "Glance \u2014 What Is Actually Being Communicated Under The",
+      "titleSlug": "glance-subtext",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "glance"
+      ],
+      "durationSeconds": 163.48,
+      "bundlePath": "AudioDramas/dialoguequest/glance-subtext.caf",
+      "webM4APath": "AudioDramas/dialoguequest/glance-subtext.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/glance-subtext.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 8450,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 8450,
+          "endMs": 14861,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 14861,
+          "endMs": 24632,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 24632,
+          "endMs": 34643,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 34643,
+          "endMs": 44374,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 6,
+          "startMs": 44374,
+          "endMs": 53145,
+          "character": "GLANCE"
+        },
+        {
+          "index": 7,
+          "startMs": 53145,
+          "endMs": 61156,
+          "character": "GLANCE"
+        },
+        {
+          "index": 8,
+          "startMs": 61156,
+          "endMs": 70407,
+          "character": "GLANCE"
+        },
+        {
+          "index": 9,
+          "startMs": 70407,
+          "endMs": 78578,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 10,
+          "startMs": 78578,
+          "endMs": 84829,
+          "character": "GLANCE"
+        },
+        {
+          "index": 11,
+          "startMs": 84829,
+          "endMs": 93240,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 12,
+          "startMs": 93240,
+          "endMs": 103491,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 13,
+          "startMs": 103491,
+          "endMs": 120302,
+          "character": "GLANCE"
+        },
+        {
+          "index": 14,
+          "startMs": 120302,
+          "endMs": 129073,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 15,
+          "startMs": 129073,
+          "endMs": 137804,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 16,
+          "startMs": 137804,
+          "endMs": 145775,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 17,
+          "startMs": 145775,
+          "endMs": 150346,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 18,
+          "startMs": 150346,
+          "endMs": 163477,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-06-07",
+      "releaseDate": "2026-06-07",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://spark-and-anvil.com/cast/dialoguequest/glance",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-06-07",
+          "attributionVersion": "v2",
+          "durationMs": 163477,
+          "bundlePath": "AudioDramas/dialoguequest/glance-subtext.caf",
+          "webM4APath": "AudioDramas/dialoguequest/glance-subtext.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/glance-subtext.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
+    },
+    {
+      "id": "09c6ba29-57af-4e63-964e-0a9b7858facd",
+      "title": "Rest \u2014 The Silence Between Dialogue Lines Is Also",
+      "titleSlug": "rest-rhythm-silence",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "rest"
+      ],
+      "durationSeconds": 192.29,
+      "bundlePath": "AudioDramas/dialoguequest/rest-rhythm-silence.caf",
+      "webM4APath": "AudioDramas/dialoguequest/rest-rhythm-silence.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/rest-rhythm-silence.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 8250,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 8250,
+          "endMs": 14501,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 14501,
+          "endMs": 22592,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 22592,
+          "endMs": 31923,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 31923,
+          "endMs": 50614,
+          "character": "REST"
+        },
+        {
+          "index": 6,
+          "startMs": 50614,
+          "endMs": 60265,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 7,
+          "startMs": 60265,
+          "endMs": 75876,
+          "character": "REST"
+        },
+        {
+          "index": 8,
+          "startMs": 75876,
+          "endMs": 95087,
+          "character": "REST"
+        },
+        {
+          "index": 9,
+          "startMs": 95087,
+          "endMs": 100978,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 10,
+          "startMs": 100978,
+          "endMs": 110989,
+          "character": "REST"
+        },
+        {
+          "index": 11,
+          "startMs": 110989,
+          "endMs": 119480,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 12,
+          "startMs": 119480,
+          "endMs": 138571,
+          "character": "REST"
+        },
+        {
+          "index": 13,
+          "startMs": 138571,
+          "endMs": 144942,
+          "character": "REST"
+        },
+        {
+          "index": 14,
+          "startMs": 144942,
+          "endMs": 152153,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 15,
+          "startMs": 152153,
+          "endMs": 158164,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 16,
+          "startMs": 158164,
+          "endMs": 166775,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 17,
+          "startMs": 166775,
+          "endMs": 174826,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 18,
+          "startMs": 174826,
+          "endMs": 179477,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 19,
+          "startMs": 179477,
+          "endMs": 192288,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-06-07",
+      "releaseDate": "2026-06-07",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://spark-and-anvil.com/cast/dialoguequest/rest",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-06-07",
+          "attributionVersion": "v2",
+          "durationMs": 192288,
+          "bundlePath": "AudioDramas/dialoguequest/rest-rhythm-silence.caf",
+          "webM4APath": "AudioDramas/dialoguequest/rest-rhythm-silence.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/rest-rhythm-silence.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
+    },
+    {
+      "id": "d49cf488-cd40-4d9b-b25b-8964b687ef69",
+      "title": "Sprig \u2014 In Branching Dialogue, Every Choice Should Re-route",
+      "titleSlug": "sprig-branch-meaningfulness",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "sprig"
+      ],
+      "durationSeconds": 152.84,
+      "bundlePath": "AudioDramas/dialoguequest/sprig-branch-meaningfulness.caf",
+      "webM4APath": "AudioDramas/dialoguequest/sprig-branch-meaningfulness.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/sprig-branch-meaningfulness.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 8730,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 8730,
+          "endMs": 15701,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 15701,
+          "endMs": 26472,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 26472,
+          "endMs": 35883,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 35883,
+          "endMs": 43894,
+          "character": "SPRIG"
+        },
+        {
+          "index": 6,
+          "startMs": 43894,
+          "endMs": 50945,
+          "character": "SPRIG"
+        },
+        {
+          "index": 7,
+          "startMs": 50945,
+          "endMs": 58436,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 8,
+          "startMs": 58436,
+          "endMs": 68247,
+          "character": "SPRIG"
+        },
+        {
+          "index": 9,
+          "startMs": 68247,
+          "endMs": 75538,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 10,
+          "startMs": 75538,
+          "endMs": 85549,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 11,
+          "startMs": 85549,
+          "endMs": 95240,
+          "character": "SPRIG"
+        },
+        {
+          "index": 12,
+          "startMs": 95240,
+          "endMs": 103051,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 13,
+          "startMs": 103051,
+          "endMs": 111862,
+          "character": "SPRIG"
+        },
+        {
+          "index": 14,
+          "startMs": 111862,
+          "endMs": 120673,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 15,
+          "startMs": 120673,
+          "endMs": 128924,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 16,
+          "startMs": 128924,
+          "endMs": 136375,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 17,
+          "startMs": 136375,
+          "endMs": 141346,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 18,
+          "startMs": 141346,
+          "endMs": 152837,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-06-07",
+      "releaseDate": "2026-06-07",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://spark-and-anvil.com/cast/dialoguequest/sprig",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-06-07",
+          "attributionVersion": "v2",
+          "durationMs": 152837,
+          "bundlePath": "AudioDramas/dialoguequest/sprig-branch-meaningfulness.caf",
+          "webM4APath": "AudioDramas/dialoguequest/sprig-branch-meaningfulness.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/sprig-branch-meaningfulness.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
+    },
+    {
+      "id": "3074dd9d-5405-4ed1-b5d2-bc0daf061d06",
+      "title": "Weigh \u2014 The Rhythm Of Dialogue Tags",
+      "titleSlug": "weigh-tag-balance",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "weigh"
+      ],
+      "durationSeconds": 148.92,
+      "bundlePath": "AudioDramas/dialoguequest/weigh-tag-balance.caf",
+      "webM4APath": "AudioDramas/dialoguequest/weigh-tag-balance.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/weigh-tag-balance.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 8730,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 8730,
+          "endMs": 15701,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 15701,
+          "endMs": 23552,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 23552,
+          "endMs": 32323,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 32323,
+          "endMs": 38054,
+          "character": "WEIGH"
+        },
+        {
+          "index": 6,
+          "startMs": 38054,
+          "endMs": 46505,
+          "character": "WEIGH"
+        },
+        {
+          "index": 7,
+          "startMs": 46505,
+          "endMs": 53956,
+          "character": "WEIGH"
+        },
+        {
+          "index": 8,
+          "startMs": 53956,
+          "endMs": 64207,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 9,
+          "startMs": 64207,
+          "endMs": 72738,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 10,
+          "startMs": 72738,
+          "endMs": 80149,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 11,
+          "startMs": 80149,
+          "endMs": 88800,
+          "character": "WEIGH"
+        },
+        {
+          "index": 12,
+          "startMs": 88800,
+          "endMs": 99091,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 13,
+          "startMs": 99091,
+          "endMs": 107502,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 14,
+          "startMs": 107502,
+          "endMs": 114593,
+          "character": "WEIGH"
+        },
+        {
+          "index": 15,
+          "startMs": 114593,
+          "endMs": 123244,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 16,
+          "startMs": 123244,
+          "endMs": 130935,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 17,
+          "startMs": 130935,
+          "endMs": 135706,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 18,
+          "startMs": 135706,
+          "endMs": 148917,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-06-07",
+      "releaseDate": "2026-06-07",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://spark-and-anvil.com/cast/dialoguequest/weigh",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-06-07",
+          "attributionVersion": "v2",
+          "durationMs": 148917,
+          "bundlePath": "AudioDramas/dialoguequest/weigh-tag-balance.caf",
+          "webM4APath": "AudioDramas/dialoguequest/weigh-tag-balance.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/weigh-tag-balance.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
     }
   ]
 }
