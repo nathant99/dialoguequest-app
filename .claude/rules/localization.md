@@ -1,3 +1,12 @@
+---
+paths:
+  - "**/*.xcstrings"
+  - "**/*.strings"
+  - "**/*.stringsdict"
+  - "**/Localizable.*"
+  - "**/*.swift"
+---
+
 # Localization Patterns
 
 Learned from CubeSensei. Apply when adding `.xcstrings` string catalogs.

@@ -1,3 +1,14 @@
+---
+paths:
+  - "**/*.xcodeproj/**"
+  - "**/*.xcworkspace/**"
+  - "**/*.xcscheme"
+  - "**/*.pbxproj"
+  - "**/*.entitlements"
+  - "**/Info.plist"
+  - "**/*.xctestplan"
+---
+
 # Xcode Agent Safety
 
 **The Claude agent operates from INSIDE the Xcode workspace (via the Coding Assistant integration). Modifying files Xcode itself manages causes Xcode to detect "External Changes," prompt the user, or — worst case — force a workspace reload that terminates the agent session.**

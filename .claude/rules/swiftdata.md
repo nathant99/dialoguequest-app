@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # SwiftData Safety Patterns
 
 ## Data Access

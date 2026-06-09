@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # Liquid Glass Patterns
 
 ## Automatic Adoption

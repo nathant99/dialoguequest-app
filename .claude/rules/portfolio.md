@@ -15,7 +15,57 @@ Plans created in labsmith that target a specific app repo must be copied to the 
 
 ## App Repos
 
-All app repos live at `../[appname]-app/`. Discover them with `ls ../` — do not rely on hardcoded lists.
+All app repos live at `../[appname]-app/`. **For READING / pulling / auditing**: discover via `ls -d ../*-app/` — do not rely on hardcoded lists. **For WRITING / distributing content (handoffs, asset bundles, rule syncs)**: use the canonical 140-app registry, NOT a filesystem glob — see § "CRITICAL: Distribution scripts MUST source from canonical portfolio registry" below.
+
+### CRITICAL: Distribution scripts MUST source from canonical portfolio registry (R-PORTFOLIO-INVENTORY 2026-06-04)
+
+**For any script that WRITES to multiple app repos (per-app handoff distribution, asset bundle distribution, doc sync, etc.) — the script MUST source the target app list from `labsmith/Docs/REGISTRY_ACTIVE_PORTFOLIO_APPS.txt` (the canonical 140-app registry), NOT from a `ls *-app/` filesystem glob.**
+
+**Why**: filesystem globs pick up the entire `~/Projects/GitHub/*-app/` directory tree which includes:
+
+- **140 active portfolio apps** (the target set)
+- **7 retired apps** (geoforge / arcadeforge / etymonrealm / bodyforge / mintquest / forgeworks / punchlineforge — per `Docs/PORTFOLIO_PATTERNS.md` § Retired Repos)
+- **10 archived mega-app planning repos** (mathquest / physicsforge / languageforge / earthforge / mediaforge / healthforge / historyforge / economicsforge / engineerforge / lifeforge — per `Docs/PORTFOLIO_PATTERNS.md` § Archived Mega-App Planning)
+- **2 non-portfolio side projects** (cartunes / karaokemuxer — per `Docs/PORTFOLIO_PATTERNS.md`)
+
+Distribution to non-portfolio repos is a real bug (R-PORTFOLIO-INVENTORY 2026-06-04 incident: `distribute_forgekit_bootstrap_handoff.sh` initially used a filesystem glob and pushed the bootstrap handoff to `bodyforge-app` (retired) + `earthforge-app` / `economicsforge-app` / `engineerforge-app` (archived mega) before the user caught the over-reach. 4 reverts shipped, registry-based filtering added).
+
+**Canonical registry**:
+- **Source of truth**: `Docs/PORTFOLIO_PATTERNS.md` § "App Repos (140)" — human-readable fenced block
+- **Machine-readable copy**: `Docs/REGISTRY_ACTIVE_PORTFOLIO_APPS.txt` — one app slug per line; lines starting with `#` are comments
+- **Regenerator**: `scripts/regenerate_portfolio_registry.py` — re-extracts from PORTFOLIO_PATTERNS.md after every inventory change
+
+**Distribution script pattern**:
+
+```bash
+REGISTRY="$LABSMITH_DIR/Docs/REGISTRY_ACTIVE_PORTFOLIO_APPS.txt"
+[ -f "$REGISTRY" ] || { echo "ERROR: registry missing"; exit 1; }
+APPS=()
+while IFS= read -r app; do
+    [ -z "$app" ] && continue
+    [[ "$app" =~ ^# ]] && continue
+    appdir="${app}-app"
+    [ -d "$GITHUB_DIR/$appdir/.git" ] && APPS+=("$appdir")
+done < "$REGISTRY"
+```
+
+**Single-app override** still validates against the registry:
+
+```bash
+if [[ -n "$SINGLE_APP" ]]; then
+    grep -q "^${SINGLE_APP}$" "$REGISTRY" || { echo "ERROR: $SINGLE_APP not in portfolio"; exit 1; }
+    APPS=("${SINGLE_APP}-app")
+fi
+```
+
+**Reference impl**: `scripts/distribute_forgekit_bootstrap_handoff.sh` (post-2026-06-04 update). Other distribution scripts (`copy_rules_to_repos.sh` / `copy_illustrations_to_repos.sh` / `copy_kits_to_repos.sh` / `sync_content_to_site.sh` / `backfill_audio_m4a_vtt.sh` / etc.) should be migrated to the same pattern — audit pending per work queue item.
+
+**When you UPDATE the portfolio inventory** (add an app / retire an app / etc.):
+1. Update `Docs/PORTFOLIO_PATTERNS.md` § "App Repos (140)" (update the count if changed)
+2. Run `python3 scripts/regenerate_portfolio_registry.py` to refresh `Docs/REGISTRY_ACTIVE_PORTFOLIO_APPS.txt`
+3. Commit both changes in a single labsmith PR
+
+
 
 ### CRITICAL: Pull Before ANY Cross-Repo Read
 
@@ -204,6 +254,8 @@ Labsmith **owns portfolio-wide asset generation — ALL asset classes, no except
 | Biome tiles | `Resources/CustomArt/<app>/biome_tiles.json` | Gemini Flash | varies |
 | Audio SFX | Lyria 3 / Gemini SFX | Google | ~$0.10/clip |
 | **Audio drama (Phase 2 DN-S)** | `PLAN_DN_S_PHASE_2_AUDIO_DRAMA.md` (R395 #819) | **Google Cloud TTS (canonical) + ElevenLabs (Phase 2A pilot A/B)** per R410 #888 | ~$0.20/drama Google TTS Wavenet; ~$30-100/drama ElevenLabs; Phase 2B vendor lock-in decided post-pilot |
+| **Background music (Pipeline 3, lifted 2026-06-04)** | `scripts/gen_app_background_music.py` (lifted from `quillspell-app/Scripts/generate_music.py` per user-direct 2026-06-04) | Google Gemini Lyria 3 Pro (`lyria-3-pro-preview`) canonical; Lyria 3 Clip for cheaper 30s outputs | ~$0.40/track Lyria 3 Pro preview; ~$0.10/clip Lyria 3 Clip. Per-app ceiling: ~$3.20 for typical 8-track app (4 music + 4 ambient) |
+| **Achievement badges (Pipeline 4, shipped 2026-06-04)** | `scripts/gen_app_badges.py` (standalone; per-app manifest at `Resources/CustomArt/<app>/badges.json`); rarity-tier frame treatment merged at gen time | Gemini Nano Banana Flash (`gemini-3.1-flash-image-preview`) | ~$0.045/badge Nano Banana Flash. Per-app ceiling: ~$1.04 for typical 23-badge catalog (matches BioForge `AchievementBadgeCatalog`) |
 | Particle specs | future pipeline | TBD | TBD |
 | Lottie celebrations | curated; not gen | N/A (hand-authored / sourced) | N/A |
 

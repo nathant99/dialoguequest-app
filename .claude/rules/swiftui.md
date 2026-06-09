@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # SwiftUI Patterns
 
 Learned from CuriosityQuest.

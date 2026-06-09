@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # MultipeerConnectivity / Local Multiplayer Patterns
 
 Conventions for portfolio apps using local peer-to-peer multiplayer. Based on production patterns in CuriosityQuest, CubeSensei, and QuillSpell.

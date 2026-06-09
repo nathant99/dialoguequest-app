@@ -1,3 +1,17 @@
+---
+paths:
+  - "**/*audio*.swift"
+  - "**/*tts*.swift"
+  - "**/*Audio*.swift"
+  - "**/*TTS*.swift"
+  - "**/Server/**/*.swift"
+  - "scripts/*audio*.py"
+  - "scripts/*tts*.py"
+  - "scripts/gen_dn_s_audio_drama.py"
+  - "scripts/gen_app_background_music.py"
+  - "**/AudioDramas/**"
+---
+
 # Audio Pipeline (TTS proxying + iOS playback)
 
 Portfolio-wide rules for servers proxying audio APIs (Google Cloud TTS / Gemini 2.5 TTS / ElevenLabs / OpenAI TTS / music-gen APIs) to iOS clients. Codified after a 7-root-cause cascade in CuriosityQuest TTS (PRs #130 → #138, 2026-05-29) where each layer's fix revealed the next layer's bug.
@@ -104,6 +118,72 @@ Apps NEVER author this prompt — labsmith does at gen time. The per-character v
 ### Script-format convention
 
 Audio drama scripts live at `labsmith/Resources/AudioDramaScripts/<app>/<drama-title>.script.md` with YAML front-matter (`drama-title:` + `app:` + `source-chapter:` + `duration-target-seconds:`) followed by `[CHARACTER, voice-directive]: dialogue` markers. The format is consumed by `gen_dn_s_audio_drama.py` automatically.
+
+### Register sourcing — UPPER tier (FK 7-8), NOT lower tier
+
+Per `Docs/RESEARCH_AUDIO_DRAMA_TIER_2026-06-04.md` (14-source research), audio drama scripts source at the **upper-MG register (FK 7-8 / Wonder-Hatchet-Holes band)** even though chapter print editions ship in two tiers. The 2-year listening gap (Audio Publishers Association canonical; Berl 2010 brain imaging; Logan 2019 vocabulary measurement) means listening comprehension exceeds independent-reading comprehension by ≥2 grade levels through middle school.
+
+A single drama at FK 7-8 serves the entire 9-14 audience because:
+- A 9-year-old reading at lower-tier FK 4-6 can absorb FK 7-8 audio comfortably (+2 grade level cushion)
+- A 13-year-old reading at upper-tier FK 7-8 gets the matching register
+- One drama production cost serves both audiences — no need for two audio tiers
+
+**Sourcing rule**:
+- Drama scripts (`.script.md`) are hand-crafted/AI-authored INDEPENDENTLY from chapter MDs. They target the upper-MG register naturally because scene-driven dialogue + per-character voice directives match the upper-MG audio sweet spot. The dual-tier chapter rewrite work does NOT propagate to script files; they're stable.
+- When a new drama is authored for a character whose Tier-2 chapter exists, the chapter's voice register card is the source of truth for the voice-directive prefix in the script. The Tier-1 chapter is NOT used.
+- If a script needs revision (e.g., voice-register drift), edit `<drama-title>.script.md` directly + re-run `gen_dn_s_audio_drama.py`.
+- Existing dramas generated from pre-rewrite chapters (FK 10.5) do NOT need re-generation — the gen pipeline reads the script file, not the chapter MD.
+
+### TTS vendor choice (canonical per RESEARCH_TTS_QUALITY_GOOGLE_CLOUD_VS_ELEVENLABS_VS_GEMINI_2026-06-04)
+
+- **Gemini 2.5 Flash TTS — canonical for ~615 portfolio dramas.** Native multi-speaker single-call is unique in the 2026 vendor landscape. Cost ~$25-75 portfolio-wide.
+- **ElevenLabs v3 — reserved for hero-character A/B pilots only** (3 dramas: Sir Pinwell + Direct-Proof Dora + Lexa). Audio tag system (`[whispers]`, `[laughs]`) + voice cloning capability. Stitched single-speaker-per-call.
+- **Google Cloud TTS classic/WaveNet/Neural2/Studio — do NOT use.** No native multi-speaker; same cost as Gemini Pro but without the multi-speaker advantage.
+- **Gemini 2.5 Pro TTS — reserve for hero characters only** (~$2 per drama vs Flash ~$0.20). Use when register fidelity matters more than cost.
+
+### Version preservation discipline (keep-all-versions policy)
+
+Per WORK_QUEUE 2026-06-04 § Audio drama version preservation + ADR-025:
+
+- `gen_dn_s_audio_drama.py` **refuses to overwrite** an existing `<drama>.caf` unless `--overwrite-canonical` (or `--regen-all`) is passed
+- When `--overwrite-canonical` is in effect AND a prior canonical exists, the prior `<drama>.{caf,m4a,vtt}` is archived as `<drama>-v1-<YYYY-MM-DD>.{caf,m4a,vtt}` (date = prior file's mtime) BEFORE regen writes the new canonical
+- `catalog.json versions[]` is appended with the archived version record + the new canonical entry; `canonicalVersionIndex` points to the new entry
+- Site distribution (`scripts/sync_content_to_site.sh`) syncs ONLY the canonical version; sibling versions stay in the app repo as labsmith-side curation artifacts (not bundled to apps' production builds)
+- Vendor variants (`<drama>-elevenlabs.caf`, future `<drama>-cloud-tts-neural2.caf` etc.) follow the same versions[] tracking; pre-existing convention preserved
+
+### Default attribution metadata (when script.md front-matter is sparse)
+
+`scripts/gen_dn_s_audio_drama.py` applies portfolio-canonical defaults so the 167 existing scripts (which predate the v2 front-matter convention) regenerate with attribution v2 without per-script edits:
+
+| Field | Default source |
+|---|---|
+| `attribution-version` | defaults to `v2` (post-ADR-025) when unspecified |
+| `trauma-gating` | derived from app slug membership in `DEFAULT_TRAUMA_GATED_APPS` (ADR-016/020/021 cluster) |
+| `trauma-topic` | derived from `DEFAULT_TRAUMA_TOPICS[app_slug]` (parent-readable plain-language phrase) |
+| `cultural-advisor` | derived from `DEFAULT_CULTURAL_TEK_APPS` set (Indigenous-knowledge-anchored cluster) |
+| `curriculum-alignment` | derived from `DEFAULT_CURRICULUM_ALIGNMENT[app_slug]` (per-app primary standard) |
+| `sensitivity-reviewer`, `funder` | explicit front-matter only (no defaults — these arrive per-grant / per-review) |
+
+When a script wants to override the default (e.g., a new app slug not yet in the dictionary, or a per-drama trauma-topic variant), specify the field explicitly in the script.md front-matter and it wins.
+
+### Re-gen orchestration
+
+```bash
+# Single drama (preview without API calls):
+python3 scripts/gen_dn_s_audio_drama.py --app <slug> --drama <title-slug> --dry-run
+
+# Single drama (real gen; archives prior canonical):
+python3 scripts/gen_dn_s_audio_drama.py --app <slug> --drama <title-slug> --apply --overwrite-canonical
+
+# Full portfolio regen (archives every prior canonical):
+python3 scripts/gen_dn_s_audio_drama.py --regen-all --apply
+
+# Batched run (smoke-test first N or resume from a known point):
+python3 scripts/gen_dn_s_audio_drama.py --regen-all --apply --stop-after 5
+python3 scripts/gen_dn_s_audio_drama.py --regen-all --apply --start-at activeforge/cheer-learnable-sportsmanship
+```
+
+`--regen-all` implies `--overwrite-canonical`. Without `--overwrite-canonical`, single-drama runs skip if the canonical CAF already exists. Scripts whose target `<app>-app` repo doesn't exist on disk are silently skipped (no place to ship).
 
 ### Pre-gen vs runtime — orthogonal axes
 

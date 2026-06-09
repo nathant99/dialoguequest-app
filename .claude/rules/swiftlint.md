@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # SwiftLint Conventions
 
 ## Status: SUSPENDED (Xcode 26)

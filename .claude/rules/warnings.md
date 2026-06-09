@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # Warning Prevention Conventions
 
 Learned from CuriosityQuest. Maintain zero-warning builds.

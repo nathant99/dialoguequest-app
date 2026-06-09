@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/Server/**/*.swift"
+  - "**/Sources/Server/**/*.swift"
+---
+
 # Hummingbird 2 Patterns
 
 Conventions for Hummingbird 2 servers (ForgeSync, future `forgeplay`, and any per-app servers). Learned in the multi-tenant spike (2026-05-18). All version-stamped against Hummingbird 2.14 + hummingbird-websocket 2.x + ForgeKit 0.84.

@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/Tests/**/*.swift"
+  - "**/*Tests.swift"
+  - "**/*.xctestplan"
+---
+
 # Testing Conventions
 
 ## Crash-Resilience Defaults (read first; see `test-crash-recovery.md` for agent recovery procedure)

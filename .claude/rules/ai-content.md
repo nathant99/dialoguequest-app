@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/*.swift"
+  - "**/Resources/Questions/**/*.json"
+  - "**/Resources/CustomArt/**/*.json"
+---
+
 # AI Content Accuracy Policy
 
 For apps using FoundationModels or any AI to generate educational content:

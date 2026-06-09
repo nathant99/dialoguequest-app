@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/Tests/**/*.swift"
+  - "**/*Tests.swift"
+---
+
 # Test Crash Recovery (Agent Procedure)
 
 **Companion to `xcode-agent-safety.md`.** This rule governs how an in-Xcode Claude agent responds to test crashes WITHOUT triggering the workspace-reload failure mode.

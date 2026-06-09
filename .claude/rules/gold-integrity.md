@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # Gold-Integrity (Anti-Farming) Rule
 
 Portfolio-wide rule for apps that ship a gold-currency system. Codified Round 469 (2026-06-01) after CuriosityQuest's gold-integrity fix (PRs #194-#197, 2026-06-01) closed 4 gold-farming loopholes (campfire focus / multiplayer mini-game / trickster mode / single-player mini-game) by routing all flat-gold award sites through a per-activity diminishing curve that mirrors the existing XP-integrity curve.

@@ -86,6 +86,7 @@ For the authoritative list, run `ls ../forgekit/Sources/{Client,Server,Shared}`.
 | `ForgeIntents` | ForgeModels | App Intents framework integration for Siri / Shortcuts |
 | `ForgeKnowledgeGraph` | ForgeModels | Knowledge-graph traversal for adaptive content suggestion |
 | `ForgeLiveActivities` | ForgeModels | Dynamic Island + Lock Screen Live Activity support |
+| `ForgeMasteryEngine` (SHIPPED 1.0.0-rc.2 per ADR-026) | ForgeModels, ForgeKnowledgeGraph, ForgeGamification | Adaptive mastery practice spine: `MasteryGraph<Topic>` DAG (with cycle / duplicate / unknown-prereq detection at init; stable `topologicalOrder` via lexicographic DFS) + `TopicMasteryState` (FSRS-6 + attemptCount + rolling `recentOutcomes` window; derived `masteryScore` = 60% FSRS retrievability + 40% recent accuracy; `isRacingAhead` / `isStuck` convenience flags) + `NextProblemPicker.recommendations` (extend / consolidate / stretch with `SelectionRationale`) + `MasteryUpdater`. Pure value-type API; all `nonisolated`. Edge-of-competence heuristic (Vygotsky ZPD; target difficulty in [mastery + 0.10, 0.20] band). First consumer: AlcumusForge. Spec: `forgekit/Docs/HANDOFF_FROM_LABSMITH_FORGEMASTERYENGINE.md`. SHIPPED: `forgekit/Docs/HANDOFF_FROM_FORGEKIT_FORGEMASTERYENGINE_SHIPPED.md` |
 | `ForgeLocalization` | — | String catalog management, pluralization, brand guard, date formatting |
 | `ForgeMath` | ForgeModels | Math utilities, expression evaluation, number formatting |
 | `ForgeMultipeerKit` | ForgeModels | MultipeerConnectivity wrapper (distinct from ForgeMultiplayer) |
@@ -94,7 +95,7 @@ For the authoritative list, run `ls ../forgekit/Sources/{Client,Server,Shared}`.
 | `ForgeNetworking` | ForgeModels | Network layer, API client |
 | `ForgePartyGames` | ForgeModels | Local-multiplayer mini-game engines: ForbiddenWords, ForeheadReveal, HotPotato, RapidRecall |
 | `ForgePassAndPlay` | ForgeModels | Pass-and-play state machine + 4-stage privacy curtain |
-| `ForgePedagogy` | ForgeModels | Pedagogical strategies, bloom-level targeting, hint scaffolding |
+| `ForgePedagogy` | ForgeModels | Pedagogical strategies, bloom-level targeting, hint scaffolding. **PolyaScaffold SHIPPED 1.0.0-rc.2 per ADR-026** (`Sources/Client/ForgePedagogy/Polya/`): `PolyaScaffold` protocol + `PolyaPhase` 4-case enum (understand / plan / execute / lookBack with `Understanding` / `StrategyPlan` / `ExecutionState` / `Reflection` associated structs) + `StrategyTag` enum (14 canonical + `.custom`) + `PolyaMachine` state-machine + 3 `Configuration` presets (.default / .strict / .permissive). Load-bearing `hintsAllowedBeforePlan: 0` default = articulate-before-hint enforcement. First consumers: MathCircle + NumberSense. Spec: `forgekit/Docs/HANDOFF_FROM_LABSMITH_POLYASCAFFOLD.md`. SHIPPED: `forgekit/Docs/HANDOFF_FROM_FORGEKIT_POLYASCAFFOLD_SHIPPED.md` |
 | `ForgePersistence` | ForgeModels | SwiftData helpers: container configuration, migration utilities |
 | `ForgeProgression` | ForgeModels | Session-based content gating, calendar-aware session counting, debug bypass |
 | `ForgeReporting` | ForgeModels | Progress reports, standards-mapped analytics dashboards |

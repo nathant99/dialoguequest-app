@@ -156,7 +156,33 @@ The site now ships **663 illustrated chapter-book pages** at `/cast/<app>/<char>
 - Schema lives at `src/content/config.ts` (Astro 4.16 content-collections API).
 - **Permissive schema required**: chapter front-matter conventions vary across 663 entries; twin/cohort chapters use `primitive (X):` instead of flat `primitive:`. Use `.passthrough()` + make all non-essential fields optional. Only `character` + `app` are hard requirements.
 - Astro 4.x uses `gray-matter` + `js-yaml` for front-matter parsing; **unquoted YAML values with embedded colons / markdown emphasis (`*...*`) / em-dashes fail at parse time.** `labsmith/scripts/normalize_chapter_frontmatter.py` quotes fields known to contain these (`primitive` / `role` / `register` / `audience` / `chapter-round` / `character`) in the SYNC TARGET copies only — source repos stay untouched.
-- Run the normalizer after every sync: `python3 labsmith/scripts/normalize_chapter_frontmatter.py`.
+
+### CRITICAL: Normalizer auto-runs in site `prebuild` — do NOT remove (2026-06-04 regression-pattern lift)
+
+**The normalizer is wired into `spark-anvil-site/package.json` `prebuild`** so every build (local OR Cloudflare Pages) self-heals from YAML drift. **Never remove the normalizer call from the prebuild chain** — doing so re-opens the regression class below.
+
+```jsonc
+"prebuild": "bash scripts/lint-ios-caps.sh && python3 scripts/normalize-chapter-frontmatter.py && node scripts/build-cast-manifest.mjs && ..."
+```
+
+**Regression pattern** — codified after two consecutive Cloudflare-deploy failures (PR #160 fix → sync re-broke it → PR #162 final fix, 2026-06-04 evening):
+
+1. Labsmith sync writes fresh chapter MDs from `<app>-app/Docs/dn-s/chapters/` → `spark-anvil-site/src/content/chapters/`.
+2. Source chapters use unquoted YAML (`primitive: CAESAR SHIFT — *the simplest cipher: shift every letter by N.*` — embedded `:` after "cipher" trips js-yaml).
+3. Local Astro dev may not surface the bug if cached; Cloudflare's fresh-clone build always re-parses → fails with `incomplete explicit mapping pair; a key node is missed`.
+4. Point-in-time normalizer runs fix the symptom but the NEXT sync re-introduces the drift.
+
+**The auto-run prebuild is the only durable fix.** Running the normalizer once-per-sync is racy against any sync landing between that run and the build.
+
+**Two copies of the normalizer exist + are intentional**:
+- `labsmith/scripts/normalize_chapter_frontmatter.py` — source of truth; canonical implementation
+- `spark-anvil-site/scripts/normalize-chapter-frontmatter.py` — in-repo mirror (path-relative; works on Cloudflare's `/opt/buildhome/repo`) so the build agent doesn't clone labsmith
+
+When the normalizer's quoting rules change, **update BOTH copies in the same change-set**. The site copy resolves `CHAPTERS_ROOT` from `__file__` so it works in any environment; otherwise it's byte-for-byte identical to labsmith's.
+
+**When in doubt — run the normalizer**: it's idempotent. Re-running on already-normalized YAML produces zero diff.
+
+**Companion sync rule for labsmith-side workflow**: when authoring a new chapter or rewriting an existing one, do NOT pre-quote the source MD's YAML — leave the unquoted convention. The prebuild normalizer is responsible for quoting the sync-target copy. This preserves authoring ergonomics on the labsmith side while keeping the site build resilient.
 
 ### Reusable components (3 shipped; reused across #1 / #3 / #4 per ADR-022)
 
@@ -188,6 +214,77 @@ The site now ships **663 illustrated chapter-book pages** at `/cast/<app>/<char>
 - Static output mode preserved per existing `astro.config.mjs` lock-in; no SSR adapter added.
 - Build-time content-collection load handles 663 entries cleanly with the permissive schema.
 
+## Cast portrait slug convention (R-CAST-PORTRAIT-SLUG; 2026-06-05)
+
+**The portrait file at `spark-anvil-site/public/cast/<app>/<char>.webp` MUST match the chapter MD filename slug at `src/content/chapters/<app>/<char>.md`.** Both are the same `<char>` token. This is load-bearing because chapter pages at `/cast/<app>/<char>` render `<img src="/cast/<app>/<char>.webp">` with no fallback; Astro static-build doesn't verify `<img src>` targets, so a slug mismatch ships as a silently-broken portrait link with no build-time error.
+
+### Why the rule exists (2026-06-05 user report)
+
+User-reported "a lot of cast characters with broken links for portrait images on the website" surfaced 48 of 754 chapter pages (6.4%) rendering broken `<img>` against missing files. Root cause: slug-mismatch between chapter MD filenames and portrait WebP filenames in 5 distinct patterns:
+
+| Pattern | Where | Example chapter slug → portrait slug |
+|---|---|---|
+| **A. Underscore vs dash** | adventurehub / generalstale / stonesong | `archivist_atlas.md` ↔ `archivist-atlas.webp` |
+| **B. `the-` prefix on portraits** | cardforge / dealtales | `bluffer.md` ↔ `the-bluffer.webp` |
+| **C. Role-suffix descriptor on portraits** | chanceforge / discretequest / mythforge / ratiorealm | `display.md` ↔ `display-the-picture-maker.webp` |
+| **D. App-repo `cast_<char>_<pose>` convention** | quillspell | `ember.md` ↔ `cast_ember_demonstrating.webp` |
+| **E. Accent stripping** | cipherforge | `vigenere.md` ↔ `Vigenère` name in registry → `vigen-re.webp` from naive slugify |
+
+Phase A + B remediation shipped via spark-anvil-site PR #175 (33 renames + 2 syncs; coverage 93.6% → 98.3%); Phase C gen + slug-fix shipped 2026-06-05 (registry additions + 13 portraits genned + Phase B re-run; coverage to 100%).
+
+### The canonical slug derivation
+
+```python
+def canonical_slug(name: str) -> str:
+    # NFKD-normalize to strip diacritics (Vigenère → Vigenere)
+    s = unicodedata.normalize("NFKD", name)
+    s = s.encode("ascii", "ignore").decode("ascii")
+    s = s.lower()
+    # Ampersand → "-and-"
+    s = re.sub(r"&", "-and-", s)
+    # Non-alphanumeric → "-"
+    s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
+    return s or "char"
+```
+
+This matches `slugChar` in `spark-anvil-site/src/pages/cast/[app]/[char].astro` AND the canonical implementation in `labsmith/scripts/gen_cast_portraits.py` (fixed 2026-06-05).
+
+### Source of truth for `<char>`
+
+The chapter MD filename (Tier-1 lives at `<app>-app/Docs/dn-s/chapters/<char>.md`; Tier-2 at `labsmith/Resources/DN-S-Tier-Upper/chapters/<app>/<char>.md`) is the canonical slug. Portrait filenames must match. The character's display name in `dnCast.members[]` MAY differ from the slug (e.g., "The Bluffer" → `bluffer.md`); when the registry-derived slug doesn't match the chapter slug, the canonical slug is the chapter filename, and the post-gen fix script (`fix_cast_portrait_slugs.py`) renames the portrait to the chapter slug.
+
+### CI check (prebuild)
+
+`spark-anvil-site/package.json` `prebuild` runs `python3 ../labsmith/scripts/audit_cast_portrait_coverage.py --json` and FAILS the build if any portrait is missing. This makes the regression class build-time-visible — a chapter MD without a matching portrait file blocks deploy. Local dev catches the regression before commit; Cloudflare Pages catches it before deploy.
+
+Per `.claude/rules/spark-anvil-website.md` § "CRITICAL: Normalizer auto-runs in site prebuild" the prebuild chain is the canonical self-healing seam. The cast portrait audit joins it.
+
+### When this rule applies
+
+- **Authoring a new chapter MD**: name the file with the kebab-case slug of the character name; verify a matching `public/cast/<app>/<char>.webp` exists OR queue gen via `scripts/gen_cast_portraits.py --app <slug> --yes`.
+- **Authoring a new app**: the per-app gen workflow already aligns; the `dnCast.members[]` `name` field flows through canonical slug derivation.
+- **Renaming a chapter MD**: rename the portrait file in the same PR. The prebuild CI check will block the merge if not.
+- **Adding a mentor or ensemble char** that doesn't fit `dnCast.members[]`: add it anyway (Captain Castle + The Pawn Cohort precedent — gambittales gained 2 entries 2026-06-05 to close the chapter-page broken-link surface).
+
+### Tools
+
+- `labsmith/scripts/audit_cast_portrait_coverage.py` — enumerate (app, char) pairs; classify missing portraits by remediation path (B1 site rename / B2 app sync / C gen); `--json` machine-readable.
+- `labsmith/scripts/fix_cast_portrait_slugs.py` — Phase B one-shot remediation (B1 site `git mv` + B2 app-repo `cp`). Dry-run by default.
+- `labsmith/scripts/gen_cast_portraits.py` — Phase C gen pipeline; uses canonical slug derivation; idempotent (skip-if-exists).
+
+### What this rule does NOT enforce (yet)
+
+- **Per-cluster trauma-axis review on portrait gen** — Phase C portrait gen still gates on ADR-012 founder-ADR-approved AI gen for trauma-adjacent clusters; the CI check only catches "missing file", not "trauma-axis-unsafe content".
+- **Mentor / ensemble chars in dnCast.members[]**: this rule documents the precedent but doesn't enforce that every chapter MD has a matching `dnCast.members[]` entry. File a per-app handoff to add mentors/ensembles to the registry when a gap surfaces.
+- **App-repo Resources/Cast slug**: the rule applies to spark-anvil-site portraits only. App-bundle conventions per `.claude/rules/forgekit.md` § "Cast asset filename convention" (`cast_<character_slug>_<pose>.webp`) remain orthogonal.
+
+### Cross-references
+
+- `Docs/AUDIT_CAST_PORTRAIT_BROKEN_LINKS_2026-06-05.md` — Phase A + B remediation audit
+- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § cast portrait broken-image
+- `.claude/rules/forgekit.md` § "Cast asset filename convention" (app-bundle orthogonal convention)
+- `.claude/rules/portfolio.md` § "Asset Consumer Audit" (precedent for "registered ≠ wired" / "synced ≠ rendered")
+
 ## Cross-references
 
 - `Docs/RESEARCH_SPARK_ANVIL_WEBSITE.md` — research synthesis (~2026-05-20 web search + competitive analysis)
@@ -206,5 +303,6 @@ The site now ships **663 illustrated chapter-book pages** at `/cast/<app>/<char>
 - `Docs/RESEARCH_DN_S_WEBSITE_INTEGRATION_NEXT_STEPS_2026-06-02.md` — Wave 1 research foundation (24 sources)
 - `Docs/AUDIT_DN_S_6_PILLAR_FINAL_2026-06-02.md` — DN-S 6-pillar coverage baseline + chapter-book content source
 - `labsmith/scripts/sync_content_to_site.sh` — chapter/audio/illustration distribution from app repos
-- `labsmith/scripts/normalize_chapter_frontmatter.py` — YAML normalizer for synced chapter MDs
+- `labsmith/scripts/normalize_chapter_frontmatter.py` — YAML normalizer for synced chapter MDs (source of truth)
+- `spark-anvil-site/scripts/normalize-chapter-frontmatter.py` — in-repo mirror; auto-runs in prebuild on every site build
 <!-- END LABSMITH-SYNCED CONTENT -->

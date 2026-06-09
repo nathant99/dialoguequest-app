@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # FoundationModels Patterns
 
 ## Availability

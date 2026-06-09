@@ -1,3 +1,11 @@
+---
+paths:
+  - "**/*.swift"
+  - "**/Info.plist"
+  - "**/*.entitlements"
+  - "**/HANDOFF_FROM_LABSMITH_*.md"
+---
+
 # Age Assurance & COPPA (2026 Updates)
 
 ## Declared Age Range API (iOS 26.2+)

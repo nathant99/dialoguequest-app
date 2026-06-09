@@ -1,3 +1,11 @@
+---
+paths:
+  - "**/*DebugLog*.swift"
+  - "**/*DebugFileLog*.swift"
+  - "**/Server/**/*.swift"
+  - "**/Services/**/*.swift"
+---
+
 # Debug Logging for Runtime-Behavior Auditing
 
 Portfolio-wide best practices for adding extensive debug logging to detect unexpected runtime behaviors in iOS apps + Hummingbird servers. Codified 2026-05-28 after a 4-PR rollout in curiosityquest (PRs #114 → #117) that wired ~110 log call sites across 18 services / controllers / view layers.

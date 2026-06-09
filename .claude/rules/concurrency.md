@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # Concurrency Rules
 
 ## Build Settings (Xcode 26 defaults)

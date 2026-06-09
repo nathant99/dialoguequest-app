@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # State Machine Patterns
 
 ## When to Use a State Machine

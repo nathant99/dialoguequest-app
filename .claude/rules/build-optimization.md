@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/*.xcconfig"
+  - "**/Package.swift"
+  - "**/Sources/**"
+---
+
 # Build & Test Optimization
 
 ## Compilation Caching (Xcode 26+)

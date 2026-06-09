@@ -1,3 +1,14 @@
+---
+paths:
+  - "**/dn-s/chapters/**/*.md"
+  - "**/HANDOFF_FROM_LABSMITH_DISTRIBUTED_NARRATIVE*.md"
+  - "**/HANDOFF_FROM_LABSMITH_DN_S_*.md"
+  - "**/Docs/RESEARCH_*TRAUMA*.md"
+  - "**/Resources/InterleavedChapters/**"
+  - "**/scripts/gen_dn_s_*.py"
+  - "**/scripts/rewrite_chapter_register*.py"
+---
+
 # Trauma-Informed Content Design
 
 Portfolio standard codified 2026-05-19, grounded in SAMHSA TIP 57 (2014) + Eggleston et al. (2025) scoping review + Stoltenburg et al. (2024) STRYV365 evaluation. See `labsmith/Docs/RESEARCH_DIR_FEDC_DEEP_DEVELOPMENTAL_AUDIT.md` § 8 for the full evidence chain.

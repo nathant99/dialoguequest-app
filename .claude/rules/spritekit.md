@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # SpriteKit Patterns
 
 ## Scene Architecture
