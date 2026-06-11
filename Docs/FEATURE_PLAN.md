@@ -1,0 +1,230 @@
+# DialogueQuest — Feature Plan
+
+> Phased delivery roadmap. Mirrors the engineering breakdown in `@Docs/TECHNICAL_DESIGN.md`. Implementing sessions check off boxes as work lands; do not collapse phases — the per-phase exit criteria gate ship readiness.
+
+## Phase 1: Branching Dialogue MVP
+
+Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-consistency feedback, subtext panel, tag-balance dashboard, anthology gallery, and AI mentor — the canonical "write a conversation, not a paragraph" craft loop.
+
+### Scaffolding
+
+- [ ] Create Xcode project with thin app shell (`DialogueQuest/DialogueQuestApp.swift`)
+- [ ] Create `Libraries/Package.swift` with 6 targets (Models, Services, SharedUI, GameEngine, AIMentor, AppFeature)
+- [ ] Add ForgeKit dependency (remote GitHub URL, `from: "0.99.0"`)
+- [ ] Create stub source files for all targets
+- [ ] Verify build succeeds with zero warnings
+- [ ] Create `.xcworkspace` with Libraries as workspace member
+
+### Data Layer
+
+- [ ] Define SwiftData models: `DialogueTree`, `DialogueNode`, `CharacterDef`, `PlayerProgress`, `AnthologyEntry`
+- [ ] Create `VersionedSchema` (V1) with all models
+- [ ] Create `SchemaMigrationPlan` (V1 only — start early)
+- [ ] Implement local `CharacterDef` definition flow (kid authors 2-3 characters with voice / register / quirks per `.claude/rules/distributed-narrative.md` voice register pattern)
+- [ ] Implement `CharacterForge` import hook (deferred Phase 2 — Phase 1 ships local-only)
+- [ ] Create value-type cache structs for all `@Model` types
+
+### Dialogue Engine
+
+- [ ] Implement `DialogueTree` value type (root + node list + edge list)
+- [ ] Implement `DialogueNode` value type (speaker / line / branch options / tag-attribution / inferred-subtext)
+- [ ] Implement `BranchMeaningfulnessCheck` — 3-question Socratic prompt per branch point + 1-line reflection
+- [ ] Implement `VoiceConsistencyAnalyzer` — per-character cumulative voice-match check across all nodes
+- [ ] Implement `TagBalancer` — count `"X said"` vs unattributed vs descriptive beats per character; thresholds + warning ribbons
+- [ ] Implement `DialogueTreeMachine` view-local state machine per `.claude/rules/state-machines.md`
+- [ ] Implement tree-depth + branch-count constraints (5-15 nodes Phase 1)
+- [ ] Implement deterministic seedable RNG for reproducible test states
+
+### Subtext Detector (AI)
+
+- [ ] Implement `DialogueLineAnalysis` `@Generable` (surface text + AI-inferred subtext + voice-match score)
+- [ ] Implement static fallbacks for every `@Generable` per `.claude/rules/foundationmodels.md`
+- [ ] Implement subtext-confirmation UX (kid confirms or rejects inferred subtext → Socratic reflection)
+- [ ] Implement curriculum-guarded fallback when FM session unavailable
+- [ ] Wire detector to `WritingEvaluator` shared extension (reuse CharacterForge `VoiceCheck` API)
+
+### SwiftUI Views
+
+- [ ] Create 4-tab `TabView` (Write / Adventure / Progress / Profile) per portfolio convention
+- [ ] Build `DialogueTreeBuilderView` — 2-D node-edge graph editor (reuse CharacterForge relationship-graph patterns)
+- [ ] Build `NodeInspectorView` — per-node line + speaker + tag-attribution editing
+- [ ] Build `SubtextPanelView` — side panel showing surface + AI-inferred subtext; confirm/reject controls
+- [ ] Build `TagBalanceDashboardView` — bar chart per character; warning ribbons on imbalance
+- [ ] Build `BranchMeaningfulnessCheckView` — 3-question Socratic prompt + 1-line reflection
+- [ ] Build `AnthologyGalleryView` — mood-tagged completed trees; thumbnail + opening line
+- [ ] Build `ProgressView` with XP / streak / badge / dialogue-craft attunement chart
+- [ ] Build `ProfileView` with `ForgeAvatar.AvatarStudioView(.lite)`
+- [ ] Build `SettingsView` with parental gate
+- [ ] Build `QuizView` for question kits
+
+### AI Mentor (DN cast lead per handoff)
+
+- [ ] Create mentor class with lazy `LanguageModelSession`
+- [ ] Implement `VoiceCue` `@Generable` for per-character voice-coaching nudges
+- [ ] Implement `SubtextHint` `@Generable` for surface-vs-subtext reflection
+- [ ] Implement `TagBalanceTip` `@Generable` for attribution-rhythm coaching
+- [ ] Implement static fallbacks for every `@Generable`
+- [ ] Create mentor speech-bubble UI component
+- [ ] Wire mentor to events: branch-point reached, voice-consistency dip, tag-balance threshold crossed
+
+### Gamification
+
+- [ ] Integrate ForgeGamification `XPEngine` for leveling
+- [ ] Integrate `StreakManager` for daily engagement
+- [ ] Integrate `AchievementEngine` with first 10 Phase-1 achievements
+- [ ] Wire question kits 01-04 via `Bundle.module` (voice / subtext / tag balance / branching)
+- [ ] Implement XP awards for: first tree shipped, first subtext confirmation, balanced tags, meaningful branch reflection
+
+### Adventure Mode
+
+- [ ] Wire Level 1 config from `spark-anvil-hub/Resources/HubContributions/dialoguequest.json` (Word Workshop zone)
+- [ ] Implement `DialogueQuestHubContribution` Level 2 Swift overlay in `Libraries/Sources/AppFeature/HubContribution/`
+- [ ] Register mode-cards in `AdventureView`
+- [ ] Wire `ForgeProgressionManager` gating
+
+### Onboarding
+
+- [ ] Create 5-step onboarding flow (welcome, meet 2 characters, first 3-node tree, first subtext check, first published tree)
+- [ ] Implement aha moment: first subtext confirmation revealing 2 layers of meaning
+- [ ] Implement progressive disclosure (Session 1: 3-node tree only)
+- [ ] Implement parent handoff flow (30s setup)
+- [ ] Implement Apple Declared Age Range API gate (iOS 26+)
+
+### Quality
+
+- [ ] Unit tests for dialogue tree navigation + branch-meaningfulness scoring
+- [ ] Unit tests for voice consistency analyzer
+- [ ] Unit tests for tag balancer thresholds
+- [ ] Unit tests for subtext fallback paths
+- [ ] UI tests for tree-builder flow
+- [ ] UI tests for subtext confirmation flow
+- [ ] Accessibility audit (VoiceOver / Dynamic Type / color contrast)
+- [ ] Performance profiling (tree edit latency < 16ms; AI analysis call queue-bounded)
+
+**Exit criteria**: first session reaches aha moment in ≤ 60 seconds; 5-15 node tree authorable; subtext confirmation flow shippable; 4 question kits ship; anthology gallery functional.
+
+---
+
+## Phase 2: 3-Character Trees + CharacterForge Import
+
+Add third character (triangle dialogues), import characters from CharacterForge, and expand the anthology.
+
+- [ ] Expand tree to support 3 characters (triangle dynamics; jealousy / alliance / arbitration patterns)
+- [ ] Implement CharacterForge import hook — load named characters with established voice registers
+- [ ] Implement `CharacterRoleConstraint` — characters carry archetype (protagonist / antagonist / mentor / etc.) with voice-baseline guidance
+- [ ] Add 5 more triangle-specific question kits (kits 05-09)
+- [ ] Add 8 Phase-2 achievements
+- [ ] Add ForgeAdventure mode: Voice Crucible (target voice + write a line in their register)
+- [ ] Expand subtext detector with multi-speaker layered-subtext analysis
+- [ ] Wire anthology export hook to TaleForge
+
+**Exit criteria**: 3-character trees authorable; CharacterForge import functional; 9 question kits live.
+
+---
+
+## Phase 3: Dialogue Performance & Voice Coaching
+
+Add read-aloud performance, voice-acting coaching, and audio export of completed trees.
+
+- [ ] Implement read-aloud playback (text-to-speech with per-character voice variants — accessibility + perf)
+- [ ] Implement voice-acting coach (kid records their own voice for a character; AI compares to register guidance)
+- [ ] Implement audio export of completed dialogue tree (CAF; on-device only)
+- [ ] Add 4 performance-focused question kits (kits 10-13)
+- [ ] Add 6 Phase-3 achievements
+- [ ] Add ForgeAdventure mode: Performance Booth (voice + line + tree → audio export)
+
+**Exit criteria**: read-aloud playback shippable; voice-acting coach gives actionable feedback; audio export works offline.
+
+---
+
+## Phase 4: Anthology + Classroom + App Store
+
+Anthology curation, classroom integration, and App Store submission readiness.
+
+- [ ] Implement anthology curation (kid-curated collection of best trees with themed organization)
+- [ ] Implement classroom mode (ForgeKit `ForgeClassroom` integration when wired)
+- [ ] Implement parent/educator progress reports (`ForgeReporting`) standards-mapped to CCSS-ELA writing standards
+- [ ] Add 3 final question kits (kits 14-16; synthesis / cross-craft / writing process)
+- [ ] Add 8 advanced achievements
+- [ ] App Store submission preparation (privacy nutrition label / KIDSAFE plan / parental gates)
+- [ ] App Store screenshot + preview-video assets (await hub distribution per portfolio pipeline)
+
+**Exit criteria**: full 16-kit set; classroom mode wired; App Store metadata complete.
+
+---
+
+## Phase: Onboarding & Child Safety
+
+COPPA compliance, parental consent, age gates, and first-time experience polish. Runs in parallel with Phase 1 — must land BEFORE TestFlight.
+
+### Onboarding & Child Safety (Excellence Framework)
+
+- [ ] **First 60 Seconds experience** — mentor intro → meet 2 characters → first dialogue line → subtext reveal → curiosity hook
+- [ ] **Aha moment design** — first subtext confirmation revealing layered meaning
+- [ ] **Parent handoff flow** — 30-second parent setup → "Ready!" transition
+- [ ] **Age gate** — Apple Declared Age Range API on iOS 26+
+- [ ] **Parental consent service** — COPPA-compliant consent; annual re-consent per 2026 FTC
+- [ ] **Privacy policy** — Plain-language policy accessible from Settings and App Store listing
+- [ ] **Parental gates** — Required for external links and data-sharing permissions
+- [ ] **Progressive disclosure** — Session 1: 3-node tree only → Sessions 2-3: 5-node + tag balance → Sessions 4+: full features
+
+### Engagement Foundation (Excellence Framework)
+
+- [ ] **Streak system** — Daily activity with streak freeze (one mercy day per week), warm broken-streak messaging ("Your characters miss you!")
+- [ ] **DDA engine** — Invisible difficulty adjustment across branch-meaningfulness scoring + subtext-detector confidence thresholds
+- [ ] **Session targeting** — 10-15 minute sessions with gentle ending summary
+- [ ] **Variable rewards** — ~1 in 5 sessions: rare voice-craft tip / hidden anthology theme / character-cameo
+- [ ] **Return loop** — Welcome-back flow for 3+ day lapsed users: warm greeting + best-tree recap
+- [ ] **Retention metrics baseline** — D1 / D7 / D30 (on-device, privacy-first)
+
+**Exit criteria**: aha moment within 60s; DDA holds flow; engagement loop creates intrinsic return motivation.
+
+---
+
+## Phase: Delight & Parent Integration
+
+Audio/visual/haptic polish, parent-facing dashboards, and emotional design. Runs after Phase 2 minimum.
+
+### Delight & Polish
+
+- [ ] **Juice layer** — Visual + audio + haptic trifecta on every interaction (with iPad haptic fallback)
+- [ ] **Celebration system** — Proportional: subtle sparkle for tag-balance reach → full-screen for "first published tree" → cinematic for "anthology curation milestone"
+- [ ] **Micro-delight coverage** — All 8 types: celebration, surprise, personality, mastery, social, sensory, agency, discovery
+- [ ] **Character personality** — Mentor with callbacks to player's recurring voice patterns + favorite themes
+- [ ] **Mastery moments** — Distinct screen ripple + chord when child internalizes voice-consistency intuition
+- [ ] **Easter eggs** — Hidden character-cameo invitations (DN-cast members visit as guest writers)
+- [ ] **Share-worthy moments** — Published-tree certificates; anthology covers; voice-acting badges
+
+### Parent Integration
+
+- [ ] **Progress dashboard** — Parent-facing standards-mapped view (CCSS-ELA writing standards)
+- [ ] **Parental controls** — Daily session time limits (default 30 min) + content-comfort filters (e.g., dialogue-topic preferences)
+- [ ] **Weekly summary** — Opt-in progress notification (strengths, growth areas, recommendations)
+- [ ] **Session closer** — End-of-session summary with achievements + preview of next session content
+
+---
+
+## Phase: Accessibility & Trauma-Informed Polish
+
+- [ ] VoiceOver labels for every dialogue node + character portrait
+- [ ] Dynamic Type support across tree builder + inspector
+- [ ] Color-contrast audit (WCAG AA in default + dark + high-contrast themes)
+- [ ] Reduce-Motion variants for tree-edit animations + subtext-reveal flourishes
+- [ ] Reduce-Transparency variants for any glass UI (per portfolio Liquid Glass policy)
+- [ ] Trauma-informed gate review for advanced dialogue topics — flag conflict / loss / identity-shame themes before exposing to kid (SAMHSA TIP 57 register; off-ramps)
+- [ ] Crisis-resource list (988 / Childhelp / Crisis Text Line) surfaced from Settings
+
+**Exit criteria**: A11y audit PASS; trauma-gate sensitivity review per ADR-016 protocol if mature-topic dialogues unlock.
+
+---
+
+## Cross-references
+
+- `@Docs/TECHNICAL_DESIGN.md` — architecture + state machines + domain model
+- `@Docs/IMPLEMENTATION_HANDOFF.md` — hub-shipped implementation context
+- `@Docs/HANDOFF_FROM_LABSMITH_DISTRIBUTED_NARRATIVE_RETROFIT.md` — DN cast (voice mentors)
+- `@Docs/HANDOFF_FROM_LABSMITH_DN_S_STORY_PER_CHARACTER.md` — DN-S chapter-depth backstories
+- `@.claude/rules/forgekit.md` § Module Catalog — ForgeKit 0.99 surface
+- `@.claude/rules/state-machines.md` — DialogueTreeMachine pattern
+- `@.claude/rules/foundationmodels.md` — `@Generable` + fallback discipline
+- `@.claude/rules/distributed-narrative.md` — voice register pattern for character definitions
