@@ -459,8 +459,8 @@ For now (pre-graduation), the `.gemini` category logs are the right entry point.
 
 ## Cross-references
 
-- `labsmith/.claude/rules/portfolio.md` § Debug Logging — portfolio cross-ref + lift provenance
-- `labsmith/Docs/RESEARCH_RUNTIME_BEHAVIOR_AUDIT_LOGGING_2026.md` — research synthesis behind this rule (30 sources surveyed across 4 domains; 6 codified findings)
+- `spark-anvil-hub/.claude/rules/portfolio.md` § Debug Logging — portfolio cross-ref + lift provenance
+- `spark-anvil-hub/Docs/RESEARCH_RUNTIME_BEHAVIOR_AUDIT_LOGGING_2026.md` — research synthesis behind this rule (30 sources surveyed across 4 domains; 6 codified findings)
 - `curiosityquest-app/Packages/Libraries/Sources/Services/DebugLog.swift` — iOS reference impl (single-seam emitter, 7 categories, `#if DEBUG`-gated)
 - `curiosityquest-app/Server/CuriosityQuestServer/Sources/Services/DebugFileLog.swift` — server reference impl (8 categories, file+stdout, env-gated verbose)
 - `.claude/rules/warnings.md` § Privacy-Gated Frameworks / Entitlement-Gated Frameworks — defensive-gate pattern that `DebugLog.permission` instruments
@@ -469,7 +469,7 @@ For now (pre-graduation), the `.gemini` category logs are the right entry point.
 
 ### Research artifact
 
-The raw 2026-05-28 research findings (the reasoning behind each of the 6 § "Beyond the basics" sections above, methodology, sources surveyed, open follow-ups) live as a separate artifact at `labsmith/Docs/RESEARCH_RUNTIME_BEHAVIOR_AUDIT_LOGGING_2026.md` per the `.claude/rules/workflow.md` § "Save Research & Plans to Docs/" rule. Future sessions auditing this synthesis should read the research doc to see what was considered + rejected before updating this rule.
+The raw 2026-05-28 research findings (the reasoning behind each of the 6 § "Beyond the basics" sections above, methodology, sources surveyed, open follow-ups) live as a separate artifact at `spark-anvil-hub/Docs/RESEARCH_RUNTIME_BEHAVIOR_AUDIT_LOGGING_2026.md` per the `.claude/rules/workflow.md` § "Save Research & Plans to Docs/" rule. Future sessions auditing this synthesis should read the research doc to see what was considered + rejected before updating this rule.
 
 ### External research sources (2026-05-28)
 
@@ -528,7 +528,7 @@ The cascade worked because PRs #130 (per-chunk SSE + TTS lifecycle) and #136 (15
 
 ### Cross-references
 
-- `labsmith/.claude/rules/audio-pipeline.md` — companion rule from the same cascade (gzip + WAV-wrap + OSStatus FourCC)
-- `labsmith/.claude/rules/forgekit.md` § Server `/version` endpoint — sibling lift from same cascade
-- `labsmith/Docs/RESEARCH_TTS_AUDIO_PIPELINE_CASCADE_2026-05-29.md` — full 8-lesson cascade table + per-layer diagnosis methodology
+- `spark-anvil-hub/.claude/rules/audio-pipeline.md` — companion rule from the same cascade (gzip + WAV-wrap + OSStatus FourCC)
+- `spark-anvil-hub/.claude/rules/forgekit.md` § Server `/version` endpoint — sibling lift from same cascade
+- `spark-anvil-hub/Docs/RESEARCH_TTS_AUDIO_PIPELINE_CASCADE_2026-05-29.md` — full 8-lesson cascade table + per-layer diagnosis methodology
 <!-- END LABSMITH-SYNCED CONTENT -->

@@ -4,7 +4,7 @@ Shared SPM framework at `../forgekit/`. Apps import only the modules they need.
 
 ## Versioning
 
-ForgeKit uses **semantic versioning** with annotated git tags (current: **0.99.1** shipped 2026-05-26, pre-1.0). Breaking changes are expected before 1.0. **`forgekit/Docs/CHANGELOG.md` is authoritative** — labsmith rule/CLAUDE.md text drifts; verify CHANGELOG before quoting a specific version.
+ForgeKit uses **semantic versioning** with annotated git tags (current: **0.99.1** shipped 2026-05-26, pre-1.0). Breaking changes are expected before 1.0. **`forgekit/Docs/CHANGELOG.md` is authoritative** — hub rule/CLAUDE.md text drifts; verify CHANGELOG before quoting a specific version.
 
 **0.99.1 — patch-only** test rewrite (`ForgeAIGeneratorTests` → `ForgeAIContentCachePublicAPITests`).
 
@@ -71,7 +71,7 @@ For the authoritative list, run `ls ../forgekit/Sources/{Client,Server,Shared}`.
 | `ForgeAdventure` | ForgeModels | Adventure mode framework: 13 game mode engines, map progression, mode availability, multiplayer config. **Hub subdirectory (0.79.0)**: `HubContribution`, `HubContributionRegistry` (actor), `HubContributionConfig` (Codable snake_case + Int `BloomLevel`), `HubGenericChallengeView`, `HubMentorOrchestrator` (+ `HubMentorSession` protocol + `NoOpHubMentorSession`), value types (`ZoneID`, `HubPresentation`, `MentorPersona`, `AudioVoiceProfile`, `HubKitResource`, `EngineCopy`, `HubChallengeResult`, `HubQuestion`/`HubQuestionKit`, `HubChallengeContext`), `Color(hex:)` extension |
 | `ForgeAI` | ForgeModels | FoundationModels helpers: session management, availability gating |
 | `ForgeAnalytics` | ForgeModels | Analytics events, session tracking, engagement metrics |
-| `ForgeAvatar` (0.82.0) | ForgeModels (0.83.0+) | Composable avatar system. `AvatarConfig` + `AvatarLayer` live in `ForgeModels` since 0.83.0 (single source of truth, no WebP-asset drag on ForgeSync). Other public types: `AvatarAssetCatalog` (actor, multi-bundle resolution), `AvatarRenderer` (SwiftUI, renderer-masking clips layers to `anchorRect`), `AvatarSpriteNode` (SKNode w/ lazy visual setup). Bundles 128 WebP assets (6.8 MB): 20 anchors + 40 layers + 68 cosmetics. Toca-Boca-style chunky-cartoon aesthetic per `labsmith/Docs/DESIGN_AVATAR_AESTHETIC.md`. **Edit authority**: see Avatar Edit Authority section below |
+| `ForgeAvatar` (0.82.0) | ForgeModels (0.83.0+) | Composable avatar system. `AvatarConfig` + `AvatarLayer` live in `ForgeModels` since 0.83.0 (single source of truth, no WebP-asset drag on ForgeSync). Other public types: `AvatarAssetCatalog` (actor, multi-bundle resolution), `AvatarRenderer` (SwiftUI, renderer-masking clips layers to `anchorRect`), `AvatarSpriteNode` (SKNode w/ lazy visual setup). Bundles 128 WebP assets (6.8 MB): 20 anchors + 40 layers + 68 cosmetics. Toca-Boca-style chunky-cartoon aesthetic per `spark-anvil-hub/Docs/DESIGN_AVATAR_AESTHETIC.md`. **Edit authority**: see Avatar Edit Authority section below |
 | `ForgeAudio` | ForgeModels | Audio playback, SFX management |
 | `ForgeCelebration` | ForgeModels, ForgeIllustrations | Celebration *orchestration* (`CelebrationCoordinator`, `CelebrationOverlayModifier`); separate from `ForgeIllustrations.CelebrationCatalog` which owns the assets |
 | `ForgeContent` | ForgeModels, ForgeNetworking | Content loading, question kit parsing |
@@ -243,7 +243,7 @@ GamificationConfig(
 
 ## Avatar Edit Authority (ForgeAvatar + ForgeSync, 0.85.0+)
 
-Locked-in portfolio policy — see `labsmith/Docs/DECISION_AVATAR_EDIT_AUTHORITY.md` for full rationale (**R3** revision: universal full editor + hub-as-cross-portfolio-manager). `AvatarStudioView` **shipped in ForgeKit 0.85.0** (2026-05-17).
+Locked-in portfolio policy — see `spark-anvil-hub/Docs/DECISION_AVATAR_EDIT_AUTHORITY.md` for full rationale (**R3** revision: universal full editor + hub-as-cross-portfolio-manager). `AvatarStudioView` **shipped in ForgeKit 0.85.0** (2026-05-17).
 
 - **Any app MAY write `ForgeID.avatar`** via `appGroupStore.setAvatar(_:editedAt:)` — but apps using `ForgeAvatar.AvatarStudioView` don't call `setAvatar` directly; the view does it for them on Save. Last-write-wins on `avatarEditedAt`. If you must call `setAvatar` directly (hand-rolled paths are disallowed but the LWW rule still applies), pass `editedAt: .now`. The single-arg overload clears the timestamp; never use it
 - **Render the editor via `ForgeAvatar.AvatarStudioView`, not hand-rolled UI.** Public `Presentation` enum:
@@ -368,8 +368,8 @@ CuriosityQuestServer (CQ PR #135):
 
 ### Cross-references
 
-- `labsmith/Docs/RESEARCH_SERVER_VERSION_ENDPOINT_2026-05-29.md` — sources + security analysis + methodology lesson
-- `labsmith/.claude/rules/audio-pipeline.md` — companion rule from the same CQ cascade
+- `spark-anvil-hub/Docs/RESEARCH_SERVER_VERSION_ENDPOINT_2026-05-29.md` — sources + security analysis + methodology lesson
+- `spark-anvil-hub/.claude/rules/audio-pipeline.md` — companion rule from the same CQ cascade
 
 ## Cast asset filename convention (DN methodology)
 

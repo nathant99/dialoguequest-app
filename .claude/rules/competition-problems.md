@@ -107,7 +107,7 @@ Tool: `scripts/import_competition_problems.py`. Pipeline:
 
 ## Per-app handoff
 
-When kit 17 ships to an app's repo, the same wave files `Docs/HANDOFF_FROM_LABSMITH_COMPETITION_PROBLEMS_KIT_17.md` per `.claude/rules/portfolio.md` § Standing rule — every asset distribution wave files a per-app handoff.
+When kit 17 ships to an app's repo, the same wave files `Docs/HANDOFF_FROM_HUB_COMPETITION_PROBLEMS_KIT_17.md` (canonical 2026-06-11+) per `.claude/rules/portfolio.md` § Standing rule — every asset distribution wave files a per-app handoff. Pre-rename equivalent was `HANDOFF_FROM_LABSMITH_COMPETITION_PROBLEMS_KIT_17.md` (preserved if shipped pre-2026-06-11).
 
 Handoff content:
 - What shipped (count of problems + source archives + year range)

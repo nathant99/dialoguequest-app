@@ -69,9 +69,9 @@ When an audio-pipeline issue surfaces, walk this order:
 4. **If `truncatedData` server-side**: gzip decompression race. Disable gzip on the request.
 5. **If endpoint silently 200s with empty body**: check auth-header consistency (the body might have errored upstream + been swallowed). See § "Auth header consistency check" in `debug-logging.md`.
 
-## Labsmith-side pre-gen pipeline (R411 #889; DN-S Phase 2 audio drama)
+## Hub-side pre-gen pipeline (R411 #889; DN-S Phase 2 audio drama)
 
-For **pre-generated audio bundled into apps as static CAF files** (NOT runtime TTS streaming — that's the path above), labsmith owns the gen pipeline end-to-end per `.claude/rules/portfolio.md` § Asset generation ownership.
+For **pre-generated audio bundled into apps as static CAF files** (NOT runtime TTS streaming — that's the path above), hub owns the gen pipeline end-to-end per `.claude/rules/portfolio.md` § Asset generation ownership.
 
 Canonical script: `scripts/gen_dn_s_audio_drama.py`. Pattern lifted from CQ's `GeminiService.swift` TTS path:
 
@@ -90,12 +90,12 @@ Gemini 2.5 TTS does not clone custom voices (that's Studio-tier Cloud TTS, enter
 Read the following AS <character>. Voice style: <directive from script>. Pace: slightly slower than normal adult speech; clear and deliberate. Tone: age-9-14 readable; warm but not saccharine; trust the reader's intelligence. Voice register guidance: <voiceRegister text from chapter, ≤300 chars>. Text: <line>
 ```
 
-Apps NEVER author this prompt — labsmith does at gen time. The per-character voiceRegister card is the single source of truth.
+Apps NEVER author this prompt — hub does at gen time. The per-character voiceRegister card is the single source of truth.
 
 ### Output format chain (updated 2026-06-02 per ADR-022 Q2)
 
 1. Gemini 2.5 TTS returns `audio/L16;codec=pcm;rate=24000` (raw signed-16-bit PCM mono @ 24kHz)
-2. Labsmith concatenates per-line PCM bytes + tracks per-line byte offsets for WebVTT timing
+2. Hub concatenates per-line PCM bytes + tracks per-line byte offsets for WebVTT timing
 3. Wrap concatenated PCM in 44-byte RIFF/WAVE header → WAV (port of CQ's `wrapPCMInWAV` in Python at `scripts/gen_dn_s_audio_drama.py:wrap_pcm_in_wav`)
 4. **Triple-emit from the single WAV**:
    - **`.caf`** (app-bundled; iOS-native): `afconvert -f caff -d aac -b 64000 -c 1 in.wav out.caf`
@@ -117,7 +117,7 @@ Apps NEVER author this prompt — labsmith does at gen time. The per-character v
 
 ### Script-format convention
 
-Audio drama scripts live at `labsmith/Resources/AudioDramaScripts/<app>/<drama-title>.script.md` with YAML front-matter (`drama-title:` + `app:` + `source-chapter:` + `duration-target-seconds:`) followed by `[CHARACTER, voice-directive]: dialogue` markers. The format is consumed by `gen_dn_s_audio_drama.py` automatically.
+Audio drama scripts live at `spark-anvil-hub/Resources/AudioDramaScripts/<app>/<drama-title>.script.md` with YAML front-matter (`drama-title:` + `app:` + `source-chapter:` + `duration-target-seconds:`) followed by `[CHARACTER, voice-directive]: dialogue` markers. The format is consumed by `gen_dn_s_audio_drama.py` automatically.
 
 ### Register sourcing — UPPER tier (FK 7-8), NOT lower tier
 
@@ -148,7 +148,7 @@ Per WORK_QUEUE 2026-06-04 § Audio drama version preservation + ADR-025:
 - `gen_dn_s_audio_drama.py` **refuses to overwrite** an existing `<drama>.caf` unless `--overwrite-canonical` (or `--regen-all`) is passed
 - When `--overwrite-canonical` is in effect AND a prior canonical exists, the prior `<drama>.{caf,m4a,vtt}` is archived as `<drama>-v1-<YYYY-MM-DD>.{caf,m4a,vtt}` (date = prior file's mtime) BEFORE regen writes the new canonical
 - `catalog.json versions[]` is appended with the archived version record + the new canonical entry; `canonicalVersionIndex` points to the new entry
-- Site distribution (`scripts/sync_content_to_site.sh`) syncs ONLY the canonical version; sibling versions stay in the app repo as labsmith-side curation artifacts (not bundled to apps' production builds)
+- Site distribution (`scripts/sync_content_to_site.sh`) syncs ONLY the canonical version; sibling versions stay in the app repo as hub-side curation artifacts (not bundled to apps' production builds)
 - Vendor variants (`<drama>-elevenlabs.caf`, future `<drama>-cloud-tts-neural2.caf` etc.) follow the same versions[] tracking; pre-existing convention preserved
 
 ### Default attribution metadata (when script.md front-matter is sparse)
@@ -187,15 +187,15 @@ python3 scripts/gen_dn_s_audio_drama.py --regen-all --apply --start-at activefor
 
 ### Pre-gen vs runtime — orthogonal axes
 
-If an app needs RUNTIME TTS (kid types a word → server proxies → returns audio mid-session), that's the path documented above in § Server: wrap raw PCM in WAV. NOT this pre-gen path. They share the same Gemini model + same WAV-wrap mechanic, but run at different times by different actors (runtime: app server; pre-gen: labsmith curation).
+If an app needs RUNTIME TTS (kid types a word → server proxies → returns audio mid-session), that's the path documented above in § Server: wrap raw PCM in WAV. NOT this pre-gen path. They share the same Gemini model + same WAV-wrap mechanic, but run at different times by different actors (runtime: app server; pre-gen: hub curation).
 
 ## Cross-references
 
-- `labsmith/.claude/rules/debug-logging.md` § Real-world cascade lessons — body-sniff sizing + auth-consistency + "don't declare fixed early" rules
-- `labsmith/.claude/rules/portfolio.md` § Asset generation ownership + handoff requirement — Phase 2 audio drama listed in canonical asset class table
-- `labsmith/Docs/RESEARCH_TTS_AUDIO_PIPELINE_CASCADE_2026-05-29.md` — full 8-lesson cascade table + per-layer diagnosis methodology
-- `labsmith/Docs/PLAN_DN_S_PHASE_2_AUDIO_DRAMA.md` — parent plan (Option E of DN-S Integration per ADR-019)
-- `labsmith/scripts/gen_dn_s_audio_drama.py` — canonical labsmith-side pre-gen script (R411 #889)
+- `spark-anvil-hub/.claude/rules/debug-logging.md` § Real-world cascade lessons — body-sniff sizing + auth-consistency + "don't declare fixed early" rules
+- `spark-anvil-hub/.claude/rules/portfolio.md` § Asset generation ownership + handoff requirement — Phase 2 audio drama listed in canonical asset class table
+- `spark-anvil-hub/Docs/RESEARCH_TTS_AUDIO_PIPELINE_CASCADE_2026-05-29.md` — full 8-lesson cascade table + per-layer diagnosis methodology
+- `spark-anvil-hub/Docs/PLAN_DN_S_PHASE_2_AUDIO_DRAMA.md` — parent plan (Option E of DN-S Integration per ADR-019)
+- `spark-anvil-hub/scripts/gen_dn_s_audio_drama.py` — canonical hub-side pre-gen script (R411 #889)
 - `curiosityquest-app/Server/CuriosityQuestServer/Sources/Services/GeminiService.swift` (PRs #137 + #138) — gzip-disable + PCM→WAV reference impl (server runtime path)
 - `curiosityquest-app/Packages/Libraries/Sources/Services/TTSService.swift` (PRs #131 / #134 / #136) — iOS-side body-sniff + timeout diagnostics
 - `forgekit/Sources/Client/ForgeAudio/AudioDramaPlayer.swift` (0.99.11) — app-side bundle player

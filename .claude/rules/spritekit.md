@@ -162,7 +162,7 @@ CQ's reference impl (PR #147, 2026-05-29) fixed 3 files (SimulationContainerView
 
 ### Cross-references
 
-- `labsmith/Docs/RESEARCH_SPRITEKIT_LAYOUT_SAFE_AREA_2026-05-29.md` — full CQ diagnostic trail + 7 external sources
+- `spark-anvil-hub/Docs/RESEARCH_SPRITEKIT_LAYOUT_SAFE_AREA_2026-05-29.md` — full CQ diagnostic trail + 7 external sources
 - Apple Developer — [SpriteView](https://developer.apple.com/documentation/spritekit/spriteview) + [`SKScene.scaleMode`](https://developer.apple.com/documentation/spritekit/skscene/scalemode)
 - `curiosityquest-app/Packages/Libraries/Sources/SharedUI/Lessons/SimulationContainerView.swift` (post-PR #147) — reference impl
 

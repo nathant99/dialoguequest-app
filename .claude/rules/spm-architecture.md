@@ -7,7 +7,7 @@ paths:
 
 # SPM Modular Architecture
 
-> **Reorganization playbook**: For migrating an existing flat repo to the Apps/Packages/Server monorepo shape (the 2026 industry convention), see `@labsmith/Docs/PLAYBOOK_MONOREPO_REORGANIZATION.md` — authored by QuillSpell after their 5-PR migration (2026-05-17), promoted to labsmith hub 2026-05-20. Opt-in per app session.
+> **Reorganization playbook**: For migrating an existing flat repo to the Apps/Packages/Server monorepo shape (the 2026 industry convention), see `@spark-anvil-hub/Docs/PLAYBOOK_MONOREPO_REORGANIZATION.md` — authored by QuillSpell after their 5-PR migration (2026-05-17), promoted to hub hub 2026-05-20. Opt-in per app session.
 
 ## App Shell + Local Packages Pattern
 

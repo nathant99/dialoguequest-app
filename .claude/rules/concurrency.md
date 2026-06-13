@@ -243,5 +243,5 @@ When this crash class surfaces (CuriosityQuest or any portfolio app), walk this 
 
 **Common false-positive recurrence pattern**: a PR fixes the first identified site but the crash recurs with the same `bt` signature. This means the actual root cause is at a DIFFERENT site (often deeper in the framework chain). PR #127 → PR #128 in CQ is the canonical example — PR #127 removed `guard let self` from AVAudioNodeTap but `[weak self]` capture + `self?` reference in a nested `DispatchQueue.main.async` STILL forced `@MainActor` inheritance. PR #128 applied the full TWO-PART rule and the crash stopped. **Read the bt AGAIN after each fix attempt**; if the framework frame is identical, you fixed the wrong site or fixed it incompletely.
 
-Reference research: `labsmith/Docs/RESEARCH_DISPATCH_ASSERT_QUEUE_FAIL_HEISENBUG_2026-05-28.md` — full CQ diagnosis trail + symptom-vs-reality table + pre-crash log signature pattern.
+Reference research: `spark-anvil-hub/Docs/RESEARCH_DISPATCH_ASSERT_QUEUE_FAIL_HEISENBUG_2026-05-28.md` — full CQ diagnosis trail + symptom-vs-reality table + pre-crash log signature pattern.
 <!-- END LABSMITH-SYNCED CONTENT -->

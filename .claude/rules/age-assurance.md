@@ -4,6 +4,8 @@ paths:
   - "**/Info.plist"
   - "**/*.entitlements"
   - "**/HANDOFF_FROM_LABSMITH_*.md"
+  - "**/HANDOFF_FROM_HUB_*.md"
+  - "**/HANDOFF_FROM_SPARK_ANVIL_HUB_*.md"
 ---
 
 # Age Assurance & COPPA (2026 Updates)

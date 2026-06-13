@@ -3,6 +3,10 @@ paths:
   - "**/dn-s/chapters/**/*.md"
   - "**/HANDOFF_FROM_LABSMITH_DISTRIBUTED_NARRATIVE*.md"
   - "**/HANDOFF_FROM_LABSMITH_DN_S_*.md"
+  - "**/HANDOFF_FROM_HUB_DISTRIBUTED_NARRATIVE*.md"
+  - "**/HANDOFF_FROM_HUB_DN_S_*.md"
+  - "**/HANDOFF_FROM_SPARK_ANVIL_HUB_DISTRIBUTED_NARRATIVE*.md"
+  - "**/HANDOFF_FROM_SPARK_ANVIL_HUB_DN_S_*.md"
   - "**/Docs/RESEARCH_*TRAUMA*.md"
   - "**/Resources/InterleavedChapters/**"
   - "**/scripts/gen_dn_s_*.py"
@@ -11,7 +15,7 @@ paths:
 
 # Trauma-Informed Content Design
 
-Portfolio standard codified 2026-05-19, grounded in SAMHSA TIP 57 (2014) + Eggleston et al. (2025) scoping review + Stoltenburg et al. (2024) STRYV365 evaluation. See `labsmith/Docs/RESEARCH_DIR_FEDC_DEEP_DEVELOPMENTAL_AUDIT.md` § 8 for the full evidence chain.
+Portfolio standard codified 2026-05-19, grounded in SAMHSA TIP 57 (2014) + Eggleston et al. (2025) scoping review + Stoltenburg et al. (2024) STRYV365 evaluation. See `spark-anvil-hub/Docs/RESEARCH_DIR_FEDC_DEEP_DEVELOPMENTAL_AUDIT.md` § 8 for the full evidence chain.
 
 ## When this rule applies
 
@@ -153,12 +157,12 @@ External R0 sensitivity-reviewer signoff is the **preferred path** for trauma-ga
 User-direct ADR-020 approval is an accepted alternative to R0 audio-reviewer signoff for trauma-gated DN-S audio drama gen — **parallel to ADR-016 for text**. Each trauma-gated audio drama wave under this carve-out:
 
 1. **Single-instance ADR per gen wave** — gen scopes covered by ADR-020 directly OR a follow-on ADR-NNN if scope changes; record per-app trauma-axis flag in round-close + audio drama handoff
-2. **Per-app pre-listen audit** RECOMMENDED CONCURRENT — labsmith manually listens to each trauma-gated audio drama before cross-repo PR ship; flag any drift from SAMHSA TIP 57 register or vendor-filter softening for re-gen
+2. **Per-app pre-listen audit** RECOMMENDED CONCURRENT — hub manually listens to each trauma-gated audio drama before cross-repo PR ship; flag any drift from SAMHSA TIP 57 register or vendor-filter softening for re-gen
 3. **SAMHSA TIP 57 register STILL applies**: validate-then-inform / hold-space / refer-up across all spoken lines; mentor posture preserved
 4. **Off-ramp affordances STILL required** via `AudioDramaPlayer.skipToChapter` (ForgeKit 0.99.11+ `AudioDramaPlayer` API) + pacing control + audio-only-mode option per `.claude/rules/distributed-narrative.md` § Off-ramps
 5. **Crisis-resource surfacing** at app-integration time remains MANDATORY per § The mentor posture above; trauma-gated `AudioDramaModerationGate` implementation per app
 6. **Cultural-credit + descendant-community-respect rules** per `.claude/rules/distributed-narrative.md` § Cultural-sensitivity gates STILL apply to script-adaptation BEFORE TTS gen — Indigenous TEK references credited; specific cultural-deity / sacred-text references abstracted to archetypes; no romanticized colonization framing
-7. **Vendor-side content-filter softening** is an accepted script-adaptation move when Gemini 2.5 TTS (or other vendor) flags specific historical-violence terms — softening preserves curriculum while changing surface language (e.g., "Trail of Tears" → "the Cherokee Nation's forced removal"). This is a vendor-side constraint not a labsmith-policy constraint; document the softening in script.md front-matter for audit trail
+7. **Vendor-side content-filter softening** is an accepted script-adaptation move when Gemini 2.5 TTS (or other vendor) flags specific historical-violence terms — softening preserves curriculum while changing surface language (e.g., "Trail of Tears" → "the Cherokee Nation's forced removal"). This is a vendor-side constraint not a hub-policy constraint; document the softening in script.md front-matter for audit trail
 8. **R0 audio-reviewer signoff remains deferred-but-not-waived** for future regulatory or platform-review needs (school-district procurement, etc.)
 
 **Why this carve-out**: same logic as ADR-016 for text — the load-bearing trauma-informed concerns (off-ramps + register + crisis-resource + cultural-respect + vendor-filter discipline) move INTO the audio gen pipeline as MANDATORY constraints. The user holds the authorial-care load directly via ADR-020; per-script SAMHSA-register discipline + per-app pre-listen audit replace the external R0 audio-reviewer gate for the audio-axis specifically. Cumulative R0 audio-reviewer envelope blocking ~25 trauma-gated apps' Phase 2 audio drama indefinitely is a practical blocker, not a moral one.
@@ -167,12 +171,12 @@ User-direct ADR-020 approval is an accepted alternative to R0 audio-reviewer sig
 
 ## Cross-references
 
-- `labsmith/.claude/rules/ai-content.md` — AI-generated content accuracy policy (TI applies on top of accuracy)
-- `labsmith/.claude/rules/age-assurance.md` — COPPA / age-range API context (some TI affordances are required by COPPA + state laws independently)
-- `labsmith/Docs/RESEARCH_DIR_FEDC_DEEP_DEVELOPMENTAL_AUDIT.md` § 8 — full evidence base + citations
+- `spark-anvil-hub/.claude/rules/ai-content.md` — AI-generated content accuracy policy (TI applies on top of accuracy)
+- `spark-anvil-hub/.claude/rules/age-assurance.md` — COPPA / age-range API context (some TI affordances are required by COPPA + state laws independently)
+- `spark-anvil-hub/Docs/RESEARCH_DIR_FEDC_DEEP_DEVELOPMENTAL_AUDIT.md` § 8 — full evidence base + citations
 - `mindforge-app/Docs/TECHNICAL_DESIGN.md` — portfolio gold-standard implementation (explicit SAMHSA + NCTSN cited)
-- `labsmith/Docs/ADR-012_TI_RULE_FOUNDER_ADR_APPROVED_AI_GEN.md` — art-axis carve-out for trauma-adjacent AI gen
-- `labsmith/Docs/ADR-016_DN_S_TRAUMA_GATED_STORY_AXIS_APPROVAL.md` — story-axis carve-out for trauma-gated DN-S chapter authoring (user-direct R363 approval)
+- `spark-anvil-hub/Docs/ADR-012_TI_RULE_FOUNDER_ADR_APPROVED_AI_GEN.md` — art-axis carve-out for trauma-adjacent AI gen
+- `spark-anvil-hub/Docs/ADR-016_DN_S_TRAUMA_GATED_STORY_AXIS_APPROVAL.md` — story-axis carve-out for trauma-gated DN-S chapter authoring (user-direct R363 approval)
 
 ## References
 

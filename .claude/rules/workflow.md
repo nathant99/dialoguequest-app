@@ -16,15 +16,15 @@
 - Keep feature branches current: merge `main` into the feature branch before PR to resolve conflicts
 - Checkpoint commits on feature branches are encouraged — fine-grained history is squashed or preserved at PR merge time
 - Push feature branches to `origin` for PR creation: `git push -u origin feature/<name>`
-- When labsmith distributes shared rule updates while a feature branch is active, merge `main` into the feature branch to pick them up
+- When hub distributes shared rule updates while a feature branch is active, merge `main` into the feature branch to pick them up
 
 ## Auto-Cycle Default (Multi-Commit Work)
 
-**For multi-commit / multi-round work in labsmith (and any session-recurrent autocycle pattern the user has established), the DEFAULT loop is `branch → commit → push → gh pr create → gh pr merge --merge --delete-branch → verify` — no per-step confirmation prompts.** This applies when:
+**For multi-commit / multi-round work in hub (and any session-recurrent autocycle pattern the user has established), the DEFAULT loop is `branch → commit → push → gh pr create → gh pr merge --merge --delete-branch → verify` — no per-step confirmation prompts.** This applies when:
 
 - The user has previously approved an autocycle pattern in the session (e.g., "go with your recs", "pre-approved", "start next round")
 - The change is research / documentation / queue update / planning (low-risk; reversible via git)
-- The PR is in a labsmith-owned repo (labsmith / spark-anvil-site per Round 76 scope-rule change)
+- The PR is in a hub-owned repo (hub / spark-anvil-site per Round 76 scope-rule change)
 
 **Do NOT auto-cycle for**:
 - Cross-repo PRs touching app-repo Swift source code (still scope-rule-bound; app sessions own implementation)
@@ -36,7 +36,7 @@ Codified in memory `feedback_branch_workflow.md`. The verify step (`gh pr view <
 
 ## CRITICAL: Verify PR Merged Before Claiming SHIPPED
 
-**Never mark a PR "SHIPPED" until you have confirmed the merge.** This rule was codified after 3 orphan-PR incidents in labsmith (Round 70 #377 LiveKit DECISION on PR #208; Round 73 PR title-mismatch on PR #220; Round 76 #392 beta-testing surface on PR #86) where queue docs falsely claimed "SHIPPED" while the PR sat OPEN on its feature branch.
+**Never mark a PR "SHIPPED" until you have confirmed the merge.** This rule was codified after 3 orphan-PR incidents in hub (Round 70 #377 LiveKit DECISION on PR #208; Round 73 PR title-mismatch on PR #220; Round 76 #392 beta-testing surface on PR #86) where queue docs falsely claimed "SHIPPED" while the PR sat OPEN on its feature branch.
 
 **Required verification after every PR creation**:
 
@@ -138,7 +138,7 @@ Pattern proven across Round 91 #468 + #469 (68 cross-repo PRs total).
 When authoring or refreshing a cross-repo handoff / portfolio audit, apply these 5 rules jointly. Rules 1-4 codified after Round 96 #487 surfaced that the Round 89 #458 audit mis-classified 3 already-shipped items as OPEN. Rule 5 added Round 112 #532 after Round 109 #529 documented a portfolio-wide finding (R3 "both surfaces" reference impl) in an audit doc that future sessions wouldn't naturally find. See ADR-011.
 
 1. **Pull-first (mandatory)**: `git pull --ff-only` every target repo BEFORE the first grep / read. If `--ff-only` fails on any repo, abort the audit and surface the failure. Stale local clones are the #1 audit failure mode (Round 89 #458 root cause).
-2. **Pair-check (1:1 keyword matching)**: for every `HANDOFF_FROM_APP_*.md` (or `HANDOFF_FROM_FORGEKIT_*.md`) found, grep the same repo for sibling `HANDOFF_FROM_LABSMITH_*.md` files. Use keyword-overlap (Jaccard ≥ 0.5), not exact-name match — the `_SHIPPED` suffix convention means filenames diverge. An app-side request is **only** OPEN-NEEDS-LABSMITH-ACTION if it has NO paired sibling response.
+2. **Pair-check (1:1 keyword matching)**: for every `HANDOFF_FROM_APP_*.md` (or `HANDOFF_FROM_FORGEKIT_*.md`) found, grep the same repo for sibling responses across BOTH conventions: `HANDOFF_FROM_HUB_*.md` (canonical, 2026-06-11+), `HANDOFF_FROM_SPARK_ANVIL_HUB_*.md` (verbose, 2026-06-11+), AND `HANDOFF_FROM_LABSMITH_*.md` (legacy, pre-2026-06-11). Use keyword-overlap (Jaccard ≥ 0.5), not exact-name match — the `_SHIPPED` suffix convention means filenames diverge. An app-side request is **only** OPEN-NEEDS-HUB-ACTION if it has NO paired sibling response across all three filename forms.
 3. **Split-row granularity**: if a request bundles ≥ 2 distinct asks (signaled by "AND" in the filename OR multiple `##` subsections in the body), split the audit row into N sub-rows (e.g., A52a + A52b). Each sub-row independently classified — captures partial-ship state.
 4. **Freshness horizon (applies to STATUS + RECOMMENDATION audits)**: every audit doc gets a `freshness-horizon: <N days>` field in YAML front-matter (default 7 days). OPEN rows older than the horizon are auto-flagged "needs-re-verification"; rounds attempting to action them MUST first re-pull + re-pair-check. **Extension (Round 116 #537)**: Rule 4 applies to **recommendation audits** (e.g., ranking audits identifying "next-N pilots" / cluster pilot suggestions / forward-looking candidate lists) NOT just status audits. Before listing items as actionable candidates, the audit MUST verify the recommended artifact doesn't already exist. Empirical evidence: Round 113 found 14 DN orphan PRs already merged (Round 106 #518 audit listed them as remediation candidates); Round 115 found 3 pillar-deepening pilot handoffs already shipped Rounds 82-85 (Round 109 #529 audit listed them as Round 115 candidates). Net session savings: ~8-10h via Rule 4 verify-before-action. **Tooling (Round 128 #553)**: `scripts/recommendation_audit_verify.py` implements the 5-step verify-before-list mechanic at script level. Input: YAML with `audit:` metadata + `candidates:` list (each with `app` + `expected_artifact` + `candidate_class` + `priority`). Output: markdown report classifying ALREADY-SHIPPED / IN-FLIGHT / NEW-CANDIDATE per candidate + actionable-list (NEW-CANDIDATE only) + verify-before-action savings count. Future recommendation audits should pipe candidate lists through this script before listing actionable work.
 5. **Audit-to-canonical-propagation**: when an audit yields a portfolio-wide finding — a new pattern, reference implementation, policy clarification, or methodology rule — the round-close MUST include propagation to relevant canonical references BEFORE closing the round. Canonical refs are: (a) `.claude/rules/*.md` (loaded into every CC session), (b) `Docs/TEMPLATE_*.md` (read by implementing sessions), (c) `Docs/DECISION_*.md` / `Docs/ADR-*.md` (canonical policy artifacts). Audit docs alone are insufficient — they decay in visibility, and future sessions read rules/template/decision-doc, not audit-doc history. If portfolio rule sync is needed after a `.claude/rules/*.md` update, run `scripts/copy_rules_to_repos.sh --apply` in the same or immediately following round.
@@ -157,9 +157,9 @@ See `Docs/ADR-011_AUDIT_METHODOLOGY_PULL_PAIR_SPLIT.md` for the full rationale +
 
 ### CRITICAL: Pull origin BEFORE freshness queries (in-repo or cross-repo)
 
-When the user asks any "freshness" question — *"any new handoff?"*, *"what changed?"*, *"any open PRs?"*, *"what's the current status?"*, *"what did labsmith ship?"*, *"cq might have new X"* — the **first tool call must be `git pull --ff-only`** before any filesystem inspection (`ls`, `Grep`, `Read`).
+When the user asks any "freshness" question — *"any new handoff?"*, *"what changed?"*, *"any open PRs?"*, *"what's the current status?"*, *"what did hub ship?"*, *"cq might have new X"* — the **first tool call must be `git pull --ff-only`** before any filesystem inspection (`ls`, `Grep`, `Read`).
 
-Why: filesystem queries return ground truth for the LOCAL commit, not for origin. Concurrent labsmith / app sessions ship handoffs + rule updates frequently (5 labsmith PRs landed during a single CQ session 2026-05-29). Answering a freshness query from stale main produces a wrong answer dressed up as authoritative.
+Why: filesystem queries return ground truth for the LOCAL commit, not for origin. Concurrent hub / app sessions ship handoffs + rule updates frequently (5 hub PRs landed during a single CQ session 2026-05-29). Answering a freshness query from stale main produces a wrong answer dressed up as authoritative.
 
 Trigger phrases: "any new", "what's open", "what changed", "what landed", "is there new", "current status", "what's pending", "might have new". When any of these appear with a freshness verb, **pull first, query second**.
 
@@ -167,17 +167,17 @@ If `--ff-only` fails (diverged history), surface that to the user before continu
 
 This is the in-repo analog of the cross-repo Rule 1 in § "Cross-Repo Audit Methodology" + `.claude/rules/portfolio.md` § "Pull Before ANY Cross-Repo Read". Same underlying principle: **never answer a freshness question from stale state**.
 
-Codified 2026-05-29 by CQ session after user-direct: agent answered "any new handoff?" from stale main (2 labsmith PRs behind) and user had to ask "did you pull origin?" to surface the omission. Lifted to labsmith canonical R168 #600.
+Codified 2026-05-29 by CQ session after user-direct: agent answered "any new handoff?" from stale main (2 hub PRs behind) and user had to ask "did you pull origin?" to surface the omission. Lifted to hub canonical R168 #600.
 
 ### CRITICAL: Save Research, Plans, and Audits to Docs/ Immediately
 
 Every time you do research (web search, codebase analysis, design exploration), create a feature plan, or run an audit (handoff coverage, asset state, ranking, sweep, color-scheme alignment, anything that produces a structured finding), write it to a file in `Docs/` BEFORE presenting results or implementing changes. Never leave research / plans / audits only in conversation context or in temp locations (`/tmp/`, scratch files).
 
-**Audit-specific** (codified Round 119 #544 user-direct): every audit must persist in the repo at `Docs/AUDIT_<TOPIC>_<DATE>.md`. NEVER store audit results in `/tmp/` or as untracked files. The audit doc is the durable artifact; conversation context is ephemeral. This applies to labsmith audits (`labsmith/Docs/AUDIT_*.md`) AND per-app audits (`<app>-app/docs/AUDIT_*.md`). YAML front-matter recommended: `status` + `date` + `round` + `freshness-horizon`.
+**Audit-specific** (codified Round 119 #544 user-direct): every audit must persist in the repo at `Docs/AUDIT_<TOPIC>_<DATE>.md`. NEVER store audit results in `/tmp/` or as untracked files. The audit doc is the durable artifact; conversation context is ephemeral. This applies to hub audits (`spark-anvil-hub/Docs/AUDIT_*.md`) AND per-app audits (`<app>-app/docs/AUDIT_*.md`). YAML front-matter recommended: `status` + `date` + `round` + `freshness-horizon`.
 
 ### CRITICAL: Pre-work origin verification (parallel-session collision avoidance)
 
-**Before doing WORK that produces files in an app repo (asset generation, illustration distribution, audio bundles, etc.), `git fetch origin main` for that repo AND verify the target files DON'T already exist on origin.** Codified Round 481 #YYY 2026-06-01 after this session burned ~$5+ on redundant illustration generations where the parallel labsmith session had already shipped the same content to origin.
+**Before doing WORK that produces files in an app repo (asset generation, illustration distribution, audio bundles, etc.), `git fetch origin main` for that repo AND verify the target files DON'T already exist on origin.** Codified Round 481 #YYY 2026-06-01 after this session burned ~$5+ on redundant illustration generations where the parallel hub session had already shipped the same content to origin.
 
 **Verification pattern**:
 ```bash
@@ -188,16 +188,16 @@ origin_count=$(git ls-tree -r origin/main <target-dir>/ 2>/dev/null | grep -c <p
 [ "$origin_count" -gt 0 ] && echo "SKIP — already on origin" || echo "PROCEED — origin empty"
 ```
 
-**Why this matters**: when multiple labsmith sessions race the same trauma-gated cluster work (chapter illustrations / cast portraits / audio dramas), the LATE-arriving session generates redundant assets, hits merge conflicts at PR time, closes its own PR as redundant, AND wastes API spend. The pre-work fetch+check eliminates the race.
+**Why this matters**: when multiple hub sessions race the same trauma-gated cluster work (chapter illustrations / cast portraits / audio dramas), the LATE-arriving session generates redundant assets, hits merge conflicts at PR time, closes its own PR as redundant, AND wastes API spend. The pre-work fetch+check eliminates the race.
 
 **Apply to**:
 - Per-app asset generation (`gen_app_illustrations.py --chapters` / `gen_cast_portraits.py` / etc.)
-- Per-app handoff doc creation if a sibling labsmith session may also be authoring
+- Per-app handoff doc creation if a sibling hub session may also be authoring
 - Bulk distribution scripts (`copy_*_to_repos.sh`) — though these are typically idempotent
 
 **Don't apply to** (these are fine without pre-fetch):
-- Labsmith-local doc edits (rules / ADRs / audits — single session owns these)
-- Code changes to labsmith scripts
+- Hub-local doc edits (rules / ADRs / audits — single session owns these)
+- Code changes to hub scripts
 - Memory file updates
 
 **Companion to** § "CRITICAL: Pull origin BEFORE freshness queries" above. That rule is about READING origin state; this rule is about WRITING after-verification. Both stem from the same principle: never assume your local view matches origin.

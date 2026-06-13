@@ -1,17 +1,17 @@
 # Portfolio Cross-Repo Rules
 
-**IMPORTANT**: Labsmith must NEVER write implementation code (Swift files, tests, views, services) to app repos. Implementation belongs exclusively to each app's own Claude Code session, which can build, test, and integrate against the real Xcode project. Labsmith's role is limited to research, planning, and documentation.
+**IMPORTANT**: Hub must NEVER write implementation code (Swift files, tests, views, services) to app repos. Implementation belongs exclusively to each app's own Claude Code session, which can build, test, and integrate against the real Xcode project. Hub's role is limited to research, planning, and documentation.
 
-**EXCEPTION**: Labsmith MAY update `CLAUDE.md` and `Docs/*.md` files in app repos for cross-repo consistency (e.g., adding `@Docs/` references to design documents, updating project metadata, fixing documentation links). This does not extend to source code, tests, or Xcode project files.
+**EXCEPTION**: Hub MAY update `CLAUDE.md` and `Docs/*.md` files in app repos for cross-repo consistency (e.g., adding `@Docs/` references to design documents, updating project metadata, fixing documentation links). This does not extend to source code, tests, or Xcode project files.
 
 ## Cross-Repo Plan Handoff
 
-Plans created in labsmith that target a specific app repo must be copied to the app repo for implementation:
+Plans created in hub that target a specific app repo must be copied to the app repo for implementation:
 
-1. Create the plan in labsmith `Docs/` — this is the research hub copy
+1. Create the plan in hub `Docs/` — this is the research hub copy
 2. Copy the plan to the target app repo's `Docs/`
 3. The app repo's Claude Code session implements from its local copy
-4. The labsmith copy remains as the archival research artifact
+4. The hub copy remains as the archival research artifact
 
 ## App Repos
 
@@ -19,7 +19,7 @@ All app repos live at `../[appname]-app/`. **For READING / pulling / auditing**:
 
 ### CRITICAL: Distribution scripts MUST source from canonical portfolio registry (R-PORTFOLIO-INVENTORY 2026-06-04)
 
-**For any script that WRITES to multiple app repos (per-app handoff distribution, asset bundle distribution, doc sync, etc.) — the script MUST source the target app list from `labsmith/Docs/REGISTRY_ACTIVE_PORTFOLIO_APPS.txt` (the canonical 140-app registry), NOT from a `ls *-app/` filesystem glob.**
+**For any script that WRITES to multiple app repos (per-app handoff distribution, asset bundle distribution, doc sync, etc.) — the script MUST source the target app list from `spark-anvil-hub/Docs/REGISTRY_ACTIVE_PORTFOLIO_APPS.txt` (the canonical 140-app registry), NOT from a `ls *-app/` filesystem glob.**
 
 **Why**: filesystem globs pick up the entire `~/Projects/GitHub/*-app/` directory tree which includes:
 
@@ -63,7 +63,7 @@ fi
 **When you UPDATE the portfolio inventory** (add an app / retire an app / etc.):
 1. Update `Docs/PORTFOLIO_PATTERNS.md` § "App Repos (140)" (update the count if changed)
 2. Run `python3 scripts/regenerate_portfolio_registry.py` to refresh `Docs/REGISTRY_ACTIVE_PORTFOLIO_APPS.txt`
-3. Commit both changes in a single labsmith PR
+3. Commit both changes in a single hub PR
 
 
 
@@ -81,7 +81,7 @@ This applies to ALL cross-repo operations:
 
 **When delegating to subagents**: The parent must pull before spawning, OR the subagent prompt must explicitly instruct the agent to pull first. Subagents inherit stale working trees if nobody pulls.
 
-**Hard-earned lesson (2026-05-17)**: pulling matters most when **authoring canonical content for a target app** — manifests, configs, schemas, anything that gets bundled into the app's repo or that references the app's data model. The cost of NOT pulling is producing a doc/config that disagrees with the app's shipped reality, then having to author a reconciliation handoff. Concrete failure mode: labsmith authored AdventureHub `HubContribution` Level 1 configs assuming Phase 1 hadn't started; it had shipped 13 PRs with different engine bindings, mentor names, and zone slugs. Reconciliation took a full PR cycle. **Always pull the target app before authoring labsmith content that targets it.** Same rule applies to ForgeKit: never claim a feature ships at version X without `git pull forgekit && head Docs/CHANGELOG.md` first.
+**Hard-earned lesson (2026-05-17)**: pulling matters most when **authoring canonical content for a target app** — manifests, configs, schemas, anything that gets bundled into the app's repo or that references the app's data model. The cost of NOT pulling is producing a doc/config that disagrees with the app's shipped reality, then having to author a reconciliation handoff. Concrete failure mode: hub authored AdventureHub `HubContribution` Level 1 configs assuming Phase 1 hadn't started; it had shipped 13 PRs with different engine bindings, mentor names, and zone slugs. Reconciliation took a full PR cycle. **Always pull the target app before authoring hub content that targets it.** Same rule applies to ForgeKit: never claim a feature ships at version X without `git pull forgekit && head Docs/CHANGELOG.md` first.
 
 **Pull command** (for targeted repos):
 ```bash
@@ -132,7 +132,7 @@ gh pr merge <number> --merge --delete-branch
 gh pr view <number> --json state,mergedAt
 ```
 
-State must be `MERGED`. Three incidents have hit labsmith via orphan-PR bugs:
+State must be `MERGED`. Three incidents have hit hub via orphan-PR bugs:
 - Round 70 #377 (LiveKit DECISION on PR #208 — recovered via PR #213)
 - Round 73 (classroom slots PR title-mismatch on PR #220)
 - Round 76 #392 (beta-testing surface on PR #86 — recovered today)
@@ -143,19 +143,19 @@ Before closing any cross-repo round: `gh pr list --state open --author "@me" --r
 
 ## Cross-Repo Handoff Protocol
 
-App sessions and labsmith communicate via paired handoff docs in each repo's `docs/` (or `Docs/`) directory. App sessions don't read labsmith repo state directly — labsmith and apps coordinate by writing handoff docs into each other's repos.
+App sessions and hub communicate via paired handoff docs in each repo's `docs/` (or `Docs/`) directory. App sessions don't read hub repo state directly — hub and apps coordinate by writing handoff docs into each other's repos.
 
-### When to write a handoff to labsmith
+### When to write a handoff to hub
 
-From an app session, write a handoff doc when the app needs labsmith to:
+From an app session, write a handoff doc when the app needs hub to:
 
-- Update a labsmith script (illustration pipeline, kit generator, consolidation rules)
-- Update a labsmith template (handoff docs, design docs, kit boilerplate)
+- Update a hub script (illustration pipeline, kit generator, consolidation rules)
+- Update a hub template (handoff docs, design docs, kit boilerplate)
 - Add a per-app override (output path, mascot config, custom rules)
 - Author or revise research that the implementing session can't do alone
 - Change a portfolio convention that other apps will inherit
 
-Don't write a handoff to labsmith for:
+Don't write a handoff to hub for:
 
 - App-internal refactors (the implementing session owns app source code)
 - Build, test, or signing issues local to the app
@@ -167,8 +167,11 @@ Both directions live in the same repo's `docs/` (or `Docs/`) — whichever the r
 
 | Direction | Filename pattern | Lives in |
 |---|---|---|
-| App → labsmith | `docs/HANDOFF_FROM_APP_<TOPIC>.md` | App repo (sender) |
-| Labsmith → app | `docs/HANDOFF_FROM_LABSMITH_<TOPIC>.md` | App repo (recipient) |
+| App → hub | `docs/HANDOFF_FROM_APP_<TOPIC>.md` | App repo (sender) |
+| Hub → app (NEW, 2026-06-11+) | `docs/HANDOFF_FROM_HUB_<TOPIC>.md` (canonical) **or** `docs/HANDOFF_FROM_SPARK_ANVIL_HUB_<TOPIC>.md` (verbose) | App repo (recipient) |
+| Hub → app (LEGACY, pre-2026-06-11) | `docs/HANDOFF_FROM_LABSMITH_<TOPIC>.md` | App repo (recipient — existing files preserved) |
+
+**Filename convention change 2026-06-11** (per user-direct + `Docs/WORK_QUEUE_HANDOFF_CONVENTION_HUB_RENAME_2026-06-11.md`): NEW handoff docs use `HANDOFF_FROM_HUB_<TOPIC>.md`. Existing `HANDOFF_FROM_LABSMITH_*.md` files in 100+ app repos STAY (backward compatibility; historical record — do NOT bulk-rename). Cross-repo audit + pair-check tooling MUST recognize BOTH conventions.
 
 `<TOPIC>` is a SCREAMING_SNAKE_CASE description — e.g., `ILLUSTRATION_PIPELINE_PATH`, `PER_APP_OUTPUT_PATH`, `FORGEKIT_SOFT_SPLIT_REQUEST`.
 
@@ -177,16 +180,16 @@ Both directions live in the same repo's `docs/` (or `Docs/`) — whichever the r
 Every handoff doc starts with these lines:
 
 ```markdown
-# Handoff [to|from] Labsmith — <human-readable subject>
+# Handoff [to|from] Hub — <human-readable subject>
 
-Direction: **[app → labsmith | labsmith → app]**. <One-sentence framing>.
+Direction: **[app → hub | hub → app]**. <One-sentence framing>.
 ```
 
 Body sections (use the ones that apply):
 
 - **The decision** — what's being asked for or what was done, in one paragraph
-- **Requested change** (app→labsmith) — concrete pipeline/script/template change with before/after
-- **What labsmith did** (labsmith→app) — code references, commit hashes, PR numbers
+- **Requested change** (app→hub) — concrete pipeline/script/template change with before/after
+- **What hub did** (hub→app) — code references, commit hashes, PR numbers
 - **Options considered** — a small table comparing approaches with verdicts (prevents re-litigating)
 - **State at this handoff's commit** — current asset locations, branch names, what's already done
 - **Sequencing to unblock** — numbered list of what each side does next
@@ -196,24 +199,24 @@ Body sections (use the ones that apply):
 ### Lifecycle
 
 1. **App session** writes `HANDOFF_FROM_APP_<TOPIC>.md` in app repo, commits, pushes
-2. **App session** signals labsmith by mentioning the doc name in their conversation with the user, who can then surface it to the labsmith session
-3. **Labsmith session** reads the handoff (via `git pull` of the app repo), implements the change in labsmith, writes `HANDOFF_FROM_LABSMITH_<TOPIC>.md` in the same app repo's docs/, commits, pushes
-4. **App session** (next CC session in the app repo) reads the labsmith response and continues the integration
+2. **App session** signals hub by mentioning the doc name in their conversation with the user, who can then surface it to the hub session
+3. **Hub session** reads the handoff (via `git pull` of the app repo), implements the change in hub, writes `HANDOFF_FROM_HUB_<TOPIC>.md` (canonical, 2026-06-11+) in the same app repo's docs/, commits, pushes — pre-2026-06-11 hub responses used `HANDOFF_FROM_LABSMITH_<TOPIC>.md` (preserved as-is)
+4. **App session** (next CC session in the app repo) reads the hub response and continues the integration
 
-Both docs stay in the app repo as the durable audit trail. Labsmith doesn't keep its own copy — its action is captured in commits + PR descriptions.
+Both docs stay in the app repo as the durable audit trail. Hub doesn't keep its own copy — its action is captured in commits + PR descriptions.
 
 ### Reference example
 
 CuriosityQuest's bidirectional exchange (2026-05-15) is the canonical example:
 
-- `curiosityquest-app/docs/HANDOFF_FROM_APP_ILLUSTRATION_PIPELINE_PATH.md` — app asked labsmith to write CuriosityQuest's illustration assets to the SharedUI SPM target's resource root instead of repo root
-- `curiosityquest-app/docs/HANDOFF_FROM_LABSMITH_PER_APP_OUTPUT_PATH.md` — labsmith responded with per-app `dest_subpath_for()` override in the bundling script + a one-time `git mv` to relocate existing assets
+- `curiosityquest-app/docs/HANDOFF_FROM_APP_ILLUSTRATION_PIPELINE_PATH.md` — app asked hub to write CuriosityQuest's illustration assets to the SharedUI SPM target's resource root instead of repo root
+- `curiosityquest-app/docs/HANDOFF_FROM_LABSMITH_PER_APP_OUTPUT_PATH.md` — hub responded with per-app `dest_subpath_for()` override in the bundling script + a one-time `git mv` to relocate existing assets
 
 Reading both in order shows the request, the options considered, the implementation, and the next steps each side owns.
 
 ### Asset request sub-pattern
 
-A common case: app needs custom art / audio / icon / illustration assets that labsmith's asset pipelines can generate (or that need a new pipeline). Use the handoff mechanism — don't generate assets in the app repo session, and don't request via Slack / out-of-band.
+A common case: app needs custom art / audio / icon / illustration assets that hub's asset pipelines can generate (or that need a new pipeline). Use the handoff mechanism — don't generate assets in the app repo session, and don't request via Slack / out-of-band.
 
 **Naming**: `HANDOFF_FROM_APP_<ASSET_TYPE>.md` in the app's own `Docs/` (or `docs/`). Examples: `HANDOFF_FROM_APP_BIOME_TILE_ART.md`, `HANDOFF_FROM_APP_AUDIO_SFX.md`, `HANDOFF_FROM_APP_MASCOT_REFRESH.md`, `HANDOFF_FROM_APP_ICON_VARIANTS.md`.
 
@@ -224,25 +227,25 @@ A common case: app needs custom art / audio / icon / illustration assets that la
 - **Style spec** — link to your `Docs/DESIGN_ART_DIRECTION.md` / `Docs/DESIGN_AUDIO_DIRECTION.md` or describe inline (palette, mood, art-style cluster name if portfolio-shared)
 - **Bundle path** — exact path inside the app repo (`Libraries/Sources/SharedUI/Resources/Illustrations/`, `Libraries/Sources/Services/Resources/Audio/`, etc.)
 - **What this unblocks** — the gameplay / UI feature waiting on these assets
-- **Options considered** — including the interim placeholder shipping plan (always ship a placeholder so the app doesn't block on labsmith)
+- **Options considered** — including the interim placeholder shipping plan (always ship a placeholder so the app doesn't block on hub)
 - **State at this handoff's commit** — current branch, ForgeKit pin, what code is in place expecting these assets
 
-**Labsmith's possible responses**:
+**Hub's possible responses**:
 
-| Response | Trigger | Labsmith side |
+| Response | Trigger | Hub side |
 |---|---|---|
-| **Generate immediately** | Existing pipeline covers this asset class | Run `scripts/gen_app_<class>.py` + distribute to the app repo. Drop a `HANDOFF_FROM_LABSMITH_<TOPIC>.md` confirming what shipped. |
+| **Generate immediately** | Existing pipeline covers this asset class | Run `scripts/gen_app_<class>.py` + distribute to the app repo. Drop a `HANDOFF_FROM_HUB_<TOPIC>.md` confirming what shipped. |
 | **Generate with extension** | Existing pipeline needs minor extension (new APP_CONFIGS entry, new cluster prompt) | Author the extension, run, distribute. Same handoff response. |
-| **Plan + defer** | No pipeline exists; one-off would not justify the pipeline build | Author a `Docs/PLAN_NEW_ASSET_PIPELINES.md`-style planning doc in labsmith. Respond to the app with a `HANDOFF_FROM_LABSMITH_*.md` explaining the defer + the trigger that would unblock build (typically 2nd app demand). |
+| **Plan + defer** | No pipeline exists; one-off would not justify the pipeline build | Author a `Docs/PLAN_NEW_ASSET_PIPELINES.md`-style planning doc in hub. Respond to the app with a `HANDOFF_FROM_HUB_*.md` explaining the defer + the trigger that would unblock build (typically 2nd app demand). |
 | **Reject** | Asset class is too app-specific or violates portfolio conventions | Respond explaining why; suggest in-app pattern instead. |
 
-**Apps in the interim**: always ship a placeholder. The handoff is async — don't block your release on labsmith picking it up.
+**Apps in the interim**: always ship a placeholder. The handoff is async — don't block your release on hub picking it up.
 
 ### Asset generation ownership + handoff requirement (2026-05-19 STANDING RULE; reinforced 2026-06-01 R410 #888)
 
-Labsmith **owns portfolio-wide asset generation — ALL asset classes, no exceptions** (user-direct 2026-06-01 "you own the audio generation. you own all asset generation"). Apps don't run any generative pipeline: not Gemini Nano Banana Pro/Flash, not Lyria 3, not ElevenLabs/Resemble/Play.ht voice gen, not any future asset-gen vendor. Labsmith runs them per `GUIDE_ILLUSTRATION_PIPELINE.md` + pipeline-specific guides.
+Hub **owns portfolio-wide asset generation — ALL asset classes, no exceptions** (user-direct 2026-06-01 "you own the audio generation. you own all asset generation"). Apps don't run any generative pipeline: not Gemini Nano Banana Pro/Flash, not Lyria 3, not ElevenLabs/Resemble/Play.ht voice gen, not any future asset-gen vendor. Hub runs them per `GUIDE_ILLUSTRATION_PIPELINE.md` + pipeline-specific guides.
 
-**Covered asset classes** (non-exhaustive; labsmith owns ALL):
+**Covered asset classes** (non-exhaustive; hub owns ALL):
 
 | Class | Pipeline | Vendor | Ceiling (per-app) |
 |---|---|---|---|
@@ -259,11 +262,11 @@ Labsmith **owns portfolio-wide asset generation — ALL asset classes, no except
 | Particle specs | future pipeline | TBD | TBD |
 | Lottie celebrations | curated; not gen | N/A (hand-authored / sourced) | N/A |
 
-**Pre-generation discipline** (R409 #882): for audio drama specifically, content is **pre-generated labsmith-side + bundled as static `.caf` per app**. Apps play from local Bundle only — no streaming, no runtime gen, no server round-trip. Inherits to future audio assets unless explicitly superseded by ADR. See `Docs/PLAN_DN_S_PHASE_2_AUDIO_DRAMA.md` § Load-bearing architectural directive.
+**Pre-generation discipline** (R409 #882): for audio drama specifically, content is **pre-generated hub-side + bundled as static `.caf` per app**. Apps play from local Bundle only — no streaming, no runtime gen, no server round-trip. Inherits to future audio assets unless explicitly superseded by ADR. See `Docs/PLAN_DN_S_PHASE_2_AUDIO_DRAMA.md` § Load-bearing architectural directive.
 
 Cost discipline: stay within published per-class ceilings. New asset classes added to this table when first vendor pipeline is exercised; cost ceiling set per founder approval BEFORE first gen run.
 
-**Standing rule — every asset distribution wave MUST file a per-app handoff doc.** When `scripts/copy_<kind>_to_repos.sh` ships assets to an app's `Resources/` directory, the same wave MUST also file `Docs/HANDOFF_FROM_LABSMITH_<KIND>.md` in that app's repo. The handoff explains:
+**Standing rule — every asset distribution wave MUST file a per-app handoff doc.** When `scripts/copy_<kind>_to_repos.sh` ships assets to an app's `Resources/` directory, the same wave MUST also file `Docs/HANDOFF_FROM_HUB_<KIND>.md` (canonical, 2026-06-11+) in that app's repo. Pre-2026-06-11 waves used `HANDOFF_FROM_LABSMITH_<KIND>.md` (preserved). The handoff explains:
 
 - **What shipped**: exact file paths + counts (e.g., "5 mascot poses + 70 joke illustrations + 91 topic illustrations under `Resources/Illustrations/`")
 - **How to consume**: ForgeKit module + view pattern (e.g., `ForgeIllustrations.IllustrationRegistry` for illustrations, `ForgeAvatar.AvatarAssetCatalog` for accessories, `SFXLibrary` for audio)
@@ -275,15 +278,15 @@ Cost discipline: stay within published per-class ceilings. New asset classes add
 
 **For existing assets without handoffs**: backfill per the audit doc, prioritizing mature/active apps first (those with substantial LOC and recent commits).
 
-**For new asset generation waves**: the pipeline script MUST file the handoff in the same wave. Recommended pattern: extend `scripts/copy_<kind>_to_repos.sh` to also copy a per-app handoff template from `labsmith/Docs/TEMPLATE_IMPLEMENTATION_HANDOFF_<KIND>.md` (filling app-specific variables). Don't skip the handoff because "the template covers it" — each app's CC session needs the doc in its OWN repo, not a pointer to labsmith.
+**For new asset generation waves**: the pipeline script MUST file the handoff in the same wave. Recommended pattern: extend `scripts/copy_<kind>_to_repos.sh` to also copy a per-app handoff template from `spark-anvil-hub/Docs/TEMPLATE_IMPLEMENTATION_HANDOFF_<KIND>.md` (filling app-specific variables). Don't skip the handoff because "the template covers it" — each app's CC session needs the doc in its OWN repo, not a pointer to hub.
 
 ### Asset Consumer Audit (2026-05-20 STANDING RULE — closes CubeSensei ASSET_CONSUMER_AUDIT inbound #22)
 
-**Registered ≠ wired.** When an app session adopts a labsmith-delivered asset handoff (illustrations / mascots / topics / backdrops / modecards / portraits / accessories / icons), the Definition of Done MUST include:
+**Registered ≠ wired.** When an app session adopts a hub-delivered asset handoff (illustrations / mascots / topics / backdrops / modecards / portraits / accessories / icons), the Definition of Done MUST include:
 
 1. **Grep for a consumer call site** — at least one view in the app's `Sources/` directory must actually render the asset class via `IllustrationRenderer`, `BackdropView`, `MascotReactionView`, `IllustratedJokeView`, `AvatarRenderer`, `topicContentKey(...)`, or equivalent. `grep -rE 'IllustrationRenderer|BackdropView|MascotReactionView|IllustratedJokeView|topicContentKey|AvatarRenderer|JokeOfTheDayCard' <app>/Packages/Libraries/Sources/`
 2. **Zero hits = shipped-but-dark** — `IllustrationRegistry` / `AvatarAssetCatalog` registration alone does NOT mean the asset is visible to the user. File a follow-up wiring task or open an app-internal ticket BEFORE closing the handoff
-3. **Auditor**: the app session that adopts the handoff (not labsmith) does the audit. Labsmith's `HANDOFF_FROM_LABSMITH_<KIND>.md` doc lists the consumer-view patterns to look for under "How to consume" — apps grep for those patterns before marking the handoff CLOSED
+3. **Auditor**: the app session that adopts the handoff (not hub) does the audit. The hub-side handoff (`HANDOFF_FROM_HUB_<KIND>.md` canonical, or `HANDOFF_FROM_LABSMITH_<KIND>.md` legacy) lists the consumer-view patterns to look for under "How to consume" — apps grep for those patterns before marking the handoff CLOSED
 
 **Why the rule exists**: CubeSensei discovered 120 illustrations registered in `IllustrationRegistry` but not rendered by any view — silently dark on production-track main for several days. The session was answering "yes, delivered" based on registry registration alone. This rule closes that gap.
 
@@ -291,14 +294,14 @@ Cost discipline: stay within published per-class ceilings. New asset classes add
 
 **Templates** (already shipped):
 
-- `labsmith/Docs/TEMPLATE_IMPLEMENTATION_HANDOFF_ILLUSTRATIONS.md`
-- `labsmith/Docs/TEMPLATE_IMPLEMENTATION_HANDOFF_PASS_AND_PLAY.md`
-- `labsmith/Docs/TEMPLATE_IMPLEMENTATION_HANDOFF_SERVER.md`
+- `spark-anvil-hub/Docs/TEMPLATE_IMPLEMENTATION_HANDOFF_ILLUSTRATIONS.md`
+- `spark-anvil-hub/Docs/TEMPLATE_IMPLEMENTATION_HANDOFF_PASS_AND_PLAY.md`
+- `spark-anvil-hub/Docs/TEMPLATE_IMPLEMENTATION_HANDOFF_SERVER.md`
 - (Future): `TEMPLATE_IMPLEMENTATION_HANDOFF_MASCOT.md`, `_ACCESSORIES.md`, `_AUDIO.md`, `_BIOME_TILES.md`, `_PARTICLES.md` — author as each pipeline ships its first asset wave
 
 ### Reference examples (asset request sub-pattern)
 
-| App | Asset request | Labsmith response | Outcome |
+| App | Asset request | Hub response | Outcome |
 |---|---|---|---|
 | `labsmith-app` | mascot + topic illustrations | Generated immediately (added APP_CONFIGS for "experimental-notebook" cluster, ran pipeline) | 129 webp shipped in PR #18; humor seeds authored later (PR #20) for joke illustrations |
 | `terravoyage-app` | biome tile art (140 tiles + particles) | Plan + defer | `Docs/PLAN_NEW_ASSET_PIPELINES.md` captures the build plan; deferred until 2nd app demand |
@@ -307,7 +310,7 @@ Cost discipline: stay within published per-class ceilings. New asset classes add
 
 ## App Implementation Ranking Methodology (Round 106 #518; codified Round 114 #535)
 
-When labsmith needs to produce a forward-looking ranking of which portfolio apps to BUILD next (founder-direct sequencing or routine ranking refresh), use the **6-axis weighted composite formula** codified in `Docs/DECISION_APP_RANKING_COMPOSITE_SCORING_2026-05-28.md`:
+When hub needs to produce a forward-looking ranking of which portfolio apps to BUILD next (founder-direct sequencing or routine ranking refresh), use the **6-axis weighted composite formula** codified in `Docs/DECISION_APP_RANKING_COMPOSITE_SCORING_2026-05-28.md`:
 
 ```
 composite_0_100 = normalize(
@@ -358,7 +361,7 @@ grep -rE "Color\.(blue|purple|orange|red|green)"
 
 **When this rule applies**:
 - Any color-scheme audit (per-app or portfolio-wide) per `Docs/AUDIT_PORTFOLIO_COLOR_SCHEME_ALIGNMENT_<date>.md` pattern
-- Any color-refresh handoff per `HANDOFF_FROM_LABSMITH_COLOR_SCHEME_REFRESH.md` template
+- Any color-refresh handoff per `HANDOFF_FROM_HUB_COLOR_SCHEME_REFRESH.md` template (canonical, 2026-06-11+; pre-rename was `HANDOFF_FROM_LABSMITH_COLOR_SCHEME_REFRESH.md`)
 - Verify-before-list audits checking color-scheme alignment of recommendation lists
 
 ## Debug Logging (Round 138 #569; lifted from CuriosityQuest 2026-05-28)
@@ -375,7 +378,7 @@ Portfolio standard for adding extensive debug logging to detect unexpected runti
 
 **Per-app adoption**: each app decides when to wire categorized logging (CQ is the reference impl, not a forced migration). Use the canonical template above as the starting point; adapt categories to the app's surface area (e.g., apps without network can drop `.network`; apps with pass-and-play add `.multipeer`).
 
-**Lift provenance**: CQ shipped the rule + research in PRs #114-#121; filed `HANDOFF_FROM_APP_LIFT_DEBUG_LOGGING_RULE.md` Round 138 #569 requesting portfolio lift. Labsmith lifted + propagated via `scripts/copy_rules_to_repos.sh --apply` in the same round.
+**Lift provenance**: CQ shipped the rule + research in PRs #114-#121; filed `HANDOFF_FROM_APP_LIFT_DEBUG_LOGGING_RULE.md` Round 138 #569 requesting portfolio lift. Hub lifted + propagated via `scripts/copy_rules_to_repos.sh --apply` in the same round.
 
 ## ForgeKit
 

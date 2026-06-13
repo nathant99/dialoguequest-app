@@ -71,7 +71,7 @@ Keep target dependency edges minimal. If `SharedUI` doesn't use `Services`, don'
 
 ## xcconfig Files
 
-Prefer `.xcconfig` over Xcode GUI build settings — version-controlled, diffable, no `.pbxproj` merge conflicts. Layer as: `Common.xcconfig` → `Debug.xcconfig` / `Release.xcconfig` → per-target overrides. See labsmith `Configs/` for templates.
+Prefer `.xcconfig` over Xcode GUI build settings — version-controlled, diffable, no `.pbxproj` merge conflicts. Layer as: `Common.xcconfig` → `Debug.xcconfig` / `Release.xcconfig` → per-target overrides. See hub `Configs/` for templates.
 
 ## Build Timing Summary
 

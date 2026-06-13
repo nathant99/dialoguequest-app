@@ -177,10 +177,10 @@ Per-app effort: ~3-4h. Reversibility HIGH (per-surface; each `.glassEffect()` mo
 
 ### Reference impl + cross-references
 
-- `labsmith/Docs/ADR-015_CQ_HYBRID_LIQUID_GLASS_NATIVE.md` — original CQ-specific decision (now generalized here)
-- `labsmith/Docs/RESEARCH_CQ_LIQUID_GLASS_ADOPTION_2026-05-29.md` — 18-source research synthesis behind the policy
-- `labsmith/Docs/ADR-014_HYBRID_LIQUID_GLASS_WEBSITE.md` — parallel decision for the website (same hybrid principle)
-- `labsmith/Docs/TEMPLATE_HANDOFF_FROM_LABSMITH_LIQUID_GLASS_HYBRID_ADOPTION.md` — per-app adoption-nudge handoff template
+- `spark-anvil-hub/Docs/ADR-015_CQ_HYBRID_LIQUID_GLASS_NATIVE.md` — original CQ-specific decision (now generalized here)
+- `spark-anvil-hub/Docs/RESEARCH_CQ_LIQUID_GLASS_ADOPTION_2026-05-29.md` — 18-source research synthesis behind the policy
+- `spark-anvil-hub/Docs/ADR-014_HYBRID_LIQUID_GLASS_WEBSITE.md` — parallel decision for the website (same hybrid principle)
+- `spark-anvil-hub/Docs/TEMPLATE_HANDOFF_FROM_LABSMITH_LIQUID_GLASS_HYBRID_ADOPTION.md` — per-app adoption-nudge handoff template
 
 ## Tab Bar Behavior
 

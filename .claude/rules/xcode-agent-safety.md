@@ -100,7 +100,7 @@ If the agent accidentally wrote to an Xcode-managed file and Xcode shows Externa
 
 ## Documenting this rule
 
-When labsmith next syncs `.claude/rules/` across all 131 apps, this rule propagates portfolio-wide. App sessions invoking the Coding Assistant integration inherit it automatically.
+When hub next syncs `.claude/rules/` across all 131 apps, this rule propagates portfolio-wide. App sessions invoking the Coding Assistant integration inherit it automatically.
 
 ## Reference
 

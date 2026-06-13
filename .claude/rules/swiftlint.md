@@ -16,7 +16,7 @@ The `.swiftlint.yml` config files remain in repos for when SwiftLint is re-enabl
 ## Setup (When Re-Enabled)
 
 - Use **SimplyDanny/SwiftLintPlugins** (NOT `realm/SwiftLint`) as SPM build tool plugin
-- `.swiftlint.yml` in project root — derived from labsmith `Configs/.swiftlint_base.yml`
+- `.swiftlint.yml` in project root — derived from hub `Configs/.swiftlint_base.yml`
 - Run SwiftLint as SPM plugin in the local `Libraries/` package, NOT as Xcode build phase
 
 ## Rules That Are Errors (Never Bypass)
