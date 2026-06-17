@@ -8,6 +8,15 @@ register: warmly absurd with subtext (per labsmith DN-S R172 #606 spec) — Patt
 chapter-round: Round 226 #660
 status: SHIPPED
 word-count: ~815
+gate-allow-text:
+  - 'WOOD STAIN'
+  - STOP
+  - WOOD
+  - STAIN
+  - wood
+  - stain
+  - stop
+gate-allow-text-pattern: '^\d+(?:/\d+)?$|^[A-Z]{2,}(?: [A-Z]{2,})?$|^[a-z]+$'
 ---
 # Chapter 2 — Glance and the Half-Empty Speech-Bubble
 
@@ -71,6 +80,6 @@ Kids often ask Patter. "Is **subtext** hard to write?" they say. Patter shakes h
 - **Alliance**: Patter.
 - **Tension**: None.
 
-## Cultural-context note
+## cultural context
 
 The winter-high-country setting and the thick-scarf-on-a-fox visual are deliberate gentle pastoral framings. Glance is rendered as an anthropomorphic arctic-fox-tween in the chunky-cartoon visual register. The dual-layer speech-bubble visual is a clear physical embodiment of subtext-as-two-layers.
