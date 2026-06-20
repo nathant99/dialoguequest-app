@@ -45,6 +45,37 @@ Prefer MCP `BuildProject` / `RunSomeTests` over `xcodebuild` when Xcode is open 
 
 See `@Docs/APP_SPECIFIC_NOTES.md` for the preserved prior CLAUDE.md content (architecture / domain patterns / gotchas accumulated through development). Portfolio-wide rules — Swift 6 concurrency, SwiftData patterns, testing conventions, ForgeKit module APIs, Liquid Glass register, distributed-narrative methodology, trauma-informed gates, COPPA / age-assurance — auto-load from `@.claude/rules/` (24+ files synced from labsmith). Do NOT re-state portfolio-wide rules here.
 
+## SPM Scaffold (as of 2026-06-19)
+
+5-target Libraries package per `@Docs/TECHNICAL_DESIGN.md` § "SPM Module Architecture":
+
+```
+Libraries/
+├── Package.swift                    # swift-tools 6.2, .iOS(.v26), -default-isolation MainActor
+├── Sources/
+│   ├── Models/                      # DialogueNode / DialogueTree / DialogueTag / DialogueMood / DialogueCharacterRef
+│   ├── Services/                    # (stub — Phase 1 services land in follow-on PR)
+│   ├── SharedUI/                    # DialogueQuestTheme + MentorBubbleView + DialogueTreeBuilderPlaceholder
+│   ├── AIMentor/                    # PatterMentor + 3 @Generable types + PatterFallbacks
+│   └── AppFeature/                  # RootView (4-tab TabView) + AppNavigationMachine + tab placeholders
+└── Tests/
+    ├── ForgeKitIntegrationTests/    # 5 sanity tests
+    └── ModelsTests/                 # 14 tests across the 5 value types
+```
+
+ForgeKit pin: `from: "0.99.0"`. Per-target wiring documented in `@Docs/IMPLEMENTATION_HANDOFF.md` § 7.
+
+## Things That Will Bite You
+
+Specific to DialogueQuest. Portfolio-wide bites live in `@.claude/rules/`; the entries here are *only* the DialogueQuest-specific gotchas.
+
+- **Add `Libraries` to the workspace via Xcode GUI, not the agent** — the agent can author `Libraries/Package.swift` but cannot add it to `DialogueQuest.xcworkspace` per `@.claude/rules/xcode-agent-safety.md`. Follow `@Docs/HANDOFF_TO_USER_XCODE_WIRING.md` Step 1.
+- **`AppFeature` depends on `Models` + `Services` + `SharedUI` + `AIMentor`** — adding the dep on the app target via Xcode GUI is Step 2 of the wiring handoff. Forgetting it produces "No such module 'AppFeature'" when the app shell tries to import.
+- **`swift-tools-version: 6.2` is REQUIRED** — `.iOS(.v26)` won't load with 6.0. If Xcode shows `Libraries` as a folder instead of a Swift Package, the wrong tools version is the first thing to check.
+- **All public Sendable types must be `nonisolated public struct/enum`** — `InferIsolatedConformances` makes Codable conformance MainActor-isolated by default; tests in nonisolated contexts break. Codable conformance must be declared on the type itself, not via extension.
+- **`PatterMentor` lazy session** — `LanguageModelSession` is created on first use + reused. The `@ObservationIgnored private lazy var session` form is required because `@Observable` can't track lazy storage (per `@.claude/rules/warnings.md`).
+- **No SpriteKit, no SceneKit, no AnyView** — DialogueQuest is pure SwiftUI; the tree editor uses `Canvas` not SKScene. No `GameEngine` SPM target.
+
 ## Reference Documents
 
 - `@Docs/TECHNICAL_DESIGN.md` — architecture, state machines, domain model

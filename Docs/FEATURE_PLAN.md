@@ -8,12 +8,13 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 
 ### Scaffolding
 
-- [ ] Create Xcode project with thin app shell (`DialogueQuest/DialogueQuestApp.swift`)
-- [ ] Create `Libraries/Package.swift` with 6 targets (Models, Services, SharedUI, GameEngine, AIMentor, AppFeature)
-- [ ] Add ForgeKit dependency (remote GitHub URL, `from: "0.99.0"`)
-- [ ] Create stub source files for all targets
-- [ ] Verify build succeeds with zero warnings
-- [ ] Create `.xcworkspace` with Libraries as workspace member
+- [x] Create Xcode project with thin app shell (`DialogueQuest/DialogueQuestApp.swift`) — 2026-06-19 PR #20
+- [x] Create `Libraries/Package.swift` with 5 targets (Models, Services, SharedUI, AIMentor, AppFeature; no GameEngine — pure SwiftUI) — 2026-06-19 PR #21
+- [x] Add ForgeKit dependency (remote GitHub URL, `from: "0.99.0"`) — 2026-06-19 PR #21
+- [x] Create stub source files for all targets — 2026-06-19 PR #21
+- [ ] User completes `@Docs/HANDOFF_TO_USER_XCODE_WIRING.md` Steps 1-5 (add Libraries to workspace + AppFeature dep + run integration tests)
+- [ ] Verify build succeeds with zero warnings (after Xcode wiring)
+- [x] `.xcworkspace` created by Xcode + committed — 2026-06-19 PR #20
 
 ### Data Layer
 
@@ -26,8 +27,8 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 
 ### Dialogue Engine
 
-- [ ] Implement `DialogueTree` value type (root + node list + edge list)
-- [ ] Implement `DialogueNode` value type (speaker / line / branch options / tag-attribution / inferred-subtext)
+- [x] Implement `DialogueTree` value type (root + node list + edge list) — 2026-06-19 PR #22
+- [x] Implement `DialogueNode` value type (speaker / line / branch options / tag-attribution / inferred-subtext) — 2026-06-19 PR #22
 - [ ] Implement `BranchMeaningfulnessCheck` — 3-question Socratic prompt per branch point + 1-line reflection
 - [ ] Implement `VoiceConsistencyAnalyzer` — per-character cumulative voice-match check across all nodes
 - [ ] Implement `TagBalancer` — count `"X said"` vs unattributed vs descriptive beats per character; thresholds + warning ribbons
@@ -37,15 +38,15 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 
 ### Subtext Detector (AI)
 
-- [ ] Implement `DialogueLineAnalysis` `@Generable` (surface text + AI-inferred subtext + voice-match score)
-- [ ] Implement static fallbacks for every `@Generable` per `.claude/rules/foundationmodels.md`
+- [x] Implement `DialogueLineAnalysis` `@Generable` (surface text + AI-inferred subtext + voice-match score) — 2026-06-19 PR #23
+- [x] Implement static fallbacks for every `@Generable` per `.claude/rules/foundationmodels.md` — 2026-06-19 PR #23 (`PatterFallbacks`)
 - [ ] Implement subtext-confirmation UX (kid confirms or rejects inferred subtext → Socratic reflection)
 - [ ] Implement curriculum-guarded fallback when FM session unavailable
 - [ ] Wire detector to `WritingEvaluator` shared extension (reuse CharacterForge `VoiceCheck` API)
 
 ### SwiftUI Views
 
-- [ ] Create 4-tab `TabView` (Write / Adventure / Progress / Profile) per portfolio convention
+- [x] Create 4-tab `TabView` (Write / Adventure / Progress / Profile) per portfolio convention — 2026-06-19 PR #23 (`AppFeature.RootView`)
 - [ ] Build `DialogueTreeBuilderView` — 2-D node-edge graph editor (reuse CharacterForge relationship-graph patterns)
 - [ ] Build `NodeInspectorView` — per-node line + speaker + tag-attribution editing
 - [ ] Build `SubtextPanelView` — side panel showing surface + AI-inferred subtext; confirm/reject controls
@@ -59,11 +60,11 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 
 ### AI Mentor (DN cast lead per handoff)
 
-- [ ] Create mentor class with lazy `LanguageModelSession`
-- [ ] Implement `VoiceCue` `@Generable` for per-character voice-coaching nudges
-- [ ] Implement `SubtextHint` `@Generable` for surface-vs-subtext reflection
-- [ ] Implement `TagBalanceTip` `@Generable` for attribution-rhythm coaching
-- [ ] Implement static fallbacks for every `@Generable`
+- [x] Create mentor class with lazy `LanguageModelSession` — 2026-06-19 PR #23 (`PatterMentor`)
+- [x] Implement `BranchMeaningfulnessCheck` `@Generable` for per-branch Socratic prompting — 2026-06-19 PR #23
+- [x] Implement `DialogueLineAnalysis` `@Generable` for surface-vs-subtext reflection — 2026-06-19 PR #23
+- [x] Implement `TagBalanceTip` `@Generable` for attribution-rhythm coaching — 2026-06-19 PR #23
+- [x] Implement static fallbacks for every `@Generable` — 2026-06-19 PR #23 (`PatterFallbacks`)
 - [ ] Create mentor speech-bubble UI component
 - [ ] Wire mentor to events: branch-point reached, voice-consistency dip, tag-balance threshold crossed
 
