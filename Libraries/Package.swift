@@ -40,6 +40,7 @@ let package = Package(
                 .product(name: "ForgePersistence", package: "forgekit"),
                 .product(name: "ForgeAI", package: "forgekit"),
                 .product(name: "ForgeAnalytics", package: "forgekit"),
+                .product(name: "ForgeGamification", package: "forgekit"),
             ],
             swiftSettings: defaultSwiftSettings
         ),
@@ -90,6 +91,14 @@ let package = Package(
             name: "ModelsTests",
             dependencies: [
                 "Models",
+            ],
+            swiftSettings: defaultSwiftSettings
+        ),
+        .testTarget(
+            name: "ServicesTests",
+            dependencies: [
+                "Models",
+                "Services",
             ],
             swiftSettings: defaultSwiftSettings
         ),
