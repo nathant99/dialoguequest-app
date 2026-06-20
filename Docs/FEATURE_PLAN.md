@@ -12,7 +12,8 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Create `Libraries/Package.swift` with 5 targets (Models, Services, SharedUI, AIMentor, AppFeature; no GameEngine — pure SwiftUI) — 2026-06-19 PR #21
 - [x] Add ForgeKit dependency (remote GitHub URL, `from: "0.99.0"`) — 2026-06-19 PR #21
 - [x] Create stub source files for all targets — 2026-06-19 PR #21
-- [ ] User completes `@Docs/HANDOFF_TO_USER_XCODE_WIRING.md` Steps 1-5 (add Libraries to workspace + AppFeature dep + run integration tests)
+- [x] Swap app shell `ContentView` → `AppFeature.RootView()` + wire `ModelContainer(for: PersistentDialogueTree.self, migrationPlan: DialogueQuestMigrationPlan.self)` — 2026-06-20 PR #28 (via MCP `XcodeUpdate`; `ContentView.swift` deleted)
+- [ ] User completes `@Docs/HANDOFF_TO_USER_XCODE_WIRING.md` Steps 1-4 (add Libraries to workspace + AppFeature dep + run integration tests) — Step 5 is agent-routed and already shipped
 - [ ] Verify build succeeds with zero warnings (after Xcode wiring)
 - [x] `.xcworkspace` created by Xcode + committed — 2026-06-19 PR #20
 
@@ -55,8 +56,8 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Build `BranchMeaningfulnessCheckView` — 3-question Socratic prompt + 1-line reflection; records `reflectedBranchPointIDs` — 2026-06-20 PR #26
 - [x] Build `AnthologyGalleryView` — mood-tagged published trees; SwiftData fetch in `onAppear` (no `@Query`); platform-guarded list style — 2026-06-20 PR #27
 - [x] Build `ProgressDashboardView` with XP bar + streak badge + adaptive badge grid; `@AppStorage`-backed totals — 2026-06-20 PR #27
-- [ ] Build `ProfileView` with `ForgeAvatar.AvatarStudioView(.lite)`
-- [ ] Build `SettingsView` with parental gate
+- [x] Build `ProfileDashboardView` with `ForgeAvatar.AvatarStudioView(.lite)` + `AppGroupStore`-seeded ForgeID — 2026-06-20 PR #28
+- [x] Build `SettingsView` with parental-gate stub + daily-session limit stepper (full COPPA parental-gate UI lands in follow-up handoff) — 2026-06-20 PR #28
 - [x] Build `QuizView` for question kits — kit loader + `QuizMachine` + reveal-on-tap UX + completion screen — 2026-06-20 PR #27
 
 ### AI Mentor (DN cast lead per handoff)
@@ -79,15 +80,15 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 
 ### Adventure Mode
 
-- [ ] Wire Level 1 config from `spark-anvil-hub/Resources/HubContributions/dialoguequest.json` (Word Workshop zone)
-- [ ] Implement `DialogueQuestHubContribution` Level 2 Swift overlay in `Libraries/Sources/AppFeature/HubContribution/`
-- [ ] Register mode-cards in `AdventureView`
+- [ ] Wire Level 1 config from `spark-anvil-hub/Resources/HubContributions/dialoguequest.json` — handoff filed to hub at `@Docs/HANDOFF_TO_HUB_HUBCONTRIBUTION_LEVEL_1.md` (2026-06-20 PR #28)
+- [x] Implement `DialogueQuestHubContribution` Level-2 Swift overlay in `Libraries/Sources/AppFeature/Adventure/` (wires to QuizView via HubChallengeBridge; renders Word Woods themed kits) — 2026-06-20 PR #28
+- [ ] Register mode-cards in `AdventureView` — gated on hub-side Level-1 JSON shipping (filed handoff in #28)
 - [ ] Wire `ForgeProgressionManager` gating
 
 ### Onboarding
 
-- [ ] Create 5-step onboarding flow (welcome, meet 2 characters, first 3-node tree, first subtext check, first published tree)
-- [ ] Implement aha moment: first subtext confirmation revealing 2 layers of meaning
+- [x] Create 5-step onboarding flow (welcome, meet 2 characters, first 3-node tree, first subtext check, first published tree) — 2026-06-20 PR #28 (`AppFeature.OnboardingFlow` wraps `ForgeUI.ForgeOnboardingFlow`; presented as fullScreenCover on RootView gated by `@AppStorage("dq.hasCompletedOnboarding")`)
+- [x] Implement aha moment: first subtext confirmation revealing 2 layers of meaning — driven by `SubtextPanelView` confirm-button (PR #26) + onboarding step 4 framing (PR #28)
 - [ ] Implement progressive disclosure (Session 1: 3-node tree only)
 - [ ] Implement parent handoff flow (30s setup)
 - [ ] Implement Apple Declared Age Range API gate (iOS 26+)

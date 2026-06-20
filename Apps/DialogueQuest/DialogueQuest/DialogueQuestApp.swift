@@ -6,12 +6,29 @@
 //
 
 import SwiftUI
+import SwiftData
+import AppFeature
+import Models
 
 @main
 struct DialogueQuestApp: App {
+    let modelContainer: ModelContainer
+
+    init() {
+        do {
+            modelContainer = try ModelContainer(
+                for: PersistentDialogueTree.self,
+                migrationPlan: DialogueQuestMigrationPlan.self
+            )
+        } catch {
+            fatalError("Failed to initialize ModelContainer: \(error)")
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
         }
+        .modelContainer(modelContainer)
     }
 }

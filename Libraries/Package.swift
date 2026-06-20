@@ -76,6 +76,7 @@ let package = Package(
                 .product(name: "ForgeGamification", package: "forgekit"),
                 .product(name: "ForgePedagogy", package: "forgekit"),
                 .product(name: "ForgeStateMachine", package: "forgekit"),
+                .product(name: "ForgeSync", package: "forgekit"),
             ],
             resources: [
                 .process("Resources/Questions"),
