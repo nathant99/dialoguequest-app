@@ -1,9 +1,9 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 import PackageDescription
 
 let defaultSwiftSettings: [SwiftSetting] = [
     .swiftLanguageMode(.v6),
-    .defaultIsolation(MainActor.self),
+    .unsafeFlags(["-default-isolation", "MainActor"]),
     .enableUpcomingFeature("InferIsolatedConformances"),
     .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
 ]
@@ -13,7 +13,7 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [
         .iOS(.v26),
-        .macOS(.v15),
+        .macOS(.v26),
     ],
     products: [
         .library(name: "Models", targets: ["Models"]),
@@ -83,6 +83,13 @@ let package = Package(
                 "Models",
                 .product(name: "ForgeModels", package: "forgekit"),
                 .product(name: "ForgeGamification", package: "forgekit"),
+            ],
+            swiftSettings: defaultSwiftSettings
+        ),
+        .testTarget(
+            name: "ModelsTests",
+            dependencies: [
+                "Models",
             ],
             swiftSettings: defaultSwiftSettings
         ),
