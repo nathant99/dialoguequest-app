@@ -33,25 +33,26 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Implement `VoiceConsistencyAnalyzer` — Jaccard token-overlap baseline + AI-availability-safe fallback — 2026-06-20 PR #25
 - [x] Implement `TagBalancer` — per-character + per-tree counts; 70% imbalance threshold; dominant classification — 2026-06-20 PR #25
 - [x] Implement tree-depth + branch-count constraints (5-15 nodes Phase 1) — `DialogueTree.NodeCountConstraint` shipped 2026-06-19 PR #22
-- [ ] Implement `DialogueTreeMachine` view-local state machine per `.claude/rules/state-machines.md`
+- [x] Implement `DialogueTreeMachine` view-local state machine per `.claude/rules/state-machines.md` — 2026-06-20 PR #26 (4-stage Stage enum, full authoring + editing + reflection + subtext-confirm transitions, deterministic value-type with `reset()`)
 - [ ] Implement deterministic seedable RNG for reproducible test states
 
 ### Subtext Detector (AI)
 
 - [x] Implement `DialogueLineAnalysis` `@Generable` (surface text + AI-inferred subtext + voice-match score) — 2026-06-19 PR #23
 - [x] Implement static fallbacks for every `@Generable` per `.claude/rules/foundationmodels.md` — 2026-06-19 PR #23 (`PatterFallbacks`)
-- [ ] Implement subtext-confirmation UX (kid confirms or rejects inferred subtext → Socratic reflection)
-- [ ] Implement curriculum-guarded fallback when FM session unavailable
+- [x] Implement subtext-confirmation UX (kid confirms or rejects inferred subtext → updates `inferredSubtext` on node) — 2026-06-20 PR #26 (Socratic reflection follow-up unifies with `BranchMeaningfulnessCheckView`)
+- [x] Implement curriculum-guarded fallback when FM session unavailable — 2026-06-19 PR #23 `PatterFallbacks` covers all 3 paths; `PatterMentor.isAvailable` gates the live-LLM call
 - [ ] Wire detector to `WritingEvaluator` shared extension (reuse CharacterForge `VoiceCheck` API)
 
 ### SwiftUI Views
 
 - [x] Create 4-tab `TabView` (Write / Adventure / Progress / Profile) per portfolio convention — 2026-06-19 PR #23 (`AppFeature.RootView`)
-- [ ] Build `DialogueTreeBuilderView` — 2-D node-edge graph editor (reuse CharacterForge relationship-graph patterns)
-- [ ] Build `NodeInspectorView` — per-node line + speaker + tag-attribution editing
-- [ ] Build `SubtextPanelView` — side panel showing surface + AI-inferred subtext; confirm/reject controls
-- [ ] Build `TagBalanceDashboardView` — bar chart per character; warning ribbons on imbalance
-- [ ] Build `BranchMeaningfulnessCheckView` — 3-question Socratic prompt + 1-line reflection
+- [x] Build `DialogueTreeBuilderView` — depth-first list-of-nodes Phase 1 surface (2-D Canvas graph deferred to Phase 2) — 2026-06-20 PR #26
+- [x] Build `NodeInspectorView` — per-node line + speaker + tag-attribution editing — 2026-06-20 PR #26
+- [x] Build `CharacterAuthoringView` — kid authors 2 characters with name / voice register / 1-3 sample lines + mood + title — 2026-06-20 PR #26
+- [x] Build `SubtextPanelView` — surface + AI-inferred subtext; confirm/reject controls drive Patter-acknowledged subtext into the node — 2026-06-20 PR #26
+- [x] Build `TagBalanceDashboardView` — Charts bar chart per character; imbalance warning ribbons + dominant-tag coaching line — 2026-06-20 PR #26
+- [x] Build `BranchMeaningfulnessCheckView` — 3-question Socratic prompt + 1-line reflection; records `reflectedBranchPointIDs` — 2026-06-20 PR #26
 - [ ] Build `AnthologyGalleryView` — mood-tagged completed trees; thumbnail + opening line
 - [ ] Build `ProgressView` with XP / streak / badge / dialogue-craft attunement chart
 - [ ] Build `ProfileView` with `ForgeAvatar.AvatarStudioView(.lite)`
