@@ -32,6 +32,20 @@
         "identifier" : "FBBBC9722FE6283100EB978A",
         "name" : "DialogueQuestUITests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..\/Libraries",
+        "identifier" : "ForgeKitIntegrationTests",
+        "name" : "ForgeKitIntegrationTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..\/Libraries",
+        "identifier" : "ModelsTests",
+        "name" : "ModelsTests"
+      }
     }
   ],
   "version" : 1
