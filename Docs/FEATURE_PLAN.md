@@ -18,22 +18,22 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 
 ### Data Layer
 
-- [ ] Define SwiftData models: `DialogueTree`, `DialogueNode`, `CharacterDef`, `PlayerProgress`, `AnthologyEntry`
-- [ ] Create `VersionedSchema` (V1) with all models
-- [ ] Create `SchemaMigrationPlan` (V1 only — start early)
+- [x] Define SwiftData `@Model PersistentDialogueTree` (single-blob JSON-wrapped per IMPLEMENTATION_HANDOFF resolution) — 2026-06-20 PR #25
+- [x] Create `VersionedSchema` (V1) with `PersistentDialogueTree` — 2026-06-20 PR #25
+- [x] Create `SchemaMigrationPlan` (V1 only — start early) — 2026-06-20 PR #25
+- [x] Create value-type cache struct `AnthologyEntry` (consumed by Anthology gallery) — 2026-06-20 PR #25
 - [ ] Implement local `CharacterDef` definition flow (kid authors 2-3 characters with voice / register / quirks per `.claude/rules/distributed-narrative.md` voice register pattern)
 - [ ] Implement `CharacterForge` import hook (deferred Phase 2 — Phase 1 ships local-only)
-- [ ] Create value-type cache structs for all `@Model` types
 
 ### Dialogue Engine
 
 - [x] Implement `DialogueTree` value type (root + node list + edge list) — 2026-06-19 PR #22
 - [x] Implement `DialogueNode` value type (speaker / line / branch options / tag-attribution / inferred-subtext) — 2026-06-19 PR #22
-- [ ] Implement `BranchMeaningfulnessCheck` — 3-question Socratic prompt per branch point + 1-line reflection
-- [ ] Implement `VoiceConsistencyAnalyzer` — per-character cumulative voice-match check across all nodes
-- [ ] Implement `TagBalancer` — count `"X said"` vs unattributed vs descriptive beats per character; thresholds + warning ribbons
+- [x] Implement `BranchMeaningfulnessScorer` — branch-point + leaf-target + reflection-ratio dashboard input — 2026-06-20 PR #25 (Socratic Patter UI lands in PR 3)
+- [x] Implement `VoiceConsistencyAnalyzer` — Jaccard token-overlap baseline + AI-availability-safe fallback — 2026-06-20 PR #25
+- [x] Implement `TagBalancer` — per-character + per-tree counts; 70% imbalance threshold; dominant classification — 2026-06-20 PR #25
+- [x] Implement tree-depth + branch-count constraints (5-15 nodes Phase 1) — `DialogueTree.NodeCountConstraint` shipped 2026-06-19 PR #22
 - [ ] Implement `DialogueTreeMachine` view-local state machine per `.claude/rules/state-machines.md`
-- [ ] Implement tree-depth + branch-count constraints (5-15 nodes Phase 1)
 - [ ] Implement deterministic seedable RNG for reproducible test states
 
 ### Subtext Detector (AI)
