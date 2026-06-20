@@ -2,7 +2,7 @@ import SwiftUI
 import SharedUI
 
 /// The 4-tab DialogueQuest root view per `Docs/TECHNICAL_DESIGN.md`
-/// § Home Screen & Navigation. Apps's `@main` should host this view.
+/// § Home Screen & Navigation. App's `@main` should host this view.
 ///
 /// Liquid Glass: per `.claude/rules/liquid-glass.md` we do NOT set
 /// `toolbarBackground` / `toolbarColorScheme` / `UITabBar.appearance` —
@@ -10,6 +10,7 @@ import SharedUI
 /// icons through the glass material.
 public struct RootView: View {
     @State private var machine = AppNavigationMachine()
+    @AppStorage("dq.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
 
     public init() {}
 
@@ -29,6 +30,27 @@ public struct RootView: View {
             }
         }
         .tint(DialoguePalette.rust)
+        .fullScreenCoverIfPossible(isPresented: .constant(!hasCompletedOnboarding)) {
+            OnboardingFlow {
+                hasCompletedOnboarding = true
+            }
+        }
+    }
+}
+
+private extension View {
+    /// `fullScreenCover` is iOS / visionOS only — fall back to `.sheet`
+    /// on macOS per `.claude/rules/warnings.md` § Platform Availability.
+    @ViewBuilder
+    func fullScreenCoverIfPossible<Content: View>(
+        isPresented: Binding<Bool>,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        #if os(iOS) || os(visionOS)
+        fullScreenCover(isPresented: isPresented, content: content)
+        #else
+        sheet(isPresented: isPresented, content: content)
+        #endif
     }
 }
 
