@@ -74,6 +74,6 @@ When students ask Patter whether tag balance is hard to learn, Patter says — q
 - **Alliance**: Patter.
 - **Tension**: None.
 
-## Cultural-context note
+## cultural context
 
 The meadow-picnic setting and the brass-balance-scale teaching prop are deliberate gentle pastoral framings. Weigh is rendered as an anthropomorphic pangolin-tween in the chunky-cartoon visual register. The shoulder-mounted scale is consistent with the hands-on register.

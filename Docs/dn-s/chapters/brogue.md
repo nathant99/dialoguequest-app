@@ -78,6 +78,6 @@ When students ask Patter whether voice consistency is hard, Patter says — quot
 - **Alliance**: Patter. Cast elder presence; warm with all.
 - **Tension**: None.
 
-## Cultural-context note
+## cultural context
 
-**Critical cultural-sensitivity gate**: Brogue's accent is **deliberately non-specific.** It is NOT any real dialect (not Irish, not Scottish, not Welsh, not any actual cultural tradition). The signature words (*aye, lad, mind ye, by and by, in my day*) are *generic-rustic folk-storyteller archetype* — a stylized voice meant to teach voice-consistency without claiming or appropriating any specific cultural tradition. This is essential per the DialogueQuest cultural-sensitivity gate (`apps.generated.ts dnCast.intro`). The character is rendered as an anthropomorphic border-collie-elder; the breed is generic-pastoral without specific cultural attribution.
+**Critical cultural sensitivity**: Brogue's accent is **deliberately non-specific.** It is NOT any real dialect (not Irish, not Scottish, not Welsh, not any actual cultural tradition). The signature words (*aye, lad, mind ye, by and by, in my day*) are *generic-rustic folk-storyteller archetype* — a stylized voice meant to teach voice-consistency without claiming or appropriating any specific cultural tradition. This is essential per the DialogueQuest cultural sensitivity (`apps.generated.ts dnCast.intro`). The character is rendered as an anthropomorphic border-collie-elder; the breed is generic-pastoral without specific cultural attribution.
