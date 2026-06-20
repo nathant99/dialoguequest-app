@@ -1,0 +1,43 @@
+{
+  "id": "kit_01_voice_consistency",
+  "title": "Whose voice is this?",
+  "theme": "voice_consistency",
+  "questions": [
+    {
+      "id": "kit_01_q_01",
+      "prompt": "Iris speaks in clipped sentences and ends with \"I guess\" when she's actually sure. Which line sounds most like Iris?",
+      "options": [
+        { "id": "a", "label": "I would love to talk about that all afternoon." },
+        { "id": "b", "label": "Maybe. I guess." },
+        { "id": "c", "label": "What a profound and meaningful question." }
+      ],
+      "correctOptionID": "b",
+      "freeTextRubric": null,
+      "mentorPostScript": "Voice register is the rhythm a character keeps even when the topic changes."
+    },
+    {
+      "id": "kit_01_q_02",
+      "prompt": "Cal tries too hard to be casual. He uses \"so\" as a stall. Which line is Cal's?",
+      "options": [
+        { "id": "a", "label": "So, like, yeah, whatever." },
+        { "id": "b", "label": "I formally object to this premise." },
+        { "id": "c", "label": "Tell me everything you've ever felt about geese." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Filler words are part of voice. They carry the feeling."
+    },
+    {
+      "id": "kit_01_q_03",
+      "prompt": "A character who speaks in short questions might say:",
+      "options": [
+        { "id": "a", "label": "I will now deliver a long monologue about my feelings." },
+        { "id": "b", "label": "Why? What for? Says who?" },
+        { "id": "c", "label": "I find your behavior to be inexplicable." }
+      ],
+      "correctOptionID": "b",
+      "freeTextRubric": null,
+      "mentorPostScript": "Short questions feel like the character is testing the air."
+    }
+  ]
+}

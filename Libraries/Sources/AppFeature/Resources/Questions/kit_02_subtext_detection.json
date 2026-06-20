@@ -1,0 +1,43 @@
+{
+  "id": "kit_02_subtext_detection",
+  "title": "What isn't being said?",
+  "theme": "subtext_detection",
+  "questions": [
+    {
+      "id": "kit_02_q_01",
+      "prompt": "Iris closes her book. \"I'm fine.\" Which subtext is strongest?",
+      "options": [
+        { "id": "a", "label": "She is in a great mood." },
+        { "id": "b", "label": "She is not fine and doesn't want to talk." },
+        { "id": "c", "label": "She is offering Cal her book." }
+      ],
+      "correctOptionID": "b",
+      "freeTextRubric": null,
+      "mentorPostScript": "Closing the book is a beat that contradicts the words “fine.” That tension is subtext."
+    },
+    {
+      "id": "kit_02_q_02",
+      "prompt": "Cal looks at the floor. \"Did you mean it?\" The subtext is most likely:",
+      "options": [
+        { "id": "a", "label": "Cal already knows the answer and is bracing for it." },
+        { "id": "b", "label": "Cal wants to change the topic to floors." },
+        { "id": "c", "label": "Cal is asking a casual factual question." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Looking away while asking a hard question is a classic shape for not wanting to see the answer."
+    },
+    {
+      "id": "kit_02_q_03",
+      "prompt": "Iris laughs and says \"You're impossible.\" The subtext is most likely:",
+      "options": [
+        { "id": "a", "label": "She finds Cal charming and is not really annoyed." },
+        { "id": "b", "label": "She is filing a complaint." },
+        { "id": "c", "label": "She is asking him to please continue being impossible." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Laughter while teasing usually means the words are kinder than they look."
+    }
+  ]
+}

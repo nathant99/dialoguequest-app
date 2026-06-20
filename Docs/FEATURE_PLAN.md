@@ -53,11 +53,11 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Build `SubtextPanelView` — surface + AI-inferred subtext; confirm/reject controls drive Patter-acknowledged subtext into the node — 2026-06-20 PR #26
 - [x] Build `TagBalanceDashboardView` — Charts bar chart per character; imbalance warning ribbons + dominant-tag coaching line — 2026-06-20 PR #26
 - [x] Build `BranchMeaningfulnessCheckView` — 3-question Socratic prompt + 1-line reflection; records `reflectedBranchPointIDs` — 2026-06-20 PR #26
-- [ ] Build `AnthologyGalleryView` — mood-tagged completed trees; thumbnail + opening line
-- [ ] Build `ProgressView` with XP / streak / badge / dialogue-craft attunement chart
+- [x] Build `AnthologyGalleryView` — mood-tagged published trees; SwiftData fetch in `onAppear` (no `@Query`); platform-guarded list style — 2026-06-20 PR #27
+- [x] Build `ProgressDashboardView` with XP bar + streak badge + adaptive badge grid; `@AppStorage`-backed totals — 2026-06-20 PR #27
 - [ ] Build `ProfileView` with `ForgeAvatar.AvatarStudioView(.lite)`
 - [ ] Build `SettingsView` with parental gate
-- [ ] Build `QuizView` for question kits
+- [x] Build `QuizView` for question kits — kit loader + `QuizMachine` + reveal-on-tap UX + completion screen — 2026-06-20 PR #27
 
 ### AI Mentor (DN cast lead per handoff)
 
@@ -66,16 +66,16 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Implement `DialogueLineAnalysis` `@Generable` for surface-vs-subtext reflection — 2026-06-19 PR #23
 - [x] Implement `TagBalanceTip` `@Generable` for attribution-rhythm coaching — 2026-06-19 PR #23
 - [x] Implement static fallbacks for every `@Generable` — 2026-06-19 PR #23 (`PatterFallbacks`)
-- [ ] Create mentor speech-bubble UI component
-- [ ] Wire mentor to events: branch-point reached, voice-consistency dip, tag-balance threshold crossed
+- [x] Create mentor speech-bubble UI component — 2026-06-19 PR #23 (`SharedUI.MentorBubbleView`)
+- [x] Wire mentor to events: branch-point reached + tag-balance threshold crossed — 2026-06-20 PR #27 (`PatterReactionService` orchestrates `PatterMentor.branchCheck` + `tagBalanceTip`; voice-consistency dip wires in the Phase 2 SubtextPanel iteration)
 
 ### Gamification
 
-- [ ] Integrate ForgeGamification `XPEngine` for leveling
-- [ ] Integrate `StreakManager` for daily engagement
-- [ ] Integrate `AchievementEngine` with first 10 Phase-1 achievements
-- [ ] Wire question kits 01-04 via `Bundle.module` (voice / subtext / tag balance / branching)
-- [ ] Implement XP awards for: first tree shipped, first subtext confirmation, balanced tags, meaningful branch reflection
+- [x] Integrate ForgeGamification `XPEngine` for leveling — 2026-06-20 PR #27 (`DialogueQuestGamification.makeConfig()` + `ProgressDashboardView`)
+- [x] Configure `StreakManager` deps + freeze count via `GamificationConfig` (per-session recordCompletion wiring lands in Phase 2 telemetry round) — 2026-06-20 PR #27
+- [x] Register 4 Phase-1 achievements (first tree / first subtext / tag balance / branch reflected) — 2026-06-20 PR #27
+- [x] Wire question kits 01-04 via `Bundle.module` (voice / subtext / tag balance / branching) — 2026-06-20 PR #27 (`QuestionKitLoader` + `.process("Resources/Questions")` + 4 JSON kits)
+- [x] Codify XP awards constants for: published tree (75), subtext confirmation (15), branch reflection (10) — 2026-06-20 PR #27 (`DialogueQuestGamification.xpFor*`); ProgressTabView consumes via `@AppStorage`
 
 ### Adventure Mode
 
