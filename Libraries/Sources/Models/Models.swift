@@ -1,8 +1,9 @@
 import Foundation
 import ForgeModels
 
-/// Stub target marker for `Models`. Real domain types ship in subsequent files
-/// under this target — see `DialogueNode.swift`, `DialogueTree.swift`, etc.
-public enum ModelsTarget {
+/// Target marker for `Models`. Domain types ship in sibling files under this
+/// target — `DialogueNode.swift`, `DialogueTree.swift`, `DialogueTag.swift`,
+/// `DialogueCharacterRef.swift`, `DialogueMood.swift`.
+public nonisolated enum ModelsTarget {
     public static let bundleIdentifier: String = "com.sparkanvil.dialoguequest.models"
 }
