@@ -102,5 +102,13 @@ let package = Package(
             ],
             swiftSettings: defaultSwiftSettings
         ),
+        .testTarget(
+            name: "AppFeatureTests",
+            dependencies: [
+                "Models",
+                "AppFeature",
+            ],
+            swiftSettings: defaultSwiftSettings
+        ),
     ]
 )
