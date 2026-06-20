@@ -1,0 +1,43 @@
+{
+  "id": "kit_04_branching",
+  "title": "What does each branch cost?",
+  "theme": "branching",
+  "questions": [
+    {
+      "id": "kit_04_q_01",
+      "prompt": "A meaningful branch is one where:",
+      "options": [
+        { "id": "a", "label": "Both choices lead to the same next scene." },
+        { "id": "b", "label": "Each choice costs the speaker something different." },
+        { "id": "c", "label": "The choices are just different colors." }
+      ],
+      "correctOptionID": "b",
+      "freeTextRubric": null,
+      "mentorPostScript": "If a branch doesn't change what comes next, it isn't really a branch."
+    },
+    {
+      "id": "kit_04_q_02",
+      "prompt": "Iris is asked: \"Do you want me to stay or go?\" Which branch pair is most meaningful?",
+      "options": [
+        { "id": "a", "label": "Stay vs Go" },
+        { "id": "b", "label": "Eat soup vs Eat sandwich" },
+        { "id": "c", "label": "Pick a number between 1 and 10" }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "The strongest branches mirror the question the speaker is really asking."
+    },
+    {
+      "id": "kit_04_q_03",
+      "prompt": "After a branch, the next scene should:",
+      "options": [
+        { "id": "a", "label": "Show some sign that the branch mattered." },
+        { "id": "b", "label": "Ignore the branch entirely." },
+        { "id": "c", "label": "Be exactly the same regardless." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "A branch only matters if the world after it looks different."
+    }
+  ]
+}

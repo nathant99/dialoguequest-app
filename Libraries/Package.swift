@@ -68,6 +68,7 @@ let package = Package(
                 "Services",
                 "SharedUI",
                 "AIMentor",
+                .product(name: "ForgeUI", package: "forgekit"),
                 .product(name: "ForgeNavigation", package: "forgekit"),
                 .product(name: "ForgeAdventure", package: "forgekit"),
                 .product(name: "ForgeAvatar", package: "forgekit"),
@@ -75,6 +76,9 @@ let package = Package(
                 .product(name: "ForgeGamification", package: "forgekit"),
                 .product(name: "ForgePedagogy", package: "forgekit"),
                 .product(name: "ForgeStateMachine", package: "forgekit"),
+            ],
+            resources: [
+                .process("Resources/Questions"),
             ],
             swiftSettings: defaultSwiftSettings
         ),

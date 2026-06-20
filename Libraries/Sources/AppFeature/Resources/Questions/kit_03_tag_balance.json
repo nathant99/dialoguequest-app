@@ -1,0 +1,43 @@
+{
+  "id": "kit_03_tag_balance",
+  "title": "Mix up the way they speak",
+  "theme": "tag_balance",
+  "questions": [
+    {
+      "id": "kit_03_q_01",
+      "prompt": "A scene has 9 of 10 lines ending with \"said.\" What would help most?",
+      "options": [
+        { "id": "a", "label": "Add one action beat — a glance, a shrug, a small gesture." },
+        { "id": "b", "label": "Add more lines ending with \"said.\"" },
+        { "id": "c", "label": "Delete every line and start over." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "One action beat makes \"said\" feel intentional instead of automatic."
+    },
+    {
+      "id": "kit_03_q_02",
+      "prompt": "Every single line is an action beat (\"Iris frowned.\" \"Cal shrugged.\"). What's the risk?",
+      "options": [
+        { "id": "a", "label": "The reader loses track of who is speaking." },
+        { "id": "b", "label": "The reader becomes a marathon runner." },
+        { "id": "c", "label": "Nothing, this is always best." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Action beats are powerful but they don't say who's talking. Mix in a plain \"X said\" once in a while."
+    },
+    {
+      "id": "kit_03_q_03",
+      "prompt": "A bare quote with no tag (“Why?”) works best when:",
+      "options": [
+        { "id": "a", "label": "The reader can already tell who is speaking." },
+        { "id": "b", "label": "There are six characters in the scene." },
+        { "id": "c", "label": "The line is exactly 100 words long." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "No tag is fine when the rhythm makes the speaker obvious."
+    }
+  ]
+}
