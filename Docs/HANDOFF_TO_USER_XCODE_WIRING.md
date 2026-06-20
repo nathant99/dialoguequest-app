@@ -9,7 +9,19 @@ freshness-horizon: 30 days
 
 # Handoff to User — Xcode GUI Wiring
 
-The agent cannot edit `project.pbxproj` / `contents.xcworkspacedata` / `xcscheme` / `Info.plist` / `entitlements` from disk while operating inside Xcode (per `.claude/rules/xcode-agent-safety.md` — direct edits risk terminating the agent session via External-Changes dialog or workspace reload).
+The agent cannot edit Xcode-managed files from disk while operating inside Xcode (per `@.claude/rules/xcode-agent-safety.md` + `@CLAUDE.md` § Xcode Agent Safety — direct edits risk terminating the agent session via External-Changes dialog or workspace reload).
+
+**Forbidden file globs the agent must not write** (re-stated here for visibility next to GUI steps):
+
+- `*.xcodeproj/project.pbxproj` (and the embedded `project.xcworkspace/`)
+- `DialogueQuest.xcworkspace/contents.xcworkspacedata` + shared/user data
+- `*.xcscheme` (anywhere)
+- `*.xctestplan` (incl. `DialogueQuest.xctestplan` at repo root)
+- `*.xcassets/Contents.json` + per-imageset `Contents.json`
+- `Apps/DialogueQuest/DialogueQuest/Info.plist`
+- `*.entitlements`
+- `*.xcdatamodeld/`
+- `xcuserdata/`, `.swiftpm/`, `Package.resolved`
 
 The agent landed `Libraries/Package.swift` + 5 target stubs + an integration test suite. You need to do these GUI steps inside Xcode to make the package visible to the workspace + app target.
 
