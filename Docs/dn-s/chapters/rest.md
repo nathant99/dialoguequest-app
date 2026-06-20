@@ -81,6 +81,6 @@ When students ask Patter whether using silence is hard, Patter says — quoting 
 - **Alliance**: Patter.
 - **Tension**: None.
 
-## Cultural-context note
+## cultural context
 
 The lake-edge dawn-fishing setting is a deliberate gentle pastoral framing. Rest is rendered as an anthropomorphic heron-tween in the chunky-cartoon visual register. The pocket-watch-around-the-neck is a kid-friendly visual device for *active silence.* This chapter intentionally echoes HaikuQuest's Pause (snowy-egret + mid-step) — the two characters embody the same physical principle (held mid-step = active silence) but in service of different curricular primitives (haiku kireji vs. dialogue pause). The echo is *cross-portfolio coherence,* not coincidence.

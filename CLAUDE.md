@@ -4,6 +4,16 @@ Branching-dialogue craft workshop for tweens. Write a conversation, not a paragr
 
 > **Deeper context**: `@Docs/TECHNICAL_DESIGN.md` (architecture), `@Docs/FEATURE_PLAN.md` (in-flight work), `@Docs/IMPLEMENTATION_HANDOFF.md` (handoff state), `@Docs/APP_SPECIFIC_NOTES.md` (preserved prior CLAUDE.md content). Portfolio-wide rules auto-load from `@.claude/rules/`.
 
+## Xcode Agent Safety (load-bearing)
+
+This agent operates inside Xcode via the Coding Assistant integration. **Do NOT author or edit Xcode-managed files** (`*.xcodeproj/project.pbxproj`, `*.xcworkspace/contents.xcworkspacedata`, `*.xcscheme`, `*.xctestplan`, `*.xcassets/Contents.json`, `Info.plist`, `*.entitlements`, `xcuserdata/`). Editing them risks External-Changes dialogs or a workspace reload that **terminates the agent session mid-task**.
+
+- Staging + committing these files via git is **allowed** (the rule is about file-content edits, not git ops).
+- For Xcode-GUI-bound work (adding SPM package to the workspace, target dependency changes, capability/entitlement edits, scheme creation, asset-catalog Contents.json regen), file `Docs/HANDOFF_TO_USER_XCODE_WIRING.md` (or a topical variant) describing the exact GUI steps.
+- For source code, prefer `Libraries/Sources/<Target>/*.swift` (SPM auto-discovers — no project edit). When an app-shell file must change, route through MCP `XcodeUpdate` / `XcodeWrite`, not filesystem `Write`/`Edit`.
+
+Full rule: `@.claude/rules/xcode-agent-safety.md`.
+
 ## Tech Stack
 
 - **Language**: Swift 6 (strict concurrency)

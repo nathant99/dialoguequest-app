@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "F157C0BE-B567-4397-9E66-CA48AFCA058F",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:DialogueQuest.xcodeproj",
+      "identifier" : "FBBBC95B2FE6283000EB978A",
+      "name" : "DialogueQuest"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:DialogueQuest.xcodeproj",
+        "identifier" : "FBBBC9682FE6283100EB978A",
+        "name" : "DialogueQuestTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:DialogueQuest.xcodeproj",
+        "identifier" : "FBBBC9722FE6283100EB978A",
+        "name" : "DialogueQuestUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
