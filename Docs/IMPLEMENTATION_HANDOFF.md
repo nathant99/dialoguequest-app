@@ -10,6 +10,10 @@ freshness-horizon: 60 days
 
 This is the canonical engineering handoff for DialogueQuest, replacing the prior stub. Authored in-session 2026-06-19 by the engineering CC session per the engineering kickoff handoff. Read this FIRST when opening the repo; cross-references the Tier-2 design + content handoffs.
 
+> **⚠️ Xcode Agent Safety (load-bearing — read before your first write)**: This repo's agent operates inside Xcode via the Coding Assistant integration. **Do NOT author or edit Xcode-managed files** (`*.xcodeproj/project.pbxproj`, `*.xcworkspace/**`, `*.xcscheme`, `DialogueQuest.xctestplan`, `*.xcassets/Contents.json`, `Apps/DialogueQuest/DialogueQuest/Info.plist`, `*.entitlements`, `*.xcdatamodeld/**`, `xcuserdata/**`, `**/.swiftpm/**`, `Package.resolved`). Writing these from disk risks the External-Changes dialog or a workspace reload that terminates the agent session mid-task. For any Xcode GUI work, **file a `Docs/HANDOFF_TO_USER_<TOPIC>.md`** with explicit steps; the user does it. **Staging + committing** the user's GUI diffs IS allowed (the rule applies to authoring content, not to `git add`/`git commit`). SPM source under `Libraries/Sources/<Target>/` and `Libraries/Tests/<Target>Tests/` is always safe. Full rule: `@.claude/rules/xcode-agent-safety.md` + `@CLAUDE.md` § "Xcode Agent Safety".
+>
+> **SPM file-discovery gotcha** (discovered 2026-06-21): when ADDING a new SPM test file mid-session, SPM caches the per-target `SwiftFileList`. Force re-discovery by editing `Libraries/Package.swift` substantively (e.g., a dependency entry change the new file actually needs). Touching alone is insufficient — the test target will compile but Swift Testing's macro won't see the new file, and `RunSomeTests` reports `"Test '<Suite>' not found in target"`.
+
 ## 1. Overview
 
 **Primitive**: branching dialogue craft — the kid writes a conversation (a tree of speech nodes between 2-3 named characters), not a paragraph. Every line gets scored on four axes: voice consistency, subtext, tag balance, branch meaningfulness.
