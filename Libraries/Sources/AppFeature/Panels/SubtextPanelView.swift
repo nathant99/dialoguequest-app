@@ -36,7 +36,11 @@ struct SubtextPanelView: View {
         .padding()
         .background(reduceTransparency ? AnyShapeStyle(DialoguePalette.cream) : AnyShapeStyle(.thinMaterial))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .accessibilityIdentifier("subtext.panel")
+        // NOTE: Do NOT set an outer `.accessibilityIdentifier("subtext.panel")`
+        // here — SwiftUI propagates a container-level identifier to every
+        // descendant accessibility element, clobbering the per-element
+        // identifiers (`subtext.panel.heading`, `.confirm`, `.reject`, etc.)
+        // and breaking XCUITest queries against the granular ids.
         .task(id: machine.selectedNodeID) {
             await refresh()
         }
@@ -88,6 +92,20 @@ struct SubtextPanelView: View {
                         .buttonStyle(.bordered)
                         .accessibilityIdentifier("subtext.panel.reject")
                         .accessibilityHint("Reject this subtext. Patter will not save it.")
+                    }
+
+                    // Persistent confirmation badge — visible whenever the
+                    // selected line's id lives in `confirmedSubtextLineIDs`.
+                    // Acts as the UI-test signal that the confirm-flow
+                    // landed (the inspector's "Subtext" section is reliable
+                    // only when scrolled into view; the badge stays in the
+                    // panel viewport at all times).
+                    if machine.confirmedSubtextLineIDs.contains(node.id) {
+                        Label("Saved as a confirmed subtext.", systemImage: "checkmark.seal.fill")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(DialoguePalette.rust)
+                            .padding(.top, 4)
+                            .accessibilityIdentifier("subtext.panel.confirmedBadge")
                     }
                 }
             }
