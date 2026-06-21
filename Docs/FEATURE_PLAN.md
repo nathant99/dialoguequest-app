@@ -13,7 +13,7 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Add ForgeKit dependency (remote GitHub URL, `from: "0.99.0"`) — 2026-06-19 PR #21
 - [x] Create stub source files for all targets — 2026-06-19 PR #21
 - [x] Swap app shell `ContentView` → `AppFeature.RootView()` + wire `ModelContainer(for: PersistentDialogueTree.self, migrationPlan: DialogueQuestMigrationPlan.self)` — 2026-06-20 PR #28 (via MCP `XcodeUpdate`; `ContentView.swift` deleted)
-- [ ] User completes `@Docs/HANDOFF_TO_USER_XCODE_WIRING.md` Steps 1-4 (add Libraries to workspace + AppFeature dep + run integration tests) — Step 5 is agent-routed and already shipped
+- [x] User completed `@Docs/HANDOFF_TO_USER_XCODE_WIRING.md` Steps 1-4 — 2026-06-21 PR #29 (agent staged + committed the resulting `project.pbxproj` + `DialogueQuest.xctestplan` GUI diffs)
 - [ ] Verify build succeeds with zero warnings (after Xcode wiring)
 - [x] `.xcworkspace` created by Xcode + committed — 2026-06-19 PR #20
 
