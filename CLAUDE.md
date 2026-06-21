@@ -32,6 +32,8 @@ This agent operates inside Xcode via the Coding Assistant integration. **Do NOT 
 - **`Libraries/Package.swift`**: editable but watch out — Xcode triggers package re-resolution on save. Land in isolated commits, never bundle with multi-file changes.
 - **GUI-bound work** (workspace membership, target deps, capabilities, entitlements, scheme + test-plan edits, asset-catalog regen, Info.plist usage descriptions): file `Docs/HANDOFF_TO_USER_<TOPIC>.md` with exact GUI steps. The user does it; the agent doesn't.
 
+**Staging + committing Xcode-managed files IS allowed**: the "do not write" rule applies to AUTHORING content, not to `git add` / `git commit` of GUI-authored diffs. When the user completes Steps 1–4 of an Xcode-wiring handoff, the agent's responsibility is to stage + commit the resulting `pbxproj` / `xctestplan` / `xcscheme` diff. Refusing to commit would block the handoff loop. See `@.claude/rules/xcode-agent-safety.md` § "Staging + committing Xcode-managed files IS allowed" for the full carve-out.
+
 Full rule: `@.claude/rules/xcode-agent-safety.md`.
 
 ## Tech Stack

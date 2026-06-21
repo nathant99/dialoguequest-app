@@ -1,6 +1,7 @@
 ---
-status: ACTIVE
+status: CLOSED
 date: 2026-06-19
+closed-at: 2026-06-21
 direction: agent → user
 audience: Nghi (Xcode operator)
 intent: wire the new Libraries SPM package into the DialogueQuest workspace + app target — work the agent cannot do safely
@@ -8,6 +9,8 @@ freshness-horizon: 30 days
 ---
 
 # Handoff to User — Xcode GUI Wiring
+
+> **STATUS — CLOSED 2026-06-21**: Steps 1–4 landed via PR #29 (commit `3d48edb`); the user completed the GUI work in Xcode, and the agent staged + committed the resulting `project.pbxproj` + `DialogueQuest.xctestplan` diffs. Step 5 was already MCP-routed in PR #28. This handoff is preserved as the historical reference for the wiring pattern.
 
 The agent cannot edit Xcode-managed files from disk while operating inside Xcode (per `@.claude/rules/xcode-agent-safety.md` + `@CLAUDE.md` § Xcode Agent Safety — direct edits risk terminating the agent session via External-Changes dialog or workspace reload).
 

@@ -66,6 +66,26 @@ The agent must **never** write these directly. Even reads are fine; writes are d
 - **`xcconfig` files** (`Common.xcconfig`, `Debug.xcconfig`, `Release.xcconfig`) — Xcode reads these at build time but doesn't actively watch. Editing is OK but won't take effect until next build
 - **`Assets.xcassets/<Asset>.imageset/*.png` or `*.webp`** (asset files only, NOT `Contents.json`) — adding image files to an existing image set is OK; creating a new image set requires Xcode GUI for `Contents.json`
 
+## Staging + committing Xcode-managed files IS allowed (load-bearing carve-out)
+
+**The "do not write" rule applies to AUTHORING file content. It does NOT apply to `git add` / `git commit` of Xcode-managed files the USER authored via the Xcode GUI.**
+
+Concretely:
+
+| Operation | Forbidden? |
+|---|---|
+| `Write` / `Edit` / `XcodeUpdate` content of `project.pbxproj` / `xcscheme` / `xctestplan` | YES — never author |
+| `git add Apps/.../project.pbxproj` after the user added a target dep via GUI | NO — canonical workflow |
+| `git commit` an Xcode-managed file the user modified via GUI | NO — canonical workflow |
+| `git diff` / `git status` on Xcode-managed files | NO — read-only inspection is always safe |
+| `git checkout HEAD -- <xcode-file>` for recovery | NO — recovery escape hatch |
+
+**Why this carve-out exists**: `HANDOFF_TO_USER_XCODE_WIRING.md`-style docs ask the user to do Xcode GUI work (add packages to workspace, add target dependencies, add tests to test plan, etc.). The user does the work; the Xcode-managed file diff sits in the working tree; the agent's next responsibility is to commit it so the work is durable. Refusing to commit would block the handoff loop.
+
+**Risk of staging/committing**: zero. `git add` reads the file; `git commit` writes only to `.git/`. Neither operation touches the Xcode-managed file content. Xcode's file-watcher doesn't react to `git` operations. The External Changes dialog only fires on content writes.
+
+**Rule of thumb**: if the diff already exists in the working tree, staging + committing is fine. If the diff does NOT exist and you're tempted to author it from scratch — file a handoff instead.
+
 ## Safe escape hatches
 
 When the agent legitimately needs to add a file that Xcode would normally have to register:
