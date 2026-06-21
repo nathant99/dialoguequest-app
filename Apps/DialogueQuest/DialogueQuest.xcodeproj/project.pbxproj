@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		FBE9CB422FE78EC1009C6484 /* AppFeature in Frameworks */ = {isa = PBXBuildFile; productRef = FBE9CB412FE78EC1009C6484 /* AppFeature */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		FBBBC96A2FE6283100EB978A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FBE9CB422FE78EC1009C6484 /* AppFeature in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 				FBBBC95E2FE6283000EB978A /* DialogueQuest */,
 				FBBBC96C2FE6283100EB978A /* DialogueQuestTests */,
 				FBBBC9762FE6283100EB978A /* DialogueQuestUITests */,
+				FBE9CB402FE78EC1009C6484 /* Frameworks */,
 				FBBBC95D2FE6283000EB978A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +96,13 @@
 				FBBBC9732FE6283100EB978A /* DialogueQuestUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		FBE9CB402FE78EC1009C6484 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +125,7 @@
 			);
 			name = DialogueQuest;
 			packageProductDependencies = (
+				FBE9CB412FE78EC1009C6484 /* AppFeature */,
 			);
 			productName = DialogueQuest;
 			productReference = FBBBC95C2FE6283000EB978A /* DialogueQuest.app */;
@@ -615,6 +629,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		FBE9CB412FE78EC1009C6484 /* AppFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AppFeature;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = FBBBC9542FE6283000EB978A /* Project object */;
 }
