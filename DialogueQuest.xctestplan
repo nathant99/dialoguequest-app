@@ -58,6 +58,13 @@
         "identifier" : "FBBBC9722FE6283100EB978A",
         "name" : "DialogueQuestUITests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..\/Libraries",
+        "identifier" : "AIMentorTests",
+        "name" : "AIMentorTests"
+      }
     }
   ],
   "version" : 1
