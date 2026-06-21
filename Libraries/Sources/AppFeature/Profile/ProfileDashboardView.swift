@@ -16,6 +16,8 @@ struct ProfileDashboardView: View {
     @State private var isStudioOpen: Bool = false
     @State private var isSeeded: Bool = false
 
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -93,7 +95,7 @@ struct ProfileDashboardView: View {
             Spacer()
         }
         .padding()
-        .background(.thinMaterial)
+        .background(panelBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
@@ -108,11 +110,21 @@ struct ProfileDashboardView: View {
                 Image(systemName: "chevron.right")
             }
             .padding()
-            .background(.thinMaterial)
+            .background(panelBackground)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain)
         .foregroundStyle(DialoguePalette.inkBlue)
+    }
+
+    /// Reduce-Transparency-aware background per `.claude/rules/liquid-glass.md`.
+    @ViewBuilder
+    private var panelBackground: some View {
+        if reduceTransparency {
+            DialoguePalette.cream
+        } else {
+            Color.clear.background(.thinMaterial)
+        }
     }
 
     private func seedIdentity() async {

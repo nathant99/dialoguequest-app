@@ -13,6 +13,8 @@ struct SubtextPanelView: View {
     @State private var analysis: DialogueLineAnalysis?
     @State private var isAnalyzing: Bool = false
 
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Subtext")
@@ -32,7 +34,7 @@ struct SubtextPanelView: View {
             }
         }
         .padding()
-        .background(.thinMaterial)
+        .background(reduceTransparency ? AnyShapeStyle(DialoguePalette.cream) : AnyShapeStyle(.thinMaterial))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .accessibilityIdentifier("subtext.panel")
         .task(id: machine.selectedNodeID) {

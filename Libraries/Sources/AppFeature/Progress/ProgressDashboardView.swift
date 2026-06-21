@@ -15,6 +15,8 @@ struct ProgressDashboardView: View {
     var availableFreezes: Int = 2
     var earnedBadgeIDs: Set<String> = []
 
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
     private let config = DialogueQuestGamification.makeConfig()
 
     var body: some View {
@@ -79,7 +81,7 @@ struct ProgressDashboardView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.thinMaterial)
+        .background(reduceTransparency ? AnyShapeStyle(DialoguePalette.cream) : AnyShapeStyle(.thinMaterial))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .opacity(earned ? 1 : 0.55)
         .accessibilityElement(children: .combine)
