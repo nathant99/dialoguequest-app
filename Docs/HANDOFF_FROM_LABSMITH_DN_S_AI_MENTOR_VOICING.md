@@ -1,6 +1,7 @@
 ---
-status: NEW
+status: IN-PROGRESS
 date: 2026-06-01
+in-progress-at: 2026-06-21
 round: Round 400 #823 (labsmith DN-S Integration Phase 1D portfolio rollout — dialoguequest)
 parent-decision: labsmith/Docs/DECISION_DN_S_AI_MENTOR_PORTFOLIO_ROLLOUT.md
 parent-plan: labsmith/Docs/PLAN_DN_S_PORTFOLIO_ROLLOUT_WAVES_2026-06-01.md
@@ -9,6 +10,8 @@ forgekit-version-required: 0.97.0 (CastDialog API)
 trauma-gating: NONE
 moderation-sensitivity: .normal
 ---
+
+> **STATUS — IN-PROGRESS 2026-06-21**: Step 1 (`CastVoiceProfile` derivation for all 5 cast members) + Step 2 (`CastVoiceRegistry` build at app launch) shipped via `Libraries/Sources/AIMentor/CastVoicing/CastVoiceRegistry.swift` + `Libraries/Tests/AIMentorTests/CastVoiceRegistryTests.swift` (14 tests green). Voicing-priority order matches the handoff (`brogue → glance → rest → sprig → weigh`). Reviewer-gate carve-out: zero — DialogueQuest is trauma-gating NONE. Remaining steps deferred to a follow-up round: AI-mentor call-site wiring (`PatterReactionService.respondAs(.character(slug), …)`), `ForgeExperiments.castVoicing` feature flag (default off), and a 100-sample moderation regression audit. Patter remains the protagonist (Pattern B) — voicing surface is additive coaching, not protagonist replacement.
 
 # Handoff from Labsmith — DN-S AI-Mentor Voicing for Dialoguequest
 

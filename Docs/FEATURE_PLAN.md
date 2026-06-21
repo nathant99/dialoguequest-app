@@ -69,6 +69,8 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Implement static fallbacks for every `@Generable` — 2026-06-19 PR #23 (`PatterFallbacks`)
 - [x] Create mentor speech-bubble UI component — 2026-06-19 PR #23 (`SharedUI.MentorBubbleView`)
 - [x] Wire mentor to events: branch-point reached + tag-balance threshold crossed — 2026-06-20 PR #27 (`PatterReactionService` orchestrates `PatterMentor.branchCheck` + `tagBalanceTip`; voice-consistency dip wires in the Phase 2 SubtextPanel iteration)
+- [x] **DN-S Move D — `CastVoiceRegistry`** (5 `CastVoiceProfile`s for brogue / glance / rest / sprig / weigh derived from `Docs/dn-s/chapters/*.md`; `makeCastDialog()` builds a ForgeKit `CastDialog` actor with all 5 pre-registered; 14 tests in `Libraries/Tests/AIMentorTests/CastVoiceRegistryTests.swift`) — 2026-06-21 PR (handoff `HANDOFF_FROM_LABSMITH_DN_S_AI_MENTOR_VOICING.md` → IN-PROGRESS; Step 1 + Step 2 of the 5-step rollout closed)
+- [ ] **DN-S Move D follow-up** — wire `CastDialog.respond(as:trigger:context:)` into `PatterReactionService` call sites; feature-flag via `ForgeExperiments.castVoicing` (default off); 100-sample moderation regression audit
 
 ### Gamification
 
