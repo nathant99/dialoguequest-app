@@ -12,6 +12,12 @@ public struct RootView: View {
     @State private var machine = AppNavigationMachine()
     @AppStorage("dq.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
 
+    /// UI tests pass `-uiTestSkipOnboarding YES` so the tab surface is
+    /// reachable without driving the 5-step onboarding flow.
+    private static let isUITestSkippingOnboarding: Bool = {
+        ProcessInfo.processInfo.arguments.contains("-uiTestSkipOnboarding")
+    }()
+
     public init() {}
 
     public var body: some View {
@@ -19,18 +25,24 @@ public struct RootView: View {
             Tab("Write", systemImage: "bubble.left.and.text.bubble.right", value: AppTab.write) {
                 WriteTabView()
             }
+            .accessibilityIdentifier("tab.write")
             Tab("Adventure", systemImage: "map", value: AppTab.adventure) {
                 AdventureTabView()
             }
+            .accessibilityIdentifier("tab.adventure")
             Tab("Progress", systemImage: "chart.line.uptrend.xyaxis", value: AppTab.progress) {
                 ProgressTabView()
             }
+            .accessibilityIdentifier("tab.progress")
             Tab("Profile", systemImage: "person.crop.circle", value: AppTab.profile) {
                 ProfileTabView()
             }
+            .accessibilityIdentifier("tab.profile")
         }
         .tint(DialoguePalette.rust)
-        .fullScreenCoverIfPossible(isPresented: .constant(!hasCompletedOnboarding)) {
+        .fullScreenCoverIfPossible(
+            isPresented: .constant(!hasCompletedOnboarding && !Self.isUITestSkippingOnboarding)
+        ) {
             OnboardingFlow {
                 hasCompletedOnboarding = true
             }

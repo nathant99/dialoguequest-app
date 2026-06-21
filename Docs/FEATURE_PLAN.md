@@ -99,8 +99,8 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Unit tests for voice consistency analyzer — `Libraries/Tests/ServicesTests/VoiceConsistencyAnalyzerTests.swift` (2026-06-20)
 - [x] Unit tests for tag balancer thresholds — `Libraries/Tests/ServicesTests/TagBalancerTests.swift` (2026-06-20)
 - [x] Unit tests for subtext fallback paths — `Libraries/Tests/AIMentorTests/PatterFallbacksTests.swift` (11 tests; `Libraries/Package.swift` adds the test target; `Docs/HANDOFF_TO_USER_ADD_AIMENTORTESTS_TO_TESTPLAN.md` queues the test-plan GUI step)
-- [ ] UI tests for tree-builder flow
-- [ ] UI tests for subtext confirmation flow
+- [x] UI tests for tree-builder flow — `Apps/DialogueQuest/DialogueQuestUITests/RootTabNavigationUITests.swift` (5 tests; smoke-tests 4-tab shell + tab reachability + Write-tab landing; `-uiTestSkipOnboarding` launch arg bypasses onboarding) (2026-06-21)
+- [ ] UI tests for subtext confirmation flow — deferred; requires `accessibilityIdentifier` tagging across SubtextPanelView affordances
 - [ ] Accessibility audit (VoiceOver / Dynamic Type / color contrast)
 - [ ] Performance profiling (tree edit latency < 16ms; AI analysis call queue-bounded)
 
