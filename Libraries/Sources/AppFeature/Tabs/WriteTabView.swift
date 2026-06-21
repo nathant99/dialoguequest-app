@@ -32,6 +32,11 @@ struct WriteTabView: View {
                 .navigationTitle(navigationTitle)
         }
         .task {
+            // UI-test seed (no-op in production). Must run BEFORE the tier
+            // sync so the seeded machine's tier doesn't get clobbered.
+            if let seeded = WriteTabUITestSeed.seedIfRequested(), machine.tree.nodes.isEmpty {
+                machine = seeded
+            }
             // Sync the tier on initial appear so the machine's cap matches
             // the kid's experience even before they publish anything new.
             let tier = DialogueTree.NodeCountConstraint.SessionTier(
