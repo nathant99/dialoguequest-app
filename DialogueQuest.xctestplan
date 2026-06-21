@@ -46,6 +46,20 @@
         "identifier" : "ModelsTests",
         "name" : "ModelsTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..\/Libraries",
+        "identifier" : "ServicesTests",
+        "name" : "ServicesTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..\/..\/Libraries",
+        "identifier" : "AppFeatureTests",
+        "name" : "AppFeatureTests"
+      }
     }
   ],
   "version" : 1
