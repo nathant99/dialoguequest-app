@@ -115,5 +115,13 @@ let package = Package(
             ],
             swiftSettings: defaultSwiftSettings
         ),
+        .testTarget(
+            name: "AIMentorTests",
+            dependencies: [
+                "Models",
+                "AIMentor",
+            ],
+            swiftSettings: defaultSwiftSettings
+        ),
     ]
 )
