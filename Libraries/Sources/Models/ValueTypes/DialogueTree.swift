@@ -52,6 +52,34 @@ public nonisolated struct DialogueTree: Codable, Sendable, Hashable, Identifiabl
     public enum NodeCountConstraint {
         public static let phase1Min: Int = 5
         public static let phase1Max: Int = 15
+
+        /// Progressive-disclosure tier. The maximum tree size grows with
+        /// the kid's experience: session 1 caps at 3 nodes so the loop is
+        /// reachable in 5 minutes; sessions 2-3 cap at 5; sessions 4+ use
+        /// the full Phase 1 ceiling. The min for publish stays at 5
+        /// regardless — the kid must always meet that bar to publish.
+        public enum SessionTier: String, Sendable, Hashable, CaseIterable {
+            case firstSession
+            case earlySessions
+            case experienced
+
+            /// Map a raw "published-trees-so-far" count to a tier.
+            public init(publishedCount: Int) {
+                switch publishedCount {
+                case ..<1: self = .firstSession
+                case 1...2: self = .earlySessions
+                default: self = .experienced
+                }
+            }
+        }
+
+        public static func maxNodes(for tier: SessionTier) -> Int {
+            switch tier {
+            case .firstSession: return 3
+            case .earlySessions: return 5
+            case .experienced: return phase1Max
+            }
+        }
     }
 
     /// Phase 1 ship-readiness gate. UI uses this to disable the "Save"

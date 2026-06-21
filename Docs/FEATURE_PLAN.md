@@ -89,7 +89,7 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 
 - [x] Create 5-step onboarding flow (welcome, meet 2 characters, first 3-node tree, first subtext check, first published tree) — 2026-06-20 PR #28 (`AppFeature.OnboardingFlow` wraps `ForgeUI.ForgeOnboardingFlow`; presented as fullScreenCover on RootView gated by `@AppStorage("dq.hasCompletedOnboarding")`)
 - [x] Implement aha moment: first subtext confirmation revealing 2 layers of meaning — driven by `SubtextPanelView` confirm-button (PR #26) + onboarding step 4 framing (PR #28)
-- [ ] Implement progressive disclosure (Session 1: 3-node tree only)
+- [x] Implement progressive disclosure (Session 1: 3-node tree only) — `DialogueTree.NodeCountConstraint.SessionTier` (firstSession=3 / earlySessions=5 / experienced=15); `DialogueTreeMachine.sessionTier` field threads through `appendChild` cap; `WriteTabView.@AppStorage("dq.publishedTreeCount")` maps to tier on `.task` + bumps on publish (2026-06-21)
 - [ ] Implement parent handoff flow (30s setup)
 - [ ] Implement Apple Declared Age Range API gate (iOS 26+)
 

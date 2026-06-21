@@ -34,6 +34,9 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
     public var selectedNodeID: UUID?
     /// Last error surfaced to the UI (mutation guard rejections, etc.).
     public var lastError: AuthoringError?
+    /// Progressive-disclosure tier. Caps the max node count per session;
+    /// callers pass `SessionTier(publishedCount:)` from `@AppStorage`.
+    public var sessionTier: DialogueTree.NodeCountConstraint.SessionTier
 
     public enum AuthoringError: String, Sendable, Hashable, Error {
         case treeAtMaxCapacity
@@ -49,7 +52,8 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
         reflectedBranchPointIDs: Set<UUID> = [],
         confirmedSubtextLineIDs: Set<UUID> = [],
         selectedNodeID: UUID? = nil,
-        lastError: AuthoringError? = nil
+        lastError: AuthoringError? = nil,
+        sessionTier: DialogueTree.NodeCountConstraint.SessionTier = .experienced
     ) {
         self.stage = stage
         self.tree = tree
@@ -57,11 +61,19 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
         self.confirmedSubtextLineIDs = confirmedSubtextLineIDs
         self.selectedNodeID = selectedNodeID
         self.lastError = lastError
+        self.sessionTier = sessionTier
     }
 
-    /// Required `reset()` per the portfolio convention.
+    /// Required `reset()` per the portfolio convention. Preserves the
+    /// current `sessionTier` so the cap doesn't snap back to full mid-flow.
     public mutating func reset() {
-        self = DialogueTreeMachine()
+        let tier = sessionTier
+        self = DialogueTreeMachine(sessionTier: tier)
+    }
+
+    /// Current maximum node count for the active tier.
+    public var maxNodes: Int {
+        DialogueTree.NodeCountConstraint.maxNodes(for: sessionTier)
     }
 
     // MARK: - Stage transitions
@@ -156,7 +168,7 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
         surfaceText: String = "",
         tag: DialogueTag = .said("said")
     ) -> UUID? {
-        guard tree.nodes.count < DialogueTree.NodeCountConstraint.phase1Max else {
+        guard tree.nodes.count < maxNodes else {
             lastError = .treeAtMaxCapacity
             return nil
         }
