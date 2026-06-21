@@ -95,10 +95,10 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 
 ### Quality
 
-- [ ] Unit tests for dialogue tree navigation + branch-meaningfulness scoring
-- [ ] Unit tests for voice consistency analyzer
-- [ ] Unit tests for tag balancer thresholds
-- [ ] Unit tests for subtext fallback paths
+- [x] Unit tests for dialogue tree navigation + branch-meaningfulness scoring — `Libraries/Tests/ModelsTests/DialogueTreeTests.swift` + `Libraries/Tests/ServicesTests/BranchMeaningfulnessScorerTests.swift` (2026-06-19 / 2026-06-20)
+- [x] Unit tests for voice consistency analyzer — `Libraries/Tests/ServicesTests/VoiceConsistencyAnalyzerTests.swift` (2026-06-20)
+- [x] Unit tests for tag balancer thresholds — `Libraries/Tests/ServicesTests/TagBalancerTests.swift` (2026-06-20)
+- [ ] Unit tests for subtext fallback paths — pending `AIMentorTests/PatterFallbacksTests.swift`
 - [ ] UI tests for tree-builder flow
 - [ ] UI tests for subtext confirmation flow
 - [ ] Accessibility audit (VoiceOver / Dynamic Type / color contrast)
