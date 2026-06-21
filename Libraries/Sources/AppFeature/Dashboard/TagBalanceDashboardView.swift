@@ -10,6 +10,8 @@ import SharedUI
 struct TagBalanceDashboardView: View {
     let report: TagBalancer.TreeReport
 
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -65,8 +67,10 @@ struct TagBalanceDashboardView: View {
             }
         }
         .padding()
-        .background(.thinMaterial)
+        .background(reduceTransparency ? AnyShapeStyle(DialoguePalette.cream) : AnyShapeStyle(.thinMaterial))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Tag balance dashboard")
     }
 
     private struct BarEntry: Identifiable {

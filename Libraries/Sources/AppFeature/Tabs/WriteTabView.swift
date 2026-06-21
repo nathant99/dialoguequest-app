@@ -19,6 +19,9 @@ struct WriteTabView: View {
     @State private var reactionService: PatterReactionService?
     @State private var activeBranchPointID: UUID?
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
     private let scorer = BranchMeaningfulnessScorer()
     private let voiceAnalyzer = VoiceConsistencyAnalyzer()
     private let tagBalancer = TagBalancer()
@@ -121,20 +124,38 @@ struct WriteTabView: View {
                 NodeInspectorView(machine: $machine)
                     .frame(minHeight: 280)
                     .padding()
-                    .background(.thinMaterial)
+                    .background(panelBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
                 if let voicing = castVoicing.lastVoicing {
                     CastVoicingChip(voicing: voicing)
-                        .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .leading)))
+                        .transition(
+                            reduceMotion
+                            ? .opacity
+                            : .opacity.combined(with: .scale(scale: 0.95, anchor: .leading))
+                        )
                 }
 
                 publishStripe
             }
             .padding()
-            .animation(.snappy(duration: 0.2), value: castVoicing.lastVoicing?.id)
+            .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: castVoicing.lastVoicing?.id)
         }
         .background(DialoguePalette.cream.opacity(0.6))
+    }
+
+    /// Reduce-Transparency-aware background — per `.claude/rules/liquid-glass.md`
+    /// glass + thin-material surfaces must collapse to a solid palette tint
+    /// when `accessibilityReduceTransparency` is on, so the background isn't
+    /// fully translucent (and so a low-vision reader keeps the surface
+    /// boundary visible).
+    @ViewBuilder
+    private var panelBackground: some View {
+        if reduceTransparency {
+            DialoguePalette.cream
+        } else {
+            Color.clear.background(.thinMaterial)
+        }
     }
 
     private var publishStripe: some View {
@@ -177,7 +198,7 @@ struct WriteTabView: View {
             )
         }
         .padding()
-        .background(.thinMaterial)
+        .background(panelBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 

@@ -14,6 +14,8 @@ struct DialogueTreeBuilderView: View {
     /// the result in the right-hand panel.
     var onSelectBranchPoint: ((UUID) -> Void)?
 
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             headerBar
@@ -167,9 +169,16 @@ struct DialogueTreeBuilderView: View {
             Text("\(machine.tree.nodes.count) of \(DialogueTree.NodeCountConstraint.phase1Min) min")
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(machine.canPublish ? .green : .secondary)
+                .accessibilityHint(
+                    Text(
+                        machine.canPublish
+                        ? "Ready to publish."
+                        : "You need at least \(DialogueTree.NodeCountConstraint.phase1Min) lines to publish."
+                    )
+                )
         }
         .padding()
-        .background(.thinMaterial)
+        .background(reduceTransparency ? AnyShapeStyle(DialoguePalette.cream) : AnyShapeStyle(.thinMaterial))
     }
 
     // MARK: - Helpers
