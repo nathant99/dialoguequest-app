@@ -35,7 +35,7 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Implement `TagBalancer` — per-character + per-tree counts; 70% imbalance threshold; dominant classification — 2026-06-20 PR #25
 - [x] Implement tree-depth + branch-count constraints (5-15 nodes Phase 1) — `DialogueTree.NodeCountConstraint` shipped 2026-06-19 PR #22
 - [x] Implement `DialogueTreeMachine` view-local state machine per `.claude/rules/state-machines.md` — 2026-06-20 PR #26 (4-stage Stage enum, full authoring + editing + reflection + subtext-confirm transitions, deterministic value-type with `reset()`)
-- [ ] Implement deterministic seedable RNG for reproducible test states
+- [x] Implement deterministic seedable RNG for reproducible test states — `Libraries/Sources/Models/ValueTypes/SeedableRandom.swift` (NR-LCG; 6 tests in `SeedableRandomTests`)
 
 ### Subtext Detector (AI)
 
