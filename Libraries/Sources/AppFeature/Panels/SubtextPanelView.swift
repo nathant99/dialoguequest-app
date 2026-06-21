@@ -18,6 +18,7 @@ struct SubtextPanelView: View {
             Text("Subtext")
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(DialoguePalette.rust)
+                .accessibilityIdentifier("subtext.panel.heading")
 
             if let selected = machine.selectedNode, !selected.surfaceText.isEmpty {
                 content(for: selected)
@@ -27,11 +28,13 @@ struct SubtextPanelView: View {
                     systemImage: "ear",
                     description: Text("Patter listens for what's NOT being said. Write a line first.")
                 )
+                .accessibilityIdentifier("subtext.panel.empty")
             }
         }
         .padding()
         .background(.thinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .accessibilityIdentifier("subtext.panel")
         .task(id: machine.selectedNodeID) {
             await refresh()
         }
@@ -59,6 +62,7 @@ struct SubtextPanelView: View {
                 Text(analysis.inferredSubtext.isEmpty ? "No clear subtext here yet. Maybe try a smaller word or shorter beat?" : analysis.inferredSubtext)
                     .font(.callout)
                     .foregroundStyle(DialoguePalette.inkBlue)
+                    .accessibilityIdentifier("subtext.panel.message")
 
                 voiceScoreBar(score: analysis.voiceMatchScore)
 
@@ -71,6 +75,7 @@ struct SubtextPanelView: View {
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(DialoguePalette.rust)
+                        .accessibilityIdentifier("subtext.panel.confirm")
                         .accessibilityHint("Save this subtext to the line and mark it confirmed.")
 
                         Button {
@@ -79,6 +84,7 @@ struct SubtextPanelView: View {
                             Label("Not quite", systemImage: "arrow.counterclockwise")
                         }
                         .buttonStyle(.bordered)
+                        .accessibilityIdentifier("subtext.panel.reject")
                         .accessibilityHint("Reject this subtext. Patter will not save it.")
                     }
                 }

@@ -13,12 +13,23 @@ public struct RootView: View {
     @AppStorage("dq.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
 
     /// UI tests pass `-uiTestSkipOnboarding YES` so the tab surface is
-    /// reachable without driving the 5-step onboarding flow.
+    /// reachable without driving the onboarding flow.
     private static let isUITestSkippingOnboarding: Bool = {
         ProcessInfo.processInfo.arguments.contains("-uiTestSkipOnboarding")
     }()
 
-    public init() {}
+    /// UI tests pass `-uiTestResetOnboarding` to clear the persisted
+    /// completion flag at launch, guaranteeing the onboarding flow surfaces
+    /// even after a prior test run completed it.
+    private static let isUITestResettingOnboarding: Bool = {
+        ProcessInfo.processInfo.arguments.contains("-uiTestResetOnboarding")
+    }()
+
+    public init() {
+        if Self.isUITestResettingOnboarding {
+            UserDefaults.standard.removeObject(forKey: "dq.hasCompletedOnboarding")
+        }
+    }
 
     public var body: some View {
         TabView(selection: $machine.selectedTab) {

@@ -80,4 +80,27 @@ final class RootTabNavigationUITests: XCTestCase {
         XCTAssertTrue(anyStaticText.waitForExistence(timeout: 3),
                       "Some text content should be visible on the Write tab landing.")
     }
+
+    // MARK: - Onboarding (parent handoff)
+
+    @MainActor
+    func testOnboardingFirstStepIsParentHandoff() {
+        // Run the onboarding flow (no -uiTestSkipOnboarding) and confirm the
+        // first page is the parent-handoff step rendered by ForgeOnboardingFlow.
+        let app = XCUIApplication()
+        // Reset onboarding so the flow is presented on a fresh install.
+        app.launchArguments = ["-uiTestResetOnboarding"]
+        app.launch()
+
+        // The parent-handoff text is hard-coded in ForgeOnboardingFlow when
+        // page.isParentHandoff == true ("Ask a parent or guardian to continue").
+        let parentPrompt = app.staticTexts["Ask a parent or guardian to continue"]
+        XCTAssertTrue(parentPrompt.waitForExistence(timeout: 5),
+                      "Onboarding first step should surface the parent-handoff prompt.")
+
+        // DialogueQuest-specific copy on the same page.
+        let dqTitle = app.staticTexts["A quick note for grown-ups"]
+        XCTAssertTrue(dqTitle.exists,
+                      "DialogueQuest parent-handoff title should be present.")
+    }
 }
