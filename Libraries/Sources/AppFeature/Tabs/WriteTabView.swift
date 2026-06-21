@@ -8,6 +8,11 @@ import SharedUI
 /// review. Holds the `PatterMentor` instance + analyzer state and feeds
 /// derived data into the Builder / Inspector / Panels / Dashboard.
 struct WriteTabView: View {
+    /// Progressive-disclosure: count of trees the kid has published. Maps
+    /// to a `SessionTier` that caps the max tree size for early sessions
+    /// (session 1 → 3 nodes; sessions 2-3 → 5; experienced → 15).
+    @AppStorage("dq.publishedTreeCount") private var publishedTreeCount: Int = 0
+
     @State private var machine = DialogueTreeMachine()
     @State private var mentor = PatterMentor()
     @State private var activeBranchPointID: UUID?
@@ -20,6 +25,24 @@ struct WriteTabView: View {
         NavigationStack {
             content
                 .navigationTitle(navigationTitle)
+        }
+        .task {
+            // Sync the tier on initial appear so the machine's cap matches
+            // the kid's experience even before they publish anything new.
+            let tier = DialogueTree.NodeCountConstraint.SessionTier(
+                publishedCount: publishedTreeCount
+            )
+            if machine.sessionTier != tier {
+                machine.sessionTier = tier
+            }
+        }
+        .onChange(of: machine.stage) { _, newStage in
+            // Bump the published-tree counter when the kid ships a tree.
+            // Pure side-effect; the AppStorage value is the source of truth
+            // for the next session's tier — current session keeps its cap.
+            if newStage == .published {
+                publishedTreeCount += 1
+            }
         }
         .sheet(item: branchSheetBinding) { branchID in
             BranchMeaningfulnessCheckView(
@@ -81,6 +104,11 @@ struct WriteTabView: View {
                 Text("\(report.reflectedBranchPointCount) of \(report.branchPointCount)")
                     .font(.callout.monospacedDigit())
                     .foregroundStyle(DialoguePalette.inkBlue)
+                if machine.sessionTier != .experienced {
+                    Text("\(machine.tree.nodes.count) of \(machine.maxNodes) lines (Session ladder)")
+                        .font(.caption2.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
             }
             Spacer()
             Button {

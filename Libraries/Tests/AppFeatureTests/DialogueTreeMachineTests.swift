@@ -101,6 +101,76 @@ struct DialogueTreeMachineTests {
         #expect(machine.reflectedBranchPointIDs.isEmpty)
     }
 
+    // MARK: - Progressive disclosure (SessionTier)
+
+    @Test("Default session tier is experienced (full Phase 1 cap)")
+    func defaultTierIsExperienced() {
+        let machine = DialogueTreeMachine()
+        #expect(machine.sessionTier == .experienced)
+        #expect(machine.maxNodes == DialogueTree.NodeCountConstraint.phase1Max)
+    }
+
+    @Test("First-session tier caps appendChild at 3 nodes")
+    func firstSessionCapsAtThree() {
+        var machine = DialogueTreeMachine(sessionTier: .firstSession)
+        machine.updateTitle("Test")
+        machine.updateMood(.openingCuriosity)
+        machine.addCharacter(.init(name: "A", voiceRegister: "v", sampleLines: ["x"]))
+        machine.addCharacter(.init(name: "B", voiceRegister: "v", sampleLines: ["y"]))
+        machine.finishCharacterAuthoring()
+        #expect(machine.tree.nodes.count == 1, "Root seeded")
+        let speakerID = machine.tree.characters[0].id
+
+        // 2 more should land, 3rd should be blocked.
+        _ = machine.appendChild(to: machine.tree.rootNodeID, speakerID: speakerID)
+        _ = machine.appendChild(to: machine.tree.rootNodeID, speakerID: speakerID)
+        #expect(machine.tree.nodes.count == 3)
+
+        let blocked = machine.appendChild(to: machine.tree.rootNodeID, speakerID: speakerID)
+        #expect(blocked == nil)
+        #expect(machine.lastError == .treeAtMaxCapacity)
+    }
+
+    @Test("Early-sessions tier caps appendChild at 5 nodes")
+    func earlySessionsCapsAtFive() {
+        var machine = DialogueTreeMachine(sessionTier: .earlySessions)
+        machine.updateTitle("Test")
+        machine.addCharacter(.init(name: "A", voiceRegister: "v", sampleLines: ["x"]))
+        machine.addCharacter(.init(name: "B", voiceRegister: "v", sampleLines: ["y"]))
+        machine.finishCharacterAuthoring()
+        let speakerID = machine.tree.characters[0].id
+        // root counts; push to cap-of-5.
+        for _ in 0..<4 {
+            _ = machine.appendChild(to: machine.tree.rootNodeID, speakerID: speakerID)
+        }
+        #expect(machine.tree.nodes.count == 5)
+        let blocked = machine.appendChild(to: machine.tree.rootNodeID, speakerID: speakerID)
+        #expect(blocked == nil)
+    }
+
+    @Test("reset preserves the session tier (no snap-back mid-flow)")
+    func resetPreservesTier() {
+        var machine = DialogueTreeMachine(sessionTier: .firstSession)
+        machine.reset()
+        #expect(machine.sessionTier == .firstSession)
+    }
+
+    @Test(
+        "SessionTier(publishedCount:) maps published counts to canonical tiers",
+        arguments: zip(
+            [0, 1, 2, 3, 10],
+            [DialogueTree.NodeCountConstraint.SessionTier.firstSession,
+             .earlySessions, .earlySessions, .experienced, .experienced]
+        )
+    )
+    func tierMappingFromPublishedCount(
+        count: Int,
+        expected: DialogueTree.NodeCountConstraint.SessionTier
+    ) {
+        let tier = DialogueTree.NodeCountConstraint.SessionTier(publishedCount: count)
+        #expect(tier == expected)
+    }
+
     // MARK: - Test helpers
 
     private func makeReadyForEditing() -> DialogueTreeMachine {
