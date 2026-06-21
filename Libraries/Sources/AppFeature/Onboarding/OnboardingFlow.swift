@@ -2,10 +2,12 @@ import SwiftUI
 import ForgeUI
 import SharedUI
 
-/// Phase 1 5-step onboarding per `Docs/FEATURE_PLAN.md` § Onboarding:
-/// welcome → meet 2 characters → first 3-node tree → first subtext check →
-/// first published tree. Wraps `ForgeUI.ForgeOnboardingFlow` with a
-/// DialogueQuest-themed Patter hero.
+/// Phase 1 6-step onboarding per `Docs/FEATURE_PLAN.md` § Onboarding:
+/// parent setup → welcome → meet 2 characters → first 3-node tree → first
+/// subtext check → first published tree. The parent-handoff step at the top
+/// is a 30-second adult check-in surfaced by `ForgeUI.ForgeOnboardingFlow`'s
+/// `isParentHandoff` flag (per portfolio convention — short, transparent,
+/// no PII collection).
 struct OnboardingFlow: View {
     let onComplete: () -> Void
 
@@ -15,6 +17,12 @@ struct OnboardingFlow: View {
     }
 
     private static let pages: [ForgeOnboardingFlow.Page] = [
+        ForgeOnboardingFlow.Page(
+            title: "A quick note for grown-ups",
+            body: "DialogueQuest is a writing-craft workshop for ages 9-14. Nothing the kid writes leaves this device. You can set a daily session limit any time in Settings. Pass the device back when you're ready.",
+            imageName: "person.2",
+            isParentHandoff: true
+        ),
         ForgeOnboardingFlow.Page(
             title: "Welcome to DialogueQuest",
             body: "Write a conversation, not a paragraph. Every line counts.",

@@ -92,8 +92,8 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Create 5-step onboarding flow (welcome, meet 2 characters, first 3-node tree, first subtext check, first published tree) — 2026-06-20 PR #28 (`AppFeature.OnboardingFlow` wraps `ForgeUI.ForgeOnboardingFlow`; presented as fullScreenCover on RootView gated by `@AppStorage("dq.hasCompletedOnboarding")`)
 - [x] Implement aha moment: first subtext confirmation revealing 2 layers of meaning — driven by `SubtextPanelView` confirm-button (PR #26) + onboarding step 4 framing (PR #28)
 - [x] Implement progressive disclosure (Session 1: 3-node tree only) — `DialogueTree.NodeCountConstraint.SessionTier` (firstSession=3 / earlySessions=5 / experienced=15); `DialogueTreeMachine.sessionTier` field threads through `appendChild` cap; `WriteTabView.@AppStorage("dq.publishedTreeCount")` maps to tier on `.task` + bumps on publish (2026-06-21)
-- [ ] Implement parent handoff flow (30s setup)
-- [ ] Implement Apple Declared Age Range API gate (iOS 26+)
+- [x] Implement parent handoff flow (30s setup) — 2026-06-21 PR: `OnboardingFlow` now ships 6 pages with the first step `isParentHandoff: true` ("A quick note for grown-ups" — no PII / daily-session-limit-in-Settings / pass-back-when-ready). `ForgeOnboardingFlow` renders the standard "Ask a parent or guardian to continue" prompt on that step. New UI test `testOnboardingFirstStepIsParentHandoff()` asserts both surfaces.
+- [ ] Implement Apple Declared Age Range API gate (iOS 26+) — requires Info.plist GUI edit (`NSAdvertisingAttributionReportEndpoint` / Declared-Age-Range entitlement) per `xcode-agent-safety.md`; filed via `HANDOFF_TO_USER_DECLARED_AGE_RANGE_API.md`
 
 ### Quality
 
@@ -102,7 +102,7 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Unit tests for tag balancer thresholds — `Libraries/Tests/ServicesTests/TagBalancerTests.swift` (2026-06-20)
 - [x] Unit tests for subtext fallback paths — `Libraries/Tests/AIMentorTests/PatterFallbacksTests.swift` (11 tests; `Libraries/Package.swift` adds the test target; `Docs/HANDOFF_TO_USER_ADD_AIMENTORTESTS_TO_TESTPLAN.md` queues the test-plan GUI step)
 - [x] UI tests for tree-builder flow — `Apps/DialogueQuest/DialogueQuestUITests/RootTabNavigationUITests.swift` (5 tests; smoke-tests 4-tab shell + tab reachability + Write-tab landing; `-uiTestSkipOnboarding` launch arg bypasses onboarding) (2026-06-21)
-- [ ] UI tests for subtext confirmation flow — deferred; requires `accessibilityIdentifier` tagging across SubtextPanelView affordances
+- [ ] UI tests for subtext confirmation flow — `accessibilityIdentifier` tagging shipped 2026-06-21 (`subtext.panel`, `.heading`, `.empty`, `.message`, `.confirm`, `.reject`); end-to-end XCUITest still deferred because it requires launch-arg-driven machine-state seeding (pre-author 2 characters + a non-empty line). Filed via follow-up handoff.
 - [ ] Accessibility audit (VoiceOver / Dynamic Type / color contrast)
 - [ ] Performance profiling (tree edit latency < 16ms; AI analysis call queue-bounded)
 
