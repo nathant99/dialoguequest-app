@@ -1,12 +1,15 @@
 ---
-status: ACTIVE
+status: CLOSED
 date: 2026-06-19
+closed-at: 2026-06-21
 direction: hub → app
 intent: engineering kickoff — dialoguequest sits in the Tier 3 ELA cluster cohort (composite 60.0) on the 2026-06-19 docs-only ranking; full docs-only stack shipped but IMPLEMENTATION_HANDOFF.md is a stub awaiting Tier-2 doc-wave fill-in
 freshness-horizon: 14 days
 ---
 
 # Handoff from Hub — DialogueQuest Engineering Kickoff
+
+> **STATUS — CLOSED 2026-06-21**: Phase 0 (full `IMPLEMENTATION_HANDOFF.md` fill-in per the 9-section pattern) shipped in `Docs/IMPLEMENTATION_HANDOFF.md` 2026-06-19 (engineering session authored in-session — hub fill-in not needed). Step 0 ForgeKit bootstrap shipped PR #21 (`Libraries/Package.swift` pinned `from: "0.99.0"`, 9 client modules + 4 server-shared on `AppFeature`; remote-URL pattern). Steps 1-N Phase 1 feature work substantially shipped via PRs #22–#41 (Models / Services / SharedUI / AIMentor / AppFeature / RootView / DialogueTreeMachine / 4 question kits / PatterMentor + 3 @Generable + fallbacks / 5 cast chapters / onboarding / progressive-disclosure / progress + profile + settings tabs / quiz machine / Liquid Glass auto-adoption / clean SPM test target wiring). Pattern B + R-DN-PARITY swap test confirmed via cast-as-friends framing of brogue / glance / rest / sprig / weigh embodying distinct dialogue-craft primitives (already documented in `IMPLEMENTATION_HANDOFF.md` § 5). This handoff is preserved as historical kickoff context.
 
 Direction: **hub → app**. The docs-only phase is complete on the content axes; the engineering CC session can open dialoguequest in Xcode and begin Phase 1 implementation — BUT must first author the full `IMPLEMENTATION_HANDOFF.md` content per the standard 9-section pattern (it's a stub today).
 
