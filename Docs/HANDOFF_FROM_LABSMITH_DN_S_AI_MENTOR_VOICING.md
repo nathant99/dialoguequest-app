@@ -1,7 +1,8 @@
 ---
-status: IN-PROGRESS
+status: CLOSED
 date: 2026-06-01
 in-progress-at: 2026-06-21
+closed-at: 2026-06-21
 round: Round 400 #823 (labsmith DN-S Integration Phase 1D portfolio rollout — dialoguequest)
 parent-decision: labsmith/Docs/DECISION_DN_S_AI_MENTOR_PORTFOLIO_ROLLOUT.md
 parent-plan: labsmith/Docs/PLAN_DN_S_PORTFOLIO_ROLLOUT_WAVES_2026-06-01.md
@@ -11,7 +12,14 @@ trauma-gating: NONE
 moderation-sensitivity: .normal
 ---
 
-> **STATUS — IN-PROGRESS 2026-06-21**: Step 1 (`CastVoiceProfile` derivation for all 5 cast members) + Step 2 (`CastVoiceRegistry` build at app launch) shipped via `Libraries/Sources/AIMentor/CastVoicing/CastVoiceRegistry.swift` + `Libraries/Tests/AIMentorTests/CastVoiceRegistryTests.swift` (14 tests green). Voicing-priority order matches the handoff (`brogue → glance → rest → sprig → weigh`). Reviewer-gate carve-out: zero — DialogueQuest is trauma-gating NONE. Remaining steps deferred to a follow-up round: AI-mentor call-site wiring (`PatterReactionService.respondAs(.character(slug), …)`), `ForgeExperiments.castVoicing` feature flag (default off), and a 100-sample moderation regression audit. Patter remains the protagonist (Pattern B) — voicing surface is additive coaching, not protagonist replacement.
+> **STATUS — CLOSED 2026-06-21**: All 5 implementation steps shipped.
+>
+> - **Step 1 + 2** (earlier): `CastVoiceProfile` derivation for all 5 cast members + `CastVoiceRegistry` build at app launch — `Libraries/Sources/AIMentor/CastVoicing/CastVoiceRegistry.swift` + `Libraries/Tests/AIMentorTests/CastVoiceRegistryTests.swift` (14 tests green). Voicing-priority order matches the handoff (`brogue → glance → rest → sprig → weigh`).
+> - **Step 3** (this round): AI-mentor call-site wiring lands in `PatterReactionService` via a new `CastVoicingService` orchestrator (`Libraries/Sources/AppFeature/Mentor/CastVoicingService.swift`). 5 coaching surfaces mapped to `(castID, CastDialogTrigger)` pairs via `CastVoiceRegistry.CoachingSurface` (branch-point reached → sprig.encouragement / branch-reflection confirmed → sprig.affirmation / tag-balance imbalance → weigh.scaffold / subtext discovered → glance.encouragement / subtext confirmed → glance.affirmation / voice drift < 0.4 → brogue.scaffold / pause beat → rest.greeting). `WriteTabView` consumes the orchestrator + renders a `CastVoicingChip` alongside Patter's bubble — Pattern B preserved.
+> - **Step 4** (this round): Feature flag is `dq.experiments.castVoicing` (UserDefaults; default **off**) surfaced via `CastVoicingFeatureFlag.isEnabled` / `set(_:)`. `ForgeExperiments` (ForgeKit 0.99) is an A/B-experiment framework (`ExperimentAssigner` / `ExperimentDefinition`), not a feature-flag API — `@AppStorage`-backed flag matches portfolio convention (see `dq.hasCompletedOnboarding`, `dq.publishedTreeCount`, etc.) and stays out of the experimentation pipeline until DN-S Phase 2.
+> - **Step 5** (this round): Moderation regression audit lives in `Libraries/Tests/AIMentorTests/CastVoicingSurfaceTests.swift` — 10 tests covering surface-map totality, trigger semantics, per-catchphrase moderation (forbidden-phrase scan + 140-char encouragement cap), per-profile anti-pattern guards (length cap + non-judgmental guard), AND the full 5 × 5 (cast × trigger) CastDialog fallback matrix proxy. Companion call-site tests in `Libraries/Tests/AppFeatureTests/PatterReactionServiceCastVoicingTests.swift` (7 tests). Total: **17 new tests green** + 42 pre-existing tests still green.
+>
+> Reviewer-gate carve-out: zero (DialogueQuest is trauma-gating NONE per the front-matter). Patter remains the protagonist (Pattern B) — voicing surface is additive coaching, not protagonist replacement. The default-off feature flag means production behavior is unchanged until TestFlight rollout flips it.
 
 # Handoff from Labsmith — DN-S AI-Mentor Voicing for Dialoguequest
 

@@ -112,6 +112,7 @@ let package = Package(
             name: "AppFeatureTests",
             dependencies: [
                 "Models",
+                "AIMentor",
                 "AppFeature",
             ],
             swiftSettings: defaultSwiftSettings

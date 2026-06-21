@@ -15,6 +15,8 @@ struct WriteTabView: View {
 
     @State private var machine = DialogueTreeMachine()
     @State private var mentor = PatterMentor()
+    @State private var castVoicing = CastVoicingService()
+    @State private var reactionService: PatterReactionService?
     @State private var activeBranchPointID: UUID?
 
     private let scorer = BranchMeaningfulnessScorer()
@@ -35,6 +37,44 @@ struct WriteTabView: View {
             if machine.sessionTier != tier {
                 machine.sessionTier = tier
             }
+            // Lazy-build the reaction service so it captures the
+            // `@State`-owned mentor + cast-voicing references. Built once
+            // per Write-tab appear; idempotent on re-task fire.
+            if reactionService == nil {
+                reactionService = PatterReactionService(
+                    mentor: mentor,
+                    castVoicing: castVoicing
+                )
+            }
+        }
+        .task(id: machine.selectedNodeID) {
+            // Fire `onBranchPointSelected` whenever the kid lands on a
+            // node that branches. Cast voicing (Sprig) wakes up via
+            // `CastVoicingService` when the feature flag is on.
+            guard let service = reactionService else { return }
+            guard let selected = machine.selectedNode, selected.isBranchPoint else { return }
+            await service.onBranchPointSelected(branchPointID: selected.id, mood: machine.tree.mood)
+        }
+        .task(id: machine.tree.nodes.count) {
+            // Fire `onTreeChanged` after every mutation so Weigh's
+            // tag-balance scaffold wakes up when the dominant tag-class
+            // crosses a threshold. Tied to node-count so the task ID
+            // changes on each append / remove (and not on cosmetic edits
+            // that don't change topology — those don't move tag balance).
+            guard let service = reactionService else { return }
+            await service.onTreeChanged(machine.tree)
+        }
+        .onChange(of: machine.confirmedSubtextLineIDs) { oldSet, newSet in
+            // The kid confirmed a subtext. Glance affirms via cast voicing.
+            guard newSet.count > oldSet.count else { return }
+            guard let service = reactionService else { return }
+            Task { await service.onSubtextConfirmed(mood: machine.tree.mood) }
+        }
+        .onChange(of: machine.reflectedBranchPointIDs) { oldSet, newSet in
+            // The kid completed a branch reflection. Sprig affirms.
+            guard newSet.count > oldSet.count else { return }
+            guard let service = reactionService else { return }
+            Task { await service.onBranchReflectionConfirmed(mood: machine.tree.mood) }
         }
         .onChange(of: machine.stage) { _, newStage in
             // Bump the published-tree counter when the kid ships a tree.
@@ -84,9 +124,15 @@ struct WriteTabView: View {
                     .background(.thinMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
+                if let voicing = castVoicing.lastVoicing {
+                    CastVoicingChip(voicing: voicing)
+                        .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .leading)))
+                }
+
                 publishStripe
             }
             .padding()
+            .animation(.snappy(duration: 0.2), value: castVoicing.lastVoicing?.id)
         }
         .background(DialoguePalette.cream.opacity(0.6))
     }
