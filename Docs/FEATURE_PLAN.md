@@ -83,7 +83,7 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [ ] Wire Level 1 config from `spark-anvil-hub/Resources/HubContributions/dialoguequest.json` — handoff filed to hub at `@Docs/HANDOFF_TO_HUB_HUBCONTRIBUTION_LEVEL_1.md` (2026-06-20 PR #28)
 - [x] Implement `DialogueQuestHubContribution` Level-2 Swift overlay in `Libraries/Sources/AppFeature/Adventure/` (wires to QuizView via HubChallengeBridge; renders Word Woods themed kits) — 2026-06-20 PR #28
 - [ ] Register mode-cards in `AdventureView` — gated on hub-side Level-1 JSON shipping (filed handoff in #28)
-- [ ] Wire `ForgeProgressionManager` gating
+- [x] Wire `ForgeProgressionManager` gating — Word Workshop (`word-woods` ContentGate) unlocks after 3 distinct session-days; `AdventureTabView` renders locked-vs-unlocked surfaces with a progress ring, calendar-aware session counter, and accessibility hint (2026-06-21)
 
 ### Onboarding
 
