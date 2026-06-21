@@ -18,22 +18,6 @@
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
-      "target" : {
-        "containerPath" : "container:DialogueQuest.xcodeproj",
-        "identifier" : "FBBBC9682FE6283100EB978A",
-        "name" : "DialogueQuestTests"
-      }
-    },
-    {
-      "parallelizable" : true,
-      "target" : {
-        "containerPath" : "container:DialogueQuest.xcodeproj",
-        "identifier" : "FBBBC9722FE6283100EB978A",
-        "name" : "DialogueQuestUITests"
-      }
-    },
-    {
       "target" : {
         "containerPath" : "container:..\/..\/Libraries",
         "identifier" : "ForgeKitIntegrationTests",
@@ -59,6 +43,20 @@
         "containerPath" : "container:..\/..\/Libraries",
         "identifier" : "AppFeatureTests",
         "name" : "AppFeatureTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:DialogueQuest.xcodeproj",
+        "identifier" : "FBBBC9682FE6283100EB978A",
+        "name" : "DialogueQuestTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:DialogueQuest.xcodeproj",
+        "identifier" : "FBBBC9722FE6283100EB978A",
+        "name" : "DialogueQuestUITests"
       }
     }
   ],
