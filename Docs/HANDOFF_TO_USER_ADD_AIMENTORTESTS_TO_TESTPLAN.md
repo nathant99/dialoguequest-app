@@ -1,6 +1,7 @@
 ---
-status: ACTIVE
+status: CLOSED
 date: 2026-06-21
+closed-at: 2026-06-21
 direction: agent → user
 audience: Nghi (Xcode operator)
 intent: add the new `AIMentorTests` SPM test target to `DialogueQuest.xctestplan` via Xcode GUI so PatterFallbacks tests run in the standard test plan
@@ -8,6 +9,8 @@ freshness-horizon: 14 days
 ---
 
 # Handoff to User — Add `AIMentorTests` to `DialogueQuest.xctestplan`
+
+> **STATUS — CLOSED 2026-06-21**: User completed the test-plan GUI addition; agent staged + committed the resulting `DialogueQuest.xctestplan` diff. `RunSomeTests AIMentorTests/PatterFallbacksTests` returns **19/19 passing** (9 `@Test` functions × parameterized cases). This handoff is preserved as the historical reference.
 
 The agent shipped a new SPM test target `AIMentorTests` (with `PatterFallbacksTests.swift`) in PR #XX. The target compiles cleanly via `BuildProject`, but the agent cannot author `DialogueQuest.xctestplan` per `@.claude/rules/xcode-agent-safety.md` (writing JSON content from disk risks External-Changes dialog or workspace reload). One GUI step closes this:
 
