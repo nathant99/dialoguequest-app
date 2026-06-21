@@ -1,6 +1,7 @@
 ---
-status: ACTIVE
+status: CLOSED
 date: 2026-06-21
+closed-at: 2026-06-21
 direction: agent → user
 audience: Nghi (Xcode operator)
 intent: clear a stale workspace group reference (`DialogueQuestUITests` at repo root) that Xcode keeps regenerating in `contents.xcworkspacedata` AND may be causing `AIMentorTests` to silently drop out of `DialogueQuest.xctestplan`
@@ -8,6 +9,13 @@ freshness-horizon: 14 days
 ---
 
 # Handoff to User — Clear stale `DialogueQuestUITests` workspace group
+
+> **STATUS — CLOSED 2026-06-21**: User cleared the orphan group + verified `AIMentorTests` remains in the test plan. Post-fix verification:
+> - Working tree clean (no stale workspace regen)
+> - `grep -c "group:DialogueQuestUITests" DialogueQuest.xcworkspace/contents.xcworkspacedata` → `0`
+> - `grep -c "AIMentorTests" DialogueQuest.xctestplan` → `2`
+> - `BuildProject` ✅ (2.7s)
+> - `RunSomeTests AIMentorTests/PatterFallbacksTests` → **19/19 passed**
 
 ## What happened
 
