@@ -93,7 +93,7 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Implement aha moment: first subtext confirmation revealing 2 layers of meaning — driven by `SubtextPanelView` confirm-button (PR #26) + onboarding step 4 framing (PR #28)
 - [x] Implement progressive disclosure (Session 1: 3-node tree only) — `DialogueTree.NodeCountConstraint.SessionTier` (firstSession=3 / earlySessions=5 / experienced=15); `DialogueTreeMachine.sessionTier` field threads through `appendChild` cap; `WriteTabView.@AppStorage("dq.publishedTreeCount")` maps to tier on `.task` + bumps on publish (2026-06-21)
 - [x] Implement parent handoff flow (30s setup) — 2026-06-21 PR: `OnboardingFlow` now ships 6 pages with the first step `isParentHandoff: true` ("A quick note for grown-ups" — no PII / daily-session-limit-in-Settings / pass-back-when-ready). `ForgeOnboardingFlow` renders the standard "Ask a parent or guardian to continue" prompt on that step. New UI test `testOnboardingFirstStepIsParentHandoff()` asserts both surfaces.
-- [ ] Implement Apple Declared Age Range API gate (iOS 26+) — requires Info.plist GUI edit (`NSAdvertisingAttributionReportEndpoint` / Declared-Age-Range entitlement) per `xcode-agent-safety.md`; filed via `HANDOFF_TO_USER_DECLARED_AGE_RANGE_API.md`
+- [ ] Implement Apple Declared Age Range API gate (iOS 26+) — requires Info.plist + Family Controls entitlement GUI edits per `xcode-agent-safety.md`; filed `@Docs/HANDOFF_TO_USER_DECLARED_AGE_RANGE_API.md` (Steps 1–3 needed before scaffolding can land)
 
 ### Quality
 
@@ -153,6 +153,7 @@ Anthology curation, classroom integration, and App Store submission readiness.
 - [ ] Add 8 advanced achievements
 - [ ] App Store submission preparation (privacy nutrition label / KIDSAFE plan / parental gates)
 - [ ] App Store screenshot + preview-video assets (await hub distribution per portfolio pipeline)
+- [ ] App icon (6-variant Liquid Glass set) — filed `@Docs/HANDOFF_TO_USER_APP_ICON.md` (Icon Composer GUI work after Patter source PNG lands)
 
 **Exit criteria**: full 16-kit set; classroom mode wired; App Store metadata complete.
 

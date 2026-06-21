@@ -117,12 +117,14 @@ Libraries/Sources/SharedUI/
 Libraries/Sources/AIMentor/
 ├── PatterMentor.swift                    # session host
 ├── Generables/                           # @Generable types (one per file)
-└── Fallbacks/                            # static fallback dictionaries
+├── Fallbacks/                            # static fallback dictionaries
+└── CastVoicing/                          # CastVoiceRegistry + ForgeKit 0.97 CastDialog wiring (DN-S Move D)
 
 Libraries/Sources/AppFeature/
 ├── RootView.swift + AppNavigationMachine.swift
 ├── Tabs/                                 # WriteTabView + AdventureTabView + ProgressTabView + ProfileTabView
-├── Onboarding/                           # 5-step flow
+├── Mentor/                               # PatterReactionService
+├── Onboarding/                           # 6-step flow (parent-handoff step + 5 kid steps)
 ├── Adventure/                            # DialogueQuestHubContribution
 ├── Quiz/                                 # QuizMachine + QuizView + QuestionKit
 ├── Anthology/                            # AnthologyGalleryView
@@ -145,6 +147,10 @@ Specific to DialogueQuest. Portfolio-wide bites live in `@.claude/rules/`; the e
 - **No SpriteKit, no SceneKit, no AnyView** — DialogueQuest is pure SwiftUI; the tree editor uses `Canvas` not SKScene. No `GameEngine` SPM target.
 - **App-shell swap to `RootView()` is MCP-routed, not filesystem-routed** — `Apps/DialogueQuest/DialogueQuest/DialogueQuestApp.swift` is a synchronized-folder target but the agent must route the swap through MCP `XcodeUpdate` to avoid External-Changes risk. Step 5 of `@Docs/HANDOFF_TO_USER_XCODE_WIRING.md`.
 - **App-shell `ContentView` placeholder** — the Xcode template ships `ContentView()` ("Hello, world!"). Delete it when wiring AppFeature; do not leave dead files.
+- **`CastVoiceRegistry` lives in `AIMentor`, not `Services`** — DN-S Move D voicing is FoundationModels-adjacent (ForgeKit `CastDialog` is in `ForgeAI`), so the registry lives alongside `PatterMentor` in `AIMentor/CastVoicing/`. Importing `ForgeAI` in `Services` would force every consumer to import the FoundationModels-gated module unnecessarily.
+- **`CastDialog.register(_:signoff:)` throws** — even for non-trauma-gated profiles. Always `try await` at the call site. DialogueQuest's 5 profiles set `reviewerGated: false` so no `ReviewerSignoff` is needed; the call still throws because the function signature requires it.
+- **Onboarding now ships 6 pages, not 5** — first page is `isParentHandoff: true` (rendered by `ForgeOnboardingFlow` with the "Ask a parent or guardian to continue" prompt). UI tests asserting the onboarding length must account for this (the existing tests use launch-arg bypass so they don't iterate pages).
+- **`-uiTestResetOnboarding` clears `dq.hasCompletedOnboarding`** at `RootView.init` so the onboarding flow surfaces on every test run. Pair with `-uiTestSkipOnboarding` (bypass) — they're mutually exclusive in practice.
 
 ## Reference Documents
 
