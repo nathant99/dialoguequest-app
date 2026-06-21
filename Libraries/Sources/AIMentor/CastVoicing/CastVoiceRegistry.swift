@@ -42,6 +42,60 @@ public enum CastVoiceRegistry {
         return dialog
     }
 
+    // MARK: - DialogueQuest coaching-surface map (DN-S Move D Step 3)
+
+    /// A DialogueQuest-side coaching surface that may want a cast utterance.
+    /// Each surface maps to exactly one `(castID, CastDialogTrigger)` pair
+    /// so the call-site code in `PatterReactionService` stays declarative.
+    public nonisolated enum CoachingSurface: Sendable, Equatable, CaseIterable {
+        /// Kid landed on a branch-point node — Sprig encourages weight-checking.
+        case branchPointReached
+        /// Kid confirmed they thought through a branch (3-question check) —
+        /// Sprig affirms.
+        case branchReflectionConfirmed
+        /// Tag-balance dominant classification crossed — Weigh scaffolds.
+        case tagBalanceImbalance
+        /// Subtext panel surfaced a non-empty inferred subtext — Glance
+        /// invites the kid to name it.
+        case subtextDiscovered
+        /// Kid confirmed the inferred subtext (the Phase-1 aha moment) —
+        /// Glance affirms.
+        case subtextConfirmed
+        /// Voice-match score on the selected line dropped under the
+        /// drift threshold — Brogue scaffolds the kid back into register.
+        case voiceDrift
+        /// Reflective pause moment — Rest greets the held silence.
+        /// Phase 2 surface; wiring shipped now for completeness.
+        case pauseBeat
+
+        /// Cast slug whose voice handles this surface.
+        public var castID: String {
+            switch self {
+            case .branchPointReached, .branchReflectionConfirmed: return "sprig"
+            case .tagBalanceImbalance: return "weigh"
+            case .subtextDiscovered, .subtextConfirmed: return "glance"
+            case .voiceDrift: return "brogue"
+            case .pauseBeat: return "rest"
+            }
+        }
+
+        /// `CastDialogTrigger` shape the surface invokes.
+        public var trigger: CastDialogTrigger {
+            switch self {
+            case .branchPointReached, .subtextDiscovered: return .encouragement
+            case .branchReflectionConfirmed, .subtextConfirmed: return .affirmation
+            case .tagBalanceImbalance, .voiceDrift: return .scaffold
+            case .pauseBeat: return .greeting
+            }
+        }
+    }
+
+    /// Voice-match-score threshold under which `voiceDrift` is meaningful.
+    /// 0.4 is the FRAC lower-band of "starting to drift" per the
+    /// `VoiceConsistencyAnalyzer` rubric used in `SubtextPanelView`'s
+    /// voice-match bar (red < 0.4 < amber < 0.65 ≤ green).
+    public static let voiceDriftThreshold: Double = 0.4
+
     // MARK: - Profiles
 
     /// Voice consistency — the same character speaking *recognizably the
