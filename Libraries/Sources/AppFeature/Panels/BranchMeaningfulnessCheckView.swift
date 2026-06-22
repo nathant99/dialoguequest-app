@@ -18,6 +18,11 @@ struct BranchMeaningfulnessCheckView: View {
     @State private var reflection: String = ""
     @State private var isLoading: Bool = false
 
+    /// Scales the reflection editor's minimum height with Dynamic Type so
+    /// kids on `accessibility5` settings don't see the editor clip to a
+    /// 100pt fixed box. Default 100pt mirrors the pre-a11y-round height.
+    @ScaledMetric(relativeTo: .body) private var reflectionEditorMinHeight: CGFloat = 100
+
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 12) {
@@ -36,7 +41,7 @@ struct BranchMeaningfulnessCheckView: View {
                     .font(.headline)
                     .foregroundStyle(DialoguePalette.rust)
                 TextEditor(text: $reflection)
-                    .frame(minHeight: 100)
+                    .frame(minHeight: reflectionEditorMinHeight)
                     .padding(8)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)

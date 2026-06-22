@@ -12,6 +12,12 @@ struct TagBalanceDashboardView: View {
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
+    /// Per-character row height in the bar chart. Scales with Dynamic
+    /// Type so kids on `accessibility5` see the chart breathe instead of
+    /// clipping into a 64pt-per-row fixed box.
+    @ScaledMetric(relativeTo: .body) private var chartRowHeight: CGFloat = 64
+    @ScaledMetric(relativeTo: .body) private var chartMinHeight: CGFloat = 80
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -52,7 +58,7 @@ struct TagBalanceDashboardView: View {
                     }
                 }
                 .chartLegend(position: .bottom, alignment: .center)
-                .frame(height: max(80, CGFloat(report.perCharacter.count) * 64))
+                .frame(height: max(chartMinHeight, CGFloat(report.perCharacter.count) * chartRowHeight))
                 .chartForegroundStyleScale([
                     Self.label(for: .saidVerb): DialoguePalette.rust,
                     Self.label(for: .actionBeat): DialoguePalette.warmGold,
