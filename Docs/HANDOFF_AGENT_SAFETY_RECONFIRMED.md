@@ -43,12 +43,13 @@ Libraries/Sources/Models/
 └── Models.swift                          # target marker
 
 Libraries/Sources/Services/
-├── Analytics/                            # RetentionMetricsService
+├── Analytics/                            # RetentionMetricsService + DialogueQuestAnalytics
 ├── Analyzers/                            # BranchMeaningfulnessScorer + VoiceConsistencyAnalyzer + TagBalancer + TriangleDynamics
 ├── Gamification/                         # XPEngine + StreakService + AchievementService + DialogueQuestGamification
 ├── Pedagogy/                             # DDAEngine + ReturnLoopService + SessionTimerService + VariableReward
 ├── Persistence/                          # DialoguePersistenceService
-└── Privacy/                              # ParentalConsentService + CrisisResourcesProvider
+├── Privacy/                              # ParentalConsentService + ParentalGateChallenge + DeclaredAgeRangeGate + CrisisResourcesProvider
+└── Sensory/                              # DialogueSensoryService (ForgeSensory wrapper; juice-layer first cut)
 
 Libraries/Sources/AIMentor/
 ├── CastVoicing/                          # CastVoiceRegistry + CastVoiceLayer
