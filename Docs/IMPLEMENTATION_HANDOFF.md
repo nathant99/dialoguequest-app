@@ -1,10 +1,18 @@
 ---
 status: ACTIVE
-date: 2026-06-19
+date: 2026-06-22
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
+
+> **2026-06-22 round addendum** — five PRs (#61 → #65 + this PR) landed in a single session. Net state delta:
+> - Companion Pack PDFs surfaced via `CompanionPackView` under Settings → "For parents & educators" (Asset-Consumer-Audit close).
+> - DN cast grew 5 → 10 profiles across 3 layers (LESSONS / WORLD / META) with kit-aware gating in `CastVoicingService`.
+> - Phase 2 foundation: `DialogueCharacterRole` enum, `TriangleDynamics` analyzer, optional third character row in `CharacterAuthoringView` — all behind `dq.experiments.thirdCharacter` (default off).
+> - 4 Phase 2 achievements + question kit 05 (triangle voices) wired through `AchievementService.Criteria` extension + `QuestionKitLoader.loadAllPhases()`.
+> - `StreakService.recordPublishedTree(mood:)` overload routes `.quietConflict` / `.awkwardSilence` through ForgeKit 0.86 `.heldUnderDistress` so streaks hold (instead of break) on hard scenes.
+> - Single-page agent-safety reaffirmation at `@Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md`. CLAUDE.md § Xcode Agent Safety references it.
 
 # Implementation Handoff — DialogueQuest
 

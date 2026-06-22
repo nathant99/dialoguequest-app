@@ -117,8 +117,13 @@ struct WriteTabView: View {
                 publishedTreeCount += 1
                 // Advance the streak via ForgeGamification.StreakManager
                 // (UserDefaults-backed; ProgressDashboardView picks the
-                // new values up on next render via @AppStorage).
-                Task { await StreakService.shared.recordPublishedTree() }
+                // new values up on next render via @AppStorage). Pass
+                // the tree's mood so hard scenes (`.quietConflict` /
+                // `.awkwardSilence`) route through ForgeKit 0.86's
+                // `.heldUnderDistress` path — the streak holds instead
+                // of breaking on a difficult piece.
+                let publishedMood = machine.tree.mood
+                Task { await StreakService.shared.recordPublishedTree(mood: publishedMood) }
                 // Variable-ratio reward: ~1 in 5 publishes surfaces a
                 // curated voice-craft tip in a Patter bubble.
                 if VariableReward.shouldShowBonus() {
