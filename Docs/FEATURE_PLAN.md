@@ -171,7 +171,7 @@ COPPA compliance, parental consent, age gates, and first-time experience polish.
 - [ ] **Aha moment design** — first subtext confirmation revealing layered meaning
 - [ ] **Parent handoff flow** — 30-second parent setup → "Ready!" transition
 - [ ] **Age gate** — Apple Declared Age Range API on iOS 26+
-- [ ] **Parental consent service** — COPPA-compliant consent; annual re-consent per 2026 FTC
+- [x] **Parental consent service** (Phase 1 scaffold) — 2026-06-22: shipped `Libraries/Sources/Services/Privacy/ParentalConsentService.swift` (`@MainActor public final class`; `dq.parentalConsentGrantedAt` UserDefaults key; 12-month expiry per FTC 2026; injectable clock for tests). `SettingsView` surfaces the consent status row + a light parental-gate sheet (multiplication challenge) to record consent. Full Family Controls / Declared Age Range API integration stays handoff-blocked (`HANDOFF_TO_USER_DECLARED_AGE_RANGE_API.md`). 5 tests cover grant / revoke / expiry / re-consent countdown.
 - [ ] **Privacy policy** — Plain-language policy accessible from Settings and App Store listing
 - [ ] **Parental gates** — Required for external links and data-sharing permissions
 - [ ] **Progressive disclosure** — Session 1: 3-node tree only → Sessions 2-3: 5-node + tag balance → Sessions 4+: full features
@@ -220,7 +220,7 @@ Audio/visual/haptic polish, parent-facing dashboards, and emotional design. Runs
 - [ ] Reduce-Motion variants for tree-edit animations + subtext-reveal flourishes
 - [ ] Reduce-Transparency variants for any glass UI (per portfolio Liquid Glass policy)
 - [ ] Trauma-informed gate review for advanced dialogue topics — flag conflict / loss / identity-shame themes before exposing to kid (SAMHSA TIP 57 register; off-ramps)
-- [ ] Crisis-resource list (988 / Childhelp / Crisis Text Line) surfaced from Settings
+- [x] Crisis-resource list (988 / Childhelp / Crisis Text Line) surfaced from Settings — 2026-06-22: `Libraries/Sources/Services/Privacy/CrisisResourcesProvider.swift` ships the three canonical US resources with tap-to-call + tap-to-text + URL fields; `Libraries/Sources/AppFeature/Settings/CrisisResourcesView.swift` renders them under a "Need help?" disclosure in Settings. 3 tests cover the canonical trio + per-resource invariants.
 
 **Exit criteria**: A11y audit PASS; trauma-gate sensitivity review per ADR-016 protocol if mature-topic dialogues unlock.
 
