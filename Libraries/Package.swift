@@ -107,6 +107,7 @@ let package = Package(
             dependencies: [
                 "Models",
                 "Services",
+                .product(name: "ForgeAnalytics", package: "forgekit"),
             ],
             swiftSettings: defaultSwiftSettings
         ),

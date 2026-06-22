@@ -100,12 +100,14 @@ struct WriteTabView: View {
         .onChange(of: machine.confirmedSubtextLineIDs) { oldSet, newSet in
             // The kid confirmed a subtext. Glance affirms via cast voicing.
             guard newSet.count > oldSet.count else { return }
+            DialogueQuestAnalytics.shared.track(.subtextConfirmed)
             guard let service = reactionService else { return }
             Task { await service.onSubtextConfirmed(mood: machine.tree.mood) }
         }
         .onChange(of: machine.reflectedBranchPointIDs) { oldSet, newSet in
             // The kid completed a branch reflection. Sprig affirms.
             guard newSet.count > oldSet.count else { return }
+            DialogueQuestAnalytics.shared.track(.branchReflected)
             guard let service = reactionService else { return }
             Task { await service.onBranchReflectionConfirmed(mood: machine.tree.mood) }
         }
@@ -115,6 +117,17 @@ struct WriteTabView: View {
             // for the next session's tier — current session keeps its cap.
             if newStage == .published {
                 publishedTreeCount += 1
+                // On-device privacy-safe analytics: count + mood + character
+                // count are categorical, no PII. ForgeAnalytics PII blocklist
+                // is the last-line guard.
+                DialogueQuestAnalytics.shared.track(
+                    .treePublished,
+                    properties: [
+                        "mood": machine.tree.mood?.rawValue ?? "none",
+                        "node_count_bucket": Self.nodeCountBucket(machine.tree.nodes.count),
+                        "character_count": String(machine.tree.characters.count)
+                    ]
+                )
                 // Advance the streak via ForgeGamification.StreakManager
                 // (UserDefaults-backed; ProgressDashboardView picks the
                 // new values up on next render via @AppStorage). Pass
@@ -346,6 +359,19 @@ struct WriteTabView: View {
             get: { activeBranchPointID.map(PendingBranchSheet.init) },
             set: { activeBranchPointID = $0?.id }
         )
+    }
+
+    /// Bucket a raw node count into a categorical label for analytics.
+    /// Categorical buckets keep the analytics surface PII-free + future-
+    /// proof against a kid's per-tree variance.
+    static func nodeCountBucket(_ count: Int) -> String {
+        switch count {
+        case ..<3:    return "tiny"      // < 3
+        case 3...5:   return "starter"   // 3-5
+        case 6...10:  return "growing"   // 6-10
+        case 11...15: return "tall"      // 11-15
+        default:      return "epic"      // 16+
+        }
     }
 }
 
