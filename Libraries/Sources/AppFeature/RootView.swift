@@ -20,6 +20,11 @@ public struct RootView: View {
     @State private var showSessionCloser: Bool = false
     @AppStorage("dq.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @AppStorage("dq.publishedTreeCount") private var publishedTreeCount: Int = 0
+    /// Mirror of `MasteryMomentService`'s `dq.firstMasteryAchievedAt`
+    /// timestamp key — RootView observes the 0 → set transition + fires
+    /// the cinematic mastery-moment celebration. The service is the
+    /// source of truth; this AppStorage binding is the observer.
+    @AppStorage(MasteryMomentService.defaultsKeyFirstMasteryAt) private var firstMasteryAchievedAt: Double = 0
 
     /// UI tests pass `-uiTestSkipOnboarding YES` so the tab surface is
     /// reachable without driving the onboarding flow.
@@ -79,6 +84,18 @@ public struct RootView: View {
                     emoji: "📜"
                 )
             }
+        }
+        .onChange(of: firstMasteryAchievedAt) { oldValue, newValue in
+            // The mastery moment fires EXACTLY ONCE per device — the
+            // service guards against re-emission. RootView's job here
+            // is just to render the `.epic` cinematic when the
+            // timestamp transitions from 0 (never) to a real Date.
+            guard oldValue == 0, newValue > 0 else { return }
+            celebrationCoordinator.celebrate(
+                .epic,
+                message: "Your characters sound like THEM. Patter is grinning.",
+                emoji: "🎙️"
+            )
         }
         .fullScreenCoverIfPossible(
             isPresented: .constant(!hasCompletedOnboarding && !Self.isUITestSkippingOnboarding)

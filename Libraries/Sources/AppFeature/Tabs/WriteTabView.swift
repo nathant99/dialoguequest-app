@@ -170,6 +170,14 @@ struct WriteTabView: View {
                 } else {
                     DialogueScaffoldingService.shared.recordPublishedWithReflection()
                 }
+                // Mastery moment — first time the tree's average
+                // voice-match crosses 0.85, fire a `.epic` cinematic.
+                // Subsequent crossings render normal acknowledgement
+                // (publish celebration tier in RootView).
+                let outcome = computeOutcomeSnapshot()
+                _ = MasteryMomentService.shared.recordPublishedTree(
+                    averageVoiceMatch: outcome.averageVoiceMatch
+                )
             }
             evaluateAchievements()
         }
