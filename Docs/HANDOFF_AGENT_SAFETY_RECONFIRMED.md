@@ -46,7 +46,7 @@ Libraries/Sources/Services/
 ├── Analytics/                            # RetentionMetricsService + DialogueQuestAnalytics
 ├── Analyzers/                            # BranchMeaningfulnessScorer + VoiceConsistencyAnalyzer + TagBalancer + TriangleDynamics
 ├── Gamification/                         # XPEngine + StreakService + AchievementService + DialogueQuestGamification
-├── Pedagogy/                             # DDAEngine + ReturnLoopService + SessionTimerService + VariableReward
+├── Pedagogy/                             # DDAEngine + DialogueScaffoldingService + ReturnLoopService + SessionTimerService + VariableReward
 ├── Persistence/                          # DialoguePersistenceService
 ├── Privacy/                              # ParentalConsentService + ParentalGateChallenge + DeclaredAgeRangeGate + CrisisResourcesProvider
 └── Sensory/                              # DialogueSensoryService (ForgeSensory wrapper; juice-layer first cut)
