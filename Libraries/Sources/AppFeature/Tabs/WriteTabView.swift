@@ -20,6 +20,7 @@ struct WriteTabView: View {
     @State private var reactionService: PatterReactionService?
     @State private var activeBranchPointID: UUID?
     @State private var achievementService = AchievementService.shared
+    @State private var rareVoiceCraftTip: String?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -96,6 +97,12 @@ struct WriteTabView: View {
                 // (UserDefaults-backed; ProgressDashboardView picks the
                 // new values up on next render via @AppStorage).
                 Task { await StreakService.shared.recordPublishedTree() }
+                // Variable-ratio reward: ~1 in 5 publishes surfaces a
+                // curated voice-craft tip in a Patter bubble.
+                if VariableReward.shouldShowBonus() {
+                    var rng = SystemRandomNumberGenerator()
+                    rareVoiceCraftTip = VariableReward.pickVoiceCraftTip(rng: &rng)
+                }
             }
             evaluateAchievements()
         }
@@ -120,6 +127,16 @@ struct WriteTabView: View {
                     achievementService.consumeBadge(id: badge.id)
                 }
                 .padding(.top, 24)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if let tip = rareVoiceCraftTip {
+                MentorBubbleView(message: tip)
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
+                    .onTapGesture { rareVoiceCraftTip = nil }
+                    .accessibilityHint("Tap to dismiss this voice-craft tip.")
+                    .transition(.opacity)
             }
         }
     }

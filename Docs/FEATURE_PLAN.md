@@ -179,9 +179,9 @@ COPPA compliance, parental consent, age gates, and first-time experience polish.
 ### Engagement Foundation (Excellence Framework)
 
 - [ ] **Streak system** — Daily activity with streak freeze (one mercy day per week), warm broken-streak messaging ("Your characters miss you!")
-- [ ] **DDA engine** — Invisible difficulty adjustment across branch-meaningfulness scoring + subtext-detector confidence thresholds
+- [x] **DDA engine** (foundational; consumer-wiring deferred to telemetry round) — 2026-06-22: `Libraries/Sources/Services/Pedagogy/DDAEngine.swift` ships a pure value-type rolling-window engine with bounded ramp (`branchReflectionFloor 0.20` / `branchReflectionCeiling 0.90` / `voiceMatchFloor 0.30` / `voiceMatchCeiling 0.80` / `rampStep 0.10` / `windowSize 5`). 7 tests cover midpoint init / high-perf ramp-up / low-perf ramp-down / single-outlier bound / window-cap / reset / floor-ceiling clamp. The next telemetry round wires `engine.currentVoiceMatchFloor` into `PatterReactionService.onVoiceDrift` to replace the hardcoded `CastVoiceRegistry.voiceDriftThreshold`.
 - [ ] **Session targeting** — 10-15 minute sessions with gentle ending summary
-- [ ] **Variable rewards** — ~1 in 5 sessions: rare voice-craft tip / hidden anthology theme / character-cameo
+- [x] **Variable rewards** (Phase 1 first cut) — 2026-06-22: `Libraries/Sources/Services/Pedagogy/VariableReward.swift` ships pure functions `shouldShowBonus(probability:rng:)` + a curated `voiceCraftTips` pool of 5 age-9-14-register tips. `WriteTabView` rolls on every publish; when the bonus fires, a `MentorBubbleView` overlay surfaces a randomly-picked tip dismissable on tap. Hidden anthology themes + character cameos land in later phases.
 - [ ] **Return loop** — Welcome-back flow for 3+ day lapsed users: warm greeting + best-tree recap
 - [ ] **Retention metrics baseline** — D1 / D7 / D30 (on-device, privacy-first)
 
