@@ -86,9 +86,15 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
         lastError = nil
     }
 
-    /// Current maximum node count for the active tier.
+    /// Current maximum node count for the active tier. When the tree has
+    /// 3+ characters AND the session has reached `.experienced`, the
+    /// ceiling widens to `phase2Max` (24) to give triangle dialogues
+    /// room to develop alliance / jealousy / arbitration arcs.
     public var maxNodes: Int {
-        DialogueTree.NodeCountConstraint.maxNodes(for: sessionTier)
+        DialogueTree.NodeCountConstraint.maxNodes(
+            for: sessionTier,
+            characterCount: tree.characters.count
+        )
     }
 
     // MARK: - Stage transitions
