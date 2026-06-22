@@ -153,6 +153,11 @@ struct WriteTabView: View {
                         averageVoiceMatch: outcome.averageVoiceMatch
                     )
                 }
+                // Juice layer — the achievement haptic (if any) fires
+                // separately from `evaluateAchievements()` below. The
+                // publish-tier haptic lands first so the kid feels the
+                // ship beat before the badge stack.
+                DialogueSensoryService.shared.treePublished()
             }
             evaluateAchievements()
         }

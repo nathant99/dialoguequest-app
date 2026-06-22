@@ -126,6 +126,11 @@ public final class AchievementService {
                 properties: ["badge_id": definition.id]
             )
         }
+        // Juice layer — single haptic per evaluation pass even when multiple
+        // badges land together. The popup queue renders one badge at a time,
+        // and stacked haptics on a 0.1s window feel like a stuttery glitch
+        // rather than a celebration.
+        DialogueSensoryService.shared.achievementEarned()
         return newly
     }
 

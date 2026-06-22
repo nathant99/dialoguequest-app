@@ -239,5 +239,17 @@ public final class StreakService {
         if let analyticsEvent {
             DialogueQuestAnalytics.shared.track(analyticsEvent)
         }
+        // Juice layer — fire a streak-milestone haptic on advance/held but
+        // stay silent on `.sameDay` (already-recorded today; would feel
+        // pesty) and on `.reset` (kid just lost the streak; the broken-
+        // streak nudge banner carries the UX, not a celebratory buzz).
+        switch result {
+        case .continued(let streak), .frozenAndContinued(let streak, _), .heldUnderDistress(let streak):
+            DialogueSensoryService.shared.streakAdvanced(streak)
+        case .sameDay, .reset:
+            break
+        @unknown default:
+            break
+        }
     }
 }

@@ -1,6 +1,7 @@
 import SwiftUI
 import Models
 import AIMentor
+import Services
 import SharedUI
 
 /// Side panel where Patter surfaces the AI-inferred subtext for the
@@ -76,6 +77,7 @@ struct SubtextPanelView: View {
                     HStack(spacing: 8) {
                         Button {
                             machine.confirmSubtext(for: node.id, inferredSubtext: analysis.inferredSubtext)
+                            DialogueSensoryService.shared.subtextRevealed()
                         } label: {
                             Label("Yes, that's it", systemImage: "checkmark.circle.fill")
                         }
