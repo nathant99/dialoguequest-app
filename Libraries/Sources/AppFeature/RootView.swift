@@ -17,6 +17,7 @@ public struct RootView: View {
     @State private var brokenStreakDismissed: Bool = false
     @State private var welcomeBackDismissed: Bool = false
     @State private var welcomeBackMessage: String?
+    @State private var showSessionCloser: Bool = false
     @AppStorage("dq.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @AppStorage("dq.publishedTreeCount") private var publishedTreeCount: Int = 0
 
@@ -116,6 +117,20 @@ public struct RootView: View {
                 try? await Task.sleep(for: .seconds(15))
                 sessionTimer.tick()
             }
+            // Once we cross the soft ceiling, surface the closer sheet
+            // (the host view dismisses + resets the timer for the next
+            // session window).
+            if sessionTimer.phase == .endingSummaryReady {
+                showSessionCloser = true
+            }
+        }
+        .sheet(isPresented: $showSessionCloser) {
+            SessionCloserSheet {
+                showSessionCloser = false
+                sessionTimer.reset()
+                sessionTimer.start()
+            }
+            .presentationDetents([.medium, .large])
         }
     }
 
