@@ -105,6 +105,17 @@ public struct RootView: View {
             let return_ = ReturnLoopService.shared
             if return_.shouldShowWelcomeBack() {
                 welcomeBackMessage = return_.welcomeBackMessage()
+                DialogueQuestAnalytics.shared.track(.welcomeBackShown)
+            }
+        }
+        .onChange(of: sessionTimer.phase) { _, newPhase in
+            switch newPhase {
+            case .gentleNudgeReady:
+                DialogueQuestAnalytics.shared.track(.sessionTimerGentleNudge)
+            case .endingSummaryReady:
+                DialogueQuestAnalytics.shared.track(.sessionEndingSummaryShown)
+            case .idle, .running:
+                break
             }
         }
         .task(id: sessionTimer.phase) {

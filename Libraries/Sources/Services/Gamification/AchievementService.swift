@@ -120,6 +120,12 @@ public final class AchievementService {
             )
         }
         pendingNewBadges.append(contentsOf: display)
+        for definition in newly {
+            DialogueQuestAnalytics.shared.track(
+                .badgeEarned,
+                properties: ["badge_id": definition.id]
+            )
+        }
         return newly
     }
 

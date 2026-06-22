@@ -200,27 +200,33 @@ public final class StreakService {
     private func persistAfter(result: StreakResult) {
         let storedStreak: Int
         let storedFreezes: Int
+        let analyticsEvent: DialogueQuestAnalytics.Event?
         switch result {
         case .continued(let streak):
             storedStreak = streak
             storedFreezes = availableFreezes()
+            analyticsEvent = .streakAdvanced
         case .frozenAndContinued(let streak, let remaining):
             storedStreak = streak
             storedFreezes = remaining
+            analyticsEvent = .streakAdvanced
         case .reset:
             // After a reset, the recordSession call itself counts as
             // day 1 of the new streak — StreakManager's contract.
             storedStreak = 1
             storedFreezes = config.streakFreezeCount
+            analyticsEvent = .streakBroken
         case .sameDay(let streak):
             storedStreak = streak
             storedFreezes = availableFreezes()
+            analyticsEvent = nil
         case .heldUnderDistress(let streak):
             // ForgeKit 0.86 case. Treat as a streak-continued event from
             // a persistence perspective — the streak is held; the host
             // view decides whether to render an extra-warm bubble.
             storedStreak = streak
             storedFreezes = availableFreezes()
+            analyticsEvent = .streakHeldUnderDistress
         @unknown default:
             // Forward-compatibility: any future StreakResult case is a
             // no-op until a deliberate handler is wired so we don't
@@ -230,5 +236,8 @@ public final class StreakService {
         defaults.set(storedStreak, forKey: Self.defaultsKeyStreak)
         defaults.set(storedFreezes, forKey: Self.defaultsKeyFreezes)
         defaults.set(Date.now.timeIntervalSinceReferenceDate, forKey: Self.defaultsKeyLastSession)
+        if let analyticsEvent {
+            DialogueQuestAnalytics.shared.track(analyticsEvent)
+        }
     }
 }
