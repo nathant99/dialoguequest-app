@@ -3,6 +3,7 @@ import Models
 import Services
 import AIMentor
 import SharedUI
+import ForgeUI
 
 /// Phase 1 Write tab — orchestrates character authoring → tree editing →
 /// review. Holds the `PatterMentor` instance + analyzer state and feeds
@@ -18,6 +19,7 @@ struct WriteTabView: View {
     @State private var castVoicing = CastVoicingService()
     @State private var reactionService: PatterReactionService?
     @State private var activeBranchPointID: UUID?
+    @State private var achievementService = AchievementService.shared
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -95,6 +97,13 @@ struct WriteTabView: View {
                 // new values up on next render via @AppStorage).
                 Task { await StreakService.shared.recordPublishedTree() }
             }
+            evaluateAchievements()
+        }
+        .onChange(of: machine.confirmedSubtextLineIDs) { _, _ in
+            evaluateAchievements()
+        }
+        .onChange(of: machine.reflectedBranchPointIDs) { _, _ in
+            evaluateAchievements()
         }
         .sheet(item: branchSheetBinding) { branchID in
             BranchMeaningfulnessCheckView(
@@ -105,6 +114,31 @@ struct WriteTabView: View {
             )
             .presentationDetents([.medium, .large])
         }
+        .overlay(alignment: .top) {
+            if let badge = achievementService.pendingNewBadges.first {
+                ForgeAchievementPopup(badge: badge) {
+                    achievementService.consumeBadge(id: badge.id)
+                }
+                .padding(.top, 24)
+            }
+        }
+    }
+
+    /// Snapshot WriteTab state into an `AchievementService.Criteria` and
+    /// fire `evaluate(criteria:)`. Triggered after every interesting
+    /// state transition. The service handles dedupe + persistence — this
+    /// is a cheap O(N-defs) check per call so safe to invoke on every
+    /// `onChange`.
+    private func evaluateAchievements() {
+        let report = tagBalancer.report(for: machine.tree)
+        let criteria = AchievementService.Criteria(
+            publishedTreeCount: publishedTreeCount,
+            confirmedSubtextLineCount: machine.confirmedSubtextLineIDs.count,
+            reflectedBranchPointCount: machine.reflectedBranchPointIDs.count,
+            dominantTagAbsent: report.dominant == nil,
+            totalNodes: machine.tree.nodes.count
+        )
+        _ = achievementService.evaluate(criteria: criteria)
     }
 
     @ViewBuilder

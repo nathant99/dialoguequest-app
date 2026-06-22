@@ -1,5 +1,6 @@
 import SwiftUI
 import SharedUI
+import ForgeCelebration
 
 /// The 4-tab DialogueQuest root view per `Docs/TECHNICAL_DESIGN.md`
 /// § Home Screen & Navigation. App's `@main` should host this view.
@@ -10,7 +11,9 @@ import SharedUI
 /// icons through the glass material.
 public struct RootView: View {
     @State private var machine = AppNavigationMachine()
+    @State private var celebrationCoordinator = CelebrationCoordinator()
     @AppStorage("dq.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+    @AppStorage("dq.publishedTreeCount") private var publishedTreeCount: Int = 0
 
     /// UI tests pass `-uiTestSkipOnboarding YES` so the tab surface is
     /// reachable without driving the onboarding flow.
@@ -51,6 +54,26 @@ public struct RootView: View {
             .accessibilityIdentifier("tab.profile")
         }
         .tint(DialoguePalette.rust)
+        .celebrationOverlay(celebrationCoordinator)
+        .onChange(of: publishedTreeCount) { oldValue, newValue in
+            // Cinematic celebration tier for the milestone publish-events:
+            // the first tree (the aha-moment seed) earns a `.epic` flourish;
+            // every subsequent publish gets the `.medium` cadence Patter
+            // would prefer (warm acknowledgement, not party).
+            if oldValue == 0 && newValue == 1 {
+                celebrationCoordinator.celebrate(
+                    .epic,
+                    message: "Your first conversation is in the anthology",
+                    emoji: "✨"
+                )
+            } else if newValue > oldValue {
+                celebrationCoordinator.celebrate(
+                    .medium,
+                    message: "Published",
+                    emoji: "📜"
+                )
+            }
+        }
         .fullScreenCoverIfPossible(
             isPresented: .constant(!hasCompletedOnboarding && !Self.isUITestSkippingOnboarding)
         ) {
