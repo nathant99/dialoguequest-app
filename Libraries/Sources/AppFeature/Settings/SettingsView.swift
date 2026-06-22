@@ -9,6 +9,8 @@ import SharedUI
 struct SettingsView: View {
     @AppStorage("dq.dailySessionMinutesLimit") private var dailySessionMinutes: Int = 30
     @AppStorage("dq.weeklySummaryOptIn") private var weeklySummaryOptIn: Bool = false
+    @AppStorage(TriangleAuthoringFeatureFlag.storageKey) private var thirdCharacterEnabled: Bool = false
+    @AppStorage(CastVoicingFeatureFlag.storageKey) private var castVoicingEnabled: Bool = false
     @State private var consentService = ParentalConsentService.shared
     @State private var showConsentGate: Bool = false
 
@@ -68,6 +70,27 @@ struct SettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                 ageBandRow
+            }
+            Section {
+                Toggle(isOn: $thirdCharacterEnabled) {
+                    Label("Three-character scenes", systemImage: "person.3.fill")
+                }
+                .accessibilityIdentifier("labs.thirdCharacter.toggle")
+                .accessibilityHint("Turn on triangle dialogues: stories with three characters. Default is two.")
+                Toggle(isOn: $castVoicingEnabled) {
+                    Label("Patter's writing friends", systemImage: "bubble.left.and.bubble.right.fill")
+                }
+                .accessibilityIdentifier("labs.castVoicing.toggle")
+                .accessibilityHint("Let Sprig, Glance, Weigh, Brogue, and Rest chime in alongside Patter.")
+                Text("Labs features are early experiments. Turn them off any time.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            } header: {
+                Text("Labs")
+            } footer: {
+                Text("For grown-ups: flip these on if your kid wants to try DialogueQuest's newer surfaces.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             Section("About") {
                 HStack {
