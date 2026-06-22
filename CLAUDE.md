@@ -136,7 +136,10 @@ Libraries/Sources/AppFeature/
 ├── Quiz/                                 # QuizMachine + QuizView + QuestionKit
 ├── Anthology/                            # AnthologyGalleryView
 ├── Progress/                             # ProgressDashboardView
-├── Profile/                              # ProfileDashboardView (AvatarStudioView host)
+├── Profile/                              # ProfileDashboardView + ParentProgressDashboardView + SessionCloserSheet
+├── Settings/                             # SettingsView + CrisisResourcesView
+├── Welcome/                              # WelcomeBackBannerView
+├── Together/                             # CollaborativeDialogueSession + CollaborativeDialogueView (C5)
 └── Resources/Questions/                  # kit_01..04.json (Bundle.module)
 ```
 
@@ -163,6 +166,10 @@ Specific to DialogueQuest. Portfolio-wide bites live in `@.claude/rules/`; the e
 - **`ForgeGamification.StreakManager.init(currentStreak:longestStreak:availableFreezes:lastSessionDate:)` is `@MainActor`-isolated** (ForgeKit 0.99). A wrapper service built as a Swift `actor` cannot construct it in its synchronous init — the compiler reports "Call to main actor-isolated initializer ... in a synchronous actor-isolated context." Mitigation: build wrappers as `@MainActor public final class` (UserDefaults persistence is thread-safe anyway, and `StreakManager` still serializes mutation via its own actor isolation). Reference impl: `Libraries/Sources/Services/Gamification/StreakService.swift`.
 - **SPM caches the per-test-target `SwiftFileList`** — when ADDING a new test file to an existing SPM test target mid-Xcode-session, `BuildProject` succeeds but Swift Testing's macro doesn't see the new file and `RunSomeTests` reports `"Test '<Suite>' not found in target"`. Touching `Libraries/Package.swift` is insufficient. Force re-discovery by editing the target's dependency list substantively (e.g., add a dependency the new file actually needs — `"AIMentor"` did it for `AppFeatureTests` 2026-06-21). Verify with: `cat $DERIVED_DATA/Build/Intermediates.noindex/Libraries.build/Debug-iphonesimulator/<Target>.build/Objects-normal/arm64/<Target>.SwiftFileList`.
 - **`PatterMentor.analyze/branchCheck/tagBalanceTip` calls live FoundationModels** when the build host has Apple Intelligence enabled — each call takes seconds. For unit-test latency budgets, test `PatterFallbacks.*` directly (the value-type fallback path) so the assertion stays host-independent. The `PatterMentor` async wrappers are the right surface for integration tests, NOT performance budgets. Reference impl: `Libraries/Tests/AIMentorTests/PatterMentorFallbackPerformanceTests.swift`.
+- **`MentorBubbleView` is `message:`-only** — the bubble takes a single `String` body. When attributing a different speaker (e.g., the C5 collaborative session's cast-anchored prompts voiced by Sprig / Glance / Weigh / Brogue / Rest), inline-format the speaker name into the message body (`"\(castName) — \(promptText)"`). Promoting the bubble to a `speakerName:` overload is a portfolio-side refactor candidate.
+- **`PassAndPlayEngine`'s `payloadProvider` must be `@Sendable`** when the closure captures a Sendable value type — closures that don't capture `self` from a `@MainActor` class can still trigger isolation inference if not marked `@Sendable`. `CollaborativeDialogueSession.start` captures a local `let promptPool` (Sendable value-type array) and marks the closure `@MainActor @Sendable` per the rule. Reference impl: `Libraries/Sources/AppFeature/Together/CollaborativeDialogueSession.swift`.
+- **`DialogueTreeMachine.replaceTree(_:)` resets per-tree caches** — selection, `reflectedBranchPointIDs`, `confirmedSubtextLineIDs`, and `lastError`. Callers handing over a tree from a collaborative session don't need to reset achievements or `publishedTreeCount` — those are app-level counters and stay intact.
+- **`WritingEvaluator.VoiceCheck` is the canonical cross-cluster shape** — both `VoiceConsistencyAnalyzer` + `DialogueLineAnalysis.toVoiceCheck(...)` project into it. Consumers should program against `WritingEvaluator.VoiceCheck` / `VoiceSummary` rather than either concrete producer so a future CharacterForge-imported voice baseline is a drop-in swap. Lives in `Models/ValueTypes/WritingEvaluator.swift`.
 
 ## Reference Documents
 

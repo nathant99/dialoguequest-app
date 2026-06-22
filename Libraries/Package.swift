@@ -74,6 +74,7 @@ let package = Package(
                 .product(name: "ForgeAvatar", package: "forgekit"),
                 .product(name: "ForgeCelebration", package: "forgekit"),
                 .product(name: "ForgeGamification", package: "forgekit"),
+                .product(name: "ForgePassAndPlay", package: "forgekit"),
                 .product(name: "ForgePedagogy", package: "forgekit"),
                 .product(name: "ForgeProgression", package: "forgekit"),
                 .product(name: "ForgeStateMachine", package: "forgekit"),

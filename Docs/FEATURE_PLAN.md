@@ -116,6 +116,10 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 
 Add third character (triangle dialogues), import characters from CharacterForge, and expand the anthology.
 
+### Pillar Deepening (cross-cuts Phase 1 + 2)
+
+- [x] **C5 Collaborative / Co-authored Dialogue** — 2026-06-22: per `Docs/HANDOFF_FROM_LABSMITH_PILLAR_DEEPENING_C5_COLLABORATIVE.md`. `Libraries/Sources/AppFeature/Together/CollaborativeDialogueSession.swift` wraps ForgeKit's `PassAndPlayEngine` (Round = cast-anchored `TurnPrompt`, Score = Int) + drives the 4-stage `PrivacyCurtain`. `CollaborativeDialogueView` renders one of 4 sub-surfaces (start sheet → authoring + cast prompt → handoff curtain → confirmReady → complete). `WriteTabView` toolbar exposes "Write together" entry; completed sessions hand the linear tree back into `DialogueTreeMachine.replaceTree(_:)`. Cast-anchored prompts cycle through 6 turn prompts voiced by Sprig / Glance / Weigh / Brogue / Rest. Solo path preserved (collaboration is opt-in). 6 tests cover idle / start / record+curtain / 4-line full session / endEarly / alternating speakers. Closes pillar deepening `modes.together: 0 → 1`.
+
 - [ ] Expand tree to support 3 characters (triangle dynamics; jealousy / alliance / arbitration patterns)
 - [ ] Implement CharacterForge import hook — load named characters with established voice registers
 - [ ] Implement `CharacterRoleConstraint` — characters carry archetype (protagonist / antagonist / mentor / etc.) with voice-baseline guidance

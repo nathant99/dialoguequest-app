@@ -71,6 +71,21 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
         self = DialogueTreeMachine(sessionTier: tier)
     }
 
+    /// Replace the active tree wholesale (e.g., when a collaborative
+    /// pass-and-play session hands off its completed artifact for
+    /// further editing). Advances stage to `.editingTree` so the
+    /// builder surfaces immediately. Resets per-tree state (selection,
+    /// reflection set, confirmed-subtext set) since the new tree's
+    /// node IDs aren't in those caches.
+    public mutating func replaceTree(_ newTree: DialogueTree) {
+        tree = newTree
+        stage = newTree.nodes.isEmpty ? .authoringCharacters : .editingTree
+        selectedNodeID = newTree.nodes.first?.id
+        reflectedBranchPointIDs = []
+        confirmedSubtextLineIDs = []
+        lastError = nil
+    }
+
     /// Current maximum node count for the active tier.
     public var maxNodes: Int {
         DialogueTree.NodeCountConstraint.maxNodes(for: sessionTier)
