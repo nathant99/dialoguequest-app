@@ -8,6 +8,7 @@ import SharedUI
 /// GUI edits per `@Docs/HANDOFF_TO_USER_DECLARED_AGE_RANGE_API.md`.
 struct SettingsView: View {
     @AppStorage("dq.dailySessionMinutesLimit") private var dailySessionMinutes: Int = 30
+    @AppStorage("dq.weeklySummaryOptIn") private var weeklySummaryOptIn: Bool = false
     @State private var consentService = ParentalConsentService.shared
     @State private var showConsentGate: Bool = false
 
@@ -20,6 +21,17 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
             Section("Parental controls") {
+                NavigationLink {
+                    ParentProgressDashboardView()
+                } label: {
+                    Label("Parent progress dashboard", systemImage: "chart.bar.doc.horizontal")
+                }
+                Toggle(isOn: $weeklySummaryOptIn) {
+                    Label("Weekly summary", systemImage: "calendar")
+                }
+                Text("When on, DialogueQuest will surface a weekly summary on the dashboard. Delivery is in-app only — no email or notifications.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                 consentStatusRow
                 if consentService.hasValidConsent {
                     Button("Revoke parental consent", role: .destructive) {

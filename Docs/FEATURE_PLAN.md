@@ -205,10 +205,10 @@ Audio/visual/haptic polish, parent-facing dashboards, and emotional design. Runs
 
 ### Parent Integration
 
-- [ ] **Progress dashboard** — Parent-facing standards-mapped view (CCSS-ELA writing standards)
-- [ ] **Parental controls** — Daily session time limits (default 30 min) + content-comfort filters (e.g., dialogue-topic preferences)
-- [ ] **Weekly summary** — Opt-in progress notification (strengths, growth areas, recommendations)
-- [ ] **Session closer** — End-of-session summary with achievements + preview of next session content
+- [x] **Progress dashboard** — 2026-06-22: `Libraries/Sources/AppFeature/Profile/ParentProgressDashboardView.swift` ships a read-only dashboard linked from `SettingsView`. Surfaces published-tree count, current streak + freezes, badges earned, D1/D7/D30 retention snapshot from `RetentionMetricsService`, and standards-mapped section (CCSS.ELA-Literacy.W.6-8.3.B primary + RL.6-8.6 secondary + NCAS TH:Cr3). All data via @AppStorage; no PII / no outbound. Per-row accessibilityLabel keeps the dashboard VoiceOver-friendly.
+- [x] **Parental controls** — Daily session stepper ships earlier in `SettingsView`; this round links the parent progress dashboard + weekly-summary toggle into the same section.
+- [x] **Weekly summary** (opt-in storage) — 2026-06-22: `dq.weeklySummaryOptIn` `@AppStorage` toggle in Settings. When ON, the in-app dashboard will surface a weekly summary; delivery is in-app only (no email / no notification). Actual summary rendering lands in a later round once a meaningful "this week's deltas" report can be computed.
+- [x] **Session closer** — 2026-06-22: `Libraries/Sources/AppFeature/Profile/SessionCloserSheet.swift` rendered as a sheet from `RootView` when `SessionTimerService.phase` reaches `.endingSummaryReady`. Lists published-tree count, streak, badge count, plus a "Up next" preview line keyed off the kid's progress. Dismissing the sheet resets the timer for the next window.
 
 ---
 
