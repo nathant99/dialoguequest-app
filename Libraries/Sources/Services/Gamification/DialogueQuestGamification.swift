@@ -46,13 +46,59 @@ public enum DialogueQuestGamification {
         ),
     ]
 
+    /// Phase 2 achievements — unlocked when the kid opts in to the triangle
+    /// authoring path (3-character trees). Wiring depends on
+    /// `dq.experiments.thirdCharacter` being on AND the kid actually
+    /// publishing a triangle tree.
+    public nonisolated static let phase2Achievements: [AchievementDefinition] = [
+        AchievementDefinition(
+            id: "triangle_published",
+            title: "Three voices in the room",
+            description: "You published a dialogue tree with three characters in conversation.",
+            iconAssetName: "achievement_triangle_published",
+            xpValue: 75,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "triangle_three_voice_spread",
+            title: "Three distinct voices",
+            description: "Each character in your triangle had a voice you could recognize without the tag.",
+            iconAssetName: "achievement_three_voice_spread",
+            xpValue: 50,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "triangle_alliance_pattern",
+            title: "Alliance shape",
+            description: "Your triangle leaned into the alliance pattern — two voices closing on the third.",
+            iconAssetName: "achievement_triangle_alliance",
+            xpValue: 40,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "triangle_arbitration_pattern",
+            title: "The arbiter steps in",
+            description: "Your arbiter named what was happening between the other two — the third voice as referee.",
+            iconAssetName: "achievement_triangle_arbitration",
+            xpValue: 40,
+            standard: nil
+        ),
+    ]
+
+    /// All achievements registered with the engine. Phase 2 entries are
+    /// always registered; they simply don't fire until the kid is on the
+    /// triangle path. Keeping them in the same definitions array avoids
+    /// per-flag config branches in `makeConfig()`.
+    public nonisolated static let allAchievements: [AchievementDefinition] =
+        phase1Achievements + phase2Achievements
+
     public nonisolated static func makeConfig() -> GamificationConfig {
         GamificationConfig(
             sessionTargetMinutes: 10...15,
             streakFreezeCount: 2,
             desiredRetention: 0.9,
             xpCurve: .standard,
-            achievementDefinitions: phase1Achievements
+            achievementDefinitions: allAchievements
         )
     }
 
