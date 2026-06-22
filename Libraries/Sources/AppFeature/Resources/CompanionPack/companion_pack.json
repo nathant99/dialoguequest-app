@@ -1,0 +1,13 @@
+{
+  "app": "dialoguequest",
+  "format": "pdf",
+  "source": "labsmith scripts/build_companion_pack.py (queue #332)",
+  "spec": "Docs/RESEARCH_STORYTIME_LEARNING_GENERALIZATION.md \u00a7 5.4",
+  "pdfs": [
+    "cast_poster.pdf",
+    "coloring.pdf",
+    "parent_letter.pdf"
+  ],
+  "count": 3,
+  "loading_hint": "These are print-friendly PDFs intended for in-app parent/educator surfaces (share-to-Files, AirPrint) and for /apps/<slug> page downloads on spark-anvil-site. Load via Bundle.module.url(forResource: name, withExtension: \"pdf\")."
+}

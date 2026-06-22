@@ -82,6 +82,7 @@ let package = Package(
             ],
             resources: [
                 .process("Resources/Questions"),
+                .process("Resources/CompanionPack"),
             ],
             swiftSettings: defaultSwiftSettings
         ),
