@@ -69,6 +69,50 @@ public final class PatterMentor {
         }
     }
 
+    /// Phase 2 multi-listener subtext analysis. Returns per-listener
+    /// reads of the same line for a 3-character triangle scene. When
+    /// FoundationModels is unavailable, falls back to a mood-keyed
+    /// per-listener pair (`PatterFallbacks.multiSpeakerSubtextFallback`).
+    public func analyzeMultiSpeaker(
+        line: String,
+        speakerName: String,
+        primaryListenerName: String,
+        secondaryListenerName: String,
+        mood: DialogueMood?
+    ) async -> MultiSpeakerSubtextAnalysis {
+        guard isAvailable, let session else {
+            return PatterFallbacks.multiSpeakerSubtextFallback(
+                for: line,
+                speakerName: speakerName,
+                primaryListenerName: primaryListenerName,
+                secondaryListenerName: secondaryListenerName,
+                mood: mood
+            )
+        }
+        do {
+            let prompt = makeMultiSpeakerPrompt(
+                line: line,
+                speakerName: speakerName,
+                primaryListenerName: primaryListenerName,
+                secondaryListenerName: secondaryListenerName,
+                mood: mood
+            )
+            let response = try await session.respond(
+                to: prompt,
+                generating: MultiSpeakerSubtextAnalysis.self
+            )
+            return response.content
+        } catch {
+            return PatterFallbacks.multiSpeakerSubtextFallback(
+                for: line,
+                speakerName: speakerName,
+                primaryListenerName: primaryListenerName,
+                secondaryListenerName: secondaryListenerName,
+                mood: mood
+            )
+        }
+    }
+
     public func tagBalanceTip(dominant: DialogueTag.Classification) async -> TagBalanceTip {
         guard isAvailable, let session else {
             return PatterFallbacks.tagBalanceFallback(dominant: dominant)
@@ -118,6 +162,25 @@ public final class PatterMentor {
         Write three Socratic questions that help them feel why each branch matters — \
         question1 on stakes, question2 on character, question3 on consequence. \
         Don't tell them which to pick.
+        """
+    }
+
+    private func makeMultiSpeakerPrompt(
+        line: String,
+        speakerName: String,
+        primaryListenerName: String,
+        secondaryListenerName: String,
+        mood: DialogueMood?
+    ) -> String {
+        let moodHint = mood.map { "Scene mood: \($0.displayName)." } ?? ""
+        return """
+        \(moodHint)
+        \(speakerName) says: "\(line)"
+        \(primaryListenerName) and \(secondaryListenerName) are both in the scene.
+        For each listener, write ONE kid-readable sentence about what \(speakerName) is implying \
+        for that listener (or an empty string if no clear subtext for that listener). \
+        Echo the line verbatim as surfaceText, fill in the listener names, and rate the \
+        speaker's voiceMatchScore 0.0 to 1.0.
         """
     }
 

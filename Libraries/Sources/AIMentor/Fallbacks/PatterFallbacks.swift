@@ -80,6 +80,58 @@ public nonisolated enum PatterFallbacks {
         }
     }
 
+    // MARK: - MultiSpeakerSubtextAnalysis (Phase 2 — triangle path)
+
+    /// Phase 2 multi-listener fallback. Returns a per-listener subtext
+    /// pair keyed off `DialogueMood` so the kid sees scene-appropriate
+    /// readings even when FoundationModels is unavailable.
+    ///
+    /// The fallback is deliberately register-neutral — it doesn't try
+    /// to characterize the specific listener relationships (sibling /
+    /// friend / antagonist), only the mood-shape of how the SAME line
+    /// reads to two different listeners. Phase 2+ AI passes will
+    /// inject relationship-specific cues when CharacterForge import
+    /// lands.
+    public static func multiSpeakerSubtextFallback(
+        for surfaceText: String,
+        speakerName: String,
+        primaryListenerName: String,
+        secondaryListenerName: String,
+        mood: DialogueMood?
+    ) -> MultiSpeakerSubtextAnalysis {
+        let primary: String
+        let secondary: String
+        switch mood {
+        case .warmReunion?:
+            primary = "Said for \(primaryListenerName), but every word is true."
+            secondary = "\(secondaryListenerName) hears the relief between the words."
+        case .quietConflict?:
+            primary = "Soft enough for \(primaryListenerName) to hear it without breaking."
+            secondary = "\(secondaryListenerName) hears what \(speakerName) didn't quite say."
+        case .playfulRivalry?:
+            primary = "A joke aimed at \(primaryListenerName) — half-real, half-not."
+            secondary = "\(secondaryListenerName) hears the dare underneath the joke."
+        case .awkwardSilence?:
+            primary = "Said to keep \(primaryListenerName) close without saying more."
+            secondary = "\(secondaryListenerName) hears the silence \(speakerName) is protecting."
+        case .openingCuriosity?:
+            primary = "A question \(primaryListenerName) might answer."
+            secondary = "\(secondaryListenerName) hears the question \(speakerName) hasn't asked yet."
+        case nil:
+            primary = ""
+            secondary = ""
+        }
+        return MultiSpeakerSubtextAnalysis(
+            surfaceText: surfaceText,
+            speakerName: speakerName,
+            primaryListenerName: primaryListenerName,
+            primaryListenerSubtext: primary,
+            secondaryListenerName: secondaryListenerName,
+            secondaryListenerSubtext: secondary,
+            voiceMatchScore: 0.75
+        )
+    }
+
     // MARK: - TagBalanceTip
 
     public static func tagBalanceFallback(
