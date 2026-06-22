@@ -26,8 +26,30 @@ public final class StreakService {
     static let defaultsKeyFreezes = "dq.streakFreezes"
     static let defaultsKeyLastSession = "dq.lastSessionDate"
 
+    /// Warm broken-streak nudge per `@Docs/FEATURE_PLAN.md` § Engagement
+    /// Foundation. Phase 1 surface: when `inspectStreakStatus()` returns
+    /// `.broken(previousStreak:)`, the host renders this message in a
+    /// MentorBubbleView so the kid sees a "your characters miss you"
+    /// frame instead of a numeric "0".
+    public static let brokenStreakMessage = "Your characters miss you. Want to write one more line together?"
+
+    /// Status snapshot read by views that want to surface streak-aware
+    /// UX without driving a `recordSession()` call.
+    public enum Status: Sendable, Equatable {
+        /// Streak has never been started — no record yet.
+        case neverStarted
+        /// Active streak; last session was today (or yesterday, depending
+        /// on `StreakManager` contract).
+        case active(streak: Int)
+        /// Streak was broken since the last session. `previousStreak`
+        /// helps the host word the broken-streak nudge ("you were on a
+        /// 7-day streak").
+        case broken(previousStreak: Int)
+    }
+
     private let defaults: UserDefaults
     private let config: GamificationConfig
+    private let calendar: Calendar
 
     /// Lazily built so the first `recordPublishedTree()` call seeds
     /// from persisted state. We re-create on each call to pick up
@@ -37,10 +59,12 @@ public final class StreakService {
 
     public init(
         defaults: UserDefaults = .standard,
-        config: GamificationConfig = DialogueQuestGamification.makeConfig()
+        config: GamificationConfig = DialogueQuestGamification.makeConfig(),
+        calendar: Calendar = .current
     ) {
         self.defaults = defaults
         self.config = config
+        self.calendar = calendar
     }
 
     /// Bump the streak via the canonical `StreakManager.recordSession`
@@ -69,6 +93,42 @@ public final class StreakService {
         let interval = defaults.double(forKey: Self.defaultsKeyLastSession)
         guard interval > 0 else { return nil }
         return Date(timeIntervalSinceReferenceDate: interval)
+    }
+
+    /// Read-only snapshot of streak status (does not advance the
+    /// underlying StreakManager). Use this from `RootView` to decide
+    /// whether to render `brokenStreakMessage`.
+    ///
+    /// The "broken" branch fires when there's a persisted streak ≥ 1
+    /// AND the last session was ≥ 2 calendar days ago AND the kid has
+    /// already exhausted freezes (or has more lapsed days than freezes
+    /// can cover). The implementation is intentionally simpler than
+    /// `StreakManager`'s internal freeze logic — it's a UX hint, not a
+    /// canonical streak calculation. The actual `recordSession()` call
+    /// is still authoritative.
+    public func inspectStreakStatus(now: Date = .now) -> Status {
+        let streak = currentStreak()
+        guard let last = lastSessionDate(), streak > 0 else {
+            return .neverStarted
+        }
+        // Calendar-day delta (start-of-day-aware so a 1-hour wall-clock
+        // jitter across midnight still reads as "next day", matching
+        // `StreakManager`'s semantics).
+        let lastDay = calendar.startOfDay(for: last)
+        let today = calendar.startOfDay(for: now)
+        let components = calendar.dateComponents([.day], from: lastDay, to: today)
+        let daysSince = components.day ?? 0
+        if daysSince <= 1 {
+            return .active(streak: streak)
+        }
+        // Lapse window: each available freeze covers one missed day.
+        let freezes = availableFreezes()
+        let coveredDays = freezes
+        let uncoveredLapse = max(0, daysSince - 1 - coveredDays)
+        if uncoveredLapse > 0 {
+            return .broken(previousStreak: streak)
+        }
+        return .active(streak: streak)
     }
 
     // MARK: - Private
@@ -107,10 +167,16 @@ public final class StreakService {
         case .sameDay(let streak):
             storedStreak = streak
             storedFreezes = availableFreezes()
+        case .heldUnderDistress(let streak):
+            // ForgeKit 0.86 case. Treat as a streak-continued event from
+            // a persistence perspective — the streak is held; the host
+            // view decides whether to render an extra-warm bubble.
+            storedStreak = streak
+            storedFreezes = availableFreezes()
         @unknown default:
-            // ForgeKit 0.86 added .heldUnderDistress; treat unknown
-            // cases as a no-op until a deliberate handler is wired,
-            // so we don't corrupt the persisted state.
+            // Forward-compatibility: any future StreakResult case is a
+            // no-op until a deliberate handler is wired so we don't
+            // corrupt the persisted state.
             return
         }
         defaults.set(storedStreak, forKey: Self.defaultsKeyStreak)

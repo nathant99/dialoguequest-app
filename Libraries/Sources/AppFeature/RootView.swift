@@ -1,4 +1,5 @@
 import SwiftUI
+import Services
 import SharedUI
 import ForgeCelebration
 
@@ -12,6 +13,8 @@ import ForgeCelebration
 public struct RootView: View {
     @State private var machine = AppNavigationMachine()
     @State private var celebrationCoordinator = CelebrationCoordinator()
+    @State private var sessionTimer = SessionTimerService()
+    @State private var brokenStreakDismissed: Bool = false
     @AppStorage("dq.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @AppStorage("dq.publishedTreeCount") private var publishedTreeCount: Int = 0
 
@@ -80,6 +83,66 @@ public struct RootView: View {
             OnboardingFlow {
                 hasCompletedOnboarding = true
             }
+        }
+        .overlay(alignment: .top) {
+            brokenStreakBanner
+        }
+        .task {
+            // Start the soft session window on root appear, once the kid
+            // is past onboarding. Phase events fire via the ticker below.
+            if hasCompletedOnboarding || Self.isUITestSkippingOnboarding {
+                sessionTimer.start()
+            }
+        }
+        .task(id: sessionTimer.phase) {
+            // Drive the session-timer ticker. `SessionTimerService.tick`
+            // is pure over elapsed time, so the loop is cheap. Per
+            // `.claude/rules/concurrency.md`, we do NOT use
+            // `Timer.scheduledTimer + Task { @MainActor in }` — `.task`
+            // is `@MainActor`-isolated and `Task.sleep` resumes cleanly.
+            while !Task.isCancelled, sessionTimer.phase != .endingSummaryReady {
+                try? await Task.sleep(for: .seconds(15))
+                sessionTimer.tick()
+            }
+        }
+    }
+
+    /// One-line warm nudge surfaced at the top of the root view when the
+    /// kid's streak appears broken (≥ 2 calendar days lapsed with
+    /// freezes exhausted). Dismissible via tap so a re-launch doesn't
+    /// re-pester. Reduce-Motion-aware: the appearance transition
+    /// collapses to opacity per `.claude/rules/swiftui.md`.
+    @ViewBuilder
+    private var brokenStreakBanner: some View {
+        if !brokenStreakDismissed, case .broken = StreakService.shared.inspectStreakStatus() {
+            HStack(spacing: 8) {
+                Image(systemName: "flame.fill")
+                    .foregroundStyle(DialoguePalette.rust)
+                Text(StreakService.brokenStreakMessage)
+                    .font(.footnote)
+                    .foregroundStyle(DialoguePalette.inkBlue)
+                Spacer(minLength: 4)
+                Button {
+                    brokenStreakDismissed = true
+                } label: {
+                    Image(systemName: "xmark")
+                        .imageScale(.small)
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Dismiss this gentle reminder for now.")
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(DialoguePalette.cream)
+            .clipShape(Capsule())
+            .overlay(
+                Capsule().stroke(DialoguePalette.rust.opacity(0.4), lineWidth: 1)
+            )
+            .padding(.top, 12)
+            .padding(.horizontal, 16)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(StreakService.brokenStreakMessage)
+            .transition(.opacity)
         }
     }
 }

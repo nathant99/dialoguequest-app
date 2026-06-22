@@ -76,4 +76,86 @@ struct StreakServiceTests {
             #expect(abs(afterRecord.timeIntervalSinceNow) < 5)
         }
     }
+
+    @Test("inspectStreakStatus returns .neverStarted on a fresh store")
+    func statusNeverStartedOnFreshStore() {
+        let suite = makeSuite()
+        let service = StreakService(defaults: suite)
+        switch service.inspectStreakStatus() {
+        case .neverStarted: break
+        default: Issue.record("Expected .neverStarted on fresh store")
+        }
+    }
+
+    @Test("inspectStreakStatus returns .active immediately after a record")
+    func statusActiveAfterRecord() async {
+        let suite = makeSuite()
+        let service = StreakService(defaults: suite)
+        _ = await service.recordPublishedTree()
+        switch service.inspectStreakStatus() {
+        case .active(let streak):
+            #expect(streak >= 1)
+        default:
+            Issue.record("Expected .active immediately after recordPublishedTree")
+        }
+    }
+
+    @Test("inspectStreakStatus returns .broken when lapsed beyond freezes")
+    func statusBrokenWhenLapsed() {
+        let suiteName = UUID().uuidString
+        let suite = UserDefaults(suiteName: suiteName)!
+        suite.removePersistentDomain(forName: suiteName)
+        // Seed a 7-day streak with 0 freezes available + a last-session
+        // date 5 days ago. The lapse is 5 - 1 = 4 days uncovered.
+        suite.set(7, forKey: StreakService.defaultsKeyStreak)
+        suite.set(0, forKey: StreakService.defaultsKeyFreezes)
+        let calendar = Calendar(identifier: .gregorian)
+        let fiveDaysAgo = calendar.date(byAdding: .day, value: -5, to: .now)!
+        suite.set(
+            fiveDaysAgo.timeIntervalSinceReferenceDate,
+            forKey: StreakService.defaultsKeyLastSession
+        )
+        let service = StreakService(defaults: suite, calendar: calendar)
+        switch service.inspectStreakStatus() {
+        case .broken(let previousStreak):
+            #expect(previousStreak == 7)
+        default:
+            Issue.record("Expected .broken for a 5-day lapse with 0 freezes")
+        }
+    }
+
+    @Test("inspectStreakStatus stays .active when lapsed within freeze coverage")
+    func statusActiveWithinFreezeCoverage() {
+        let suiteName = UUID().uuidString
+        let suite = UserDefaults(suiteName: suiteName)!
+        suite.removePersistentDomain(forName: suiteName)
+        // Seed a 3-day streak with 2 freezes available + a last-session
+        // date 2 days ago. daysSince = 2, daysSince - 1 = 1, covered by
+        // 1 freeze; uncovered = 0 → .active.
+        suite.set(3, forKey: StreakService.defaultsKeyStreak)
+        suite.set(2, forKey: StreakService.defaultsKeyFreezes)
+        let calendar = Calendar(identifier: .gregorian)
+        let twoDaysAgo = calendar.date(byAdding: .day, value: -2, to: .now)!
+        suite.set(
+            twoDaysAgo.timeIntervalSinceReferenceDate,
+            forKey: StreakService.defaultsKeyLastSession
+        )
+        let service = StreakService(defaults: suite, calendar: calendar)
+        switch service.inspectStreakStatus() {
+        case .active(let streak):
+            #expect(streak == 3)
+        default:
+            Issue.record("Expected .active for a 2-day lapse with 2 freezes")
+        }
+    }
+
+    @Test("brokenStreakMessage is non-empty and warm")
+    func brokenStreakMessageShape() {
+        // Sanity-test the message body — keeps the warm framing locked
+        // in and prevents a future refactor from accidentally producing
+        // a "0-day streak" or other numeric / shaming surface.
+        #expect(!StreakService.brokenStreakMessage.isEmpty)
+        let lowercase = StreakService.brokenStreakMessage.lowercased()
+        #expect(lowercase.contains("miss"))
+    }
 }

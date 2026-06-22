@@ -103,6 +103,16 @@ struct WriteTabView: View {
                     var rng = SystemRandomNumberGenerator()
                     rareVoiceCraftTip = VariableReward.pickVoiceCraftTip(rng: &rng)
                 }
+                // Feed the tree's outcome into DDA so the next session's
+                // voice-drift threshold + branch-reflection floor adapt
+                // to the kid's recent performance.
+                if let service = reactionService {
+                    let outcome = computeOutcomeSnapshot()
+                    service.recordTreeOutcome(
+                        reflectionRatio: outcome.reflectionRatio,
+                        averageVoiceMatch: outcome.averageVoiceMatch
+                    )
+                }
             }
             evaluateAchievements()
         }
@@ -139,6 +149,36 @@ struct WriteTabView: View {
                     .transition(.opacity)
             }
         }
+    }
+
+    /// Snapshot of the just-published tree's pedagogical telemetry,
+    /// fed into `DDAEngine.record(outcome:)`.
+    private func computeOutcomeSnapshot() -> DDAEngine.RecentOutcome {
+        let report = scorer.score(
+            tree: machine.tree,
+            reflectedBranchPointIDs: machine.reflectedBranchPointIDs
+        )
+        let reflectionRatio: Double
+        if report.branchPointCount > 0 {
+            reflectionRatio = Double(report.reflectedBranchPointCount) / Double(report.branchPointCount)
+        } else {
+            // No branch points at all: treat as midpoint so DDA doesn't
+            // ramp up or down from a trivial tree.
+            reflectionRatio = 0.5
+        }
+        let voiceReports = voiceAnalyzer.report(for: machine.tree)
+        let speakingReports = voiceReports.filter { $0.lineCount > 0 }
+        let averageVoiceMatch: Double
+        if speakingReports.isEmpty {
+            averageVoiceMatch = 0.5
+        } else {
+            let scores = speakingReports.map(\.averageVoiceMatchScore)
+            averageVoiceMatch = scores.reduce(0, +) / Double(scores.count)
+        }
+        return DDAEngine.RecentOutcome(
+            reflectionRatio: reflectionRatio,
+            averageVoiceMatch: averageVoiceMatch
+        )
     }
 
     /// Snapshot WriteTab state into an `AchievementService.Criteria` and

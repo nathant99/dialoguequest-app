@@ -33,6 +33,12 @@ public final class PatterReactionService {
     private let voiceAnalyzer = VoiceConsistencyAnalyzer()
     @ObservationIgnored
     private let castVoicing: CastVoicingService?
+    /// DDA engine threading the voice-match floor through the reaction
+    /// service so the drift threshold ramps with the kid's recent
+    /// performance rather than sticking at the static
+    /// `CastVoiceRegistry.voiceDriftThreshold` constant.
+    @ObservationIgnored
+    private var dda: DDAEngine
     /// The dominant classification we surfaced a tip for, so we don't
     /// re-fire the tip until the dominant classification CHANGES.
     @ObservationIgnored
@@ -44,10 +50,37 @@ public final class PatterReactionService {
 
     public init(
         mentor: PatterMentor,
-        castVoicing: CastVoicingService? = nil
+        castVoicing: CastVoicingService? = nil,
+        dda: DDAEngine = DDAEngine()
     ) {
         self.mentor = mentor
         self.castVoicing = castVoicing
+        self.dda = dda
+    }
+
+    /// Currently-effective voice-match floor. The view consumers (e.g.,
+    /// `SubtextPanelView`'s voice-match bar) can ask this service for
+    /// the live threshold instead of hardcoding
+    /// `CastVoiceRegistry.voiceDriftThreshold`. Falls through to the
+    /// stricter of `dda.currentVoiceMatchFloor` and the registry
+    /// constant so the DDA engine can only lower the floor (be more
+    /// permissive) within bounds, never raise it above the canonical
+    /// drift threshold.
+    public var effectiveVoiceDriftThreshold: Double {
+        min(CastVoiceRegistry.voiceDriftThreshold, dda.currentVoiceMatchFloor)
+    }
+
+    /// Push a per-tree outcome into the DDA engine. Called by the
+    /// host view after a publish event when both reflection ratio and
+    /// average voice-match score are known. Pure mutation; no UI side
+    /// effects (the next coaching call reads the updated threshold).
+    public func recordTreeOutcome(reflectionRatio: Double, averageVoiceMatch: Double) {
+        dda.record(
+            outcome: .init(
+                reflectionRatio: reflectionRatio,
+                averageVoiceMatch: averageVoiceMatch
+            )
+        )
     }
 
     /// Call when the kid's selection moved to a branch-point node. The
@@ -104,10 +137,12 @@ public final class PatterReactionService {
     }
 
     /// Call when the analyzer reports a voice-match score below
-    /// `CastVoiceRegistry.voiceDriftThreshold`. Brogue scaffolds the kid
-    /// back into voice register.
+    /// `effectiveVoiceDriftThreshold`. Brogue scaffolds the kid back
+    /// into voice register. The threshold ramps with `DDAEngine` so a
+    /// struggling kid sees fewer drift nudges and a confident one sees
+    /// stricter coaching.
     public func onVoiceDrift(score: Double, mood: DialogueMood?) async {
-        guard score < CastVoiceRegistry.voiceDriftThreshold else { return }
+        guard score < effectiveVoiceDriftThreshold else { return }
         guard let castVoicing else { return }
         await castVoicing.respond(to: .voiceDrift, topic: mood?.displayName)
     }
@@ -119,5 +154,6 @@ public final class PatterReactionService {
         lastSurfaceTagClassification = nil
         greetedBranchPointIDs.removeAll()
         castVoicing?.reset()
+        dda.reset()
     }
 }
