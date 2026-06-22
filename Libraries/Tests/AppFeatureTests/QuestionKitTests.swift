@@ -47,12 +47,26 @@ struct QuestionKitTests {
 
     // MARK: - Phase 2
 
-    @Test("Phase 2 inventory ships kit 05 with the voice-consistency theme")
+    @Test("Phase 2 inventory ships kits 05 + 06 with the voice-consistency theme")
     func phase2KitLoadsAndHasExpectedTheme() throws {
-        #expect(QuestionKitLoader.phase2Kits == ["kit_05_triangle_voices"])
-        let kit = try QuestionKitLoader.load(id: "kit_05_triangle_voices")
-        #expect(kit.theme == .voiceConsistency)
-        #expect(kit.questions.count >= 5)
+        #expect(QuestionKitLoader.phase2Kits == ["kit_05_triangle_voices", "kit_06_voice_crucible"])
+        for kitID in QuestionKitLoader.phase2Kits {
+            let kit = try QuestionKitLoader.load(id: kitID)
+            #expect(kit.theme == .voiceConsistency)
+            #expect(kit.questions.count >= 5)
+        }
+    }
+
+    @Test("Kit 06 (Voice Crucible) question prompts reference voice register vocabulary")
+    func kit06ReferencesVoiceVocabulary() throws {
+        let kit = try QuestionKitLoader.load(id: "kit_06_voice_crucible")
+        let body = kit.questions.map(\.prompt).joined(separator: " ").lowercased()
+        #expect(body.contains("voice") || body.contains("register") || body.contains("character"))
+        let postScripts = kit.questions.map(\.mentorPostScript).joined(separator: " ").lowercased()
+        #expect(postScripts.contains("voice") ||
+                postScripts.contains("register") ||
+                postScripts.contains("fingerprint") ||
+                postScripts.contains("silence"))
     }
 
     @Test("loadAllPhases includes Phase 1 + Phase 2 kits")

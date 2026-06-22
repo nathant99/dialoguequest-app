@@ -83,6 +83,38 @@ public enum DialogueQuestGamification {
             xpValue: 40,
             standard: nil
         ),
+        AchievementDefinition(
+            id: "triangle_jealousy_pattern",
+            title: "Jealousy on the page",
+            description: "Your triangle leaned into the jealousy pattern — one voice watching the other two close together.",
+            iconAssetName: "achievement_triangle_jealousy",
+            xpValue: 40,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "triangle_subtext_layered",
+            title: "Three voices, three layers of subtext",
+            description: "You confirmed three or more subtext lines across a triangle tree — every voice carrying something underneath.",
+            iconAssetName: "achievement_triangle_subtext",
+            xpValue: 60,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "triangle_branches_reflected",
+            title: "Two paths, three voices",
+            description: "You reflected on two or more branch points in a triangle tree — every choice felt the weight of all three.",
+            iconAssetName: "achievement_triangle_branches_reflected",
+            xpValue: 50,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "triangle_tag_balance_held",
+            title: "Three voices, balanced rhythm",
+            description: "You authored a triangle tree of 8+ nodes with no dominant tag style — every voice kept the rhythm.",
+            iconAssetName: "achievement_triangle_tag_balance",
+            xpValue: 50,
+            standard: nil
+        ),
     ]
 
     /// All achievements registered with the engine. Phase 2 entries are
