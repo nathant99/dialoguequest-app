@@ -52,6 +52,9 @@ public nonisolated struct DialogueTree: Codable, Sendable, Hashable, Identifiabl
     public enum NodeCountConstraint {
         public static let phase1Min: Int = 5
         public static let phase1Max: Int = 15
+        /// Phase 2 ceiling — triangle trees with 3 characters need more
+        /// nodes to develop alliance / jealousy / arbitration arcs.
+        public static let phase2Max: Int = 24
 
         /// Progressive-disclosure tier. The maximum tree size grows with
         /// the kid's experience: session 1 caps at 3 nodes so the loop is
@@ -79,6 +82,16 @@ public nonisolated struct DialogueTree: Codable, Sendable, Hashable, Identifiabl
             case .earlySessions: return 5
             case .experienced: return phase1Max
             }
+        }
+
+        /// Phase 2 max-nodes for a tree whose `characterCount` is ≥ 3.
+        /// Caller wires this when `dq.experiments.thirdCharacter` is on.
+        public static func maxNodes(for tier: SessionTier, characterCount: Int) -> Int {
+            let base = maxNodes(for: tier)
+            // Triangle trees only get the wider ceiling at the
+            // `.experienced` tier — early sessions stay tight regardless.
+            if characterCount >= 3 && tier == .experienced { return phase2Max }
+            return base
         }
     }
 
