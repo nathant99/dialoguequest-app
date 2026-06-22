@@ -26,6 +26,11 @@ struct SettingsView: View {
                 } label: {
                     Label("Parent progress dashboard", systemImage: "chart.bar.doc.horizontal")
                 }
+                NavigationLink {
+                    CompanionPackView()
+                } label: {
+                    Label("For parents & educators", systemImage: "doc.richtext.fill")
+                }
                 Toggle(isOn: $weeklySummaryOptIn) {
                     Label("Weekly summary", systemImage: "calendar")
                 }

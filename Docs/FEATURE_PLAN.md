@@ -58,6 +58,7 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Build `ProgressDashboardView` with XP bar + streak badge + adaptive badge grid; `@AppStorage`-backed totals — 2026-06-20 PR #27
 - [x] Build `ProfileDashboardView` with `ForgeAvatar.AvatarStudioView(.lite)` + `AppGroupStore`-seeded ForgeID — 2026-06-20 PR #28
 - [x] Build `SettingsView` with parental-gate stub + daily-session limit stepper (full COPPA parental-gate UI lands in follow-up handoff) — 2026-06-20 PR #28
+- [x] Wire `CompanionPackView` under Settings → "For parents & educators" — 2026-06-22: Resources/CompanionPack/{cast_poster,coloring,parent_letter}.pdf now resolve via `Bundle.module` (copied from repo-root `Resources/CompanionPack/` into the SPM AppFeature target; `.process("Resources/CompanionPack")` added to `Libraries/Package.swift`); SettingsView surfaces a new NavigationLink that opens `CompanionPackView` (3 share cards per PDF; `ShareLink` routes to Files/AirPrint/AirDrop). 4 tests in `CompanionPackEntryTests` cover catalog shape, bundle-URL resolution, UI-uniqueness, and reader-facing register stoplist.
 - [x] Build `QuizView` for question kits — kit loader + `QuizMachine` + reveal-on-tap UX + completion screen — 2026-06-20 PR #27
 
 ### AI Mentor (DN cast lead per handoff)
