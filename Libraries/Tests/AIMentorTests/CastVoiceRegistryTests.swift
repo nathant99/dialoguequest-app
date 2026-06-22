@@ -7,8 +7,11 @@ struct CastVoiceRegistryTests {
 
     // MARK: - Inventory
 
-    @Test func registryShipsFiveProfiles() {
-        #expect(CastVoiceRegistry.allProfiles.count == 5)
+    @Test func registryShipsTenProfilesAcrossThreeLayers() {
+        #expect(CastVoiceRegistry.allProfiles.count == 10)
+        #expect(CastVoiceRegistry.lessonsLayerProfiles.count == 5)
+        #expect(CastVoiceRegistry.worldLayerProfiles.count == 4)
+        #expect(CastVoiceRegistry.metaLayerProfiles.count == 1)
     }
 
     @Test func profileIDsAreDistinct() {
@@ -18,15 +21,23 @@ struct CastVoiceRegistryTests {
 
     @Test func canonicalSlugsArePresent() {
         let ids = Set(CastVoiceRegistry.allProfiles.map(\.id))
-        #expect(ids == ["brogue", "glance", "rest", "sprig", "weigh"])
+        #expect(ids == [
+            "brogue", "glance", "rest", "sprig", "weigh",
+            "heralda", "murmur", "quip", "vesperline",
+            "aria",
+        ])
     }
 
-    @Test func voicingPriorityOrderMatchesHandoff() {
-        // Per HANDOFF_FROM_LABSMITH_DN_S_AI_MENTOR_VOICING.md — lead with the
-        // most-formal-register character so the LM commits to a clearly
-        // distinct voice baseline first.
+    @Test func voicingPriorityOrderLessonsThenWorldThenMeta() {
+        // Pattern B preservation per `.claude/rules/distributed-narrative.md`:
+        // LESSONS-layer profiles surface first so Patter's craft friends
+        // take precedence; WORLD + META load behind them.
         let ids = CastVoiceRegistry.allProfiles.map(\.id)
-        #expect(ids == ["brogue", "glance", "rest", "sprig", "weigh"])
+        #expect(ids == [
+            "brogue", "glance", "rest", "sprig", "weigh",     // lessons (formal → playful)
+            "heralda", "murmur", "quip", "vesperline",         // world (epic → tragic)
+            "aria",                                             // meta
+        ])
     }
 
     // MARK: - Profile shape
@@ -77,12 +88,17 @@ struct CastVoiceRegistryTests {
     @Test func castDialogRegistersAllProfiles() async throws {
         let dialog = try await CastVoiceRegistry.makeCastDialog()
         let count = await dialog.registeredCount
-        #expect(count == 5)
+        #expect(count == 10)
     }
 
     @Test func castDialogReportsEachKnownSlugAsRegistered() async throws {
         let dialog = try await CastVoiceRegistry.makeCastDialog()
-        for id in ["brogue", "glance", "rest", "sprig", "weigh"] {
+        let allIDs = [
+            "brogue", "glance", "rest", "sprig", "weigh",
+            "heralda", "murmur", "quip", "vesperline",
+            "aria",
+        ]
+        for id in allIDs {
             let isRegistered = await dialog.isRegistered(id)
             #expect(isRegistered, "\(id) should be registered")
         }
