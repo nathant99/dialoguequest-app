@@ -22,6 +22,10 @@ struct AnthologyGalleryView: View {
     /// per-tap fetch via DialoguePersistenceService.
     @State private var treeCache: [UUID: DialogueTree] = [:]
     @State private var loadFailure: String?
+    /// The entry whose certificate is currently being presented.
+    /// Drives the sheet that hosts `PublishedTreeCertificate` +
+    /// the ShareLink that exports the rendered PNG.
+    @State private var certificateEntry: DialoguePersistenceService.AnthologyEntry?
 
     var body: some View {
         Group {
@@ -44,6 +48,26 @@ struct AnthologyGalleryView: View {
             }
         }
         .onAppear(perform: refresh)
+        .sheet(item: $certificateEntry) { entry in
+            certificateSheet(for: entry)
+        }
+    }
+
+    @ViewBuilder
+    private func certificateSheet(for entry: DialoguePersistenceService.AnthologyEntry) -> some View {
+        if let tree = treeCache[entry.id] {
+            CertificateSheet(
+                tree: tree,
+                publishedAt: entry.lastEditedAt,
+                onClose: { certificateEntry = nil }
+            )
+        } else {
+            ContentUnavailableView(
+                "Couldn't load this dialogue",
+                systemImage: "rosette",
+                description: Text("Try opening the anthology again.")
+            )
+        }
     }
 
     private var listContent: some View {
@@ -88,6 +112,17 @@ struct AnthologyGalleryView: View {
                     })
                     .accessibilityLabel("Share dialogue \(entry.title.isEmpty ? "Untitled" : entry.title)")
                     .accessibilityHint("Export this dialogue tree as JSON via AirDrop, Files, or Mail. Nothing is uploaded — the share sheet is system-provided.")
+                }
+                if treeCache[entry.id] != nil {
+                    Button {
+                        certificateEntry = entry
+                    } label: {
+                        Image(systemName: "rosette")
+                            .foregroundStyle(DialoguePalette.rust)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Show certificate for \(entry.title.isEmpty ? "Untitled" : entry.title)")
+                    .accessibilityHint("Open the published-tree certificate. You can share the certificate as an image.")
                 }
             }
             if let mood = entry.mood {
