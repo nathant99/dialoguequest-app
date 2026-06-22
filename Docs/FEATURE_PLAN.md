@@ -78,6 +78,7 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Configure `StreakManager` deps + freeze count via `GamificationConfig` — 2026-06-20 PR #27
 - [x] Wire per-session `StreakManager.recordSession()` advance — 2026-06-22: shipped `Libraries/Sources/Services/Gamification/StreakService.swift` (`@MainActor public final class` wrapping the ForgeKit actor; UserDefaults-persists `dq.currentStreak` / `dq.streakFreezes` / `dq.lastSessionDate`); `WriteTabView.onChange(machine.stage)` fires `StreakService.shared.recordPublishedTree()` on transition to `.published`. `ProgressDashboardView` picks up the new values via its existing `@AppStorage` keys with no view changes. 4 tests in `StreakServiceTests` cover first-record / persistence / freeze-default / lastSessionDate. Phase 2 telemetry round adds the warm broken-streak nudge + ForgeKit 0.86 `.heldUnderDistress` handling.
 - [x] Register 4 Phase-1 achievements (first tree / first subtext / tag balance / branch reflected) — 2026-06-20 PR #27
+- [x] Evaluate + award the 4 Phase-1 achievements at trigger sites — 2026-06-22: shipped `Libraries/Sources/Services/Gamification/AchievementService.swift` (`@Observable @MainActor` wrapper around ForgeGamification's pure `AchievementEngine`; persists earned IDs to `dq.earnedBadgeIDs` AppStorage key). `WriteTabView` calls `evaluateAchievements()` on every relevant `onChange` (stage / confirmedSubtextLineIDs / reflectedBranchPointIDs); newly-earned badges render via `ForgeAchievementPopup` overlay at top of the Write tab. 7 tests cover state / per-badge criteria / consumption / persistence (all passing).
 - [x] Wire question kits 01-04 via `Bundle.module` (voice / subtext / tag balance / branching) — 2026-06-20 PR #27 (`QuestionKitLoader` + `.process("Resources/Questions")` + 4 JSON kits)
 - [x] Codify XP awards constants for: published tree (75), subtext confirmation (15), branch reflection (10) — 2026-06-20 PR #27 (`DialogueQuestGamification.xpFor*`); ProgressTabView consumes via `@AppStorage`
 
@@ -195,7 +196,7 @@ Audio/visual/haptic polish, parent-facing dashboards, and emotional design. Runs
 ### Delight & Polish
 
 - [ ] **Juice layer** — Visual + audio + haptic trifecta on every interaction (with iPad haptic fallback)
-- [ ] **Celebration system** — Proportional: subtle sparkle for tag-balance reach → full-screen for "first published tree" → cinematic for "anthology curation milestone"
+- [x] **Celebration system** (Phase 1 first cut) — 2026-06-22: `ForgeCelebration.CelebrationCoordinator` instance lives on `RootView`; first publish (publishedTreeCount 0→1) fires `.epic`-tier "Your first conversation is in the anthology" with ✨ emoji; subsequent publishes fire `.medium`-tier "Published" with 📜. `.celebrationOverlay(...)` rendered at the root so the celebration crosses tabs. Per-tier cooldowns + Reduce-Motion respect handled by the Forge coordinator. Subtle tag-balance sparkle + anthology-curation cinematic land in Phase 2+.
 - [ ] **Micro-delight coverage** — All 8 types: celebration, surprise, personality, mastery, social, sensory, agency, discovery
 - [ ] **Character personality** — Mentor with callbacks to player's recurring voice patterns + favorite themes
 - [ ] **Mastery moments** — Distinct screen ripple + chord when child internalizes voice-consistency intuition
