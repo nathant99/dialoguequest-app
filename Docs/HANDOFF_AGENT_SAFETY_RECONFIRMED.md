@@ -2,6 +2,8 @@
 
 Direction: **session note → future Claude Code sessions**. Single-page reaffirmation of the Xcode-managed-files boundary, the staging + committing carve-out, and the canonical SPM-side work surfaces. Future sessions should read this once before touching the repo.
 
+> **Last reaffirmed mid-session 2026-06-22** by the multi-PR ForgeKit-integration + Phase-2-polish round. Both the boundary AND the staging-carve-out remain canonical. If a future session adds a new privileged surface (e.g., a new entitlement, a new Info.plist key, an asset catalog change), file a fresh `HANDOFF_TO_USER_<TOPIC>.md` — DO NOT author the privileged file directly.
+
 ## What the agent will NEVER do (authoring)
 
 Per `CLAUDE.md` § Xcode Agent Safety + `.claude/rules/xcode-agent-safety.md`:
@@ -85,9 +87,9 @@ These are the GUI items the user (not the agent) needs to act on:
 | Doc | What |
 |---|---|
 | `Docs/HANDOFF_TO_USER_APP_ICON.md` | Generate Patter source PNG → Icon Composer → 6-variant `.icon` bundle in asset catalog. Not blocking TestFlight; required before App Store. |
-| `Docs/HANDOFF_TO_USER_DECLARED_AGE_RANGE_API.md` | Add Family Controls entitlement + `NSChildUseDescription` Info.plist key via Xcode GUI. Unblocks parental-consent Phase 2. |
-| `Docs/HANDOFF_TO_USER_CLEAR_STALE_WORKSPACE_GROUP.md` | Stale workspace group removal (one-shot). |
-| `Docs/HANDOFF_TO_USER_ADD_AIMENTORTESTS_TO_TESTPLAN.md` | Add `AIMentorTests` to the test plan via Xcode GUI. Closed if test plan already lists it; verify before re-filing. |
+| `Docs/HANDOFF_TO_USER_DECLARED_AGE_RANGE_API.md` | Add Family Controls entitlement + `NSChildUseDescription` Info.plist key via Xcode GUI. Unblocks parental-consent Phase 2. (Once GUI work lands, the agent scaffolds the `DeclaredAgeRangeGate` Swift surface so the API call is entitlement-gated + safe by default.) |
+
+Two prior items closed earlier in 2026-06-21: `HANDOFF_TO_USER_CLEAR_STALE_WORKSPACE_GROUP.md` (stale group removed) + `HANDOFF_TO_USER_ADD_AIMENTORTESTS_TO_TESTPLAN.md` (test plan now includes `AIMentorTests`). Verify-before-action: if the user reports either issue resurfacing, re-pull the test plan + workspace data via `git pull` before re-filing.
 
 When the user finishes any of these, the agent's role is to stage + commit the resulting diff. Confirm the test plan + scheme are loading correctly via `BuildProject` afterwards.
 
