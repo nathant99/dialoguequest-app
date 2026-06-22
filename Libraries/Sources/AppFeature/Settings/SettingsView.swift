@@ -58,6 +58,16 @@ struct SettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
+            Section("Privacy") {
+                NavigationLink {
+                    PrivacyPolicyView()
+                } label: {
+                    Label("Privacy policy", systemImage: "lock.shield.fill")
+                }
+                Text("Plain-language summary. Nothing the kid writes leaves this device.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
             Section("About") {
                 HStack {
                     Text("Version")
@@ -113,14 +123,18 @@ struct SettingsView: View {
     }
 }
 
-/// Light parental-gate sheet. Phase 1 ships a math challenge that the
-/// kid can't shoulder-surf past; the full Family Controls flow lands
-/// once the entitlement GUI handoff completes.
+/// Light parental-gate sheet backed by `Services.ParentalGateChallenge`.
+/// Phase 1 uses a 6×6...9×9 multiplication challenge that a tween can't
+/// shoulder-surf past; the full Family Controls flow lands once the
+/// entitlement GUI handoff completes. The challenge logic itself lives
+/// in `Services/Privacy/ParentalGateChallenge.swift` so external-link
+/// affordances (privacy policy off-app links / donate / studio site) can
+/// reuse the same UX consistently.
 private struct ParentalConsentGateView: View {
     let onGranted: () -> Void
     let onCancel: () -> Void
 
-    @State private var challenge = MathChallenge.random()
+    @State private var challenge = ParentalGateChallenge.random()
     @State private var typedAnswer: String = ""
     @State private var showError: Bool = false
 
@@ -128,7 +142,7 @@ private struct ParentalConsentGateView: View {
         VStack(spacing: 16) {
             Text("Parent or guardian check")
                 .font(.title3.weight(.semibold))
-            Text("What's \(challenge.a) × \(challenge.b)?")
+            Text(challenge.prompt)
                 .font(.title2.monospacedDigit())
                 .foregroundStyle(DialoguePalette.inkBlue)
             TextField("Answer", text: $typedAnswer)
@@ -147,11 +161,11 @@ private struct ParentalConsentGateView: View {
                 Button("Cancel", role: .cancel, action: onCancel)
                 Spacer()
                 Button("Confirm") {
-                    if Int(typedAnswer) == challenge.expected {
+                    if challenge.accepts(typedAnswer) {
                         onGranted()
                     } else {
                         showError = true
-                        challenge = MathChallenge.random()
+                        challenge = ParentalGateChallenge.random()
                         typedAnswer = ""
                     }
                 }
@@ -161,15 +175,6 @@ private struct ParentalConsentGateView: View {
             }
         }
         .padding()
-    }
-
-    private struct MathChallenge {
-        let a: Int
-        let b: Int
-        var expected: Int { a * b }
-        static func random() -> MathChallenge {
-            MathChallenge(a: Int.random(in: 6...9), b: Int.random(in: 6...9))
-        }
     }
 }
 
