@@ -58,9 +58,12 @@ struct AnthologyGalleryView: View {
     }
 
     private func entryRow(_ entry: DialoguePersistenceService.AnthologyEntry) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        let displayTitle = entry.title.isEmpty ? "Untitled" : entry.title
+        let moodLabel = entry.mood?.displayName ?? "no mood set"
+        let timestamp = entry.lastEditedAt.formatted(date: .abbreviated, time: .shortened)
+        return VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(entry.title.isEmpty ? "Untitled" : entry.title)
+                Text(displayTitle)
                     .font(.headline)
                     .foregroundStyle(DialoguePalette.inkBlue)
                 Spacer()
@@ -92,10 +95,12 @@ struct AnthologyGalleryView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Text("Last edited \(entry.lastEditedAt.formatted(date: .abbreviated, time: .shortened))")
+            Text("Last edited \(timestamp)")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(displayTitle), mood: \(moodLabel), last edited \(timestamp).")
     }
 
     private func refresh() {

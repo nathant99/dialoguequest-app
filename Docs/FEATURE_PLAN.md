@@ -222,7 +222,7 @@ Audio/visual/haptic polish, parent-facing dashboards, and emotional design. Runs
 
 ## Phase: Accessibility & Trauma-Informed Polish
 
-- [ ] VoiceOver labels for every dialogue node + character portrait
+- [x] VoiceOver labels for every dialogue node + character portrait — 2026-06-22 sweep: `NodeInspectorView` added accessibilityHint on speaker / line / tag style / verb / action beat fields + Subtext display labeled as "Confirmed subtext: …"; `CharacterAuthoringView` added per-field accessibilityHint on name / voice register / sample lines + conversation title / mood picker; `AnthologyGalleryView` entry rows collapse to a single accessibility element with "<title>, mood: <mood>, last edited <date>"; `ProfileDashboardView` profile header reads "<displayName>, Storyteller in the making."; `ProgressDashboardView` streak badge labels with day count + freeze remaining + badge cards with "Earned/Locked badge: <title>. Worth N XP"; `TagBalanceDashboardView` per-bar `accessibilityLabel` "<character>: N <style> lines". DialogueTreeBuilderView a11y already in place from prior round (line 75–77).
 - [ ] Dynamic Type support across tree builder + inspector
 - [ ] Color-contrast audit (WCAG AA in default + dark + high-contrast themes)
 - [ ] Reduce-Motion variants for tree-edit animations + subtext-reveal flourishes
