@@ -166,15 +166,12 @@ struct WriteTabView: View {
             // ramp up or down from a trivial tree.
             reflectionRatio = 0.5
         }
-        let voiceReports = voiceAnalyzer.report(for: machine.tree)
-        let speakingReports = voiceReports.filter { $0.lineCount > 0 }
-        let averageVoiceMatch: Double
-        if speakingReports.isEmpty {
-            averageVoiceMatch = 0.5
-        } else {
-            let scores = speakingReports.map(\.averageVoiceMatchScore)
-            averageVoiceMatch = scores.reduce(0, +) / Double(scores.count)
-        }
+        // WritingEvaluator.VoiceSummary collapses the per-character
+        // reports into one canonical tree-wide score the DDA engine can
+        // consume directly. `treeAverage == nil` means no speaking
+        // lines yet — fall back to midpoint so DDA doesn't ramp.
+        let voiceSummary = voiceAnalyzer.summary(for: machine.tree)
+        let averageVoiceMatch = voiceSummary.treeAverage ?? 0.5
         return DDAEngine.RecentOutcome(
             reflectionRatio: reflectionRatio,
             averageVoiceMatch: averageVoiceMatch
