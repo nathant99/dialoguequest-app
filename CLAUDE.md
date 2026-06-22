@@ -6,7 +6,7 @@ Branching-dialogue craft workshop for tweens. Write a conversation, not a paragr
 
 ## Xcode Agent Safety (load-bearing)
 
-> **Single-page reaffirmation** of this section + the canonical SPM subfolder map: `@Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` (2026-06-22). Read once before touching the repo.
+> **Single-page reaffirmation** of this section + the canonical SPM subfolder map: `@Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` (last reaffirmed 2026-06-22 mid-session). Read once before touching the repo. **Staging + committing GUI-authored diffs IS allowed** — the "do not write" rule applies to AUTHORING content only.
 
 This agent operates inside Xcode via the Coding Assistant integration. **Do NOT author or edit Xcode-managed files**. Editing them risks External-Changes dialogs or a workspace reload that **terminates the agent session mid-task**.
 
@@ -76,7 +76,7 @@ Prefer MCP `BuildProject` / `RunSomeTests` over `xcodebuild` when Xcode is open 
 
 See `@Docs/APP_SPECIFIC_NOTES.md` for the preserved prior CLAUDE.md content (architecture / domain patterns / gotchas accumulated through development). Portfolio-wide rules — Swift 6 concurrency, SwiftData patterns, testing conventions, ForgeKit module APIs, Liquid Glass register, distributed-narrative methodology, trauma-informed gates, COPPA / age-assurance — auto-load from `@.claude/rules/` (24+ files synced from labsmith). Do NOT re-state portfolio-wide rules here.
 
-## SPM Scaffold (as of 2026-06-19)
+## SPM Scaffold (as of 2026-06-22)
 
 5-target Libraries package per `@Docs/TECHNICAL_DESIGN.md` § "SPM Module Architecture":
 
@@ -84,14 +84,17 @@ See `@Docs/APP_SPECIFIC_NOTES.md` for the preserved prior CLAUDE.md content (arc
 Libraries/
 ├── Package.swift                    # swift-tools 6.2, .iOS(.v26), -default-isolation MainActor
 ├── Sources/
-│   ├── Models/                      # DialogueNode / DialogueTree / DialogueTag / DialogueMood / DialogueCharacterRef
-│   ├── Services/                    # (stub — Phase 1 services land in follow-on PR)
-│   ├── SharedUI/                    # DialogueQuestTheme + MentorBubbleView + DialogueTreeBuilderPlaceholder
-│   ├── AIMentor/                    # PatterMentor + 3 @Generable types + PatterFallbacks
-│   └── AppFeature/                  # RootView (4-tab TabView) + AppNavigationMachine + tab placeholders
+│   ├── Models/                      # Schema/ + ValueTypes/ — domain types + SwiftData @Model classes
+│   ├── Services/                    # Analytics/ Analyzers/ Gamification/ Pedagogy/ Persistence/ Privacy/ — Phase 1+2 services
+│   ├── SharedUI/                    # DialogueQuestTheme + Mentor/MentorBubbleView (lean; rich UI lives in AppFeature)
+│   ├── AIMentor/                    # PatterMentor + Generables/ + Fallbacks/ + CastVoicing/
+│   └── AppFeature/                  # RootView + 14 feature subfolders (Tabs/ Builder/ Inspector/ Panels/ Dashboard/ Mentor/ Onboarding/ Adventure/ Quiz/ Anthology/ Progress/ Profile/ Settings/ Welcome/ Parents/ Together/) + Resources/
 └── Tests/
-    ├── ForgeKitIntegrationTests/    # 5 sanity tests
-    └── ModelsTests/                 # 14 tests across the 5 value types
+    ├── ForgeKitIntegrationTests/    # ForgeKit availability sanity tests
+    ├── ModelsTests/                 # value-type Codable + analyzers
+    ├── ServicesTests/               # analyzer + service unit tests
+    ├── AIMentorTests/               # PatterFallbacks + CastVoice* tests
+    └── AppFeatureTests/              # machine + view-model tests
 ```
 
 ForgeKit pin: `from: "0.99.0"`. Per-target wiring documented in `@Docs/IMPLEMENTATION_HANDOFF.md` § 7.
@@ -111,17 +114,16 @@ Libraries/Sources/Models/
 
 Libraries/Sources/Services/
 ├── Services.swift                        # target marker
+├── Analytics/                            # RetentionMetricsService + DialogueQuestAnalytics (ForgeAnalytics wrapper)
+├── Analyzers/                            # BranchMeaningfulnessScorer + VoiceConsistencyAnalyzer + TagBalancer + TriangleDynamics
+├── Gamification/                         # DialogueQuestGamification + StreakService + AchievementService
+├── Pedagogy/                             # DDAEngine + ReturnLoopService + SessionTimerService + VariableReward
 ├── Persistence/                          # DialoguePersistenceService + helpers
-├── Analyzers/                            # BranchMeaningfulnessScorer + VoiceConsistencyAnalyzer + TagBalancer
-└── Gamification/                         # ForgeGamification config wrappers
+└── Privacy/                              # ParentalConsentService + CrisisResourcesProvider
 
 Libraries/Sources/SharedUI/
 ├── DialogueQuestTheme.swift              # palette + ForgeTheme conformance
-├── Builder/                              # tree-builder Canvas editor
-├── Inspector/                            # node + character editors
-├── Panels/                               # subtext + branch-meaningfulness panels
-├── Dashboard/                            # tag-balance + voice-consistency charts
-└── Mentor/                               # MentorBubbleView
+└── Mentor/                               # MentorBubbleView (only cross-target reusable surface; rich UI lives in AppFeature/)
 
 Libraries/Sources/AIMentor/
 ├── PatterMentor.swift                    # session host
@@ -132,17 +134,22 @@ Libraries/Sources/AIMentor/
 Libraries/Sources/AppFeature/
 ├── RootView.swift + AppNavigationMachine.swift
 ├── Tabs/                                 # WriteTabView + AdventureTabView + ProgressTabView + ProfileTabView
-├── Mentor/                               # PatterReactionService
+├── Builder/                              # DialogueTreeBuilderView + DialogueTreeMachine + WriteTabUITestSeed
+├── Inspector/                            # NodeInspectorView + CharacterAuthoringView
+├── Panels/                               # SubtextPanelView + BranchMeaningfulnessCheckView
+├── Dashboard/                            # TagBalanceDashboardView
+├── Mentor/                               # PatterReactionService + CastVoicingChip + CastVoicingService
 ├── Onboarding/                           # 6-step flow (parent-handoff step + 5 kid steps)
 ├── Adventure/                            # DialogueQuestHubContribution
 ├── Quiz/                                 # QuizMachine + QuizView + QuestionKit
 ├── Anthology/                            # AnthologyGalleryView
 ├── Progress/                             # ProgressDashboardView
 ├── Profile/                              # ProfileDashboardView + ParentProgressDashboardView + SessionCloserSheet
-├── Settings/                             # SettingsView + CrisisResourcesView
+├── Settings/                             # SettingsView + CrisisResourcesView (+ PrivacyPolicyView once shipped)
 ├── Welcome/                              # WelcomeBackBannerView
+├── Parents/                              # CompanionPackView
 ├── Together/                             # CollaborativeDialogueSession + CollaborativeDialogueView (C5)
-└── Resources/Questions/                  # kit_01..04.json (Bundle.module)
+└── Resources/                            # Questions/*.json + CompanionPack/*.pdf (Bundle.module)
 ```
 
 Subfolders auto-discover under SPM — no `Package.swift` edit needed when adding files.
