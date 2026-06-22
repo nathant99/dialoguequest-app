@@ -6,6 +6,8 @@ target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
 
+> **2026-06-22 late-session reaffirmation** — Xcode-managed-files safety rule reaffirmed mid-session (user-direct); `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` updated; stale FEATURE_PLAN checkboxes for `local CharacterDef definition flow` + the 4-bullet Onboarding & Child Safety surface have been ticked off against shipped reality.
+>
 > **2026-06-22 round addendum** — five PRs (#61 → #65 + this PR) landed in a single session. Net state delta:
 > - Companion Pack PDFs surfaced via `CompanionPackView` under Settings → "For parents & educators" (Asset-Consumer-Audit close).
 > - DN cast grew 5 → 10 profiles across 3 layers (LESSONS / WORLD / META) with kit-aware gating in `CastVoicingService`.

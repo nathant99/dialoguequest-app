@@ -23,7 +23,7 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Create `VersionedSchema` (V1) with `PersistentDialogueTree` — 2026-06-20 PR #25
 - [x] Create `SchemaMigrationPlan` (V1 only — start early) — 2026-06-20 PR #25
 - [x] Create value-type cache struct `AnthologyEntry` (consumed by Anthology gallery) — 2026-06-20 PR #25
-- [ ] Implement local `CharacterDef` definition flow (kid authors 2-3 characters with voice / register / quirks per `.claude/rules/distributed-narrative.md` voice register pattern)
+- [x] Implement local `CharacterDef` definition flow (kid authors 2-3 characters with voice / register / quirks per `.claude/rules/distributed-narrative.md` voice register pattern) — 2026-06-20 PR #26 `CharacterAuthoringView` ships the per-character name + voice register + 1-3 sample lines surface; Phase 2 (PR #65) extends with the optional third character + per-character role picker behind `dq.experiments.thirdCharacter`
 - [ ] Implement `CharacterForge` import hook (deferred Phase 2 — Phase 1 ships local-only)
 
 ### Dialogue Engine
@@ -174,14 +174,14 @@ COPPA compliance, parental consent, age gates, and first-time experience polish.
 
 ### Onboarding & Child Safety (Excellence Framework)
 
-- [ ] **First 60 Seconds experience** — mentor intro → meet 2 characters → first dialogue line → subtext reveal → curiosity hook
-- [ ] **Aha moment design** — first subtext confirmation revealing layered meaning
-- [ ] **Parent handoff flow** — 30-second parent setup → "Ready!" transition
+- [x] **First 60 Seconds experience** — mentor intro → meet 2 characters → first dialogue line → subtext reveal → curiosity hook (shipped via `OnboardingFlow` PR #28 + Phase 1 publish-loop polish; 6 pages including parent handoff first; `RootView` gates onboarding via `dq.hasCompletedOnboarding` `@AppStorage`)
+- [x] **Aha moment design** — first subtext confirmation revealing layered meaning (shipped via `SubtextPanelView` confirm button PR #26 + onboarding step 4 framing PR #28)
+- [x] **Parent handoff flow** — 30-second parent setup → "Ready!" transition (shipped via `OnboardingFlow` first-step `isParentHandoff: true` PR #43; `ForgeOnboardingFlow` renders the "Ask a parent or guardian to continue" prompt; `testOnboardingFirstStepIsParentHandoff()` UI test verifies)
 - [ ] **Age gate** — Apple Declared Age Range API on iOS 26+ (Swift-side scaffold shipped 2026-06-22; entitlement + Info.plist GUI work blocks the actual API request flow per `@Docs/HANDOFF_TO_USER_DECLARED_AGE_RANGE_API.md`)
 - [x] **Parental consent service** (Phase 1 scaffold) — 2026-06-22: shipped `Libraries/Sources/Services/Privacy/ParentalConsentService.swift` (`@MainActor public final class`; `dq.parentalConsentGrantedAt` UserDefaults key; 12-month expiry per FTC 2026; injectable clock for tests). `SettingsView` surfaces the consent status row + a light parental-gate sheet (multiplication challenge) to record consent. Full Family Controls / Declared Age Range API integration stays handoff-blocked (`HANDOFF_TO_USER_DECLARED_AGE_RANGE_API.md`). 5 tests cover grant / revoke / expiry / re-consent countdown.
 - [x] **Privacy policy** — 2026-06-22: `Libraries/Sources/AppFeature/Settings/PrivacyPolicyView.swift` ships a plain-language COPPA-2026 summary (9 sections: what we do / what stays on device / what never leaves / parental consent / AI mentor / pass-and-play / crisis resources / App Store age rating / contact). Linked from Settings → Privacy. No outbound URL; in-app only.
 - [x] **Parental gates** — 2026-06-22: extracted the existing inline math challenge into `Libraries/Sources/Services/Privacy/ParentalGateChallenge.swift` (Sendable / nonisolated / public). 6×6...9×9 multiplication, `accepts(_:)` accepts canonical answer + tolerates whitespace, rejects empty / non-numeric. Reusable across future external-link surfaces (donate / studio site / privacy off-app page). SettingsView's ParentalConsentGateView now uses the shared challenge. 5 new tests in `ParentalGateChallengeTests` cover math / prompt shape / accepts rule / range / generator-injectable API.
-- [ ] **Progressive disclosure** — Session 1: 3-node tree only → Sessions 2-3: 5-node + tag balance → Sessions 4+: full features
+- [x] **Progressive disclosure** — Session 1: 3-node tree only → Sessions 2-3: 5-node + tag balance → Sessions 4+: full features (shipped via `DialogueTree.NodeCountConstraint.SessionTier` + `DialogueTreeMachine.sessionTier` + `WriteTabView.@AppStorage("dq.publishedTreeCount")` PR #44, 2026-06-21)
 
 ### Engagement Foundation (Excellence Framework)
 

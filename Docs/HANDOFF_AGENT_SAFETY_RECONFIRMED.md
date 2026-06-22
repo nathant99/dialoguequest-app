@@ -2,7 +2,7 @@
 
 Direction: **session note → future Claude Code sessions**. Single-page reaffirmation of the Xcode-managed-files boundary, the staging + committing carve-out, and the canonical SPM-side work surfaces. Future sessions should read this once before touching the repo.
 
-> **Last reaffirmed mid-session 2026-06-22** by the multi-PR ForgeKit-integration + Phase-2-polish round. Both the boundary AND the staging-carve-out remain canonical. If a future session adds a new privileged surface (e.g., a new entitlement, a new Info.plist key, an asset catalog change), file a fresh `HANDOFF_TO_USER_<TOPIC>.md` — DO NOT author the privileged file directly.
+> **Last reaffirmed 2026-06-22 (late session)** by the user-direct multi-PR ForgeKit-integration round. Both the boundary AND the staging-carve-out remain canonical. The rule survives every round — author no privileged file from disk; file `HANDOFF_TO_USER_<TOPIC>.md` instead. Staging + committing the resulting GUI diff IS the agent's job. If a future session adds a new privileged surface (a new entitlement, a new Info.plist key, an asset catalog change), file the fresh handoff — DO NOT author the privileged file directly. The full glob table lives in `@CLAUDE.md` § Xcode Agent Safety + `@.claude/rules/xcode-agent-safety.md`; this doc is the single-page reaffirmation.
 
 ## What the agent will NEVER do (authoring)
 
