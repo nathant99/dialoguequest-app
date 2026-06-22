@@ -35,9 +35,15 @@ struct ProgressDashboardView: View {
 
                 HStack(spacing: 12) {
                     ForgeStreakBadge(streak: currentStreak, isActive: currentStreak > 0)
+                        .accessibilityLabel(
+                            currentStreak == 0
+                            ? "Streak: not started."
+                            : "Streak: \(currentStreak) day\(currentStreak == 1 ? "" : "s")."
+                        )
                     Text("\(availableFreezes) streak freeze\(availableFreezes == 1 ? "" : "s")")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .accessibilityLabel("\(availableFreezes) streak freeze\(availableFreezes == 1 ? "" : "s") remaining.")
                     Spacer()
                 }
 
@@ -85,6 +91,7 @@ struct ProgressDashboardView: View {
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .opacity(earned ? 1 : 0.55)
         .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(earned ? "Earned" : "Locked") badge: \(def.title). Worth \(def.xpValue) XP.")
         .accessibilityHint(earned ? Text("Earned. \(def.description)") : Text("Locked. \(def.description)"))
     }
 }

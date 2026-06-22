@@ -27,10 +27,12 @@ struct NodeInspectorView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .accessibilityHint("Pick which character is speaking this line.")
             }
             Section("Line") {
                 TextField("What they say (or do)", text: surfaceTextBinding(for: node), axis: .vertical)
                     .lineLimit(2...6)
+                    .accessibilityHint("Type the line of dialogue. Surface text only — subtext lands in the subtext panel.")
             }
             Section("Attribution") {
                 Picker("Tag style", selection: classificationBinding(for: node)) {
@@ -39,17 +41,21 @@ struct NodeInspectorView: View {
                     Text("no tag").tag(DialogueTag.Classification.unattributed)
                 }
                 .pickerStyle(.segmented)
+                .accessibilityHint("Pick how this line is attributed. \"said\" is the most common; \"action beat\" lets you describe what the speaker is doing; \"no tag\" leaves the line standing alone.")
 
                 switch node.tag {
                 case .said:
                     TextField("Verb (said, murmured, asked…)", text: saidVerbBinding(for: node))
+                        .accessibilityHint("The verb that follows the speaker's name — said, murmured, asked, whispered.")
                 case .action:
                     TextField("Action beat (e.g., 'looked away')", text: actionBeatBinding(for: node), axis: .vertical)
                         .lineLimit(1...3)
+                        .accessibilityHint("A description of what the speaker is doing as they say this line. Action beats replace \"said\" tags.")
                 case .unattributed:
                     Text("This line stands alone — no \u{201C}said\u{201D} or action beat.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .accessibilityLabel("This line stands alone — no said or action beat tag.")
                 }
             }
             if let subtext = node.inferredSubtext, !subtext.isEmpty {
@@ -57,6 +63,7 @@ struct NodeInspectorView: View {
                     Text(subtext)
                         .font(.callout)
                         .foregroundStyle(DialoguePalette.inkBlue)
+                        .accessibilityLabel("Confirmed subtext: \(subtext)")
                     Text("Confirmed via the subtext panel.")
                         .font(.caption)
                         .foregroundStyle(.secondary)

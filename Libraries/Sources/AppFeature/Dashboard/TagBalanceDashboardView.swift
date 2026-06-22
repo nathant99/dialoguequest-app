@@ -47,6 +47,7 @@ struct TagBalanceDashboardView: View {
                                         .foregroundStyle(.secondary)
                                 }
                             }
+                            .accessibilityLabel(Text("\(character.name): \(entry.count) \(entry.label) line\(entry.count == 1 ? "" : "s")"))
                         }
                     }
                 }

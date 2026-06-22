@@ -39,11 +39,13 @@ struct CharacterAuthoringView: View {
         Form {
             Section("Conversation") {
                 TextField("Title", text: $title)
+                    .accessibilityHint("A title for this conversation. Shows up in the anthology gallery once you publish.")
                 Picker("Mood", selection: $moodSelection) {
                     ForEach(DialogueMood.allCases) { mood in
                         Text(mood.displayName).tag(mood)
                     }
                 }
+                .accessibilityHint("The emotional weather of the scene. Mood influences how the AI mentor reads subtext and how the streak holds on hard scenes.")
             }
             characterSection(
                 titleKey: "First character",
@@ -105,8 +107,10 @@ struct CharacterAuthoringView: View {
     ) -> some View {
         Section(titleKey) {
             TextField("Name", text: name)
+                .accessibilityHint("The character's name. Appears next to every line they say.")
             TextField("Voice register (e.g., clipped, deflects, ends with 'I guess')", text: voice, axis: .vertical)
                 .lineLimit(2...4)
+                .accessibilityHint("A one-paragraph description of how this character talks. Used by the AI mentor to check voice consistency across lines.")
             if thirdCharacterEnabled {
                 Picker("Role", selection: role) {
                     ForEach(DialogueCharacterRole.allCases, id: \.self) { roleCase in
@@ -116,8 +120,11 @@ struct CharacterAuthoringView: View {
                 .accessibilityHint(Text(role.wrappedValue.coachingHint))
             }
             TextField("Sample line 1", text: s1)
+                .accessibilityHint("A real line this character might say. The mentor uses this to build the voice baseline.")
             TextField("Sample line 2 (optional)", text: s2)
+                .accessibilityHint("A second sample line, optional. More samples means a stronger voice baseline.")
             TextField("Sample line 3 (optional)", text: s3)
+                .accessibilityHint("A third sample line, optional. More samples means a stronger voice baseline.")
         }
     }
 

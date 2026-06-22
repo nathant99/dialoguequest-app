@@ -58,6 +58,8 @@ struct ProfileDashboardView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(displayName), Storyteller in the making.")
     }
 
     private var avatarTeaser: some View {
