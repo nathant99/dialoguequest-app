@@ -80,6 +80,11 @@ public final class CastVoicingService {
         kitNumber: Int = 1
     ) async -> Voicing? {
         guard flagAccessor() else { return nil }
+        // Pattern B preservation: WORLD + META utterances are gated by
+        // the layer's `minimumKitNumber`. Calling the surface earlier
+        // than that returns `nil` so Patter (LESSONS-layer) stays the
+        // protagonist during early-arc coaching.
+        guard kitNumber >= surface.layer.minimumKitNumber else { return nil }
         let dialog: CastDialog
         do {
             dialog = try await loadOrBuildDialog()
