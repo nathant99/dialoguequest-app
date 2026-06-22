@@ -6,6 +6,8 @@ Branching-dialogue craft workshop for tweens. Write a conversation, not a paragr
 
 ## Xcode Agent Safety (load-bearing)
 
+> **Single-page reaffirmation** of this section + the canonical SPM subfolder map: `@Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` (2026-06-22). Read once before touching the repo.
+
 This agent operates inside Xcode via the Coding Assistant integration. **Do NOT author or edit Xcode-managed files**. Editing them risks External-Changes dialogs or a workspace reload that **terminates the agent session mid-task**.
 
 **Most-bitten subset** (call out explicitly — these are the ones repeatedly forgotten):

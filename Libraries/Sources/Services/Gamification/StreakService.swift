@@ -1,5 +1,7 @@
 import Foundation
 import ForgeGamification
+import ForgeModels
+import Models
 
 /// DialogueQuest's streak coordinator. Wraps ForgeGamification's
 /// `StreakManager` actor + persists the kid's last-session date,
@@ -78,6 +80,52 @@ public final class StreakService {
         let result = await manager.recordSession()
         persistAfter(result: result)
         return result
+    }
+
+    /// Mood-aware overload. Maps the published tree's `DialogueMood` to a
+    /// `ForgeModels.EmotionSnapshot` (`source: .behavioral` — inferred
+    /// from authoring content, not biometrics) and routes through
+    /// ForgeKit 0.86's `StreakManager.recordSession(emotionSnapshot:)`
+    /// path. When the mood reads as a "hard scene" (`.quietConflict` /
+    /// `.awkwardSilence`) the distress score crosses the 0.65 default
+    /// threshold and the streak is held instead of advanced — the kid
+    /// stays in flow without losing yesterday's progress on a difficult
+    /// piece.
+    @discardableResult
+    public func recordPublishedTree(mood: DialogueMood?) async -> StreakResult {
+        let manager = ensureManager()
+        let snapshot = Self.emotionSnapshot(for: mood)
+        let result = await manager.recordSession(
+            date: .now,
+            emotionSnapshot: snapshot
+        )
+        persistAfter(result: result)
+        return result
+    }
+
+    /// Public mapping so consumers (tests + future hosts) can read the
+    /// distress score for a mood without needing to run the manager.
+    public static func emotionSnapshot(for mood: DialogueMood?) -> EmotionSnapshot? {
+        guard let mood else { return nil }
+        let distress: Double
+        switch mood {
+        case .quietConflict:    distress = 0.75
+        case .awkwardSilence:   distress = 0.70
+        case .openingCuriosity: distress = 0.15
+        case .playfulRivalry:   distress = 0.20
+        case .warmReunion:      distress = 0.10
+        }
+        // Arousal stays mid-band — the writing-craft surface isn't a
+        // physiological signal. `.derivedFromTask` tells the ForgeKit
+        // pipeline this is inferred from the kid's published mood tag,
+        // not biometric (never camera / voice / heart rate).
+        return EmotionSnapshot(
+            distressScore: distress,
+            arousalScore: 0.50,
+            valenceScore: nil,
+            capturedAt: .now,
+            source: .derivedFromTask
+        )
     }
 
     /// Read the persisted streak count without advancing it.
