@@ -43,7 +43,7 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Implement static fallbacks for every `@Generable` per `.claude/rules/foundationmodels.md` — 2026-06-19 PR #23 (`PatterFallbacks`)
 - [x] Implement subtext-confirmation UX (kid confirms or rejects inferred subtext → updates `inferredSubtext` on node) — 2026-06-20 PR #26 (Socratic reflection follow-up unifies with `BranchMeaningfulnessCheckView`)
 - [x] Implement curriculum-guarded fallback when FM session unavailable — 2026-06-19 PR #23 `PatterFallbacks` covers all 3 paths; `PatterMentor.isAvailable` gates the live-LLM call
-- [ ] Wire detector to `WritingEvaluator` shared extension (reuse CharacterForge `VoiceCheck` API)
+- [x] Wire detector to `WritingEvaluator` shared extension (reuse CharacterForge `VoiceCheck` API) — 2026-06-22: `Libraries/Sources/Models/ValueTypes/WritingEvaluator.swift` ships the canonical cross-cluster shape (`WritingEvaluator.VoiceCheck` + `.VoiceSummary` + `.VoiceBand`). Two producers wired: `VoiceConsistencyAnalyzer.voiceChecks(for:)` + `.summary(for:)` (deterministic Jaccard baseline) and `DialogueLineAnalysis.toVoiceCheck(lineID:speakerID:)` (AI mentor output via `Libraries/Sources/AIMentor/Generables/WritingEvaluatorBridge.swift`). `WriteTabView.computeOutcomeSnapshot` refactored to read `summary.treeAverage` instead of folding per-character means by hand. 8 new tests across `WritingEvaluatorBridgeTests` (Services) + `DialogueLineAnalysisBridgeTests` (AIMentor); 11/11 green when run alongside existing analyzer tests.
 
 ### SwiftUI Views
 

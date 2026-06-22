@@ -58,6 +58,54 @@ public nonisolated struct VoiceConsistencyAnalyzer: Sendable {
         }
     }
 
+    // MARK: - WritingEvaluator bridge
+
+    /// Per-line `WritingEvaluator.VoiceCheck` projections — one per
+    /// speaking node in the tree. Source-agnostic shape per
+    /// `Models/ValueTypes/WritingEvaluator.swift`; consumers should
+    /// prefer this over the raw `CharacterReport` shape when they
+    /// don't need character-level aggregation.
+    public func voiceChecks(for tree: DialogueTree) -> [WritingEvaluator.VoiceCheck] {
+        tree.characters.flatMap { ref -> [WritingEvaluator.VoiceCheck] in
+            let lines = tree.nodes.filter { $0.speakerID == ref.id }
+            let baselineTokens = Self.tokenSet(for: ref.sampleLines.joined(separator: " "))
+            return lines.map { node in
+                let lineTokens = Self.tokenSet(for: node.surfaceText)
+                let score = Self.jaccard(baselineTokens, lineTokens)
+                return WritingEvaluator.VoiceCheck(
+                    id: node.id,
+                    speakerID: ref.id,
+                    surfaceText: node.surfaceText,
+                    voiceMatchScore: score
+                )
+            }
+        }
+    }
+
+    /// Tree-wide summary suitable for the dashboard. Aggregates the
+    /// per-character means and surfaces drifting line IDs.
+    public func summary(for tree: DialogueTree) -> WritingEvaluator.VoiceSummary {
+        let perChar = report(for: tree)
+        let speaking = perChar.filter { $0.lineCount > 0 }
+        let perCharacterAverage = Dictionary(
+            uniqueKeysWithValues: speaking.map { ($0.id, $0.averageVoiceMatchScore) }
+        )
+        let treeAverage: Double?
+        if speaking.isEmpty {
+            treeAverage = nil
+        } else {
+            treeAverage = speaking.map(\.averageVoiceMatchScore).reduce(0, +) / Double(speaking.count)
+        }
+        let drifting = voiceChecks(for: tree)
+            .filter { $0.band == .drifting }
+            .map(\.id)
+        return WritingEvaluator.VoiceSummary(
+            perCharacterAverage: perCharacterAverage,
+            treeAverage: treeAverage,
+            driftingLineIDs: drifting
+        )
+    }
+
     // MARK: - Token helpers
 
     /// Lowercase, strip non-alphanumerics, split on whitespace, drop
