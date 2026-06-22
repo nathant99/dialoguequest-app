@@ -8,6 +8,13 @@ Branching-dialogue craft workshop for tweens. Write a conversation, not a paragr
 
 This agent operates inside Xcode via the Coding Assistant integration. **Do NOT author or edit Xcode-managed files**. Editing them risks External-Changes dialogs or a workspace reload that **terminates the agent session mid-task**.
 
+**Most-bitten subset** (call out explicitly — these are the ones repeatedly forgotten):
+- **The Xcode workspace file** (`DialogueQuest.xcworkspace/**` — contents.xcworkspacedata + xcshareddata + xcuserdata)
+- **Scheme files** (`*.xcscheme` — including the shared scheme at `DialogueQuest.xcodeproj/xcshareddata/xcschemes/DialogueQuest.xcscheme`)
+- **The test-plan file** (`DialogueQuest.xctestplan` at repo root — Xcode 26 auto-generates this; track it in git but never hand-edit its JSON)
+
+For any change to these: **file a `Docs/HANDOFF_TO_USER_<TOPIC>.md` with explicit Xcode GUI steps**. The user does the GUI work. The agent's role is to (a) author the handoff and (b) stage + commit the resulting GUI-authored diff afterward.
+
 **Forbidden file globs** (write-only — git stage/commit is fine):
 
 | Glob | Owned by |
