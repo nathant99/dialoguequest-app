@@ -41,6 +41,7 @@ let package = Package(
                 .product(name: "ForgeAI", package: "forgekit"),
                 .product(name: "ForgeAnalytics", package: "forgekit"),
                 .product(name: "ForgeGamification", package: "forgekit"),
+                .product(name: "ForgePedagogy", package: "forgekit"),
                 .product(name: "ForgeSensory", package: "forgekit"),
             ],
             swiftSettings: defaultSwiftSettings
@@ -109,6 +110,7 @@ let package = Package(
                 "Models",
                 "Services",
                 .product(name: "ForgeAnalytics", package: "forgekit"),
+                .product(name: "ForgePedagogy", package: "forgekit"),
                 .product(name: "ForgeSensory", package: "forgekit"),
             ],
             swiftSettings: defaultSwiftSettings

@@ -158,6 +158,18 @@ struct WriteTabView: View {
                 // publish-tier haptic lands first so the kid feels the
                 // ship beat before the badge stack.
                 DialogueSensoryService.shared.treePublished()
+                // Scaffolding tier — a publish counts as a success when
+                // the kid reflected on at least one branch point;
+                // counts as a failure otherwise. ForgeKit's
+                // `ScaffoldingEngine` auto-fades hints after 3 successes
+                // + restores after 2 failures. Advisory for Phase 1 —
+                // future Patter surfaces consume `currentTier` to
+                // decide hint wording.
+                if machine.reflectedBranchPointIDs.isEmpty {
+                    DialogueScaffoldingService.shared.recordPublishedWithoutReflection()
+                } else {
+                    DialogueScaffoldingService.shared.recordPublishedWithReflection()
+                }
             }
             evaluateAchievements()
         }
