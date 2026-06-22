@@ -67,6 +67,7 @@ struct SettingsView: View {
                 Text("Plain-language summary. Nothing the kid writes leaves this device.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
+                ageBandRow
             }
             Section("About") {
                 HStack {
@@ -96,6 +97,30 @@ struct SettingsView: View {
             )
             .presentationDetents([.medium])
         }
+    }
+
+    @ViewBuilder
+    private var ageBandRow: some View {
+        // Read-only surface for the Declared Age Range API scaffold.
+        // Stays at "not wired" until the user completes the Xcode GUI
+        // entitlement + Info.plist key handoff. The text + icon are
+        // safe to render unconditionally — DeclaredAgeRangeGate is a
+        // pure-Swift status probe that NEVER invokes the FamilyControls
+        // API until a future PR adds the opt-in request flow.
+        let gate = DeclaredAgeRangeGate.shared
+        VStack(alignment: .leading, spacing: 4) {
+            Label(
+                "Family Age Band",
+                systemImage: DeclaredAgeRangeGate.isWired ? "person.2.fill" : "person.2.slash"
+            )
+            .foregroundStyle(DeclaredAgeRangeGate.isWired ? DialoguePalette.rust : .secondary)
+            Text(gate.statusDescription)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Family Age Band. \(gate.statusDescription)")
     }
 
     @ViewBuilder
