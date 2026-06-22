@@ -90,6 +90,10 @@ struct WriteTabView: View {
             // for the next session's tier — current session keeps its cap.
             if newStage == .published {
                 publishedTreeCount += 1
+                // Advance the streak via ForgeGamification.StreakManager
+                // (UserDefaults-backed; ProgressDashboardView picks the
+                // new values up on next render via @AppStorage).
+                Task { await StreakService.shared.recordPublishedTree() }
             }
         }
         .sheet(item: branchSheetBinding) { branchID in

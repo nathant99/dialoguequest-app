@@ -75,7 +75,8 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 ### Gamification
 
 - [x] Integrate ForgeGamification `XPEngine` for leveling — 2026-06-20 PR #27 (`DialogueQuestGamification.makeConfig()` + `ProgressDashboardView`)
-- [x] Configure `StreakManager` deps + freeze count via `GamificationConfig` (per-session recordCompletion wiring lands in Phase 2 telemetry round) — 2026-06-20 PR #27
+- [x] Configure `StreakManager` deps + freeze count via `GamificationConfig` — 2026-06-20 PR #27
+- [x] Wire per-session `StreakManager.recordSession()` advance — 2026-06-22: shipped `Libraries/Sources/Services/Gamification/StreakService.swift` (`@MainActor public final class` wrapping the ForgeKit actor; UserDefaults-persists `dq.currentStreak` / `dq.streakFreezes` / `dq.lastSessionDate`); `WriteTabView.onChange(machine.stage)` fires `StreakService.shared.recordPublishedTree()` on transition to `.published`. `ProgressDashboardView` picks up the new values via its existing `@AppStorage` keys with no view changes. 4 tests in `StreakServiceTests` cover first-record / persistence / freeze-default / lastSessionDate. Phase 2 telemetry round adds the warm broken-streak nudge + ForgeKit 0.86 `.heldUnderDistress` handling.
 - [x] Register 4 Phase-1 achievements (first tree / first subtext / tag balance / branch reflected) — 2026-06-20 PR #27
 - [x] Wire question kits 01-04 via `Bundle.module` (voice / subtext / tag balance / branching) — 2026-06-20 PR #27 (`QuestionKitLoader` + `.process("Resources/Questions")` + 4 JSON kits)
 - [x] Codify XP awards constants for: published tree (75), subtext confirmation (15), branch reflection (10) — 2026-06-20 PR #27 (`DialogueQuestGamification.xpFor*`); ProgressTabView consumes via `@AppStorage`
