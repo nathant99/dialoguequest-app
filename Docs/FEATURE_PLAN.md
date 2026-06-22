@@ -14,7 +14,7 @@ Core 2-character dialogue-tree builder, branch-meaningfulness scoring, voice-con
 - [x] Create stub source files for all targets — 2026-06-19 PR #21
 - [x] Swap app shell `ContentView` → `AppFeature.RootView()` + wire `ModelContainer(for: PersistentDialogueTree.self, migrationPlan: DialogueQuestMigrationPlan.self)` — 2026-06-20 PR #28 (via MCP `XcodeUpdate`; `ContentView.swift` deleted)
 - [x] User completed `@Docs/HANDOFF_TO_USER_XCODE_WIRING.md` Steps 1-4 — 2026-06-21 PR #29 (agent staged + committed the resulting `project.pbxproj` + `DialogueQuest.xctestplan` GUI diffs)
-- [ ] Verify build succeeds with zero warnings (after Xcode wiring)
+- [x] Verify build succeeds with zero warnings (after Xcode wiring) — 2026-06-22 `BuildProject` clean (1.16s, 0 errors); baseline confirmed on `main` at SHA `2552c7b`
 - [x] `.xcworkspace` created by Xcode + committed — 2026-06-19 PR #20
 
 ### Data Layer
