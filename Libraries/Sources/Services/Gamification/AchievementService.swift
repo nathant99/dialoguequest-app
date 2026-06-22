@@ -37,10 +37,21 @@ public final class AchievementService {
 
     public init(
         defaults: UserDefaults = .standard,
-        definitions: [AchievementDefinition] = DialogueQuestGamification.phase1Achievements
+        definitions: [AchievementDefinition] = DialogueQuestGamification.allAchievements
     ) {
         self.defaults = defaults
         self.definitions = definitions
+    }
+
+    /// Phase 2 triangle classification surfaced via `Criteria`. Mirrors the
+    /// 4-case shape of `TriangleDynamics.Classification` so the service
+    /// stays decoupled from the `Services` analyzer module; callers pass
+    /// the raw classification value when known.
+    public enum TrianglePattern: String, Sendable, Equatable {
+        case alliance
+        case jealousy
+        case arbitration
+        case none
     }
 
     /// Criteria snapshot fed into `evaluate(criteria:)`. Pure value type
@@ -52,19 +63,31 @@ public final class AchievementService {
         public let reflectedBranchPointCount: Int
         public let dominantTagAbsent: Bool
         public let totalNodes: Int
+        // Phase 2 — present only for triangle-path trees. `characterCount`
+        // is the cheap gate; the analyzer-driven signals (`trianglePattern`
+        // and `hasThreeVoiceSpread`) provide the per-shape badges.
+        public let characterCount: Int
+        public let trianglePattern: TrianglePattern
+        public let hasThreeVoiceSpread: Bool
 
         public init(
             publishedTreeCount: Int,
             confirmedSubtextLineCount: Int,
             reflectedBranchPointCount: Int,
             dominantTagAbsent: Bool,
-            totalNodes: Int
+            totalNodes: Int,
+            characterCount: Int = 2,
+            trianglePattern: TrianglePattern = .none,
+            hasThreeVoiceSpread: Bool = false
         ) {
             self.publishedTreeCount = publishedTreeCount
             self.confirmedSubtextLineCount = confirmedSubtextLineCount
             self.reflectedBranchPointCount = reflectedBranchPointCount
             self.dominantTagAbsent = dominantTagAbsent
             self.totalNodes = totalNodes
+            self.characterCount = characterCount
+            self.trianglePattern = trianglePattern
+            self.hasThreeVoiceSpread = hasThreeVoiceSpread
         }
     }
 
@@ -119,13 +142,14 @@ public final class AchievementService {
         defaults.set(serialized, forKey: Self.defaultsKeyEarnedIDs)
     }
 
-    /// The 4 Phase 1 criteria. Keep in lockstep with
-    /// `DialogueQuestGamification.phase1Achievements` IDs.
+    /// The 4 Phase 1 + 4 Phase 2 criteria. Keep in lockstep with
+    /// `DialogueQuestGamification.{phase1Achievements, phase2Achievements}` IDs.
     static func satisfiesCriteria(
         _ id: String,
         criteria: Criteria
     ) -> Bool {
         switch id {
+        // Phase 1
         case "first_tree_authored":
             return criteria.publishedTreeCount >= 1
         case "first_subtext_confirmed":
@@ -137,6 +161,27 @@ public final class AchievementService {
             return criteria.totalNodes >= 5 && criteria.dominantTagAbsent
         case "branch_reflected":
             return criteria.reflectedBranchPointCount >= 1
+
+        // Phase 2 — triangle path. All four require characterCount ≥ 3
+        // AND the tree meeting Phase-1 minimum node count so the analyzer
+        // signal is reliable.
+        case "triangle_published":
+            return criteria.characterCount >= 3 &&
+                   criteria.publishedTreeCount >= 1 &&
+                   criteria.totalNodes >= 5
+        case "triangle_three_voice_spread":
+            return criteria.characterCount >= 3 &&
+                   criteria.totalNodes >= 5 &&
+                   criteria.hasThreeVoiceSpread
+        case "triangle_alliance_pattern":
+            return criteria.characterCount >= 3 &&
+                   criteria.totalNodes >= 5 &&
+                   criteria.trianglePattern == .alliance
+        case "triangle_arbitration_pattern":
+            return criteria.characterCount >= 3 &&
+                   criteria.totalNodes >= 5 &&
+                   criteria.trianglePattern == .arbitration
+
         default:
             return false
         }

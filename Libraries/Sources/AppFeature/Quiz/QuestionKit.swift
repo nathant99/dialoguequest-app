@@ -94,12 +94,31 @@ public enum QuestionKitLoader {
         "kit_04_branching",
     ]
 
+    /// Phase 2 kits — triangle authoring + voice differentiation. Kit 05
+    /// ships now; kits 06-09 land in follow-on PRs once kit 05's question
+    /// pool surfaces real triangle-craft gaps.
+    public nonisolated static let phase2Kits: [String] = [
+        "kit_05_triangle_voices",
+    ]
+
+    /// Every kit identifier in canonical order — Phase 1 then Phase 2.
+    public nonisolated static let allKits: [String] = phase1Kits + phase2Kits
+
     /// Convenience: try-loading every Phase 1 kit, returning a tuple of
     /// kits + per-kit failures. Useful at app startup for telemetry.
     public nonisolated static func loadAll() -> (kits: [QuestionKit], failures: [(String, any Error)]) {
+        loadAll(ids: phase1Kits)
+    }
+
+    /// Try-loading every kit registered in `allKits` (Phase 1 + Phase 2).
+    public nonisolated static func loadAllPhases() -> (kits: [QuestionKit], failures: [(String, any Error)]) {
+        loadAll(ids: allKits)
+    }
+
+    private nonisolated static func loadAll(ids: [String]) -> (kits: [QuestionKit], failures: [(String, any Error)]) {
         var loaded: [QuestionKit] = []
         var failures: [(String, any Error)] = []
-        for id in phase1Kits {
+        for id in ids {
             do {
                 loaded.append(try load(id: id))
             } catch {

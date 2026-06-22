@@ -1,0 +1,67 @@
+{
+  "id": "kit_05_triangle_voices",
+  "title": "Three voices, three shapes",
+  "theme": "voice_consistency",
+  "questions": [
+    {
+      "id": "kit_05_q_01",
+      "prompt": "Iris, Cal, and Theo are talking. Iris and Cal trade quick lines. Theo speaks once. What pattern is forming?",
+      "options": [
+        { "id": "a", "label": "Alliance — two voices close on the third." },
+        { "id": "b", "label": "Balanced — everyone gets equal air time." },
+        { "id": "c", "label": "Solo monologue — one character dominates." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "An alliance shape isn't wrong. Lean in or break out — your call."
+    },
+    {
+      "id": "kit_05_q_02",
+      "prompt": "When one of the three characters is being talked AROUND rather than TO, what is the dialogue doing?",
+      "options": [
+        { "id": "a", "label": "Showing exclusion. The quiet is its own line of dialogue." },
+        { "id": "b", "label": "Wasting space — give every speaker equal lines." },
+        { "id": "c", "label": "Breaking the rules of branching dialogue." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "What does the quiet character notice while the other two talk?"
+    },
+    {
+      "id": "kit_05_q_03",
+      "prompt": "Theo is the arbiter — they step between Iris and Cal when the argument crosses a line. Which line sounds most arbiter-like?",
+      "options": [
+        { "id": "a", "label": "\"You're being mean, Cal!\"" },
+        { "id": "b", "label": "\"Hey — let's stop for a beat. What just happened here?\"" },
+        { "id": "c", "label": "\"I want soup for lunch.\"" }
+      ],
+      "correctOptionID": "b",
+      "freeTextRubric": null,
+      "mentorPostScript": "The arbiter names what just happened before suggesting what's next."
+    },
+    {
+      "id": "kit_05_q_04",
+      "prompt": "Across three characters, what makes each voice recognizably distinct from the others?",
+      "options": [
+        { "id": "a", "label": "Signature words + rhythm + register the others don't use." },
+        { "id": "b", "label": "Talking the most." },
+        { "id": "c", "label": "Always ending sentences with an exclamation point." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Each character should have a fingerprint — three lines you'd recognize even without a tag."
+    },
+    {
+      "id": "kit_05_q_05",
+      "prompt": "Triangle dialogue is hard because:",
+      "options": [
+        { "id": "a", "label": "You have to keep three voices distinct AND keep them in conversation with each other." },
+        { "id": "b", "label": "Three is just too many for any story." },
+        { "id": "c", "label": "Only the protagonist matters." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Three voices, three shapes — alliance, jealousy, arbitration. Each is its own draft of the same scene."
+    }
+  ]
+}

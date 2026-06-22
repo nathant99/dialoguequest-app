@@ -34,7 +34,7 @@ struct QuestionKitTests {
 
     @Test("Multiple-choice questions reference a real option ID")
     func correctOptionIDIsValid() throws {
-        for kitID in QuestionKitLoader.phase1Kits {
+        for kitID in QuestionKitLoader.allKits {
             let kit = try QuestionKitLoader.load(id: kitID)
             for question in kit.questions {
                 guard let correctID = question.correctOptionID else { continue }
@@ -43,5 +43,35 @@ struct QuestionKitTests {
                         "\(question.id) correctOptionID '\(correctID)' not in option list")
             }
         }
+    }
+
+    // MARK: - Phase 2
+
+    @Test("Phase 2 inventory ships kit 05 with the voice-consistency theme")
+    func phase2KitLoadsAndHasExpectedTheme() throws {
+        #expect(QuestionKitLoader.phase2Kits == ["kit_05_triangle_voices"])
+        let kit = try QuestionKitLoader.load(id: "kit_05_triangle_voices")
+        #expect(kit.theme == .voiceConsistency)
+        #expect(kit.questions.count >= 5)
+    }
+
+    @Test("loadAllPhases includes Phase 1 + Phase 2 kits")
+    func loadAllPhasesIncludesBothPhases() {
+        let result = QuestionKitLoader.loadAllPhases()
+        #expect(result.failures.isEmpty, "Failures: \(result.failures.map { $0.0 })")
+        #expect(result.kits.count == QuestionKitLoader.allKits.count)
+    }
+
+    @Test("Kit 05 question prompts reference triangle vocabulary")
+    func kit05ReferencesTriangleVocabulary() throws {
+        let kit = try QuestionKitLoader.load(id: "kit_05_triangle_voices")
+        let body = kit.questions.map(\.prompt).joined(separator: " ").lowercased()
+        // Kit content should call out the triangle-specific concepts so
+        // the kid recognizes the connection to what they're authoring.
+        #expect(body.contains("three") || body.contains("triangle"))
+        let postScripts = kit.questions.map(\.mentorPostScript).joined(separator: " ").lowercased()
+        #expect(postScripts.contains("alliance") ||
+                postScripts.contains("arbiter") ||
+                postScripts.contains("voice"))
     }
 }
