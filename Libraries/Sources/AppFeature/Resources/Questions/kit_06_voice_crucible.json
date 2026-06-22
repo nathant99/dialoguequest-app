@@ -1,0 +1,67 @@
+{
+  "id": "kit_06_voice_crucible",
+  "title": "Voice crucible",
+  "theme": "voice_consistency",
+  "questions": [
+    {
+      "id": "kit_06_q_01",
+      "prompt": "Cal is brash, blunt, and uses short sentences. Iris is careful, picks her words slowly, and uses long sentences with side-thoughts. Which line sounds like Iris?",
+      "options": [
+        { "id": "a", "label": "\"Fine. Don't.\"" },
+        { "id": "b", "label": "\"I think — and you can disagree with this — that maybe we both said too much.\"" },
+        { "id": "c", "label": "\"WHATEVER.\"" }
+      ],
+      "correctOptionID": "b",
+      "freeTextRubric": null,
+      "mentorPostScript": "Iris uses commas, hedges, and self-correction. That's her fingerprint."
+    },
+    {
+      "id": "kit_06_q_02",
+      "prompt": "A character's voice register tells you their stance + status + age + mood. Which of these tells you the MOST about a character?",
+      "options": [
+        { "id": "a", "label": "How many exclamation points they use." },
+        { "id": "b", "label": "What they don't say — the words they avoid + the topics they sidestep." },
+        { "id": "c", "label": "Whether their name starts with a vowel." }
+      ],
+      "correctOptionID": "b",
+      "freeTextRubric": null,
+      "mentorPostScript": "Voice is shaped by silence as much as speech."
+    },
+    {
+      "id": "kit_06_q_03",
+      "prompt": "You write a line for the mentor character. The mentor is supposed to coach, not lecture. Which line stays in character?",
+      "options": [
+        { "id": "a", "label": "\"Let me explain why you are wrong.\"" },
+        { "id": "b", "label": "\"What did you notice when you said that?\"" },
+        { "id": "c", "label": "\"You should have known better.\"" }
+      ],
+      "correctOptionID": "b",
+      "freeTextRubric": null,
+      "mentorPostScript": "The mentor asks. The mentor doesn't tell. That's the register."
+    },
+    {
+      "id": "kit_06_q_04",
+      "prompt": "Two characters argue about the same thing — say, whether to leave the party early. They have different stakes. Which detail tells you the stakes are different?",
+      "options": [
+        { "id": "a", "label": "One character keeps asking what time it is; the other keeps asking who else is still here." },
+        { "id": "b", "label": "Both characters say \"I want to leave.\"" },
+        { "id": "c", "label": "Neither character mentions the party." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Different stakes = different details inside the same argument."
+    },
+    {
+      "id": "kit_06_q_05",
+      "prompt": "Voice consistency is hard because:",
+      "options": [
+        { "id": "a", "label": "Characters can drift toward sounding like each other when you're writing fast." },
+        { "id": "b", "label": "All dialogue should sound the same." },
+        { "id": "c", "label": "Only the protagonist's voice needs to be distinct." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "The drift is the craft challenge. Catching it in revision is half the work."
+    }
+  ]
+}

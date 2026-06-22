@@ -187,6 +187,22 @@ public final class AchievementService {
             return criteria.characterCount >= 3 &&
                    criteria.totalNodes >= 5 &&
                    criteria.trianglePattern == .arbitration
+        case "triangle_jealousy_pattern":
+            return criteria.characterCount >= 3 &&
+                   criteria.totalNodes >= 5 &&
+                   criteria.trianglePattern == .jealousy
+        case "triangle_subtext_layered":
+            return criteria.characterCount >= 3 &&
+                   criteria.totalNodes >= 5 &&
+                   criteria.confirmedSubtextLineCount >= 3
+        case "triangle_branches_reflected":
+            return criteria.characterCount >= 3 &&
+                   criteria.totalNodes >= 5 &&
+                   criteria.reflectedBranchPointCount >= 2
+        case "triangle_tag_balance_held":
+            return criteria.characterCount >= 3 &&
+                   criteria.totalNodes >= 8 &&
+                   criteria.dominantTagAbsent
 
         default:
             return false
