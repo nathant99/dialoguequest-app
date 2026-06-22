@@ -15,6 +15,8 @@ public struct RootView: View {
     @State private var celebrationCoordinator = CelebrationCoordinator()
     @State private var sessionTimer = SessionTimerService()
     @State private var brokenStreakDismissed: Bool = false
+    @State private var welcomeBackDismissed: Bool = false
+    @State private var welcomeBackMessage: String?
     @AppStorage("dq.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @AppStorage("dq.publishedTreeCount") private var publishedTreeCount: Int = 0
 
@@ -85,13 +87,23 @@ public struct RootView: View {
             }
         }
         .overlay(alignment: .top) {
-            brokenStreakBanner
+            VStack(spacing: 8) {
+                welcomeBackBanner
+                brokenStreakBanner
+            }
         }
         .task {
             // Start the soft session window on root appear, once the kid
             // is past onboarding. Phase events fire via the ticker below.
             if hasCompletedOnboarding || Self.isUITestSkippingOnboarding {
                 sessionTimer.start()
+            }
+            // Record this open against the D1/D7/D30 retention baseline.
+            RetentionMetricsService.shared.recordAppOpen()
+            // Compute the welcome-back message once per root appear.
+            let return_ = ReturnLoopService.shared
+            if return_.shouldShowWelcomeBack() {
+                welcomeBackMessage = return_.welcomeBackMessage()
             }
         }
         .task(id: sessionTimer.phase) {
@@ -104,6 +116,26 @@ public struct RootView: View {
                 try? await Task.sleep(for: .seconds(15))
                 sessionTimer.tick()
             }
+        }
+    }
+
+    /// Welcome-back banner for kids who lapsed ≥ 3 days. Surfaces a
+    /// warm greeting + a "Write" affordance that jumps to the Write
+    /// tab. Dismissible.
+    @ViewBuilder
+    private var welcomeBackBanner: some View {
+        if !welcomeBackDismissed, let message = welcomeBackMessage {
+            WelcomeBackBannerView(
+                message: message,
+                onWrite: {
+                    machine.selectedTab = .write
+                    welcomeBackDismissed = true
+                },
+                onDismiss: {
+                    welcomeBackDismissed = true
+                }
+            )
+            .transition(.opacity)
         }
     }
 
