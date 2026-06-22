@@ -21,6 +21,7 @@ struct WriteTabView: View {
     @State private var activeBranchPointID: UUID?
     @State private var achievementService = AchievementService.shared
     @State private var rareVoiceCraftTip: String?
+    @State private var showCollaborativeSession: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -33,6 +34,27 @@ struct WriteTabView: View {
         NavigationStack {
             content
                 .navigationTitle(navigationTitle)
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            showCollaborativeSession = true
+                        } label: {
+                            Label("Write together", systemImage: "person.2.fill")
+                        }
+                        .accessibilityHint("Start a pass-and-play session where two players take turns writing the next line of dialogue. Optional — you can still write alone.")
+                    }
+                }
+                .sheet(isPresented: $showCollaborativeSession) {
+                    CollaborativeDialogueView(
+                        onSessionComplete: { tree in
+                            machine.replaceTree(tree)
+                            showCollaborativeSession = false
+                        },
+                        onDismiss: {
+                            showCollaborativeSession = false
+                        }
+                    )
+                }
         }
         .task {
             // UI-test seed (no-op in production). Must run BEFORE the tier
