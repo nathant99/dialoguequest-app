@@ -1,5 +1,6 @@
 import SwiftUI
 import Models
+import Services
 import SharedUI
 
 /// Character setup. Phase 1 ships 2 characters; Phase 2 unlocks an
@@ -34,6 +35,8 @@ struct CharacterAuthoringView: View {
 
     @State private var moodSelection: DialogueMood = .openingCuriosity
     @State private var title: String = ""
+
+    @State private var showImportSheet: Bool = false
 
     var body: some View {
         Form {
@@ -93,6 +96,61 @@ struct CharacterAuthoringView: View {
         }
         .scrollContentBackground(.hidden)
         .background(DialoguePalette.cream.opacity(0.6))
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showImportSheet = true
+                } label: {
+                    Label("Import from CharacterForge", systemImage: "square.and.arrow.down.on.square")
+                }
+                .accessibilityIdentifier("characterAuthoring.importFromCharacterForge")
+                .accessibilityHint("Paste a CharacterForge cast export to fill these fields automatically.")
+            }
+        }
+        .sheet(isPresented: $showImportSheet) {
+            CharacterForgeImportSheet(
+                onImport: { refs in
+                    applyImportedCharacters(refs)
+                    showImportSheet = false
+                },
+                onCancel: { showImportSheet = false }
+            )
+        }
+    }
+
+    /// Apply imported `DialogueCharacterRef` rows onto the per-character
+    /// `@State` fields. Up to 3 rows (Phase 2 cap). Extra rows past 3 are
+    /// silently dropped — the import service already enforces this cap,
+    /// but the apply path stays defensive.
+    private func applyImportedCharacters(_ refs: [DialogueCharacterRef]) {
+        guard refs.isEmpty == false else { return }
+        let first = refs[0]
+        characterAName = first.name
+        characterAVoice = first.voiceRegister
+        characterARole = first.role
+        characterASample1 = first.sampleLines.indices.contains(0) ? first.sampleLines[0] : ""
+        characterASample2 = first.sampleLines.indices.contains(1) ? first.sampleLines[1] : ""
+        characterASample3 = first.sampleLines.indices.contains(2) ? first.sampleLines[2] : ""
+
+        if refs.indices.contains(1) {
+            let second = refs[1]
+            characterBName = second.name
+            characterBVoice = second.voiceRegister
+            characterBRole = second.role
+            characterBSample1 = second.sampleLines.indices.contains(0) ? second.sampleLines[0] : ""
+            characterBSample2 = second.sampleLines.indices.contains(1) ? second.sampleLines[1] : ""
+            characterBSample3 = second.sampleLines.indices.contains(2) ? second.sampleLines[2] : ""
+        }
+
+        if refs.indices.contains(2), thirdCharacterEnabled {
+            let third = refs[2]
+            characterCName = third.name
+            characterCVoice = third.voiceRegister
+            characterCRole = third.role
+            characterCSample1 = third.sampleLines.indices.contains(0) ? third.sampleLines[0] : ""
+            characterCSample2 = third.sampleLines.indices.contains(1) ? third.sampleLines[1] : ""
+            characterCSample3 = third.sampleLines.indices.contains(2) ? third.sampleLines[2] : ""
+        }
     }
 
     @ViewBuilder
