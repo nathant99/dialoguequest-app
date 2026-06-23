@@ -22,6 +22,9 @@ struct WriteTabView: View {
     @State private var achievementService = AchievementService.shared
     @State private var rareVoiceCraftTip: String?
     @State private var showCollaborativeSession: Bool = false
+    @State private var traumaAxisAdvisory: TraumaAxisAdvisoryService.Advisory?
+    @State private var traumaAdvisorySurfacedThisSession: Bool = false
+    @State private var showCrisisResourcesFromAdvisory: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -29,6 +32,7 @@ struct WriteTabView: View {
     private let scorer = BranchMeaningfulnessScorer()
     private let voiceAnalyzer = VoiceConsistencyAnalyzer()
     private let tagBalancer = TagBalancer()
+    private let traumaAdvisor = TraumaAxisAdvisoryService()
 
     var body: some View {
         NavigationStack {
@@ -96,6 +100,13 @@ struct WriteTabView: View {
             // that don't change topology — those don't move tag balance).
             guard let service = reactionService else { return }
             await service.onTreeChanged(machine.tree)
+            // Trauma-axis advisory — inspect every line on append; gate
+            // on per-session de-dup so a tender-themed tree doesn't get
+            // a banner per node. Surfaces ONLY when a strong cue lands;
+            // never blocks the kid's draft.
+            if !traumaAdvisorySurfacedThisSession {
+                updateTraumaAxisAdvisory()
+            }
         }
         .onChange(of: machine.confirmedSubtextLineIDs) { oldSet, newSet in
             // The kid confirmed a subtext. Glance affirms via cast voicing.
@@ -237,6 +248,39 @@ struct WriteTabView: View {
                     .onTapGesture { rareVoiceCraftTip = nil }
                     .accessibilityHint("Tap to dismiss this voice-craft tip.")
                     .transition(reduceMotion ? .identity : .opacity)
+            }
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if let advisory = traumaAxisAdvisory {
+                TenderThemeBannerView(
+                    advisory: advisory,
+                    onOpenResources: { showCrisisResourcesFromAdvisory = true },
+                    onDismiss: { traumaAxisAdvisory = nil }
+                )
+                .padding(.horizontal)
+                .padding(.top, 6)
+                .transition(reduceMotion ? .identity : .opacity)
+            }
+        }
+        .sheet(isPresented: $showCrisisResourcesFromAdvisory) {
+            NavigationStack { CrisisResourcesView() }
+        }
+    }
+
+    /// Inspect the tree's newest spoken lines for crisis cues / tender
+    /// themes. Surfaces the soft banner via `@State traumaAxisAdvisory`
+    /// when a cue lands. Per-session de-dup is the caller's responsibility
+    /// (the gate sets `traumaAdvisorySurfacedThisSession = true` on emit).
+    /// Pure value-type call; never blocks publication.
+    private func updateTraumaAxisAdvisory() {
+        for node in machine.tree.nodes.reversed() {
+            if let advisory = traumaAdvisor.inspect(
+                line: node.surfaceText,
+                mood: machine.tree.mood
+            ) {
+                traumaAxisAdvisory = advisory
+                traumaAdvisorySurfacedThisSession = true
+                return
             }
         }
     }
