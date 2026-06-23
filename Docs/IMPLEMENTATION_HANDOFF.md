@@ -6,9 +6,14 @@ target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
 
-> **2026-06-23 round addendum (third mid-session)** — multi-PR Phase 3 close-out + Phase 4 kickoff round. Net state delta:
+> **2026-06-23 round addendum (third mid-session, completed)** — multi-PR Phase 3 close-out + Phase 4 kickoff round completed. **7 PRs landed** (#100 → #106). Phase 3 100% closed; Phase 4 5/8 rows closed. Net state delta:
 >
-> - **PR 1 (this addendum) — Doc-sync round.** Phase 3 FEATURE_PLAN checkboxes ticked against shipped reality from PR #99 (`12f0673`); `CLAUDE.md` § "SPM File Layout Convention" Services taxonomy updated with `Audio/` subfolder. No code/test changes.
+> - **Test count delta**: +69 (PR 2 9 + PR 3 12 + PR 4 9 + PR 5 20 + PR 6 8 + others 11). Total ~370.
+> - **ForgeKit module count consumed**: 16 → **17** (PR 6 added `ForgeLiveActivities` to Services target).
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-06-23_PHASE_3_4_CLOSE.md`. Reads as the canonical brief for the next agent opening this repo cold.
+> - **New user-GUI handoffs filed**: `HANDOFF_TO_USER_VOICE_ACTING_COACH_INFOPLIST.md` (PR #101) + `HANDOFF_TO_USER_WIDGET_EXTENSION.md` (PR #105). 5 user-GUI handoffs ACTIVE total.
+>
+> - **PR 1 — Doc-sync round.** Phase 3 FEATURE_PLAN checkboxes ticked against shipped reality from PR #99 (`12f0673`); `CLAUDE.md` § "SPM File Layout Convention" Services taxonomy updated with `Audio/` subfolder. No code/test changes.
 > - **PR 2 — Voice-acting coach scaffold (Phase 3 row 144 closure).** `Libraries/Sources/Services/Audio/VoiceActingCoachService.swift` (`@MainActor public final class`) ships per the `DeclaredAgeRangeGate` privacy-gated-framework pattern: `availability` enum gates `NSMicrophoneUsageDescription` + `NSSpeechRecognitionUsageDescription` probes via `Bundle.main.object(forInfoDictionaryKey:)`. Returns `.notWired` when missing — every entry point safe no-op. Score-extraction is pure value-type (Jaccard against the per-character voice baseline). Future wired path uses `SFSpeechRecognizer` + `AVAudioEngine.installTap` with the TWO-PART AVAudioNodeTap rule. Info.plist GUI work filed at `Docs/HANDOFF_TO_USER_VOICE_ACTING_COACH_INFOPLIST.md`. 8 tests.
 > - **PR 3 — Performance Booth adventure mode (Phase 3 row 148 closure).** `Libraries/Sources/AppFeature/Crucible/PerformanceBoothMachine.swift` + `PerformanceBoothView.swift` ship a 3-stage value-type machine composing the existing `DialogueReadAloudService` + `DialogueAudioExporter`. `AdventureTabView` unlocked content adds a Performance Booth entry alongside Voice Crucible. New analytics event `.performanceBoothExported` + new achievement `performance_booth_premiere` (50 XP). 11 tests.
 > - **PR 4 — Phase 4 anthology curation (FEATURE_PLAN row 158 closure).** `Libraries/Sources/AppFeature/Anthology/AnthologyCurationView.swift` + `AnthologyCollectionService` ship the kid-curated collection feature. `AnthologyCollectionRecord` lands as a lightweight schema addition on the existing `VersionedSchema` per the pre-App-Store rule. Themed collections ("first conversations" / "quiet conflicts" / "what they didn't say"); per-collection `ShareLink` exports the collection as a JSON archive. 9 tests.
