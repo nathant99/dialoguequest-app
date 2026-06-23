@@ -1,0 +1,67 @@
+{
+  "id": "kit_07_subtext_crucible",
+  "title": "Subtext crucible",
+  "theme": "subtext_detection",
+  "questions": [
+    {
+      "id": "kit_07_q_01",
+      "prompt": "Iris, Cal, and Mara are in the kitchen. Mara just dropped a plate. Iris says, \"It's fine — we have lots of plates.\" Cal says nothing. Whose silence carries the strongest subtext?",
+      "options": [
+        { "id": "a", "label": "Cal's silence — it's louder than Iris's reassurance because Cal usually fills the room." },
+        { "id": "b", "label": "Iris's silence — wait, she just spoke." },
+        { "id": "c", "label": "Mara's silence — but she dropped the plate, so her quiet is expected." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "When a usually-talkative character goes quiet, the silence does more work than the line."
+    },
+    {
+      "id": "kit_07_q_02",
+      "prompt": "Two listeners hear the same line: \"You don't have to come if you don't want to.\" One is the person it's directed at; the other is overhearing. Why might the two hear different subtexts?",
+      "options": [
+        { "id": "a", "label": "Because each listener brings their own history with the speaker — and history changes what a line means." },
+        { "id": "b", "label": "Because subtext is decided by a coin flip at the end of every scene." },
+        { "id": "c", "label": "Because only the speaker knows the subtext; listeners don't get one." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "The same line can carry two truths at once. Triangle scenes lean into this."
+    },
+    {
+      "id": "kit_07_q_03",
+      "prompt": "Cal tells Iris, \"I trust Mara.\" Mara is standing right there. Which is the strongest move for the subtext?",
+      "options": [
+        { "id": "a", "label": "Mara doesn't react — she keeps doing what she was doing, and the steady action becomes the subtext." },
+        { "id": "b", "label": "Mara nods and says, \"Thanks.\"" },
+        { "id": "c", "label": "Mara walks out of the scene." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "A character who DOESN'T react to a loaded line creates a kind of pressure the reader can feel."
+    },
+    {
+      "id": "kit_07_q_04",
+      "prompt": "A line of dialogue can be honest on the surface AND honest underneath, BUT the two honesties say different things. Pick the line where this is true.",
+      "options": [
+        { "id": "a", "label": "Iris: \"I had a good day.\" (Her shoulders are tight; she's looking at the door.)" },
+        { "id": "b", "label": "Cal: \"WATCH OUT!\" (A baseball is flying at Mara's head.)" },
+        { "id": "c", "label": "Mara: \"Hello.\" (She just answered the phone.)" }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Two layers. The line tells the truth; the body tells a different truth. The reader holds both."
+    },
+    {
+      "id": "kit_07_q_05",
+      "prompt": "In a triangle scene, Cal asks Iris a question that's really aimed at Mara. Which detail in the writing makes this clear?",
+      "options": [
+        { "id": "a", "label": "Cal glances at Mara just before he speaks, then keeps his eyes on Iris while he asks the question." },
+        { "id": "b", "label": "Cal yells the question." },
+        { "id": "c", "label": "Cal walks out of the room before asking anything." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "The glance is the redirect. The reader sees who the question is really for."
+    }
+  ]
+}

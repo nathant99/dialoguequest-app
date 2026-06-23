@@ -47,12 +47,23 @@ struct QuestionKitTests {
 
     // MARK: - Phase 2
 
-    @Test("Phase 2 inventory ships kits 05 + 06 with the voice-consistency theme")
+    @Test("Phase 2 inventory ships kits 05 + 06 + 07")
     func phase2KitLoadsAndHasExpectedTheme() throws {
-        #expect(QuestionKitLoader.phase2Kits == ["kit_05_triangle_voices", "kit_06_voice_crucible"])
+        #expect(QuestionKitLoader.phase2Kits == [
+            "kit_05_triangle_voices",
+            "kit_06_voice_crucible",
+            "kit_07_subtext_crucible"
+        ])
+        // Kits 05 + 06 sit on the voice-consistency surface; kit 07
+        // sits on subtext_detection (multi-listener layered subtext).
+        let expectedThemes: [String: QuestionKit.Theme] = [
+            "kit_05_triangle_voices": .voiceConsistency,
+            "kit_06_voice_crucible": .voiceConsistency,
+            "kit_07_subtext_crucible": .subtextDetection
+        ]
         for kitID in QuestionKitLoader.phase2Kits {
             let kit = try QuestionKitLoader.load(id: kitID)
-            #expect(kit.theme == .voiceConsistency)
+            #expect(kit.theme == expectedThemes[kitID])
             #expect(kit.questions.count >= 5)
         }
     }
@@ -87,5 +98,41 @@ struct QuestionKitTests {
         #expect(postScripts.contains("alliance") ||
                 postScripts.contains("arbiter") ||
                 postScripts.contains("voice"))
+    }
+
+    @Test("Kit 07 (Subtext Crucible) prompts reference multi-listener / silence / two-layer cues")
+    func kit07ReferencesSubtextVocabulary() throws {
+        let kit = try QuestionKitLoader.load(id: "kit_07_subtext_crucible")
+        #expect(kit.theme == .subtextDetection)
+        #expect(kit.questions.count == 5)
+        let body = kit.questions.map(\.prompt).joined(separator: " ").lowercased()
+        // The crucible kit's surface area is multi-listener subtext +
+        // silence-as-subtext + body-vs-words layered honesty.
+        #expect(
+            body.contains("silence") ||
+            body.contains("listener") ||
+            body.contains("triangle") ||
+            body.contains("layer")
+        )
+        let postScripts = kit.questions.map(\.mentorPostScript).joined(separator: " ").lowercased()
+        #expect(
+            postScripts.contains("subtext") ||
+            postScripts.contains("silence") ||
+            postScripts.contains("layer") ||
+            postScripts.contains("pressure") ||
+            postScripts.contains("truth")
+        )
+    }
+
+    @Test("Kit 07 IDs follow the canonical kit_07_q_NN pattern")
+    func kit07QuestionIDsAreCanonical() throws {
+        let kit = try QuestionKitLoader.load(id: "kit_07_subtext_crucible")
+        for (index, question) in kit.questions.enumerated() {
+            let expectedSuffix = String(format: "q_%02d", index + 1)
+            #expect(
+                question.id == "kit_07_\(expectedSuffix)",
+                "Kit 07 question \(index) ID '\(question.id)' deviates from canonical kit_07_\(expectedSuffix)"
+            )
+        }
     }
 }
