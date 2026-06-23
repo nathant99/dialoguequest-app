@@ -155,11 +155,11 @@ Add read-aloud performance, voice-acting coaching, and audio export of completed
 
 Anthology curation, classroom integration, and App Store submission readiness.
 
-- [ ] Implement anthology curation (kid-curated collection of best trees with themed organization)
+- [x] Implement anthology curation (kid-curated collection of best trees with themed organization) — 2026-06-23 PR #103: `Libraries/Sources/Models/Schema/AnthologyCollectionRecord.swift` (new `@Model` added to existing `DialogueQuestSchemaV1` per pre-App-Store schema rule); `Libraries/Sources/Services/Persistence/AnthologyCollectionService.swift` (Codable helpers + `@MainActor` CRUD + `CollectionArchive` ShareLink payload); `Libraries/Sources/AppFeature/Anthology/AnthologyCurationView.swift` (full curation UX). `AnthologyCollectionThemeHint` 5-case enum (`.firstConversations` / `.quietConflicts` / `.whatTheyDidntSay` / `.branchingMoments` / `.threeVoiceScenes`). `ProfileDashboardView` gains "Anthology" + "Curate collections" NavigationLink rows (which also wires the previously-orphan `AnthologyGalleryView`). 9 tests.
 - [ ] Implement classroom mode (ForgeKit `ForgeClassroom` integration when wired)
-- [ ] Implement parent/educator progress reports (`ForgeReporting`) standards-mapped to CCSS-ELA writing standards
-- [ ] Add 3 final question kits (kits 14-16; synthesis / cross-craft / writing process)
-- [ ] Add 8 advanced achievements
+- [x] Implement parent/educator progress reports (`ForgeReporting`) standards-mapped to CCSS-ELA writing standards — 2026-06-23 PR #92: `DialogueQuestProgressReportBuilder` projects on-app counters onto `StudentReportData` with the 4 canonical CCSS/NCAS standards. `ParentProgressDashboardView` renders proficiency rows with code + level chip + percentage progress bar.
+- [x] Add 3 final question kits (kits 14-16; synthesis / cross-craft / writing process) — 2026-06-23 PR #104: `kit_14_synthesis.json` / `kit_15_cross_craft.json` / `kit_16_writing_process.json`. All age-9-14 register; pass the R-CHAPTER-REGISTER stoplist guard. `QuestionKitLoader.phase4Kits + allKits` extended. **`allKits.count == 16`** — Phase 4 exit criterion "full 16-kit set" MET. 7 tests.
+- [x] Add 8 advanced achievements — 2026-06-23 PR #104: `synthesis_published` (60 XP), `cross_craft_recognized` (45 XP), `revision_published` (40 XP), `anthology_curator` (50 XP), `themed_collection_complete` (50 XP), `sixteen_kits_complete` (100 XP), `voice_master_published` (80 XP), `dialogue_craft_graduate` (100 XP). `AchievementService.Criteria` extends with 8 phase-4 signals (default 0/false). 13 tests.
 - [ ] App Store submission preparation (privacy nutrition label / KIDSAFE plan / parental gates)
 - [ ] App Store screenshot + preview-video assets (await hub distribution per portfolio pipeline)
 - [ ] App icon (6-variant Liquid Glass set) — filed `@Docs/HANDOFF_TO_USER_APP_ICON.md` (Icon Composer GUI work after Patter source PNG lands)
