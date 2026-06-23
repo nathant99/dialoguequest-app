@@ -11,7 +11,10 @@ import SharedUI
 /// `ShareLink` that exports the value-type `DialogueTree` as JSON via
 /// `DialogueTreeShareable`. The kid initiates the share via the standard
 /// iOS share sheet — on-device only, no outbound network.
-struct AnthologyGalleryView: View {
+public struct AnthologyGalleryView: View {
+    public init() {}
+
+
     @Environment(\.modelContext) private var modelContext
 
     @State private var entries: [DialoguePersistenceService.AnthologyEntry] = []
@@ -42,7 +45,7 @@ struct AnthologyGalleryView: View {
     @AppStorage("dq.readAloudCount") private var readAloudCount: Int = 0
     @AppStorage("dq.audioExportCount") private var audioExportCount: Int = 0
 
-    var body: some View {
+    public var body: some View {
         Group {
             if let failure = loadFailure {
                 ContentUnavailableView(

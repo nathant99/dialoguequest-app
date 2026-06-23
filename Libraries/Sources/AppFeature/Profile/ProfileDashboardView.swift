@@ -23,6 +23,8 @@ struct ProfileDashboardView: View {
             VStack(alignment: .leading, spacing: 16) {
                 profileHeader
                 avatarTeaser
+                anthologyRow
+                curationRow
                 settingsLinkRow
             }
             .padding()
@@ -99,6 +101,61 @@ struct ProfileDashboardView: View {
         .padding()
         .background(panelBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var anthologyRow: some View {
+        NavigationLink {
+            AnthologyGalleryView()
+                .navigationTitle("Anthology")
+        } label: {
+            HStack {
+                Image(systemName: "books.vertical.fill")
+                    .foregroundStyle(DialoguePalette.rust)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Anthology")
+                        .font(.headline)
+                    Text("Every conversation you've published.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(.secondary)
+            }
+            .padding()
+            .background(panelBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(DialoguePalette.inkBlue)
+        .accessibilityIdentifier("profile.anthologyEntry")
+    }
+
+    private var curationRow: some View {
+        NavigationLink {
+            AnthologyCurationView()
+        } label: {
+            HStack {
+                Image(systemName: "rectangle.stack.fill")
+                    .foregroundStyle(DialoguePalette.rust)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Curate collections")
+                        .font(.headline)
+                    Text("Group your best trees into themed collections to share.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(.secondary)
+            }
+            .padding()
+            .background(panelBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(DialoguePalette.inkBlue)
+        .accessibilityIdentifier("profile.curationEntry")
     }
 
     private var settingsLinkRow: some View {
