@@ -165,4 +165,89 @@ public enum CharacterCameoInvitations {
     public static var coveredCastIDs: Set<String> {
         Set(allInvitations.map(\.castID))
     }
+
+    // MARK: - Discovery cameos
+    //
+    // Phase Delight micro-delight coverage § Discovery — a single warm
+    // hello from a random LESSONS-layer cast member, surfaced once per
+    // session via the Write tab `.task`. Distinct copy + selection pool
+    // from the post-publish invitations: discovery cameos read as
+    // *"glad to see you"*, not *"try this next time"*.
+
+    /// Pool of discovery-cameo hellos, one per LESSONS-layer cast member.
+    /// Kept short so the bubble reads in one breath when the kid lands
+    /// on the Write tab.
+    public static var discoveryCameos: [Invitation] {
+        [
+            Invitation(
+                castID: "brogue",
+                displayName: "Brogue",
+                message: "Glad to hear you back at the workbench. Listen for the music your characters keep, even when the room goes quiet."
+            ),
+            Invitation(
+                castID: "glance",
+                displayName: "Glance",
+                message: "Welcome in. I'll be listening underneath the words today — pick a line where the heart says something the mouth won't."
+            ),
+            Invitation(
+                castID: "rest",
+                displayName: "Rest",
+                message: "Hello, friend. Take a breath before the first line. Silence is a line too."
+            ),
+            Invitation(
+                castID: "sprig",
+                displayName: "Sprig",
+                message: "Hey, you. Branch boldly today — even a small choice can re-route the whole story."
+            ),
+            Invitation(
+                castID: "weigh",
+                displayName: "Weigh",
+                message: "Welcome back. Counting tags only counts when one feels off — trust your ear before my scale."
+            )
+        ]
+    }
+
+    /// Pick a discovery cameo via the supplied RNG. Returns `nil` for an
+    /// empty pool (defensive). Determinism is the caller's responsibility.
+    public static func pickDiscoveryCameo(
+        rng: inout some RandomNumberGenerator
+    ) -> Invitation? {
+        discoveryCameos.randomElement(using: &rng)
+    }
+
+    /// Convenience overload using `SystemRandomNumberGenerator`.
+    public static func pickDiscoveryCameo() -> Invitation? {
+        var rng = SystemRandomNumberGenerator()
+        return pickDiscoveryCameo(rng: &rng)
+    }
+
+    /// Probability that the discovery cameo fires on a given Write-tab
+    /// session-open roll. Sized to feel like a warm coincidence (one in
+    /// roughly every three sessions) rather than a guaranteed greeting.
+    public static let discoveryDefaultProbability: Double = 0.33
+
+    /// Returns true with the supplied probability. Same shape as
+    /// `shouldShowInvitation` for symmetry.
+    public static func shouldShowDiscoveryCameo(
+        probability: Double = discoveryDefaultProbability,
+        rng: inout some RandomNumberGenerator
+    ) -> Bool {
+        guard probability > 0 else { return false }
+        guard probability < 1 else { return true }
+        let roll = Double.random(in: 0..<1, using: &rng)
+        return roll < probability
+    }
+
+    /// Minimum `dq.publishedTreeCount` value required before a discovery
+    /// cameo can fire. The first session is the aha-moment slot per
+    /// `Docs/FEATURE_PLAN.md` § Onboarding & Child Safety; discovery
+    /// cameos hold off until the kid has shipped at least once so the
+    /// hello reads as warm rather than forced.
+    public static let discoveryMinimumPublishedTreeCount: Int = 1
+
+    /// Cast slugs covered by `discoveryCameos`. Used by tests to assert
+    /// every LESSONS-layer cast member is present.
+    public static var discoveryCoveredCastIDs: Set<String> {
+        Set(discoveryCameos.map(\.castID))
+    }
 }

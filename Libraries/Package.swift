@@ -108,6 +108,7 @@ let package = Package(
             name: "ModelsTests",
             dependencies: [
                 "Models",
+                .product(name: "ForgeModels", package: "forgekit"),
             ],
             swiftSettings: defaultSwiftSettings
         ),
@@ -134,6 +135,7 @@ let package = Package(
                 "AppFeature",
                 "Services",
                 "SharedUI",
+                .product(name: "ForgeModels", package: "forgekit"),
             ],
             swiftSettings: defaultSwiftSettings
         ),
