@@ -51,7 +51,13 @@ struct AdventureTabView: View {
     }
 
     private var isUnlocked: Bool {
-        progressionManager.isUnlocked(Self.wordWoodsGate.id)
+        // UI test bypass: surface the unlocked content immediately so XCUITest
+        // can reach the Performance Booth + Voice Crucible affordances
+        // without driving 3 distinct calendar-day session bumps.
+        if ProcessInfo.processInfo.arguments.contains("-uiTestUnlockAdventure") {
+            return true
+        }
+        return progressionManager.isUnlocked(Self.wordWoodsGate.id)
     }
 
     var body: some View {
