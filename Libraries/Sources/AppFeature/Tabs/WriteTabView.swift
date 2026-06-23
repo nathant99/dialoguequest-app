@@ -211,7 +211,7 @@ struct WriteTabView: View {
                     .padding(.bottom, 24)
                     .onTapGesture { rareVoiceCraftTip = nil }
                     .accessibilityHint("Tap to dismiss this voice-craft tip.")
-                    .transition(.opacity)
+                    .transition(reduceMotion ? .identity : .opacity)
             }
         }
     }
