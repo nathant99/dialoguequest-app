@@ -121,6 +121,7 @@ let package = Package(
                 "Models",
                 "AIMentor",
                 "AppFeature",
+                "Services",
                 "SharedUI",
             ],
             swiftSettings: defaultSwiftSettings

@@ -26,6 +26,9 @@ struct AdventureTabView: View {
         unlockHint: "Write trees on 3 different days to open the Workshop."
     )
 
+    /// Whether the Voice Crucible sheet is up.
+    @State private var isCruciblePresented: Bool = false
+
     /// Reconstructed each render from the persisted counters so the
     /// gate evaluation always reflects current state.
     private var progressionManager: ForgeProgressionManager {
@@ -74,6 +77,9 @@ struct AdventureTabView: View {
             .navigationTitle("Adventure")
             .background(DialoguePalette.cream.opacity(0.6))
             .task { recordSessionIfNeeded() }
+            .sheet(isPresented: $isCruciblePresented) {
+                VoiceCrucibleView()
+            }
         }
     }
 
@@ -86,6 +92,33 @@ struct AdventureTabView: View {
         MentorBubbleView(
             message: "You opened the Workshop! Pick a kit to try a quick scene with the cast."
         )
+
+        Button {
+            isCruciblePresented = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "waveform.path.ecg")
+                    .foregroundStyle(DialoguePalette.rust)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Voice Crucible")
+                        .font(.headline)
+                        .foregroundStyle(DialoguePalette.inkBlue)
+                    Text("Pick a cast voice. Write one line in their register. See how close you got.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(DialoguePalette.rust)
+            }
+            .padding()
+            .background(DialoguePalette.cream.opacity(0.75))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("crucible.entry")
+        .accessibilityHint(Text("Open the Voice Crucible adventure mode."))
     }
 
     @ViewBuilder

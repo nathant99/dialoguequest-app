@@ -106,11 +106,24 @@ public nonisolated struct VoiceConsistencyAnalyzer: Sendable {
         )
     }
 
+    // MARK: - Single-line scoring (cross-target helper)
+
+    /// Score one line against a baseline string (e.g., a cast member's
+    /// catchphrase pool joined with whitespace, or a character's sample
+    /// lines). Returns a Jaccard token-overlap in 0.0–1.0. Symmetric in
+    /// `sample` and `baseline`; case-folded; punctuation-folded.
+    /// Cross-target consumers (e.g., the Voice Crucible adventure mode in
+    /// `AppFeature/Crucible/`) call this instead of building a transient
+    /// `DialogueTree` to score a single line.
+    public nonisolated static func score(sample: String, against baseline: String) -> Double {
+        jaccard(tokenSet(for: sample), tokenSet(for: baseline))
+    }
+
     // MARK: - Token helpers
 
     /// Lowercase, strip non-alphanumerics, split on whitespace, drop
     /// 1-character tokens. Stable across simulator + device.
-    nonisolated static func tokenSet(for text: String) -> Set<String> {
+    public nonisolated static func tokenSet(for text: String) -> Set<String> {
         let scalars = text.unicodeScalars.map { scalar -> Character in
             if CharacterSet.alphanumerics.contains(scalar) { return Character(scalar) }
             if CharacterSet.whitespacesAndNewlines.contains(scalar) { return " " }
@@ -124,7 +137,7 @@ public nonisolated struct VoiceConsistencyAnalyzer: Sendable {
         return Set(tokens)
     }
 
-    nonisolated static func jaccard(_ a: Set<String>, _ b: Set<String>) -> Double {
+    public nonisolated static func jaccard(_ a: Set<String>, _ b: Set<String>) -> Double {
         guard !a.isEmpty || !b.isEmpty else { return 0 }
         let intersection = a.intersection(b).count
         let union = a.union(b).count
