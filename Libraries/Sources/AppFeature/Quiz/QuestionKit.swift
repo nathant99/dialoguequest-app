@@ -115,8 +115,18 @@ public enum QuestionKitLoader {
         "kit_13_audio_export_craft",
     ]
 
-    /// Every kit identifier in canonical order — Phase 1 then Phase 2 then Phase 3.
-    public nonisolated static let allKits: [String] = phase1Kits + phase2Kits + phase3Kits
+    /// Phase 4 kits — synthesis / cross-craft / writing process. Per
+    /// `Docs/FEATURE_PLAN.md` § Phase 4 row 161 "Add 3 final question kits
+    /// (kits 14-16; synthesis / cross-craft / writing process)". Closes
+    /// the 16-kit set the Phase 4 exit criterion targets.
+    public nonisolated static let phase4Kits: [String] = [
+        "kit_14_synthesis",
+        "kit_15_cross_craft",
+        "kit_16_writing_process",
+    ]
+
+    /// Every kit identifier in canonical order — Phase 1 / 2 / 3 / 4.
+    public nonisolated static let allKits: [String] = phase1Kits + phase2Kits + phase3Kits + phase4Kits
 
     /// Convenience: try-loading every Phase 1 kit, returning a tuple of
     /// kits + per-kit failures. Useful at app startup for telemetry.

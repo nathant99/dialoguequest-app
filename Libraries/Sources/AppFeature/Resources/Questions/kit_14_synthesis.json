@@ -1,0 +1,67 @@
+{
+  "id": "kit_14_synthesis",
+  "title": "Bring it all together",
+  "theme": "branching",
+  "questions": [
+    {
+      "id": "kit_14_q_01",
+      "prompt": "You're writing a triangle scene. One character speaks; the other two listen differently. Which craft moves stack to make the scene work?",
+      "options": [
+        { "id": "a", "label": "Pick a voice register the speaker keeps consistent + write a line whose subtext lands differently on each listener + give the branch a real consequence." },
+        { "id": "b", "label": "Make the dialogue louder and more dramatic for each character." },
+        { "id": "c", "label": "Have every character say the same thing in different ways." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Voice + subtext + branch — all three at once is where dialogue craft lives."
+    },
+    {
+      "id": "kit_14_q_02",
+      "prompt": "You wrote a 12-node tree with two branches. The voice scores are strong, the subtext is layered, but the tag balance shows one character used 'said' eleven times. What does the synthesis-level revision look like?",
+      "options": [
+        { "id": "a", "label": "Replace several 'said' tags with action beats — the rhythm of the scene gets unstuck without losing voice." },
+        { "id": "b", "label": "Add more lines for that character so the ratio drops." },
+        { "id": "c", "label": "Delete the character's lines so the imbalance disappears." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Synthesis revision moves one axis without breaking the others. Action beats fix tag balance without touching voice."
+    },
+    {
+      "id": "kit_14_q_03",
+      "prompt": "A branch point is meaningful when…",
+      "options": [
+        { "id": "a", "label": "The two paths cost the speaker something different, and the next line of dialogue genuinely changes based on which path the kid picks." },
+        { "id": "b", "label": "Both paths lead back to the same line eventually." },
+        { "id": "c", "label": "One path is the 'right answer' and the other is wrong." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Real branches diverge. Cosmetic branches converge. Pick the kind that actually changes the scene."
+    },
+    {
+      "id": "kit_14_q_04",
+      "prompt": "You're scoring a tree across voice / subtext / tag balance / branch. Three axes are strong, one is weak. The honest revision move is…",
+      "options": [
+        { "id": "a", "label": "Spot which axis is weakest and fix THAT — not the ones already working. The strong axes don't need help." },
+        { "id": "b", "label": "Rewrite the whole tree from scratch." },
+        { "id": "c", "label": "Ignore the weak axis — three out of four is good enough." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Find the weakest axis. Patch it. The strong axes don't need your time."
+    },
+    {
+      "id": "kit_14_q_05",
+      "prompt": "Patter calls a published tree 'a conversation.' Why is that word load-bearing for the craft?",
+      "options": [
+        { "id": "a", "label": "Because a conversation has voices that respond to each other — not a paragraph one person delivers. Every line in the tree is one half of a back-and-forth." },
+        { "id": "b", "label": "Because conversations are easier to grade than essays." },
+        { "id": "c", "label": "Because Patter likes the word." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Write a conversation, not a paragraph. Voices respond. That's the whole game."
+    }
+  ]
+}
