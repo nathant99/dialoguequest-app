@@ -133,7 +133,12 @@ public struct CompanionPackEntry: Identifiable, Equatable {
         self.systemImage = systemImage
     }
 
-    /// Bundled catalog (3 PDFs as of `Resources/CompanionPack/companion_pack.json`).
+    /// Bundled catalog. 3 PDFs ship today; the 4th (`curating_together`)
+    /// lands once hub generates the asset per
+    /// `Docs/HANDOFF_TO_HUB_CURATING_TOGETHER_PDF.md`. When the PDF
+    /// arrives, uncomment the reserved entry below — `Bundle.module`
+    /// resolution + the `companion_pack.json` manifest update are
+    /// hub-owned.
     public static let bundled: [CompanionPackEntry] = [
         CompanionPackEntry(
             id: "cast_poster",
@@ -156,6 +161,16 @@ public struct CompanionPackEntry: Identifiable, Equatable {
             filename: "parent_letter",
             systemImage: "envelope.fill"
         ),
+        // RESERVED — pending hub asset gen per
+        // `Docs/HANDOFF_TO_HUB_CURATING_TOGETHER_PDF.md`. Uncomment when
+        // `curating_together.pdf` lands in `Resources/CompanionPack/`.
+        // CompanionPackEntry(
+        //     id: "curating_together",
+        //     title: "Curating Together",
+        //     subtitle: "How to talk with your kid about the new anthology curation surface — and the five themed collections.",
+        //     filename: "curating_together",
+        //     systemImage: "books.vertical.fill"
+        // ),
     ]
 }
 
