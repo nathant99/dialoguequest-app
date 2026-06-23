@@ -67,6 +67,21 @@ public struct RootView: View {
         }
         .tint(DialoguePalette.rust)
         .celebrationOverlay(celebrationCoordinator)
+        .task {
+            // App Intent navigation bridge. The DialogueQuestIntentNavigation
+            // notification fires when a Siri shortcut / Shortcuts app run
+            // / watch-face complication invokes one of our App Intents.
+            // We update the tab on the next main-actor tick. Async-sequence
+            // iteration over NotificationCenter is the Swift 6 canonical
+            // form per `.claude/rules/concurrency.md` (no Combine).
+            for await notification in NotificationCenter.default.notifications(
+                named: DialogueQuestIntentNavigation.notificationName
+            ) {
+                if let destination = DialogueQuestIntentNavigation.destination(from: notification) {
+                    machine.selectedTab = destination.tab
+                }
+            }
+        }
         .onChange(of: publishedTreeCount) { oldValue, newValue in
             // Cinematic celebration tier for the milestone publish-events:
             // the first tree (the aha-moment seed) earns a `.epic` flourish;
