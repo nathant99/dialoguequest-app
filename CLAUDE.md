@@ -85,7 +85,7 @@ Libraries/
 ├── Package.swift                    # swift-tools 6.2, .iOS(.v26), -default-isolation MainActor
 ├── Sources/
 │   ├── Models/                      # Schema/ + ValueTypes/ — domain types + SwiftData @Model classes
-│   ├── Services/                    # Analytics/ Analyzers/ Gamification/ Pedagogy/ Persistence/ Privacy/ Reporting/ Sensory/ Spotlight/ — Phase 1+2 services
+│   ├── Services/                    # Analytics/ Analyzers/ Audio/ Gamification/ Pedagogy/ Persistence/ Privacy/ Reporting/ Sensory/ Spotlight/ — Phase 1+2+3 services
 │   ├── SharedUI/                    # DialogueQuestTheme + Mentor/MentorBubbleView (lean; rich UI lives in AppFeature)
 │   ├── AIMentor/                    # PatterMentor + Generables/ + Fallbacks/ + CastVoicing/
 │   └── AppFeature/                  # RootView + 17 feature subfolders (Tabs/ Builder/ Inspector/ Panels/ Dashboard/ Mentor/ Onboarding/ Adventure/ Crucible/ Intents/ Quiz/ Anthology/ Progress/ Profile/ Settings/ Welcome/ Parents/ Together/) + Resources/
@@ -116,12 +116,13 @@ Libraries/Sources/Services/
 ├── Services.swift                        # target marker
 ├── Analytics/                            # RetentionMetricsService + DialogueQuestAnalytics (ForgeAnalytics wrapper)
 ├── Analyzers/                            # BranchMeaningfulnessScorer + VoiceConsistencyAnalyzer + TagBalancer + TriangleDynamics
+├── Audio/                                # DialogueReadAloudService (AVSpeechSynthesizer + per-character voice variants) + DialogueAudioExporter (AIFF render via AVSpeechSynthesizer.write) + VoiceActingCoachService (SFSpeechRecognizer scaffold, privacy-gated)
 ├── Gamification/                         # DialogueQuestGamification + StreakService + AchievementService
 ├── Pedagogy/                             # DDAEngine + DialogueScaffoldingService + ReturnLoopService + SessionTimerService + VariableReward + PatterCallbackService + MasteryMomentService + DialogueCraftSkillGraph (ForgeKnowledgeGraph DAG)
-├── Persistence/                          # DialoguePersistenceService + helpers
-├── Privacy/                              # ParentalConsentService + ParentalGateChallenge + DeclaredAgeRangeGate + CrisisResourcesProvider
+├── Persistence/                          # DialoguePersistenceService + AnthologyCollectionService + helpers
+├── Privacy/                              # ParentalConsentService + ParentalGateChallenge + DeclaredAgeRangeGate + CrisisResourcesProvider + TraumaAxisAdvisoryService
 ├── Reporting/                            # DialogueQuestProgressReportBuilder (ForgeReporting StudentReportData projection)
-├── Sensory/                              # DialogueSensoryService (ForgeSensory wrapper)
+├── Sensory/                              # DialogueSensoryService (ForgeSensory wrapper) + DialogueWritingSessionActivity (ForgeLiveActivities scaffold, gated on Widget Extension target)
 └── Spotlight/                            # AnthologySpotlightIndexer (ForgeSpotlight wrapper)
 
 Libraries/Sources/SharedUI/
