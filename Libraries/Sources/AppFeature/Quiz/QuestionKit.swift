@@ -95,12 +95,15 @@ public enum QuestionKitLoader {
     ]
 
     /// Phase 2 kits — triangle authoring + voice differentiation + the
-    /// multi-listener subtext crucible. Kits 05 + 06 + 07 ship now; kits
-    /// 08 + 09 land in follow-on PRs once these surface real craft gaps.
+    /// multi-listener subtext crucible + branch consequences + action
+    /// beats / silence-as-subtext. Kits 05–09 ship now; kits 10+ are
+    /// reserved for Phase 3 (read-aloud performance + voice-acting coach).
     public nonisolated static let phase2Kits: [String] = [
         "kit_05_triangle_voices",
         "kit_06_voice_crucible",
         "kit_07_subtext_crucible",
+        "kit_08_branch_consequences",
+        "kit_09_action_beats",
     ]
 
     /// Every kit identifier in canonical order — Phase 1 then Phase 2.

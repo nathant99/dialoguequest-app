@@ -47,25 +47,64 @@ struct QuestionKitTests {
 
     // MARK: - Phase 2
 
-    @Test("Phase 2 inventory ships kits 05 + 06 + 07")
+    @Test("Phase 2 inventory ships kits 05–09")
     func phase2KitLoadsAndHasExpectedTheme() throws {
         #expect(QuestionKitLoader.phase2Kits == [
             "kit_05_triangle_voices",
             "kit_06_voice_crucible",
-            "kit_07_subtext_crucible"
+            "kit_07_subtext_crucible",
+            "kit_08_branch_consequences",
+            "kit_09_action_beats"
         ])
-        // Kits 05 + 06 sit on the voice-consistency surface; kit 07
-        // sits on subtext_detection (multi-listener layered subtext).
+        // Kits 05 + 06 sit on the voice-consistency surface; 07 on
+        // subtext_detection; 08 on branching; 09 on tag_balance.
         let expectedThemes: [String: QuestionKit.Theme] = [
             "kit_05_triangle_voices": .voiceConsistency,
             "kit_06_voice_crucible": .voiceConsistency,
-            "kit_07_subtext_crucible": .subtextDetection
+            "kit_07_subtext_crucible": .subtextDetection,
+            "kit_08_branch_consequences": .branching,
+            "kit_09_action_beats": .tagBalance
         ]
         for kitID in QuestionKitLoader.phase2Kits {
             let kit = try QuestionKitLoader.load(id: kitID)
             #expect(kit.theme == expectedThemes[kitID])
             #expect(kit.questions.count >= 5)
         }
+    }
+
+    @Test("Kit 08 (Branch consequences) prompts reference branching vocabulary")
+    func kit08ReferencesBranchVocabulary() throws {
+        let kit = try QuestionKitLoader.load(id: "kit_08_branch_consequences")
+        #expect(kit.theme == .branching)
+        #expect(kit.questions.count == 5)
+        let body = kit.questions.map(\.prompt).joined(separator: " ").lowercased()
+        #expect(body.contains("branch") || body.contains("choice") || body.contains("consequence"))
+    }
+
+    @Test("Kit 09 (Action beats) prompts reference body / beat / silence")
+    func kit09ReferencesBeatVocabulary() throws {
+        let kit = try QuestionKitLoader.load(id: "kit_09_action_beats")
+        #expect(kit.theme == .tagBalance)
+        #expect(kit.questions.count == 5)
+        let body = kit.questions.map(\.prompt).joined(separator: " ").lowercased()
+        #expect(
+            body.contains("beat") ||
+            body.contains("said") ||
+            body.contains("silence") ||
+            body.contains("tag")
+        )
+    }
+
+    @Test("Phase 2 inventory has 5 kits total")
+    func phase2KitCount() {
+        #expect(QuestionKitLoader.phase2Kits.count == 5)
+    }
+
+    @Test("allKits is Phase 1 + Phase 2 in order")
+    func allKitsContainsPhase1ThenPhase2() {
+        #expect(QuestionKitLoader.allKits.count == 9)
+        #expect(QuestionKitLoader.allKits.prefix(4) == QuestionKitLoader.phase1Kits[...])
+        #expect(QuestionKitLoader.allKits.suffix(5) == QuestionKitLoader.phase2Kits[...])
     }
 
     @Test("Kit 06 (Voice Crucible) question prompts reference voice register vocabulary")

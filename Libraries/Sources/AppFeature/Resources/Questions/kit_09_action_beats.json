@@ -1,0 +1,67 @@
+{
+  "id": "kit_09_action_beats",
+  "title": "Action beats and held silence",
+  "theme": "tag_balance",
+  "questions": [
+    {
+      "id": "kit_09_q_01",
+      "prompt": "Cal said: \"I'm fine.\" Iris is staring at the door. Three lines in a row use the tag \"said.\" Which fix lands best?",
+      "options": [
+        { "id": "a", "label": "Drop one tag and replace it with an action beat — Iris turning the key in her pocket, for example." },
+        { "id": "b", "label": "Add more \"said\" tags so the reader is sure who's talking." },
+        { "id": "c", "label": "Replace every \"said\" with a different speech verb (\"murmured\", \"declared\", \"hissed\")." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Weigh says: a beat replaces a tag without losing the reader. The body carries the speaker."
+    },
+    {
+      "id": "kit_09_q_02",
+      "prompt": "Which sequence balances dialogue tags and action beats best?",
+      "options": [
+        { "id": "a", "label": "\"I'm fine,\" Iris said. // Cal frowned. // \"Then why are you crying?\"" },
+        { "id": "b", "label": "\"I'm fine,\" Iris said. // \"Then why are you crying?\" Cal said." },
+        { "id": "c", "label": "Iris said, \"I'm fine.\" Cal said, \"Then why are you crying?\" Iris said, \"I don't know.\" Cal said, \"OK.\"" }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "One tag, one beat, one bare line. The rhythm breathes."
+    },
+    {
+      "id": "kit_09_q_03",
+      "prompt": "Rest says the pause is also a line. In the writing, what does a held silence look like on the page?",
+      "options": [
+        { "id": "a", "label": "A short action beat with no speech — Mara closing the book and not looking up — followed by the next speaker." },
+        { "id": "b", "label": "An ellipsis at the end of every line." },
+        { "id": "c", "label": "Three blank lines in a row." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "An action beat IS the silence. The reader hears it because the dialogue stopped."
+    },
+    {
+      "id": "kit_09_q_04",
+      "prompt": "An action beat in dialogue should:",
+      "options": [
+        { "id": "a", "label": "Show one small physical thing the character does — and let the body carry the meaning." },
+        { "id": "b", "label": "Explain what the character is feeling so the reader doesn't have to guess." },
+        { "id": "c", "label": "Repeat the line that was just spoken." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "The body says what the line can't."
+    },
+    {
+      "id": "kit_09_q_05",
+      "prompt": "Which action beat does the most work for the SUBTEXT in this exchange? // Iris: \"I'm proud of you, Mara.\" // [action beat]",
+      "options": [
+        { "id": "a", "label": "Iris glanced at her phone before she finished the sentence." },
+        { "id": "b", "label": "Iris was wearing a green shirt." },
+        { "id": "c", "label": "Iris was in the kitchen." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "The phone-glance reframes the praise — Glance is grinning."
+    }
+  ]
+}
