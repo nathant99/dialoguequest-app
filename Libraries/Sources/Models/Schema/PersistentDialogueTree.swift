@@ -30,5 +30,11 @@ public final class PersistentDialogueTree {
     /// Anthology gallery filters to `isPublished == true`.
     public var isPublished: Bool = false
 
+    /// Mirrors `DialogueTree.isDraft` so the anthology can render the
+    /// "Draft" pill without re-decoding the JSON blob. Default `false`
+    /// keeps Phase 1 trees on-disk roundtripping cleanly (lightweight
+    /// SwiftData migration per `.claude/rules/swiftdata.md` § 15).
+    public var cachedIsDraft: Bool = false
+
     public init() {}
 }

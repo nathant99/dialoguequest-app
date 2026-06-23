@@ -9,6 +9,14 @@ public nonisolated struct DialogueTree: Codable, Sendable, Hashable, Identifiabl
     public let nodes: [DialogueNode]
     public let rootNodeID: UUID
     public let mood: DialogueMood?
+    /// Kid-facing draft flag. When `true`, the tree is a sketch the kid
+    /// wants to come back to; UI surfaces a "Draft" pill in the anthology.
+    /// Decodes to `false` when missing (backwards-compat with pre-Phase-2
+    /// trees), so existing on-disk blobs round-trip cleanly.
+    ///
+    /// Codified Phase Delight micro-delight coverage § Agency
+    /// (`Docs/FEATURE_PLAN.md`).
+    public let isDraft: Bool
 
     public init(
         id: UUID = UUID(),
@@ -16,7 +24,8 @@ public nonisolated struct DialogueTree: Codable, Sendable, Hashable, Identifiabl
         characters: [DialogueCharacterRef],
         nodes: [DialogueNode],
         rootNodeID: UUID,
-        mood: DialogueMood? = nil
+        mood: DialogueMood? = nil,
+        isDraft: Bool = false
     ) {
         self.id = id
         self.title = title
@@ -24,6 +33,56 @@ public nonisolated struct DialogueTree: Codable, Sendable, Hashable, Identifiabl
         self.nodes = nodes
         self.rootNodeID = rootNodeID
         self.mood = mood
+        self.isDraft = isDraft
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case characters
+        case nodes
+        case rootNodeID
+        case mood
+        case isDraft
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(UUID.self, forKey: .id)
+        self.title = try container.decode(String.self, forKey: .title)
+        self.characters = try container.decode([DialogueCharacterRef].self, forKey: .characters)
+        self.nodes = try container.decode([DialogueNode].self, forKey: .nodes)
+        self.rootNodeID = try container.decode(UUID.self, forKey: .rootNodeID)
+        self.mood = try container.decodeIfPresent(DialogueMood.self, forKey: .mood)
+        // Backwards-compat: Phase 1 trees omit `isDraft`. Default false so
+        // existing trees decode as non-draft.
+        self.isDraft = try container.decodeIfPresent(Bool.self, forKey: .isDraft) ?? false
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(title, forKey: .title)
+        try container.encode(characters, forKey: .characters)
+        try container.encode(nodes, forKey: .nodes)
+        try container.encode(rootNodeID, forKey: .rootNodeID)
+        try container.encodeIfPresent(mood, forKey: .mood)
+        try container.encode(isDraft, forKey: .isDraft)
+    }
+
+    /// Returns a copy of this tree with the draft flag toggled to the new
+    /// value. Useful for the kid's "Save as sketch" affordance, which
+    /// flips the flag without otherwise mutating the tree.
+    public func withDraftFlag(_ newValue: Bool) -> DialogueTree {
+        DialogueTree(
+            id: id,
+            title: title,
+            characters: characters,
+            nodes: nodes,
+            rootNodeID: rootNodeID,
+            mood: mood,
+            isDraft: newValue
+        )
     }
 
     /// Lookup by UUID. O(n); for hot-path traversal cache to a dictionary

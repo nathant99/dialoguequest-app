@@ -117,7 +117,8 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
                 characters: tree.characters,
                 nodes: [root],
                 rootNodeID: root.id,
-                mood: tree.mood
+                mood: tree.mood,
+                isDraft: tree.isDraft
             )
             selectedNodeID = root.id
         }
@@ -151,7 +152,8 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
             characters: updated,
             nodes: tree.nodes,
             rootNodeID: tree.rootNodeID,
-            mood: tree.mood
+            mood: tree.mood,
+            isDraft: tree.isDraft
         )
     }
 
@@ -162,7 +164,8 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
             characters: tree.characters,
             nodes: tree.nodes,
             rootNodeID: tree.rootNodeID,
-            mood: tree.mood
+            mood: tree.mood,
+            isDraft: tree.isDraft
         )
     }
 
@@ -173,8 +176,28 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
             characters: tree.characters,
             nodes: tree.nodes,
             rootNodeID: tree.rootNodeID,
-            mood: mood
+            mood: mood,
+            isDraft: tree.isDraft
         )
+    }
+
+    /// Toggle the kid-facing draft flag on the active tree. Pure value-type
+    /// mutation; persistence flows through the existing
+    /// `DialoguePersistenceService.save(_:)` call site that already runs
+    /// after every machine mutation.
+    ///
+    /// Phase Delight micro-delight coverage § Agency — lets the kid mark
+    /// a tree as "still in progress" without committing to a publish.
+    public mutating func toggleDraft() {
+        tree = tree.withDraftFlag(!tree.isDraft)
+    }
+
+    /// Explicitly set the draft flag (vs `toggleDraft()` which inverts).
+    /// Useful for tests + for the "Save as sketch" toolbar item which can
+    /// confidently push state to `true` without reading first.
+    public mutating func setDraft(_ value: Bool) {
+        guard tree.isDraft != value else { return }
+        tree = tree.withDraftFlag(value)
     }
 
     // MARK: - Tree editing
@@ -225,7 +248,8 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
             characters: tree.characters,
             nodes: nodes,
             rootNodeID: tree.rootNodeID,
-            mood: tree.mood
+            mood: tree.mood,
+            isDraft: tree.isDraft
         )
         selectedNodeID = newNode.id
         return newNode.id
@@ -245,7 +269,8 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
             characters: tree.characters,
             nodes: nodes,
             rootNodeID: tree.rootNodeID,
-            mood: tree.mood
+            mood: tree.mood,
+            isDraft: tree.isDraft
         )
     }
 
@@ -281,7 +306,8 @@ public nonisolated struct DialogueTreeMachine: Sendable, Equatable {
             characters: tree.characters,
             nodes: nodes,
             rootNodeID: tree.rootNodeID,
-            mood: tree.mood
+            mood: tree.mood,
+            isDraft: tree.isDraft
         )
         if selectedNodeID == nodeID { selectedNodeID = tree.rootNodeID }
     }

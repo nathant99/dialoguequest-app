@@ -90,6 +90,17 @@ struct AnthologyGalleryView: View {
                 Text(displayTitle)
                     .font(.headline)
                     .foregroundStyle(DialoguePalette.inkBlue)
+                if entry.isDraft {
+                    Text("Draft")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(DialoguePalette.inkBlue)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(DialoguePalette.warmGold.opacity(0.45))
+                        .clipShape(Capsule())
+                        .accessibilityLabel("Marked as a draft sketch")
+                        .accessibilityIdentifier("anthology.draftPill.\(entry.id)")
+                }
                 Spacer()
                 if entry.isPublished {
                     Image(systemName: "checkmark.seal.fill")

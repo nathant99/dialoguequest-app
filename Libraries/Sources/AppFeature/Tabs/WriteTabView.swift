@@ -25,6 +25,7 @@ struct WriteTabView: View {
     @State private var traumaAxisAdvisory: TraumaAxisAdvisoryService.Advisory?
     @State private var traumaAdvisorySurfacedThisSession: Bool = false
     @State private var showCrisisResourcesFromAdvisory: Bool = false
+    @State private var discoveryCameoSurfacedThisSession: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -39,6 +40,25 @@ struct WriteTabView: View {
             content
                 .navigationTitle(navigationTitle)
                 .toolbar {
+                    if machine.stage != .authoringCharacters {
+                        ToolbarItem(placement: .secondaryAction) {
+                            Button {
+                                machine.toggleDraft()
+                                DialogueSensoryService.shared.subtextRevealed()
+                            } label: {
+                                Label(
+                                    machine.tree.isDraft ? "Marked as sketch" : "Save as sketch",
+                                    systemImage: machine.tree.isDraft ? "bookmark.fill" : "bookmark"
+                                )
+                            }
+                            .accessibilityIdentifier("writeTab.draftToggle")
+                            .accessibilityHint(
+                                machine.tree.isDraft
+                                ? Text("This conversation is marked as a sketch. Tap to un-mark it.")
+                                : Text("Mark this conversation as a sketch so you can come back to it later. Sketches stay private to your anthology and skip the published-tree celebrations.")
+                            )
+                        }
+                    }
                     ToolbarItem(placement: .primaryAction) {
                         Button {
                             showCollaborativeSession = true
@@ -82,6 +102,22 @@ struct WriteTabView: View {
                     mentor: mentor,
                     castVoicing: castVoicing
                 )
+            }
+            // Discovery cameo — micro-delight § Discovery. A random
+            // LESSONS-layer cast member says hello once per session,
+            // gated by feature flag + minimum publish count. Reuses the
+            // `rareVoiceCraftTip` MentorBubbleView slot so the bubble
+            // dismisses on tap like the post-publish path.
+            if !discoveryCameoSurfacedThisSession,
+               publishedTreeCount >= CharacterCameoInvitations.discoveryMinimumPublishedTreeCount,
+               CastVoicingFeatureFlag.isEnabled,
+               rareVoiceCraftTip == nil {
+                var rng = SystemRandomNumberGenerator()
+                if CharacterCameoInvitations.shouldShowDiscoveryCameo(rng: &rng),
+                   let cameo = CharacterCameoInvitations.pickDiscoveryCameo(rng: &rng) {
+                    rareVoiceCraftTip = cameo.bubbleMessage
+                    discoveryCameoSurfacedThisSession = true
+                }
             }
         }
         .task(id: machine.selectedNodeID) {

@@ -38,19 +38,24 @@ public enum DialoguePersistenceService {
         public let mood: DialogueMood?
         public let lastEditedAt: Date
         public let isPublished: Bool
+        /// Mirrors `DialogueTree.isDraft` so the anthology can render the
+        /// "Draft" pill without re-decoding the full tree blob.
+        public let isDraft: Bool
 
         public init(
             id: UUID,
             title: String,
             mood: DialogueMood?,
             lastEditedAt: Date,
-            isPublished: Bool
+            isPublished: Bool,
+            isDraft: Bool = false
         ) {
             self.id = id
             self.title = title
             self.mood = mood
             self.lastEditedAt = lastEditedAt
             self.isPublished = isPublished
+            self.isDraft = isDraft
         }
     }
 
@@ -81,6 +86,7 @@ public enum DialoguePersistenceService {
         model.cachedTitle = tree.title
         model.cachedMoodRawValue = tree.mood?.rawValue
         model.isPublished = isPublished
+        model.cachedIsDraft = tree.isDraft
         return model
     }
 
@@ -93,7 +99,8 @@ public enum DialoguePersistenceService {
             title: model.cachedTitle,
             mood: model.cachedMoodRawValue.flatMap(DialogueMood.init(rawValue:)),
             lastEditedAt: model.lastEditedAt,
-            isPublished: model.isPublished
+            isPublished: model.isPublished,
+            isDraft: model.cachedIsDraft
         )
     }
 }
