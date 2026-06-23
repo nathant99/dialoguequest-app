@@ -24,7 +24,7 @@ public enum CastVoiceRegistry {
     /// All 10 profiles in canonical voicing-priority order. The LESSONS
     /// layer comes first (Pattern B — Patter's craft-friend voices take
     /// precedence at normal coaching surfaces), then WORLD, then META.
-    public static var allProfiles: [CastVoiceProfile] {
+    public nonisolated static var allProfiles: [CastVoiceProfile] {
         lessonsLayerProfiles + worldLayerProfiles + metaLayerProfiles
     }
 
@@ -32,7 +32,7 @@ public enum CastVoiceRegistry {
     /// the Wave-9 DN-S retrofit. Order: brogue → glance → rest → sprig
     /// → weigh (per pilot-derived learning #5 — start with the most
     /// formal register so the LM commits to a distinct baseline first).
-    public static var lessonsLayerProfiles: [CastVoiceProfile] {
+    public nonisolated static var lessonsLayerProfiles: [CastVoiceProfile] {
         [brogue, glance, rest, sprig, weigh]
     }
 
@@ -41,18 +41,18 @@ public enum CastVoiceRegistry {
     /// classical register quadrant: high-heroic → confessional →
     /// vernacular-comic → pastoral-tragic. Inherited from LyricForge's
     /// cluster gen at $0 marginal cost.
-    public static var worldLayerProfiles: [CastVoiceProfile] {
+    public nonisolated static var worldLayerProfiles: [CastVoiceProfile] {
         [heralda, murmur, quip, vesperline]
     }
 
     /// META-layer profiles — currently a single anchor (Audience Aria)
     /// surfacing only on kit-11/12 listener-perspective content.
-    public static var metaLayerProfiles: [CastVoiceProfile] {
+    public nonisolated static var metaLayerProfiles: [CastVoiceProfile] {
         [aria]
     }
 
     /// Lookup by stable cast id. Returns `nil` for unknown slugs.
-    public static func profile(id: String) -> CastVoiceProfile? {
+    public nonisolated static func profile(id: String) -> CastVoiceProfile? {
         allProfiles.first { $0.id == id }
     }
 
@@ -176,14 +176,50 @@ public enum CastVoiceRegistry {
     /// 0.4 is the FRAC lower-band of "starting to drift" per the
     /// `VoiceConsistencyAnalyzer` rubric used in `SubtextPanelView`'s
     /// voice-match bar (red < 0.4 < amber < 0.65 ≤ green).
-    public static let voiceDriftThreshold: Double = 0.4
+    public nonisolated static let voiceDriftThreshold: Double = 0.4
+
+    // MARK: - Cross-target catchphrase access
+
+    /// Catchphrase pool for the given cast id, joined into a single
+    /// baseline string suitable for token-overlap scoring. Returns `nil`
+    /// for unknown ids. Used by `AppFeature/Crucible/VoiceCrucibleMachine`
+    /// so it can score a kid's draft against the cast's voice baseline
+    /// without importing `ForgeAI` directly (avoids leaking the
+    /// FoundationModels-adjacent surface into the SwiftUI feature target).
+    public nonisolated static func voiceBaseline(for castID: String) -> String? {
+        guard let profile = profile(id: castID) else { return nil }
+        return profile.catchphrases.joined(separator: " ")
+    }
+
+    /// Display name for the given cast id (e.g., "Brogue", "Glance").
+    /// Returns `nil` for unknown ids. Surfaced for view-layer
+    /// consumption so views don't need to reach into `CastVoiceProfile`
+    /// directly.
+    public nonisolated static func displayName(for castID: String) -> String? {
+        profile(id: castID)?.displayName
+    }
+
+    /// One-line primitive embodiment summary for the LESSONS layer —
+    /// surfaces on the Voice Crucible cast picker so the kid sees a
+    /// short reader-facing "what this voice teaches" line before
+    /// picking a target. Reader-facing register; no engineering jargon.
+    public nonisolated static func lessonsLayerPrimitive(for castID: String) -> String? {
+        switch castID {
+        case "brogue": return "Voice consistency — same person, every line."
+        case "glance": return "Subtext — the line says one thing and means two."
+        case "rest":   return "Rhythm + silence — the pause is also a line."
+        case "sprig":  return "Branch meaningfulness — choices that re-route the story."
+        case "weigh":  return "Tag balance — the rhythm of attributions."
+        default:       return nil
+        }
+    }
 
     // MARK: - Profiles
 
     /// Voice consistency — the same character speaking *recognizably the
     /// same* across every line. Folk-rustic register; signature words
     /// `aye / lad / mind ye / in my day / by and by`.
-    public static let brogue = CastVoiceProfile(
+    public nonisolated static let brogue = CastVoiceProfile(
         id: "brogue",
         displayName: "Brogue",
         embodiment: "An elder border-collie in a worn flat-cap whose voice stays unmistakably consistent across every sentence — folk-rustic vocabulary, measured rhythm, and a small set of signature words (\"aye,\" \"lad,\" \"mind ye,\" \"in my day,\" \"by and by\") that surface naturally in nearly every line he speaks.",
@@ -205,7 +241,7 @@ public enum CastVoiceRegistry {
     /// Subtext — the implied meaning beside the spoken meaning. Glance
     /// keeps a two-layer "ghost words" frame and gently surfaces what
     /// a line is *not* saying.
-    public static let glance = CastVoiceProfile(
+    public nonisolated static let glance = CastVoiceProfile(
         id: "glance",
         displayName: "Glance",
         embodiment: "A subtext-keeper whose own speech-bubble has two layers — the spoken words on top, the ghost words underneath. Glance's job is to notice what a line is *not* saying and surface it as a quiet question, never as a verdict.",
@@ -227,7 +263,7 @@ public enum CastVoiceRegistry {
     /// Rhythm + silence — the pause between lines is itself a line of
     /// dialogue. Rest moves slowly; every utterance respects the beat
     /// before the speech.
-    public static let rest = CastVoiceProfile(
+    public nonisolated static let rest = CastVoiceProfile(
         id: "rest",
         displayName: "Rest",
         embodiment: "A patient fisher who treats the pause between dialogue lines as a line of dialogue. Rest never fills every gap — a held silence carries as much weight as a spoken line, and the kid is invited to feel the difference.",
@@ -249,7 +285,7 @@ public enum CastVoiceRegistry {
     /// Branch meaningfulness — every choice should *re-route the story*
     /// in a way the reader can feel. Sprig is a sapling-tween whose
     /// own branches re-route her body when chosen.
-    public static let sprig = CastVoiceProfile(
+    public nonisolated static let sprig = CastVoiceProfile(
         id: "sprig",
         displayName: "Sprig",
         embodiment: "A sapling-tween whose branches grow only where a story choice actually re-routes the rest of the dialogue. Sprig coaches kids to feel the weight of each branch — if both sides lead to the same place, the branch did not really branch.",
@@ -270,7 +306,7 @@ public enum CastVoiceRegistry {
 
     /// Tag balance — the rhythm of dialogue tags. Weigh runs a small
     /// scale that tilts heavy with too many tags and light with too few.
-    public static let weigh = CastVoiceProfile(
+    public nonisolated static let weigh = CastVoiceProfile(
         id: "weigh",
         displayName: "Weigh",
         embodiment: "A kid who keeps a small scale that measures dialogue-tag rhythm. Too many tags — the scale tilts heavy and the dialogue drags. Too few — the scale tilts light and the reader loses the speaker. Weigh names the tilt and invites a small fix.",
@@ -294,7 +330,7 @@ public enum CastVoiceRegistry {
     /// Epic / High-Heroic register. Heralda travels with a small drum
     /// and speaks in third-person omniscient cadences — heralding the
     /// scene rather than inhabiting it.
-    public static let heralda = CastVoiceProfile(
+    public nonisolated static let heralda = CastVoiceProfile(
         id: "heralda",
         displayName: "Heralda the Loud",
         embodiment: "A traveling herald who carries a small marching drum and announces every scene in third-person omniscient voice — bold cadences, capital-letter weight, the high-heroic register. Heralda shows what an Epic voice sounds like; she never tells the kid which voice is best.",
@@ -316,7 +352,7 @@ public enum CastVoiceRegistry {
     /// Lyric / Confessional register. Murmur writes in a small leather
     /// journal and speaks in first-person present — closest possible
     /// distance between speaker and listener.
-    public static let murmur = CastVoiceProfile(
+    public nonisolated static let murmur = CastVoiceProfile(
         id: "murmur",
         displayName: "Murmur",
         embodiment: "A quiet keeper of a leather-bound journal who speaks in first-person present — confessional, close-distance, no shouting. Murmur demonstrates the Lyric register by leaning in and naming a feeling rather than describing it from outside.",
@@ -338,7 +374,7 @@ public enum CastVoiceRegistry {
 
     /// Comic / Vernacular register. Quip Goodfellow is a trickster
     /// whose voice runs on quick rhythm, common words, and a wink.
-    public static let quip = CastVoiceProfile(
+    public nonisolated static let quip = CastVoiceProfile(
         id: "quip",
         displayName: "Quip Goodfellow",
         embodiment: "A pocket-trickster whose voice runs on quick rhythm, everyday vocabulary, and a wink. Quip demonstrates the Comic / Vernacular register — speech that lands like a joke even when it carries weight. The humor is structural, not slapstick.",
@@ -359,7 +395,7 @@ public enum CastVoiceRegistry {
 
     /// Tragic / Pastoral register. Vesperline speaks in twilight,
     /// elegiac cadences — weighted, slow, attentive to what's lost.
-    public static let vesperline = CastVoiceProfile(
+    public nonisolated static let vesperline = CastVoiceProfile(
         id: "vesperline",
         displayName: "Vesperline",
         embodiment: "A twilight-walker whose voice carries weight slowly and attends to what's already lost. Vesperline demonstrates the Tragic / Pastoral register — elegiac cadences, attention to landscape, sentences that hold an after-feeling.",
@@ -388,7 +424,7 @@ public enum CastVoiceRegistry {
     /// NEVER grades, fixes, or rewrites the kid's draft. The
     /// `antiPatterns` enforce this at the system-prompt level and the
     /// `CastVoicingService` tests assert it at the output level.
-    public static let aria = CastVoiceProfile(
+    public nonisolated static let aria = CastVoiceProfile(
         id: "aria",
         displayName: "Audience Aria",
         embodiment: "A listener at the back of the room whose job is to report what an audience experiences — never to grade the draft. Aria notices when a line lands, when one drags, when a register shifts, when the room leans in. Her reports are observations the writer chooses to use or set aside.",
