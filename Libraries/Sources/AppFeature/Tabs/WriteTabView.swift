@@ -138,10 +138,21 @@ struct WriteTabView: View {
                 let publishedMood = machine.tree.mood
                 Task { await StreakService.shared.recordPublishedTree(mood: publishedMood) }
                 // Variable-ratio reward: ~1 in 5 publishes surfaces a
-                // curated voice-craft tip in a Patter bubble.
-                if VariableReward.shouldShowBonus() {
-                    var rng = SystemRandomNumberGenerator()
-                    rareVoiceCraftTip = VariableReward.pickVoiceCraftTip(rng: &rng)
+                // curated voice-craft tip in a Patter bubble. The cameo
+                // path (below) is mutually exclusive — when it wins, it
+                // replaces the tip in the same overlay so the kid never
+                // sees two bubbles at once.
+                var rewardRNG = SystemRandomNumberGenerator()
+                var cameoFired = false
+                if publishedTreeCount >= CharacterCameoInvitations.minimumPublishedTreeCount,
+                   CastVoicingFeatureFlag.isEnabled,
+                   CharacterCameoInvitations.shouldShowInvitation(rng: &rewardRNG),
+                   let invitation = CharacterCameoInvitations.pickInvitation(rng: &rewardRNG) {
+                    rareVoiceCraftTip = invitation.bubbleMessage
+                    cameoFired = true
+                }
+                if !cameoFired, VariableReward.shouldShowBonus() {
+                    rareVoiceCraftTip = VariableReward.pickVoiceCraftTip(rng: &rewardRNG)
                 }
                 // Feed the tree's outcome into DDA so the next session's
                 // voice-drift threshold + branch-reflection floor adapt
