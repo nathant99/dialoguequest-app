@@ -1,8 +1,10 @@
-# Agent Safety — Reaffirmed (2026-06-22)
+# Agent Safety — Reaffirmed (2026-06-23)
 
 Direction: **session note → future Claude Code sessions**. Single-page reaffirmation of the Xcode-managed-files boundary, the staging + committing carve-out, and the canonical SPM-side work surfaces. Future sessions should read this once before touching the repo.
 
-> **Last reaffirmed 2026-06-22 (late session)** by the user-direct multi-PR ForgeKit-integration round. Both the boundary AND the staging-carve-out remain canonical. The rule survives every round — author no privileged file from disk; file `HANDOFF_TO_USER_<TOPIC>.md` instead. Staging + committing the resulting GUI diff IS the agent's job. If a future session adds a new privileged surface (a new entitlement, a new Info.plist key, an asset catalog change), file the fresh handoff — DO NOT author the privileged file directly. The full glob table lives in `@CLAUDE.md` § Xcode Agent Safety + `@.claude/rules/xcode-agent-safety.md`; this doc is the single-page reaffirmation.
+> **Last reaffirmed 2026-06-23 (mid-session)** by the user-direct multi-PR ForgeKit-integration + feature-plan round. Both the boundary AND the staging-carve-out remain canonical. The rule survives every round — author no privileged file from disk; file `HANDOFF_TO_USER_<TOPIC>.md` instead. Staging + committing the resulting GUI diff IS the agent's job. If a future session adds a new privileged surface (a new entitlement, a new Info.plist key, an asset catalog change), file the fresh handoff — DO NOT author the privileged file directly. The full glob table lives in `@CLAUDE.md` § Xcode Agent Safety + `@.claude/rules/xcode-agent-safety.md`; this doc is the single-page reaffirmation.
+>
+> **2026-06-23 auto-cycle note** (per saved feedback `feedback_auto_cycle_branch_pr_merge.md`): for multi-commit work the default loop is `branch → commit → push → gh pr create → gh pr merge --merge --delete-branch → verify` with no per-step confirmation prompts. The auto-cycle DOES NOT apply to Xcode-managed-file authoring — those still require a `HANDOFF_TO_USER_*.md` and user-side GUI work. Staging + committing the GUI-authored diff afterward IS in-scope for the auto-cycle.
 
 ## What the agent will NEVER do (authoring)
 
@@ -91,6 +93,8 @@ These are the GUI items the user (not the agent) needs to act on:
 | `Docs/HANDOFF_TO_USER_DECLARED_AGE_RANGE_API.md` | Add Family Controls entitlement + `NSChildUseDescription` Info.plist key via Xcode GUI. Unblocks parental-consent Phase 2. (Once GUI work lands, the agent scaffolds the `DeclaredAgeRangeGate` Swift surface so the API call is entitlement-gated + safe by default.) |
 
 Two prior items closed earlier in 2026-06-21: `HANDOFF_TO_USER_CLEAR_STALE_WORKSPACE_GROUP.md` (stale group removed) + `HANDOFF_TO_USER_ADD_AIMENTORTESTS_TO_TESTPLAN.md` (test plan now includes `AIMentorTests`). Verify-before-action: if the user reports either issue resurfacing, re-pull the test plan + workspace data via `git pull` before re-filing.
+
+A third user handoff lands in the 2026-06-23 round: `HANDOFF_TO_HUB_PATTER_APP_ICON_PNG.md` — request to hub for the 1024×1024 Patter source PNG that the App Icon handoff depends on (asset-generation ownership lives with hub per `@.claude/rules/portfolio.md` § "Asset generation ownership"). Once the PNG lands in `Resources/Art/`, the App Icon handoff's blocker is cleared and Icon Composer GUI work can run.
 
 When the user finishes any of these, the agent's role is to stage + commit the resulting diff. Confirm the test plan + scheme are loading correctly via `BuildProject` afterwards.
 
