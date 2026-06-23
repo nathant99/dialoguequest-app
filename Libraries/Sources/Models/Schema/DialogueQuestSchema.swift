@@ -11,7 +11,13 @@ public enum DialogueQuestSchemaV1: VersionedSchema {
     public static let versionIdentifier: Schema.Version = .init(1, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
-        [PersistentDialogueTree.self]
+        // Phase 4 anthology curation adds `AnthologyCollectionRecord`.
+        // Per `.claude/rules/swiftdata.md` rule "Pre-App Store: don't
+        // create new `VersionedSchema` for unreleased models", the model
+        // is added directly to V1 (no V2 schema or migration stage
+        // needed). SwiftData picks up the new model class via lightweight
+        // migration on existing dev builds.
+        [PersistentDialogueTree.self, AnthologyCollectionRecord.self]
     }
 }
 

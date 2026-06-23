@@ -18,6 +18,7 @@ struct DialogueQuestApp: App {
         do {
             modelContainer = try ModelContainer(
                 for: PersistentDialogueTree.self,
+                AnthologyCollectionRecord.self,
                 migrationPlan: DialogueQuestMigrationPlan.self
             )
         } catch {
