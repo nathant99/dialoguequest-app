@@ -85,10 +85,10 @@ Libraries/
 ├── Package.swift                    # swift-tools 6.2, .iOS(.v26), -default-isolation MainActor
 ├── Sources/
 │   ├── Models/                      # Schema/ + ValueTypes/ — domain types + SwiftData @Model classes
-│   ├── Services/                    # Analytics/ Analyzers/ Gamification/ Pedagogy/ Persistence/ Privacy/ — Phase 1+2 services
+│   ├── Services/                    # Analytics/ Analyzers/ Gamification/ Pedagogy/ Persistence/ Privacy/ Reporting/ Sensory/ Spotlight/ — Phase 1+2 services
 │   ├── SharedUI/                    # DialogueQuestTheme + Mentor/MentorBubbleView (lean; rich UI lives in AppFeature)
 │   ├── AIMentor/                    # PatterMentor + Generables/ + Fallbacks/ + CastVoicing/
-│   └── AppFeature/                  # RootView + 14 feature subfolders (Tabs/ Builder/ Inspector/ Panels/ Dashboard/ Mentor/ Onboarding/ Adventure/ Quiz/ Anthology/ Progress/ Profile/ Settings/ Welcome/ Parents/ Together/) + Resources/
+│   └── AppFeature/                  # RootView + 17 feature subfolders (Tabs/ Builder/ Inspector/ Panels/ Dashboard/ Mentor/ Onboarding/ Adventure/ Crucible/ Intents/ Quiz/ Anthology/ Progress/ Profile/ Settings/ Welcome/ Parents/ Together/) + Resources/
 └── Tests/
     ├── ForgeKitIntegrationTests/    # ForgeKit availability sanity tests
     ├── ModelsTests/                 # value-type Codable + analyzers
@@ -117,9 +117,12 @@ Libraries/Sources/Services/
 ├── Analytics/                            # RetentionMetricsService + DialogueQuestAnalytics (ForgeAnalytics wrapper)
 ├── Analyzers/                            # BranchMeaningfulnessScorer + VoiceConsistencyAnalyzer + TagBalancer + TriangleDynamics
 ├── Gamification/                         # DialogueQuestGamification + StreakService + AchievementService
-├── Pedagogy/                             # DDAEngine + ReturnLoopService + SessionTimerService + VariableReward
+├── Pedagogy/                             # DDAEngine + DialogueScaffoldingService + ReturnLoopService + SessionTimerService + VariableReward + PatterCallbackService + MasteryMomentService + DialogueCraftSkillGraph (ForgeKnowledgeGraph DAG)
 ├── Persistence/                          # DialoguePersistenceService + helpers
-└── Privacy/                              # ParentalConsentService + CrisisResourcesProvider
+├── Privacy/                              # ParentalConsentService + ParentalGateChallenge + DeclaredAgeRangeGate + CrisisResourcesProvider
+├── Reporting/                            # DialogueQuestProgressReportBuilder (ForgeReporting StudentReportData projection)
+├── Sensory/                              # DialogueSensoryService (ForgeSensory wrapper)
+└── Spotlight/                            # AnthologySpotlightIndexer (ForgeSpotlight wrapper)
 
 Libraries/Sources/SharedUI/
 ├── DialogueQuestTheme.swift              # palette + ForgeTheme conformance
@@ -141,6 +144,8 @@ Libraries/Sources/AppFeature/
 ├── Mentor/                               # PatterReactionService + CastVoicingChip + CastVoicingService
 ├── Onboarding/                           # 6-step flow (parent-handoff step + 5 kid steps)
 ├── Adventure/                            # DialogueQuestHubContribution
+├── Crucible/                             # VoiceCrucibleMachine + VoiceCrucibleView (Phase 2 adventure mode)
+├── Intents/                              # DialogueQuestIntents (App Intents + AppShortcutsProvider — Siri / Shortcuts)
 ├── Quiz/                                 # QuizMachine + QuizView + QuestionKit
 ├── Anthology/                            # AnthologyGalleryView
 ├── Progress/                             # ProgressDashboardView
@@ -179,6 +184,10 @@ Specific to DialogueQuest. Portfolio-wide bites live in `@.claude/rules/`; the e
 - **`PassAndPlayEngine`'s `payloadProvider` must be `@Sendable`** when the closure captures a Sendable value type — closures that don't capture `self` from a `@MainActor` class can still trigger isolation inference if not marked `@Sendable`. `CollaborativeDialogueSession.start` captures a local `let promptPool` (Sendable value-type array) and marks the closure `@MainActor @Sendable` per the rule. Reference impl: `Libraries/Sources/AppFeature/Together/CollaborativeDialogueSession.swift`.
 - **`DialogueTreeMachine.replaceTree(_:)` resets per-tree caches** — selection, `reflectedBranchPointIDs`, `confirmedSubtextLineIDs`, and `lastError`. Callers handing over a tree from a collaborative session don't need to reset achievements or `publishedTreeCount` — those are app-level counters and stay intact.
 - **`WritingEvaluator.VoiceCheck` is the canonical cross-cluster shape** — both `VoiceConsistencyAnalyzer` + `DialogueLineAnalysis.toVoiceCheck(...)` project into it. Consumers should program against `WritingEvaluator.VoiceCheck` / `VoiceSummary` rather than either concrete producer so a future CharacterForge-imported voice baseline is a drop-in swap. Lives in `Models/ValueTypes/WritingEvaluator.swift`.
+- **`CastVoiceRegistry` lookups + static `let` profiles must be `nonisolated`** — the registry's `profile(id:)` / `lessonsLayerProfiles` / `voiceBaseline(for:)` helpers AND every per-cast `static let brogue` / `glance` / `rest` / etc. need `nonisolated` so cross-target value-type callers (e.g., `AppFeature/Crucible/VoiceCrucibleMachine`) can read them without an unnecessary MainActor hop. The default-MainActor SPM isolation otherwise infers the lookups as MainActor-only, and pure value-type machines can't reach them. Codified 2026-06-23 when Voice Crucible shipped.
+- **App Intent `static var title / description / openAppWhenRun` must be `static let`** under Swift 6 strict concurrency — declaring them as `static var` even with a default trips "static property is not concurrency-safe because it is nonisolated global shared mutable state". The `AppIntent` protocol declares them as `static var ... { get }`, and `static let` satisfies the requirement. Codified 2026-06-23 from `DialogueQuestIntents.swift`.
+- **`AppShortcut.phrases` must contain `\(.applicationName)` interpolation in EVERY string** — Apple's macro guard enforces "Invalid Utterance. Every App Shortcut utterance should have one '${applicationName}' in it." Two-phrase variants need to interpolate the app name in BOTH; hardcoding the app name fails compile. Codified 2026-06-23 from `DialogueQuestIntents.swift`.
+- **`@AppShortcutsBuilder` is a result builder — list `AppShortcut` instances directly, NOT inside an array literal** — Apple's `AppShortcutsProvider.appShortcuts` returns `[AppShortcut]` but uses `@AppShortcutsBuilder`. Wrapping in `[ ... ]` trips "Cannot convert value of type '[AppShortcut]' to expected argument type 'AppShortcut'". Codified 2026-06-23 from `DialogueQuestIntents.swift`.
 
 ## Reference Documents
 

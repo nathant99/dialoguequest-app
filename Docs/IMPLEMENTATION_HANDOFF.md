@@ -6,6 +6,18 @@ target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
 
+> **2026-06-23 round addendum** — seven PRs landed in a single session (#86 → #92). Net state delta:
+>
+> - **Xcode-agent-safety reaffirmed for 2026-06-23** (`Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` date-bumped; auto-cycle discipline note added — multi-commit work runs the branch → PR → merge loop without per-step confirmation, except for Xcode-managed-file authoring which still requires a `HANDOFF_TO_USER_*.md`).
+> - **Voice Crucible adventure mode** SHIPPED (Phase 2 row 131 closed). 3-stage `VoiceCrucibleMachine` + `VoiceCrucibleView` reachable from `AdventureTabView`'s unlocked content; per-(cast,band) coaching lines; 19 tests green. Cross-target plumbing exposed `VoiceConsistencyAnalyzer.score(sample:against:)` + `CastVoiceRegistry.voiceBaseline(for:)` / `.displayName(for:)` / `.lessonsLayerPrimitive(for:)` + marked registry static lets `nonisolated`.
+> - **Phase 2 question kits 08 + 09 SHIPPED** — `kit_08_branch_consequences.json` (branching) + `kit_09_action_beats.json` (tag balance + silence-as-subtext). Phase 2 exit-criteria "9 question kits live" now MET. 6 new QuestionKit tests.
+> - **ForgeIntents** wired (Siri / Shortcuts deep links). 4 App Intents (Open / StartDialogue / ShowMyProgress / OpenWordWorkshop) routed through a `DialogueQuestIntentNavigation` notification bridge that `RootView` observes via an async-for-await sequence over NotificationCenter (no Combine). 9 tests green.
+> - **ForgeSpotlight** wired. `AnthologyGalleryView.refresh()` now batches its published-tree snapshot through `AnthologySpotlightIndexer` (Services/Spotlight/) so the kid can resurface their own anthology via Spotlight. Wipe-then-index pattern handles deletions. 11 tests green.
+> - **ForgeKnowledgeGraph** wired. `DialogueCraftSkillGraph` models the 6 dialogue-craft primitives as a DAG with CCSS/NCAS standards alignment + Bloom-level annotations + cast embodiment mapping. `nextPrimitive(mastered:)` uses `GapAnalyzer` + lowest-Bloom tiebreaker for adaptive scaffolding recommendations. 13 tests green.
+> - **ForgeReporting** wired. `DialogueQuestProgressReportBuilder` projects on-app counters onto `StudentReportData` with the 4 canonical CCSS/NCAS standards as classified `StandardProficiency` rows. `ParentProgressDashboardView` now renders proficiency rows (code + level chip + percentage progress bar) when kid has activity; falls back to standards-overview on fresh installs. 12 tests green.
+> - **Hub asset handoff filed**: `Docs/HANDOFF_TO_HUB_PATTER_APP_ICON_PNG.md` requests the 1024×1024 Patter source PNG that the App Icon user handoff is blocked on.
+> - **ForgeKit module count consumed**: 13 → 16 (added `ForgeIntents` to AppFeature + `ForgeKnowledgeGraph` + `ForgeReporting` + `ForgeSpotlight` to Services).
+>
 > **2026-06-22 late-session reaffirmation** — Xcode-managed-files safety rule reaffirmed mid-session (user-direct); `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` updated; stale FEATURE_PLAN checkboxes for `local CharacterDef definition flow` + the 4-bullet Onboarding & Child Safety surface have been ticked off against shipped reality.
 >
 > **2026-06-22 round addendum** — five PRs (#61 → #65 + this PR) landed in a single session. Net state delta:
@@ -158,17 +170,17 @@ Content lives at `Libraries/Sources/AppFeature/Resources/Questions/kit_01.json` 
 
 ## 7. ForgeKit Modules to Wire
 
-Pin: `from: "0.99.0"`. Per-target wiring (canonical):
+Pin: `from: "0.99.0"`. Per-target wiring (canonical, post-2026-06-23):
 
 | Target | Modules | Notes |
 |---|---|---|
 | `Models` | `ForgeModels` | Foundational types (StudentProfile, BloomLevel, GradeLevel) |
-| `Services` | `ForgePersistence` + `ForgeAI` + `ForgeAnalytics` | SwiftData container + on-device AI helpers + privacy-first analytics |
+| `Services` | `ForgePersistence` + `ForgeAI` + `ForgeAnalytics` + `ForgeGamification` + `ForgeKnowledgeGraph` + `ForgeModels` + `ForgePedagogy` + `ForgeReporting` + `ForgeSensory` + `ForgeSpotlight` | SwiftData container + on-device AI + analytics + gamification + skill-graph DAG + pedagogy scaffolding + standards-mapped reporting + sensory palette + Spotlight indexer |
 | `SharedUI` | `ForgeUI` + `ForgeAccessibility` | Theme protocol + 11 reusable components + COPPA consent + session timer |
 | `AIMentor` | `ForgeAI` | LanguageModelSession lifecycle |
-| `AppFeature` | `ForgeNavigation` + `ForgeAdventure` + `ForgeAvatar` + `ForgeCelebration` + `ForgeGamification` + `ForgePedagogy` + `ForgeStateMachine` | Root nav + Word Workshop adventure mode + Avatar editor + celebration orchestration + XP/streak/achievements + Bloom-level scaffolding + DialogueTreeMachine helper |
+| `AppFeature` | `ForgeUI` + `ForgeNavigation` + `ForgeAdventure` + `ForgeAvatar` + `ForgeCelebration` + `ForgeGamification` + `ForgeIntents` + `ForgePassAndPlay` + `ForgePedagogy` + `ForgeProgression` + `ForgeStateMachine` + `ForgeSync` | Root nav + Word Workshop adventure mode + Avatar editor + celebration orchestration + XP/streak/achievements + Siri / Shortcuts deep links + pass-and-play collaborative + Bloom-level scaffolding + progression gating + state-machine helper + cross-app sync |
 
-Modules **deferred to Phase 2+**: `ForgeContent` (hub kit distribution), `ForgeReporting` (parent dashboard), `ForgeSync` (cross-app progression), `ForgeClassroom` (Phase 4 classroom mode).
+Modules **deferred to Phase 2+**: `ForgeContent` (hub kit distribution), `ForgeClassroom` (Phase 4 classroom mode), `ForgeWidgets` / `ForgeLiveActivities` (need separate app targets + entitlements — file user handoff when desired).
 
 ## 8. Constraints
 
