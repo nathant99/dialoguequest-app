@@ -32,9 +32,13 @@ struct WriteTabView: View {
     @State private var showCrisisResourcesFromAdvisory: Bool = false
     @State private var discoveryCameoSurfacedThisSession: Bool = false
     @State private var readAloudService = DialogueReadAloudService()
+    @State private var liveActivity = DialogueWritingSessionActivity.shared
+    @State private var liveActivityStartedAt: Date?
+    @State private var liveActivityStarted: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.scenePhase) private var scenePhase
 
     private let scorer = BranchMeaningfulnessScorer()
     private let voiceAnalyzer = VoiceConsistencyAnalyzer()
@@ -169,6 +173,13 @@ struct WriteTabView: View {
             if !traumaAdvisorySurfacedThisSession {
                 updateTraumaAxisAdvisory()
             }
+            // Live Activity — surface the writing session on the Lock
+            // Screen / Dynamic Island. Safe no-op when the Widget
+            // Extension target isn't yet shipped per
+            // `HANDOFF_TO_USER_WIDGET_EXTENSION.md`; once the kid has
+            // ≥ 1 node, start the activity (idempotent), then update it
+            // on every node-count change.
+            syncLiveActivity()
         }
         .onChange(of: machine.confirmedSubtextLineIDs) { oldSet, newSet in
             // The kid confirmed a subtext. Glance affirms via cast voicing.
@@ -189,6 +200,10 @@ struct WriteTabView: View {
             // Pure side-effect; the AppStorage value is the source of truth
             // for the next session's tier — current session keeps its cap.
             if newStage == .published {
+                // End the Live Activity (if any) when the kid publishes —
+                // the writing session is complete. Safe no-op if the
+                // activity was never started (unwired build).
+                endLiveActivity()
                 publishedTreeCount += 1
                 // On-device privacy-safe analytics: count + mood + character
                 // count are categorical, no PII. ForgeAnalytics PII blocklist
@@ -284,6 +299,17 @@ struct WriteTabView: View {
         }
         .onChange(of: machine.reflectedBranchPointIDs) { _, _ in
             evaluateAchievements()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            // End the Live Activity when the kid backgrounds for long
+            // periods. Lock Screen cards that linger past the writing
+            // session become noisy; ending on background-transition is
+            // the conservative + kid-respectful default. (The card auto-
+            // dismisses at iOS's own 8-hour cap regardless; this is an
+            // upper bound to be polite.)
+            if newPhase == .background {
+                endLiveActivity()
+            }
         }
         .sheet(item: branchSheetBinding) { branchID in
             BranchMeaningfulnessCheckView(
@@ -541,6 +567,72 @@ struct WriteTabView: View {
             get: { activeBranchPointID.map(PendingBranchSheet.init) },
             set: { activeBranchPointID = $0?.id }
         )
+    }
+
+    // MARK: - Live Activity wiring
+
+    /// Number of nodes the Lock Screen card targets visually. The Forge
+    /// progress ring caps at this value; trees beyond it render at 100%.
+    /// Aligned to the Phase 1 ProgressiveDisclosure session-tier cap so
+    /// the bar fills naturally for the kid's current tier.
+    private static let liveActivityNodesTarget: Int = 15
+
+    /// Start or update the Live Activity for the in-progress writing
+    /// session. Idempotent — safe to call from any `.task(id:)` hook.
+    /// Underlying `DialogueWritingSessionActivity` short-circuits to a
+    /// no-op when not wired (per the entitlement-gated rule).
+    private func syncLiveActivity() {
+        let nodeCount = machine.tree.nodes.count
+        // Skip until the kid has at least one node — an empty tree
+        // doesn't deserve a Lock Screen card.
+        guard nodeCount >= 1 else { return }
+        // Skip when the activity gate is unwired — keeps the started-flag
+        // bookkeeping aligned to actual surfaced activities. (Also
+        // structurally redundant with the safe-no-op inside the service,
+        // but explicit here for callsite clarity.)
+        guard DialogueWritingSessionActivity.isWired else { return }
+        let started = liveActivityStartedAt ?? Date()
+        if liveActivityStartedAt == nil {
+            liveActivityStartedAt = started
+        }
+        let attributes = DialogueWritingSessionActivity.WritingSessionAttributes(
+            subjectName: liveActivitySubjectName,
+            iconName: "text.bubble",
+            totalNodesTarget: Self.liveActivityNodesTarget
+        )
+        let elapsedMinutes = max(0, Int(Date().timeIntervalSince(started) / 60))
+        let state = DialogueWritingSessionActivity.WritingSessionContentState(
+            currentNodeCount: nodeCount,
+            totalNodesTarget: Self.liveActivityNodesTarget,
+            moodLabel: machine.tree.mood?.displayName ?? "—",
+            elapsedMinutes: elapsedMinutes,
+            isPaused: false
+        )
+        if !liveActivityStarted {
+            liveActivity.start(attributes: attributes, state: state)
+            liveActivityStarted = true
+        } else {
+            liveActivity.update(state: state)
+        }
+    }
+
+    /// End the Live Activity if one is currently surfaced. Resets the
+    /// session bookkeeping so a future writing session starts clean.
+    /// Safe to call from any thread / any state.
+    private func endLiveActivity() {
+        guard liveActivityStarted else { return }
+        liveActivity.end()
+        liveActivityStarted = false
+        liveActivityStartedAt = nil
+    }
+
+    /// Lock Screen card title. Uses the tree's title when set, otherwise
+    /// falls back to a neutral "Writing a scene" so the card always has
+    /// human-readable text.
+    private var liveActivitySubjectName: String {
+        let title = machine.tree.title.trimmingCharacters(in: .whitespaces)
+        if title.isEmpty { return "Writing a scene" }
+        return title
     }
 
     /// Bucket a raw node count into a categorical label for analytics.

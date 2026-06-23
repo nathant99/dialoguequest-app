@@ -101,4 +101,40 @@ struct DialogueWritingSessionActivityTests {
         let forge = state.toForgeState()
         #expect(forge.status == .active)
     }
+
+    // MARK: - Lifecycle no-op invariants (entitlement-gated)
+
+    @Test("start / update / end are safe to call when not wired (no crash, no state change)")
+    func lifecycleSafeWhenUnwired() {
+        let activity = DialogueWritingSessionActivity.shared
+        let attributes = DialogueWritingSessionActivity.WritingSessionAttributes(
+            subjectName: "Test scene"
+        )
+        let state = DialogueWritingSessionActivity.WritingSessionContentState(
+            currentNodeCount: 3,
+            totalNodesTarget: 15,
+            moodLabel: "Quiet",
+            elapsedMinutes: 2,
+            isPaused: false
+        )
+        // No expectation other than: nothing crashes. The activity manager
+        // is never touched when isWired is false; if wired, the calls
+        // succeed but ActivityKit is real so we don't inspect state.
+        activity.start(attributes: attributes, state: state)
+        activity.update(state: state)
+        activity.end()
+        if !DialogueWritingSessionActivity.isWired {
+            #expect(activity.availability == .notWired)
+        }
+    }
+
+    @Test("end is idempotent — calling it twice does not crash")
+    func endIsIdempotent() {
+        let activity = DialogueWritingSessionActivity.shared
+        activity.end()
+        activity.end()
+        // Both calls are safe regardless of wiring state.
+        let known: [DialogueWritingSessionActivity.Availability] = [.notWired, .ready, .active]
+        #expect(known.contains(activity.availability))
+    }
 }
