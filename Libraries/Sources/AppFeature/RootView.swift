@@ -18,6 +18,7 @@ public struct RootView: View {
     @State private var welcomeBackDismissed: Bool = false
     @State private var welcomeBackMessage: String?
     @State private var showSessionCloser: Bool = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage("dq.hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @AppStorage("dq.publishedTreeCount") private var publishedTreeCount: Int = 0
     /// Mirror of `MasteryMomentService`'s `dq.firstMasteryAchievedAt`
@@ -178,7 +179,7 @@ public struct RootView: View {
                     welcomeBackDismissed = true
                 }
             )
-            .transition(.opacity)
+            .transition(reduceMotion ? .identity : .opacity)
         }
     }
 
@@ -186,7 +187,8 @@ public struct RootView: View {
     /// kid's streak appears broken (≥ 2 calendar days lapsed with
     /// freezes exhausted). Dismissible via tap so a re-launch doesn't
     /// re-pester. Reduce-Motion-aware: the appearance transition
-    /// collapses to opacity per `.claude/rules/swiftui.md`.
+    /// collapses to `.identity` (instant snap) when the kid has
+    /// `accessibilityReduceMotion` enabled.
     @ViewBuilder
     private var brokenStreakBanner: some View {
         if !brokenStreakDismissed, case .broken = StreakService.shared.inspectStreakStatus() {
@@ -217,7 +219,7 @@ public struct RootView: View {
             .padding(.horizontal, 16)
             .accessibilityElement(children: .combine)
             .accessibilityLabel(StreakService.brokenStreakMessage)
-            .transition(.opacity)
+            .transition(reduceMotion ? .identity : .opacity)
         }
     }
 }

@@ -5,10 +5,11 @@ import SharedUI
 /// returns true. Renders the warm greeting + a 1-tap "Write" affordance
 /// that jumps the kid back to the Write tab.
 ///
-/// Reduce-Motion-aware: the appearance transition collapses to opacity
-/// per `.claude/rules/swiftui.md`. Reduce-Transparency-aware: the
-/// background flips from `.thinMaterial` to `DialoguePalette.cream`
-/// per the portfolio Liquid Glass policy.
+/// Reduce-Motion-aware: the appearance transition collapses to
+/// `.identity` (instant snap) per `.claude/rules/swiftui.md` — gated by
+/// the host RootView. Reduce-Transparency-aware: the background flips
+/// from `.thinMaterial` to `DialoguePalette.cream` per the portfolio
+/// Liquid Glass policy.
 struct WelcomeBackBannerView: View {
     let message: String
     let onWrite: () -> Void
