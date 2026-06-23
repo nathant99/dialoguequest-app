@@ -2,6 +2,7 @@ import SwiftUI
 import Services
 import SharedUI
 import ForgeGamification
+import ForgeReporting
 
 /// Parent-facing progress dashboard. Surfaces what the kid has done in
 /// DialogueQuest mapped to the primary CCSS standard
@@ -121,22 +122,79 @@ public struct ParentProgressDashboardView: View {
             Text("Standards covered")
                 .font(.headline)
                 .foregroundStyle(DialoguePalette.inkBlue)
-            standardRow(
-                label: "CCSS.ELA-Literacy.W.6-8.3.B",
-                description: "Use narrative techniques, such as dialogue, pacing, description, reflection, and multiple plot lines, to develop experiences, events, and/or characters."
-            )
-            standardRow(
-                label: "CCSS.ELA-Literacy.RL.6-8.6",
-                description: "Explain how an author develops the point of view of the narrator or speaker."
-            )
-            standardRow(
-                label: "NCAS TH:Cr3",
-                description: "Refine and complete artistic work — theater script development."
-            )
+            if let report = buildReport() {
+                ForEach(report.standardProficiencies) { proficiency in
+                    proficiencyRow(proficiency)
+                }
+            } else {
+                // Fresh install — surface the standards the app maps to
+                // without a percentage so the parent sees the curriculum
+                // surface before any practice has happened.
+                ForEach(DialogueQuestProgressReportBuilder.canonicalStandards, id: \.code) { standard in
+                    standardRow(label: standard.code, description: standard.description)
+                }
+            }
         }
         .padding()
         .background(panelBackground)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    @ViewBuilder
+    private func proficiencyRow(_ proficiency: StandardProficiency) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(proficiency.standard.code)
+                    .font(.subheadline.monospaced())
+                    .foregroundStyle(DialoguePalette.rust)
+                Spacer()
+                Text(proficiency.proficiency.displayName)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(DialoguePalette.inkBlue)
+            }
+            Text(proficiency.standard.description)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            ProgressView(value: proficiency.percentage, total: 100)
+                .tint(DialoguePalette.rust)
+        }
+        .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "\(proficiency.standard.code), \(proficiency.proficiency.displayName), \(Int(proficiency.percentage.rounded())) percent."
+        )
+    }
+
+    /// Build the canonical ForgeReporting shape from on-app counters.
+    /// Returns nil for a fresh install (no published trees + no badges
+    /// + no active days) so the view-layer surfaces the empty state.
+    private func buildReport() -> StudentReportData? {
+        let inputs = DialogueQuestProgressReportBuilder.Inputs(
+            studentName: "your writer",
+            publishedTreeCount: publishedTreeCount,
+            currentStreak: max(0, currentStreak),
+            longestStreak: max(0, currentStreak),
+            badgesEarned: earnedBadgeIDs.count,
+            activeDays: derivedActiveDays(from: retention),
+            totalXP: 0,                                   // future: pipe from ForgeGamification XPEngine
+            averageVoiceMatchScore: 0.65,                 // placeholder until WritingEvaluator.VoiceSummary persists
+            confirmedSubtextCount: 0,                     // future: pipe from AchievementService earned set
+            branchesReflectedCount: 0                     // future: same — counter persists in PatterReactionService
+        )
+        return DialogueQuestProgressReportBuilder().build(from: inputs)
+    }
+
+    /// Derive a coarse active-day count from the retention snapshot —
+    /// counts the milestones the kid has hit (D1 / D7 / D30). The
+    /// canonical per-day counter doesn't persist today; this is the
+    /// best proxy until a richer surface lands.
+    private func derivedActiveDays(from snapshot: RetentionMetricsService.Snapshot?) -> Int {
+        guard let snapshot else { return publishedTreeCount > 0 ? 1 : 0 }
+        var days = publishedTreeCount > 0 ? 1 : 0
+        if snapshot.hitD1 { days += 1 }
+        if snapshot.hitD7 { days += 1 }
+        if snapshot.hitD30 { days += 1 }
+        return days
     }
 
     private var whatThisMeansSection: some View {
