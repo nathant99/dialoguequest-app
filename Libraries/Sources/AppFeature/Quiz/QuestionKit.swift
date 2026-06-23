@@ -94,12 +94,13 @@ public enum QuestionKitLoader {
         "kit_04_branching",
     ]
 
-    /// Phase 2 kits — triangle authoring + voice differentiation. Kits 05
-    /// + 06 ship now; kits 07-09 land in follow-on PRs once these surface
-    /// real triangle + voice-crucible-craft gaps.
+    /// Phase 2 kits — triangle authoring + voice differentiation + the
+    /// multi-listener subtext crucible. Kits 05 + 06 + 07 ship now; kits
+    /// 08 + 09 land in follow-on PRs once these surface real craft gaps.
     public nonisolated static let phase2Kits: [String] = [
         "kit_05_triangle_voices",
         "kit_06_voice_crucible",
+        "kit_07_subtext_crucible",
     ]
 
     /// Every kit identifier in canonical order — Phase 1 then Phase 2.
