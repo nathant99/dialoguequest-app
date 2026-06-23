@@ -26,6 +26,21 @@ struct AnthologyGalleryView: View {
     /// Drives the sheet that hosts `PublishedTreeCertificate` +
     /// the ShareLink that exports the rendered PNG.
     @State private var certificateEntry: DialoguePersistenceService.AnthologyEntry?
+    /// Phase 3 — per-entry read-aloud playback service. Single instance
+    /// shared across rows since only one row plays at a time.
+    @State private var readAloudService = DialogueReadAloudService()
+    /// Phase 3 — most-recently-rendered audio export URL per entry.
+    /// When non-nil, the row renders a `ShareLink(item: URL)` so the kid
+    /// can send the AIFF via AirDrop / Files / Messages.
+    @State private var exportedAudioURLs: [UUID: URL] = [:]
+    /// Phase 3 — entries currently mid-export. UI shows a spinner.
+    @State private var exportingEntryID: UUID?
+    /// Phase 3 — surface the most recent export error to the kid via an
+    /// inline label on the entry (no modal alert disruption).
+    @State private var exportErrorMessage: String?
+
+    @AppStorage("dq.readAloudCount") private var readAloudCount: Int = 0
+    @AppStorage("dq.audioExportCount") private var audioExportCount: Int = 0
 
     var body: some View {
         Group {
@@ -124,6 +139,46 @@ struct AnthologyGalleryView: View {
                     .accessibilityLabel("Share dialogue \(entry.title.isEmpty ? "Untitled" : entry.title)")
                     .accessibilityHint("Export this dialogue tree as JSON via AirDrop, Files, or Mail. Nothing is uploaded — the share sheet is system-provided.")
                 }
+                if let tree = treeCache[entry.id] {
+                    Button {
+                        toggleReadAloud(tree: tree)
+                    } label: {
+                        Image(systemName: readAloudIcon(for: tree))
+                            .foregroundStyle(DialoguePalette.rust)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Listen to \(entry.title.isEmpty ? "Untitled" : entry.title)")
+                    .accessibilityHint("Play this dialogue tree aloud. Each character speaks in a voice picked from their register. Audio stays on this device.")
+                }
+                if let tree = treeCache[entry.id] {
+                    if let exportedURL = exportedAudioURLs[entry.id] {
+                        ShareLink(
+                            item: exportedURL,
+                            preview: SharePreview(
+                                entry.title.isEmpty ? "Dialogue audio" : entry.title,
+                                image: Image(systemName: "waveform")
+                            )
+                        ) {
+                            Image(systemName: "waveform.badge.checkmark")
+                                .foregroundStyle(DialoguePalette.rust)
+                        }
+                        .accessibilityLabel("Share audio for \(entry.title.isEmpty ? "Untitled" : entry.title)")
+                        .accessibilityHint("Send the AIFF you just exported via AirDrop, Files, or Messages.")
+                    } else if exportingEntryID == entry.id {
+                        ProgressView()
+                            .accessibilityLabel("Rendering audio for \(entry.title.isEmpty ? "Untitled" : entry.title)")
+                    } else {
+                        Button {
+                            exportAudio(tree: tree, entryID: entry.id)
+                        } label: {
+                            Image(systemName: "waveform")
+                                .foregroundStyle(DialoguePalette.rust)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Export audio for \(entry.title.isEmpty ? "Untitled" : entry.title)")
+                        .accessibilityHint("Render this dialogue tree as an AIFF audio file. Rendering happens on this device; nothing is uploaded.")
+                    }
+                }
                 if treeCache[entry.id] != nil {
                     Button {
                         certificateEntry = entry
@@ -144,9 +199,53 @@ struct AnthologyGalleryView: View {
             Text("Last edited \(timestamp)")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
+            if exportingEntryID == entry.id, let err = exportErrorMessage {
+                Text(err)
+                    .font(.caption2)
+                    .foregroundStyle(DialoguePalette.rust)
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(displayTitle), mood: \(moodLabel), last edited \(timestamp).")
+    }
+
+    private func readAloudIcon(for tree: DialogueTree) -> String {
+        if case .playing(let nodeID) = readAloudService.phase,
+           tree.nodes.contains(where: { $0.id == nodeID }) {
+            return "stop.circle"
+        }
+        return "play.circle"
+    }
+
+    private func toggleReadAloud(tree: DialogueTree) {
+        switch readAloudService.phase {
+        case .idle, .completed:
+            readAloudService.play(tree: tree)
+            readAloudCount += 1
+            DialogueQuestAnalytics.shared.track(.anthologyEntryShared) // re-use the existing event vocabulary
+        case .playing:
+            readAloudService.stop()
+        }
+    }
+
+    private func exportAudio(tree: DialogueTree, entryID: UUID) {
+        exportingEntryID = entryID
+        exportErrorMessage = nil
+        Task {
+            let exporter = DialogueAudioExporter()
+            do {
+                let url = try await exporter.exportAIFF(tree: tree)
+                exportedAudioURLs[entryID] = url
+                audioExportCount += 1
+            } catch let DialogueAudioExporter.ExportError.writeFailed(reason) {
+                exportErrorMessage = "Audio export failed: \(reason)"
+            } catch DialogueAudioExporter.ExportError.emptyTree {
+                exportErrorMessage = "This dialogue has no lines yet to read aloud."
+            } catch {
+                exportErrorMessage = "Audio export failed unexpectedly."
+            }
+            exportingEntryID = nil
+        }
     }
 
     private func refresh() {

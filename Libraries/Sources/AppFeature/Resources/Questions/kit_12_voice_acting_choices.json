@@ -1,0 +1,67 @@
+{
+  "id": "kit_12_voice_acting_choices",
+  "title": "Voice acting choices",
+  "theme": "subtext_detection",
+  "questions": [
+    {
+      "id": "kit_12_q_01",
+      "prompt": "Iris says: \"It's nothing.\" The same line can be read two ways. Which reading carries the most subtext?",
+      "options": [
+        { "id": "a", "label": "Soft + slow, with a small pause before the word 'nothing'." },
+        { "id": "b", "label": "Bright + fast, with a smile in the voice." },
+        { "id": "c", "label": "Loud + flat, with no pause anywhere." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Glance says: the pause before 'nothing' IS the thing. The pause says 'it's something.'"
+    },
+    {
+      "id": "kit_12_q_02",
+      "prompt": "Cal says: \"I'm proud of you.\" Action beat: Cal glances at his phone before he finishes the sentence. How should Patter's playback reflect the beat?",
+      "options": [
+        { "id": "a", "label": "A small pause where the glance lands, then the sentence finishes — the listener hears the divided attention." },
+        { "id": "b", "label": "No pause — the line should sound seamless and warm." },
+        { "id": "c", "label": "Two pauses on either side of the word 'proud'." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "The pause IS the phone-glance. The pride is in the words; the divided attention is in the pause."
+    },
+    {
+      "id": "kit_12_q_03",
+      "prompt": "Sprig's register says: brave, plain-spoken, but soft when the stakes are high. Sprig delivers a hard truth. Which pacing choice does the work?",
+      "options": [
+        { "id": "a", "label": "The truth is delivered SOFTER than the rest of Sprig's lines — quiet brave instead of loud brave." },
+        { "id": "b", "label": "The truth is delivered LOUDER than the rest of Sprig's lines." },
+        { "id": "c", "label": "The truth is delivered at the same volume as everything else." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Soft when the stakes are high is Sprig's signature. The quiet IS the brave."
+    },
+    {
+      "id": "kit_12_q_04",
+      "prompt": "Two characters share a line: \"I know.\" In the playback, which choice makes the two readings feel like different people?",
+      "options": [
+        { "id": "a", "label": "Different pitch + different pace — character A says it slow and low, character B says it quick and bright." },
+        { "id": "b", "label": "Same pitch and same pace for both — that's fair." },
+        { "id": "c", "label": "Whisper both lines so the listener has to lean in." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Two voices with the same words become two PEOPLE only when the playback differs."
+    },
+    {
+      "id": "kit_12_q_05",
+      "prompt": "A line ends with a question mark. The playback engine raises the pitch at the end. Why is that the right default?",
+      "options": [
+        { "id": "a", "label": "A question in English rises at the end — the listener hears the question shape before they hear the words." },
+        { "id": "b", "label": "The engine just does that for every sentence." },
+        { "id": "c", "label": "It makes the line shorter." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Punctuation IS prosody. The rise tells the ear what the line is doing."
+    }
+  ]
+}

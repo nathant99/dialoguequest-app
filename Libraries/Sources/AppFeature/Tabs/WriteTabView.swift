@@ -13,6 +13,11 @@ struct WriteTabView: View {
     /// to a `SessionTier` that caps the max tree size for early sessions
     /// (session 1 → 3 nodes; sessions 2-3 → 5; experienced → 15).
     @AppStorage("dq.publishedTreeCount") private var publishedTreeCount: Int = 0
+    /// Phase 3 counters — feed the Phase 3 achievement criteria. Storage
+    /// is `@AppStorage`-backed so the badge eligibility persists across
+    /// launches with no extra service layer.
+    @AppStorage("dq.readAloudCount") private var readAloudCount: Int = 0
+    @AppStorage("dq.audioExportCount") private var audioExportCount: Int = 0
 
     @State private var machine = DialogueTreeMachine()
     @State private var mentor = PatterMentor()
@@ -26,6 +31,7 @@ struct WriteTabView: View {
     @State private var traumaAdvisorySurfacedThisSession: Bool = false
     @State private var showCrisisResourcesFromAdvisory: Bool = false
     @State private var discoveryCameoSurfacedThisSession: Bool = false
+    @State private var readAloudService = DialogueReadAloudService()
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
@@ -56,6 +62,26 @@ struct WriteTabView: View {
                                 machine.tree.isDraft
                                 ? Text("This conversation is marked as a sketch. Tap to un-mark it.")
                                 : Text("Mark this conversation as a sketch so you can come back to it later. Sketches stay private to your anthology and skip the published-tree celebrations.")
+                            )
+                        }
+                    }
+                    if machine.stage != .authoringCharacters && machine.tree.nodes.count >= 1 {
+                        ToolbarItem(placement: .secondaryAction) {
+                            Button {
+                                playReadAloud()
+                            } label: {
+                                Label(
+                                    readAloudService.phase == .idle || readAloudService.phase == .completed
+                                    ? "Listen"
+                                    : "Stop",
+                                    systemImage: readAloudService.phase == .idle || readAloudService.phase == .completed
+                                    ? "play.circle"
+                                    : "stop.circle"
+                                )
+                            }
+                            .accessibilityIdentifier("writeTab.readAloud")
+                            .accessibilityHint(
+                                Text("Listen to your dialogue tree read aloud. Each character gets a different voice based on the register you wrote for them. The audio plays on this device only.")
                             )
                         }
                     }
@@ -355,14 +381,40 @@ struct WriteTabView: View {
     /// `onChange`.
     private func evaluateAchievements() {
         let report = tagBalancer.report(for: machine.tree)
+        // Phase 3 — has-action-beat signals subtext-via-pause + pacing
+        // craft. Counts any `.action(...)` tag on a published-eligible tree.
+        let hasActionBeat = machine.tree.nodes.contains { node in
+            if case .action = node.tag { return true }
+            return false
+        }
         let criteria = AchievementService.Criteria(
             publishedTreeCount: publishedTreeCount,
             confirmedSubtextLineCount: machine.confirmedSubtextLineIDs.count,
             reflectedBranchPointCount: machine.reflectedBranchPointIDs.count,
             dominantTagAbsent: report.dominant == nil,
-            totalNodes: machine.tree.nodes.count
+            totalNodes: machine.tree.nodes.count,
+            characterCount: machine.tree.characters.count,
+            readAloudCount: readAloudCount,
+            audioExportCount: audioExportCount,
+            hasActionBeat: hasActionBeat
         )
         _ = achievementService.evaluate(criteria: criteria)
+    }
+
+    /// Toggle read-aloud playback for the current tree. Bumps the Phase 3
+    /// counter on first start so the `first_read_aloud` badge fires after
+    /// the listen, and re-evaluates achievements so any compound Phase 3
+    /// badges (`tree_read_three_voices` / `voice_distinguishable_aloud`)
+    /// can land on the same tap.
+    private func playReadAloud() {
+        switch readAloudService.phase {
+        case .idle, .completed:
+            readAloudService.play(tree: machine.tree)
+            readAloudCount += 1
+            evaluateAchievements()
+        case .playing:
+            readAloudService.stop()
+        }
     }
 
     @ViewBuilder

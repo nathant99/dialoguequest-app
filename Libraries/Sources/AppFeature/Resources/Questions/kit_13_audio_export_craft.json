@@ -1,0 +1,67 @@
+{
+  "id": "kit_13_audio_export_craft",
+  "title": "Export your scene as audio",
+  "theme": "branching",
+  "questions": [
+    {
+      "id": "kit_13_q_01",
+      "prompt": "You're about to export your tree as an audio file. What's the right thing to check FIRST?",
+      "options": [
+        { "id": "a", "label": "Listen to the read-aloud once and rewrite any line where the voice felt wrong — the audio file freezes the reading." },
+        { "id": "b", "label": "Add five more lines so the audio file is longer." },
+        { "id": "c", "label": "Change every character's voice register to match the system voice." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Export is a freeze. Listen first; revise; THEN export."
+    },
+    {
+      "id": "kit_13_q_02",
+      "prompt": "The audio file is shared via AirDrop / Files / Messages. The tree's title becomes the filename. What rule does the title need to follow?",
+      "options": [
+        { "id": "a", "label": "Letters, numbers, spaces, dashes, and underscores — anything else gets replaced so the filename stays clean." },
+        { "id": "b", "label": "Lowercase only, no spaces." },
+        { "id": "c", "label": "All caps, no punctuation." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Clean filenames travel. Untidy ones land in the trash."
+    },
+    {
+      "id": "kit_13_q_03",
+      "prompt": "The audio export ends on the LAST line of one branch — but the tree has two branches. What's the most honest export choice?",
+      "options": [
+        { "id": "a", "label": "Walk the tree depth-first so every branch gets read aloud, in order — the listener hears both paths." },
+        { "id": "b", "label": "Pick the longer branch and skip the shorter one." },
+        { "id": "c", "label": "Pick the kid's favorite branch and skip the rest." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Branching dialogue means TWO paths matter. The audio should respect that."
+    },
+    {
+      "id": "kit_13_q_04",
+      "prompt": "The audio file is on your device only — it doesn't leave unless you share it. Why does that matter?",
+      "options": [
+        { "id": "a", "label": "Your character voices, the title, the lines — none of it lands on a server somewhere. You decide what travels." },
+        { "id": "b", "label": "The file is smaller because it never connects to a network." },
+        { "id": "c", "label": "Apple speeds up local files for you." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "On-device means the kid owns the voice. That's a craft choice AND a kindness."
+    },
+    {
+      "id": "kit_13_q_05",
+      "prompt": "After you export, the audio file is in the share sheet. Where's a good place to send it?",
+      "options": [
+        { "id": "a", "label": "A grown-up's device — for them to hear what you've been writing." },
+        { "id": "b", "label": "A stranger's phone number from a chat app." },
+        { "id": "c", "label": "Anywhere on the internet — it's a fun thing to share." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Share with grown-ups you trust. Your characters are yours; they travel where you say."
+    }
+  ]
+}
