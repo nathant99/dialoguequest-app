@@ -1,0 +1,67 @@
+{
+  "id": "kit_08_branch_consequences",
+  "title": "Branch consequences",
+  "theme": "branching",
+  "questions": [
+    {
+      "id": "kit_08_q_01",
+      "prompt": "Two branches lead out of one node. Both end with the same line three nodes later. What's the problem?",
+      "options": [
+        { "id": "a", "label": "If both branches land in the same place, the choice didn't really branch — the reader feels the trick." },
+        { "id": "b", "label": "No problem. Reaching the same line means the dialogue tree is balanced." },
+        { "id": "c", "label": "The branches should be longer so the reader forgets they merged." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Sprig says: a branch should re-route the story so the reader can feel it."
+    },
+    {
+      "id": "kit_08_q_02",
+      "prompt": "Iris just said something cruel. Cal has two branches: \"Apologize\" or \"Walk away.\" Which detail makes the branches feel like real choices?",
+      "options": [
+        { "id": "a", "label": "Each branch costs Cal something different — apologizing means swallowing pride; walking away means losing the friendship that night." },
+        { "id": "b", "label": "Both branches lead to a new scene the next day." },
+        { "id": "c", "label": "Both branches end with Cal smiling." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "When each side costs the speaker something different, the choice matters."
+    },
+    {
+      "id": "kit_08_q_03",
+      "prompt": "A branch point asks the kid to pick what the character SAYS next. Where should the consequence land?",
+      "options": [
+        { "id": "a", "label": "On the OTHER character — what they say back changes based on what was just said." },
+        { "id": "b", "label": "Nowhere — branches are just for variety." },
+        { "id": "c", "label": "On the speaker — they should always agree with their own choice." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Real branches change how the next speaker responds. That's the re-route the reader feels."
+    },
+    {
+      "id": "kit_08_q_04",
+      "prompt": "Mara is choosing between confessing to Cal or staying quiet. Which version of the branch is most meaningful?",
+      "options": [
+        { "id": "a", "label": "Confess → Cal's tone shifts for the rest of the scene; Stay quiet → Cal stays warm but Mara loses something inside." },
+        { "id": "b", "label": "Confess → the next line is a joke; Stay quiet → the next line is also a joke." },
+        { "id": "c", "label": "Confess → the scene ends; Stay quiet → the scene also ends." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Either path should leave a mark the reader can name."
+    },
+    {
+      "id": "kit_08_q_05",
+      "prompt": "You're writing a branch where one side is the \"safe\" choice and the other is risky. The risky side should:",
+      "options": [
+        { "id": "a", "label": "Actually risk something — a friendship, a secret, a chance — so the reader feels the speaker's heart in their throat." },
+        { "id": "b", "label": "Be the same as the safe choice but with bigger words." },
+        { "id": "c", "label": "Always lead to a happy ending so the reader doesn't worry." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "If a risky choice doesn't risk anything, the reader smells the pretend."
+    }
+  ]
+}
