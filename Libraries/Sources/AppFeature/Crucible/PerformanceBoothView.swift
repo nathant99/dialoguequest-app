@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AIMentor
 import Models
 import Services
 import SharedUI
@@ -29,6 +30,7 @@ public struct PerformanceBoothView: View {
     @State private var exportError: String?
     @State private var isExporting = false
     @State private var loadFailure: String?
+    @State private var coachingPrompt: CoachingPrompt?
 
     @AppStorage("dq.audioExportCount") private var audioExportCount: Int = 0
     @AppStorage("dq.performanceBoothExportCount") private var performanceBoothExportCount: Int = 0
@@ -70,7 +72,41 @@ public struct PerformanceBoothView: View {
                     machine.markListened()
                 }
             }
+            .sheet(item: $coachingPrompt) { prompt in
+                VoiceCoachingSheet(
+                    castID: prompt.castID,
+                    castDisplayName: prompt.castDisplayName,
+                    promptLine: prompt.promptLine
+                )
+            }
         }
+    }
+
+    // MARK: - Coaching prompt
+
+    /// Identifiable coaching prompt for the `.sheet(item:)` presentation.
+    /// Picks the first cast member whose voice baseline is available
+    /// (LESSONS-layer profiles) and uses the tree's first non-empty line
+    /// as the practice prompt.
+    fileprivate struct CoachingPrompt: Identifiable, Equatable {
+        let id: UUID = UUID()
+        let castID: String
+        let castDisplayName: String
+        let promptLine: String
+    }
+
+    private func coachingPromptForTree(_ tree: DialogueTree) -> CoachingPrompt? {
+        guard let firstLine = tree.nodes
+            .map(\.surfaceText)
+            .first(where: { !$0.trimmingCharacters(in: .whitespaces).isEmpty })
+        else { return nil }
+        let profiles = CastVoiceRegistry.lessonsLayerProfiles
+        guard let chosen = profiles.first else { return nil }
+        return CoachingPrompt(
+            castID: chosen.id,
+            castDisplayName: chosen.displayName,
+            promptLine: firstLine
+        )
     }
 
     // MARK: - Header
@@ -185,6 +221,18 @@ public struct PerformanceBoothView: View {
                     }
                     .buttonStyle(.bordered)
                     .disabled(isExporting || !machine.hasListenedThisRound)
+                }
+
+                if let prompt = coachingPromptForTree(tree) {
+                    Button {
+                        coachingPrompt = prompt
+                    } label: {
+                        Label("Coach my voice", systemImage: "mic.badge.plus")
+                            .font(.callout)
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityIdentifier("performanceBooth.coachMyVoice")
+                    .accessibilityHint("Open the voice-acting coach for \(prompt.castDisplayName)")
                 }
 
                 if !machine.hasListenedThisRound {

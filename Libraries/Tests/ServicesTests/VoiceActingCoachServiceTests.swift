@@ -106,4 +106,112 @@ struct VoiceActingCoachServiceTests {
             }
         }
     }
+
+    // MARK: - Active session integration
+
+    @Test("makeActiveSession returns nil when not wired and a session when wired")
+    func makeActiveSessionRespectsGate() {
+        let service = VoiceActingCoachService.shared
+        defer { service.resetActiveSession() }
+        let session = service.makeActiveSession()
+        if VoiceActingCoachService.isWired {
+            #expect(session != nil)
+        } else {
+            #expect(session == nil)
+        }
+    }
+
+    @Test("makeActiveSession caches the same instance across calls")
+    func makeActiveSessionCachesInstance() {
+        let service = VoiceActingCoachService.shared
+        defer { service.resetActiveSession() }
+        let first = service.makeActiveSession()
+        let second = service.makeActiveSession()
+        if VoiceActingCoachService.isWired {
+            #expect(first === second)
+        } else {
+            #expect(first == nil)
+            #expect(second == nil)
+        }
+    }
+
+    @Test("resetActiveSession clears the cache so a future call returns a fresh instance")
+    func resetActiveSessionClearsCache() {
+        let service = VoiceActingCoachService.shared
+        guard VoiceActingCoachService.isWired else {
+            // On unwired builds, both calls return nil — no cache to clear.
+            #expect(service.makeActiveSession() == nil)
+            return
+        }
+        let first = service.makeActiveSession()
+        service.resetActiveSession()
+        let second = service.makeActiveSession()
+        #expect(first !== second)
+        service.resetActiveSession()
+    }
+}
+
+@Suite("VoiceActingCoachActiveSession — lifecycle invariants")
+@MainActor
+struct VoiceActingCoachActiveSessionTests {
+
+    @Test("freshly constructed session is in .idle phase")
+    func idlePhaseAtInit() {
+        let session = VoiceActingCoachActiveSession()
+        #expect(session.phase == .idle)
+    }
+
+    @Test("cancel is idempotent + resets to .idle")
+    func cancelIsIdempotent() {
+        let session = VoiceActingCoachActiveSession()
+        session.cancel()
+        #expect(session.phase == .idle)
+        session.cancel()
+        #expect(session.phase == .idle)
+    }
+
+    @Test("stopRecording is no-op when not in .recording state")
+    func stopWhenNotRecordingIsNoOp() {
+        let session = VoiceActingCoachActiveSession()
+        let phase = session.stopRecording()
+        // No transition from .idle when stopRecording is called without
+        // first starting; phase should stay at .idle.
+        #expect(phase == .idle)
+        #expect(session.phase == .idle)
+    }
+
+    @Test("startRecording is no-op when not yet authorized")
+    func startWhenNotAuthorizedIsNoOp() {
+        let session = VoiceActingCoachActiveSession()
+        let phase = session.startRecording()
+        // Without explicit authorization, startRecording short-circuits
+        // and the phase stays at .idle.
+        #expect(phase == .idle)
+        #expect(session.phase == .idle)
+    }
+
+    @Test("drainAccumulatedSamples returns empty for a fresh session")
+    func drainEmptyAtInit() {
+        let session = VoiceActingCoachActiveSession()
+        let samples = session.drainAccumulatedSamples()
+        #expect(samples.isEmpty)
+    }
+
+    @Test("Phase.completed equality is transcript-driven")
+    func completedEqualityIsTranscriptDriven() {
+        let a = VoiceActingCoachActiveSession.Phase.completed(transcript: "hello world")
+        let b = VoiceActingCoachActiveSession.Phase.completed(transcript: "hello world")
+        let c = VoiceActingCoachActiveSession.Phase.completed(transcript: "goodbye")
+        #expect(a == b)
+        #expect(a != c)
+    }
+
+    @Test("Phase.failed equality is reason-driven")
+    func failedEqualityIsReasonDriven() {
+        let a = VoiceActingCoachActiveSession.Phase.failed(reason: "mic denied")
+        let b = VoiceActingCoachActiveSession.Phase.failed(reason: "mic denied")
+        let c = VoiceActingCoachActiveSession.Phase.failed(reason: "speech denied")
+        #expect(a == b)
+        #expect(a != c)
+    }
 }
