@@ -117,12 +117,67 @@ public enum DialogueQuestGamification {
         ),
     ]
 
-    /// All achievements registered with the engine. Phase 2 entries are
-    /// always registered; they simply don't fire until the kid is on the
-    /// triangle path. Keeping them in the same definitions array avoids
-    /// per-flag config branches in `makeConfig()`.
+    /// Phase 3 achievements — unlocked when the kid uses the read-aloud
+    /// playback + audio export surfaces. Per `Docs/FEATURE_PLAN.md`
+    /// § Phase 3: read-aloud playback / voice-acting craft / audio export.
+    public nonisolated static let phase3Achievements: [AchievementDefinition] = [
+        AchievementDefinition(
+            id: "first_read_aloud",
+            title: "Heard your scene",
+            description: "You listened to one of your trees read aloud. The ear catches what the eye missed.",
+            iconAssetName: "achievement_first_read_aloud",
+            xpValue: 25,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "first_audio_export",
+            title: "Your scene on tape",
+            description: "You exported your tree as an audio file. Your characters now travel anywhere you send them.",
+            iconAssetName: "achievement_first_audio_export",
+            xpValue: 40,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "tree_read_three_voices",
+            title: "Three voices read aloud",
+            description: "You listened to a triangle tree and three characters sounded like three people.",
+            iconAssetName: "achievement_three_voices_aloud",
+            xpValue: 50,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "pacing_with_pauses",
+            title: "Held the silence",
+            description: "You published a tree with at least one action beat — the pause does the work the words can't.",
+            iconAssetName: "achievement_pacing_pauses",
+            xpValue: 30,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "silence_as_subtext_aloud",
+            title: "Silence carried it",
+            description: "You exported a tree whose loudest line was the pause. Subtext you can hear.",
+            iconAssetName: "achievement_silence_subtext_aloud",
+            xpValue: 45,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "voice_distinguishable_aloud",
+            title: "Voices you can tell apart",
+            description: "You read aloud a tree where every character's register sounded like a different person.",
+            iconAssetName: "achievement_voice_distinguishable_aloud",
+            xpValue: 50,
+            standard: nil
+        ),
+    ]
+
+    /// All achievements registered with the engine. Phase 2 + Phase 3
+    /// entries are always registered; they simply don't fire until the
+    /// kid is on the right path (triangle / read-aloud / export).
+    /// Keeping them in the same definitions array avoids per-flag config
+    /// branches in `makeConfig()`.
     public nonisolated static let allAchievements: [AchievementDefinition] =
-        phase1Achievements + phase2Achievements
+        phase1Achievements + phase2Achievements + phase3Achievements
 
     public nonisolated static func makeConfig() -> GamificationConfig {
         GamificationConfig(

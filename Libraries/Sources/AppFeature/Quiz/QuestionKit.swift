@@ -106,8 +106,17 @@ public enum QuestionKitLoader {
         "kit_09_action_beats",
     ]
 
-    /// Every kit identifier in canonical order — Phase 1 then Phase 2.
-    public nonisolated static let allKits: [String] = phase1Kits + phase2Kits
+    /// Phase 3 kits — read-aloud register / pause pacing / voice-acting
+    /// choices / audio export craft. Per `Docs/FEATURE_PLAN.md` § Phase 3.
+    public nonisolated static let phase3Kits: [String] = [
+        "kit_10_read_aloud_register",
+        "kit_11_pause_pacing",
+        "kit_12_voice_acting_choices",
+        "kit_13_audio_export_craft",
+    ]
+
+    /// Every kit identifier in canonical order — Phase 1 then Phase 2 then Phase 3.
+    public nonisolated static let allKits: [String] = phase1Kits + phase2Kits + phase3Kits
 
     /// Convenience: try-loading every Phase 1 kit, returning a tuple of
     /// kits + per-kit failures. Useful at app startup for telemetry.

@@ -1,0 +1,67 @@
+{
+  "id": "kit_10_read_aloud_register",
+  "title": "Listen for the register",
+  "theme": "voice_consistency",
+  "questions": [
+    {
+      "id": "kit_10_q_01",
+      "prompt": "Patter reads the line aloud: \"I'm fine.\" Cal's voice register says quiet, low, careful. Which playback choice carries the most of Cal's register?",
+      "options": [
+        { "id": "a", "label": "A slower rate, a slightly lower pitch, and a small pause at the end." },
+        { "id": "b", "label": "A faster, brighter delivery so the line sounds cheerful." },
+        { "id": "c", "label": "A flat monotone with no pauses." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Rest says: a slower pace + a pause is how 'I'm fine' becomes 'I am very much not fine.'"
+    },
+    {
+      "id": "kit_10_q_02",
+      "prompt": "Iris's voice register is fast, bright, lilting. Patter is queueing the read-aloud playback. Which two register words most affect the rate + pitch?",
+      "options": [
+        { "id": "a", "label": "Fast → higher rate. Bright → higher pitch." },
+        { "id": "b", "label": "Fast → lower pitch. Bright → slower rate." },
+        { "id": "c", "label": "Both words affect volume only." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Glance grins: the register word IS the playback recipe. Fast + bright = quick + lift."
+    },
+    {
+      "id": "kit_10_q_03",
+      "prompt": "When you press 'Listen' on a tree with two characters, what's the most useful thing to listen for?",
+      "options": [
+        { "id": "a", "label": "Whether the two characters sound like different people when their voices land back-to-back." },
+        { "id": "b", "label": "Whether the playback finishes faster than reading silently." },
+        { "id": "c", "label": "Whether every word is pronounced perfectly." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Two voices, side by side, is the test. If they blur, the register did the blurring."
+    },
+    {
+      "id": "kit_10_q_04",
+      "prompt": "Sprig says: every action beat in the tree gets a small pause on either side when Patter reads it aloud. Why?",
+      "options": [
+        { "id": "a", "label": "An action beat is silence — the body doing something. The pause lets the listener feel it." },
+        { "id": "b", "label": "The playback engine can't pronounce action beats." },
+        { "id": "c", "label": "Action beats are louder than dialogue and need a buffer." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "The pause IS the beat. The listener hears the body."
+    },
+    {
+      "id": "kit_10_q_05",
+      "prompt": "After the read-aloud finishes, what's the most useful next thing to do?",
+      "options": [
+        { "id": "a", "label": "Rewrite any line where the voice felt wrong for that character — the ear caught what the eye missed." },
+        { "id": "b", "label": "Publish the tree immediately so the audio file doesn't go to waste." },
+        { "id": "c", "label": "Change every character's voice register to match the playback voice." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Listening is a revision tool. What sounded wrong IS wrong."
+    }
+  ]
+}

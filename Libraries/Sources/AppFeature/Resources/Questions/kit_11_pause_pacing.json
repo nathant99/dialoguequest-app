@@ -1,0 +1,67 @@
+{
+  "id": "kit_11_pause_pacing",
+  "title": "Pauses and pacing",
+  "theme": "tag_balance",
+  "questions": [
+    {
+      "id": "kit_11_q_01",
+      "prompt": "Iris says: \"You should have told me.\" Mara doesn't answer for a beat. Where does the pause belong in the playback?",
+      "options": [
+        { "id": "a", "label": "Right after Iris's line, before Mara's reply — the silence IS Mara's first answer." },
+        { "id": "b", "label": "Before Iris's line — Iris needs a moment to gather her thoughts." },
+        { "id": "c", "label": "Nowhere — pauses slow the listener down." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Weigh says: the held breath is the most honest line in the scene."
+    },
+    {
+      "id": "kit_11_q_02",
+      "prompt": "Patter is reading aloud. Three lines in a row land with no pause. What's the listener's experience?",
+      "options": [
+        { "id": "a", "label": "The voices feel rushed, like the characters are talking over each other — even when they aren't." },
+        { "id": "b", "label": "The listener focuses on the words more clearly." },
+        { "id": "c", "label": "The reading sounds calmer than the page." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Pauses make the listener feel the characters thinking. Without them, everyone sounds like they're sprinting."
+    },
+    {
+      "id": "kit_11_q_03",
+      "prompt": "Rest's register is hushed, thoughtful, measured. When Patter reads Rest aloud, what pacing choice carries that register?",
+      "options": [
+        { "id": "a", "label": "A slower rate AND a longer pause after each line — Rest's silences are part of the voice." },
+        { "id": "b", "label": "A faster rate so Rest doesn't slow down the scene." },
+        { "id": "c", "label": "A higher pitch to make Rest sound thoughtful." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "The pause AFTER Rest's line is Rest's signature. Without it, Rest disappears."
+    },
+    {
+      "id": "kit_11_q_04",
+      "prompt": "Brogue's register is fast, energetic, loud. Patter is queueing playback. Which pacing choice is wrong for Brogue?",
+      "options": [
+        { "id": "a", "label": "A long pause after every Brogue line — Brogue keeps moving; the pace IS the energy." },
+        { "id": "b", "label": "A faster rate for Brogue's lines." },
+        { "id": "c", "label": "No extra pause at the end of Brogue's lines." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Long pauses break Brogue's momentum. The energy IS the pace."
+    },
+    {
+      "id": "kit_11_q_05",
+      "prompt": "A tree has 10 lines. Patter reads it aloud in 38 seconds. The kid wants the playback to feel more like a real scene. What's the smallest change that helps?",
+      "options": [
+        { "id": "a", "label": "Add one action beat — a single held silence — where the conflict lands." },
+        { "id": "b", "label": "Speed up every line so the playback finishes faster." },
+        { "id": "c", "label": "Add five new lines to make the tree longer." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "One held silence buys more scene than five rushed lines."
+    }
+  ]
+}

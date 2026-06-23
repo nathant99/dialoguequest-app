@@ -69,6 +69,14 @@ public final class AchievementService {
         public let characterCount: Int
         public let trianglePattern: TrianglePattern
         public let hasThreeVoiceSpread: Bool
+        // Phase 3 — read-aloud + audio export surfaces. Counters live on
+        // `DialogueReadAloudService` / `DialogueAudioExporter` consumers
+        // (typically via `@AppStorage`); the criteria block is what
+        // `WriteTabView` / `AnthologyGalleryView` hands to `evaluate`.
+        public let readAloudCount: Int
+        public let audioExportCount: Int
+        public let hasActionBeat: Bool
+        public let pacingPausesCount: Int
 
         public init(
             publishedTreeCount: Int,
@@ -78,7 +86,11 @@ public final class AchievementService {
             totalNodes: Int,
             characterCount: Int = 2,
             trianglePattern: TrianglePattern = .none,
-            hasThreeVoiceSpread: Bool = false
+            hasThreeVoiceSpread: Bool = false,
+            readAloudCount: Int = 0,
+            audioExportCount: Int = 0,
+            hasActionBeat: Bool = false,
+            pacingPausesCount: Int = 0
         ) {
             self.publishedTreeCount = publishedTreeCount
             self.confirmedSubtextLineCount = confirmedSubtextLineCount
@@ -88,6 +100,10 @@ public final class AchievementService {
             self.characterCount = characterCount
             self.trianglePattern = trianglePattern
             self.hasThreeVoiceSpread = hasThreeVoiceSpread
+            self.readAloudCount = readAloudCount
+            self.audioExportCount = audioExportCount
+            self.hasActionBeat = hasActionBeat
+            self.pacingPausesCount = pacingPausesCount
         }
     }
 
@@ -208,6 +224,27 @@ public final class AchievementService {
             return criteria.characterCount >= 3 &&
                    criteria.totalNodes >= 8 &&
                    criteria.dominantTagAbsent
+
+        // Phase 3 — read-aloud + audio export + voice-acting craft.
+        case "first_read_aloud":
+            return criteria.readAloudCount >= 1
+        case "first_audio_export":
+            return criteria.audioExportCount >= 1
+        case "tree_read_three_voices":
+            return criteria.readAloudCount >= 1 &&
+                   criteria.characterCount >= 3
+        case "pacing_with_pauses":
+            return criteria.publishedTreeCount >= 1 &&
+                   criteria.hasActionBeat
+        case "silence_as_subtext_aloud":
+            return criteria.audioExportCount >= 1 &&
+                   criteria.hasActionBeat &&
+                   criteria.confirmedSubtextLineCount >= 1
+        case "voice_distinguishable_aloud":
+            return criteria.readAloudCount >= 1 &&
+                   criteria.characterCount >= 2 &&
+                   criteria.dominantTagAbsent &&
+                   criteria.totalNodes >= 5
 
         default:
             return false
