@@ -6,8 +6,8 @@ import ForgeModels
 @Suite("DialogueQuestGamification Phase 3")
 struct DialogueQuestGamificationPhase3Tests {
 
-    @Test func phase3RegistersSixAchievements() {
-        #expect(DialogueQuestGamification.phase3Achievements.count == 6)
+    @Test func phase3RegistersSevenAchievements() {
+        #expect(DialogueQuestGamification.phase3Achievements.count == 7)
     }
 
     @Test func phase3IDsAreStable() {
@@ -19,6 +19,7 @@ struct DialogueQuestGamificationPhase3Tests {
             "pacing_with_pauses",
             "silence_as_subtext_aloud",
             "voice_distinguishable_aloud",
+            "performance_booth_premiere",
         ]
         #expect(ids == expected)
     }

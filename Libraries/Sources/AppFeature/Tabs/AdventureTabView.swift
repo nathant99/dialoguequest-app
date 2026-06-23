@@ -28,6 +28,8 @@ struct AdventureTabView: View {
 
     /// Whether the Voice Crucible sheet is up.
     @State private var isCruciblePresented: Bool = false
+    /// Whether the Performance Booth sheet is up.
+    @State private var isPerformanceBoothPresented: Bool = false
 
     /// Reconstructed each render from the persisted counters so the
     /// gate evaluation always reflects current state.
@@ -80,6 +82,9 @@ struct AdventureTabView: View {
             .sheet(isPresented: $isCruciblePresented) {
                 VoiceCrucibleView()
             }
+            .sheet(isPresented: $isPerformanceBoothPresented) {
+                PerformanceBoothView()
+            }
         }
     }
 
@@ -119,6 +124,33 @@ struct AdventureTabView: View {
         .buttonStyle(.plain)
         .accessibilityIdentifier("crucible.entry")
         .accessibilityHint(Text("Open the Voice Crucible adventure mode."))
+
+        Button {
+            isPerformanceBoothPresented = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "waveform")
+                    .foregroundStyle(DialoguePalette.rust)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Performance Booth")
+                        .font(.headline)
+                        .foregroundStyle(DialoguePalette.inkBlue)
+                    Text("Pick a tree. Hear your characters speak. Save the recording to share.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(DialoguePalette.rust)
+            }
+            .padding()
+            .background(DialoguePalette.cream.opacity(0.75))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("performanceBooth.entry")
+        .accessibilityHint(Text("Open the Performance Booth adventure mode."))
     }
 
     @ViewBuilder
