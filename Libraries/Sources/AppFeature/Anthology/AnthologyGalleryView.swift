@@ -158,8 +158,39 @@ struct AnthologyGalleryView: View {
                 }
             }
             treeCache = cache
+            indexInSpotlight(entries: entries, cache: cache)
         } catch {
             loadFailure = String(describing: error)
+        }
+    }
+
+    /// Push the current anthology snapshot into Spotlight. Fire-and-forget
+    /// — failures are silent because Spotlight is a nice-to-have surface
+    /// (the in-app gallery is the canonical UI). The indexer is a value
+    /// type, but indexing itself is async because the `CSSearchableIndex`
+    /// I/O is async; we hop into a detached task with a sendable snapshot.
+    private func indexInSpotlight(
+        entries: [DialoguePersistenceService.AnthologyEntry],
+        cache: [UUID: DialogueTree]
+    ) {
+        // Snapshot the spotlight payloads on the MainActor before crossing
+        // the Sendable boundary to the detached task.
+        let payloads: [AnthologySpotlightIndexer.SpotlightEntry] = entries.compactMap { entry in
+            guard let tree = cache[entry.id] else { return nil }
+            return AnthologySpotlightIndexer.SpotlightEntry(
+                id: entry.id,
+                title: entry.title,
+                mood: entry.mood,
+                lineCount: tree.nodes.count,
+                branchCount: tree.nodes.filter { $0.children.count >= 2 }.count,
+                lastEditedAt: entry.lastEditedAt
+            )
+        }
+        Task.detached(priority: .background) {
+            let indexer = AnthologySpotlightIndexer()
+            // Wipe-then-replace so deleted entries fall out of Spotlight too.
+            try? await indexer.deindexAllAnthology()
+            try? await indexer.indexAll(payloads)
         }
     }
 }

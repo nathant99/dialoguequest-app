@@ -43,6 +43,7 @@ let package = Package(
                 .product(name: "ForgeGamification", package: "forgekit"),
                 .product(name: "ForgePedagogy", package: "forgekit"),
                 .product(name: "ForgeSensory", package: "forgekit"),
+                .product(name: "ForgeSpotlight", package: "forgekit"),
             ],
             swiftSettings: defaultSwiftSettings
         ),
