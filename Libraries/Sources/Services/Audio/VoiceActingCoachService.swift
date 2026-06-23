@@ -146,4 +146,33 @@ public final class VoiceActingCoachService {
             return "The voice drifted. \(characterName) has their own rhythm — try the line again and listen for the word they would never say."
         }
     }
+
+    // MARK: - Active session (privacy-gated)
+
+    /// Lazily-built active session. Only ever instantiated when
+    /// `Self.isWired == true`. Until the Info.plist handoff lands,
+    /// `makeActiveSession()` returns nil and every caller falls back to
+    /// the pure scoring surface.
+    private var cachedActiveSession: VoiceActingCoachActiveSession?
+
+    /// Returns an active-recording session when the Info.plist usage
+    /// descriptions are wired; nil otherwise. Callers MUST branch on the
+    /// returned optional — invoking the session on an unwired build is a
+    /// caller bug + would hard-crash the process if it were possible.
+    public func makeActiveSession() -> VoiceActingCoachActiveSession? {
+        guard Self.isWired else { return nil }
+        if let cached = cachedActiveSession {
+            return cached
+        }
+        let session = VoiceActingCoachActiveSession()
+        cachedActiveSession = session
+        return session
+    }
+
+    /// For tests + for parents who want to reset coach state without
+    /// closing the app. Cancels any in-flight session.
+    public func resetActiveSession() {
+        cachedActiveSession?.cancel()
+        cachedActiveSession = nil
+    }
 }
