@@ -41,6 +41,7 @@ public final class DialogueQuestAnalytics {
         case sessionEndingSummaryShown = "session_ending_summary_shown"
         case anthologyEntryShared = "anthology_entry_shared"
         case castVoicingShown = "cast_voicing_shown"
+        case performanceBoothExported = "performance_booth_exported"
     }
 
     /// Fire-and-forget tracking for SwiftUI call sites. Properties whose keys

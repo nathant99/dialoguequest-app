@@ -77,6 +77,12 @@ public final class AchievementService {
         public let audioExportCount: Int
         public let hasActionBeat: Bool
         public let pacingPausesCount: Int
+        /// Phase 3 / Performance Booth — count of completed audio exports
+        /// from the Performance Booth surface specifically (a stricter
+        /// subset of `audioExportCount`: every Performance-Booth export
+        /// IS an audio export, but Anthology row exports do NOT count).
+        /// Drives the `performance_booth_premiere` badge gate.
+        public let performanceBoothExportCount: Int
 
         public init(
             publishedTreeCount: Int,
@@ -90,7 +96,8 @@ public final class AchievementService {
             readAloudCount: Int = 0,
             audioExportCount: Int = 0,
             hasActionBeat: Bool = false,
-            pacingPausesCount: Int = 0
+            pacingPausesCount: Int = 0,
+            performanceBoothExportCount: Int = 0
         ) {
             self.publishedTreeCount = publishedTreeCount
             self.confirmedSubtextLineCount = confirmedSubtextLineCount
@@ -104,6 +111,7 @@ public final class AchievementService {
             self.audioExportCount = audioExportCount
             self.hasActionBeat = hasActionBeat
             self.pacingPausesCount = pacingPausesCount
+            self.performanceBoothExportCount = performanceBoothExportCount
         }
     }
 
@@ -245,6 +253,14 @@ public final class AchievementService {
                    criteria.characterCount >= 2 &&
                    criteria.dominantTagAbsent &&
                    criteria.totalNodes >= 5
+        case "performance_booth_premiere":
+            // Requires at least one full Performance Booth round (the kid
+            // picked a tree, played it through, and exported the AIFF).
+            // The export counter is the canonical signal: every Performance
+            // Booth export requires the kid to have listened first
+            // (`markListened` fires before `markExported` is reachable via
+            // the SwiftUI surface).
+            return criteria.performanceBoothExportCount >= 1
 
         default:
             return false

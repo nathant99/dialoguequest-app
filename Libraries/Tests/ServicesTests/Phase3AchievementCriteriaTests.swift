@@ -119,4 +119,29 @@ struct Phase3AchievementCriteriaTests {
         #expect(!AchievementService.satisfiesCriteria("voice_distinguishable_aloud", criteria: unbalanced))
         #expect(AchievementService.satisfiesCriteria("voice_distinguishable_aloud", criteria: balanced))
     }
+
+    @Test func performanceBoothPremiereFiresOnFirstBoothExport() {
+        // Anthology-row exports alone do NOT satisfy the badge — the
+        // counter must come from the Performance Booth surface.
+        let anthologyOnly = AchievementService.Criteria(
+            publishedTreeCount: 1,
+            confirmedSubtextLineCount: 0,
+            reflectedBranchPointCount: 0,
+            dominantTagAbsent: false,
+            totalNodes: 5,
+            audioExportCount: 3,
+            performanceBoothExportCount: 0
+        )
+        let firstBoothRound = AchievementService.Criteria(
+            publishedTreeCount: 1,
+            confirmedSubtextLineCount: 0,
+            reflectedBranchPointCount: 0,
+            dominantTagAbsent: false,
+            totalNodes: 5,
+            audioExportCount: 3,
+            performanceBoothExportCount: 1
+        )
+        #expect(!AchievementService.satisfiesCriteria("performance_booth_premiere", criteria: anthologyOnly))
+        #expect(AchievementService.satisfiesCriteria("performance_booth_premiere", criteria: firstBoothRound))
+    }
 }

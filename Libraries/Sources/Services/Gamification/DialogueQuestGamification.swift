@@ -169,6 +169,14 @@ public enum DialogueQuestGamification {
             xpValue: 50,
             standard: nil
         ),
+        AchievementDefinition(
+            id: "performance_booth_premiere",
+            title: "Performance Booth premiere",
+            description: "You picked a tree, listened to your characters speak, and shipped the recording as an audio file. Your scene has a soundtrack now.",
+            iconAssetName: "achievement_performance_booth_premiere",
+            xpValue: 50,
+            standard: nil
+        ),
     ]
 
     /// All achievements registered with the engine. Phase 2 + Phase 3
