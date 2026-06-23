@@ -16,15 +16,8 @@ struct CastVoicingChip: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(castAccent.opacity(0.18))
-                    .frame(width: 32, height: 32)
-                Text(voicing.displayName.prefix(1))
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(castAccent)
-            }
-            .accessibilityHidden(true)
+            castAvatar
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(voicing.displayName) hears…")
@@ -51,6 +44,33 @@ struct CastVoicingChip: View {
             castAccent.opacity(0.10)
         } else {
             castAccent.opacity(0.06)
+        }
+    }
+
+    /// Cast avatar — portrait when shipped (LESSONS layer), letter chip
+    /// fallback otherwise (WORLD / META archetypes don't ship per-app
+    /// portraits per Pattern B + `Docs/HANDOFF_FROM_HUB_CAST_PORTRAITS.md`).
+    @ViewBuilder
+    private var castAvatar: some View {
+        if CastPortraitImage.url(forSlug: voicing.castID) != nil {
+            CastPortraitImage.image(forSlug: voicing.castID)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 36, height: 36)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .strokeBorder(castAccent.opacity(0.35), lineWidth: 1.5)
+                )
+        } else {
+            ZStack {
+                Circle()
+                    .fill(castAccent.opacity(0.18))
+                    .frame(width: 36, height: 36)
+                Text(voicing.displayName.prefix(1))
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(castAccent)
+            }
         }
     }
 

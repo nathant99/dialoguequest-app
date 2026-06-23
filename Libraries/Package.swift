@@ -90,6 +90,8 @@ let package = Package(
             resources: [
                 .process("Resources/Questions"),
                 .process("Resources/CompanionPack"),
+                .process("Resources/Cast"),
+                .process("Resources/CustomArt"),
             ],
             swiftSettings: defaultSwiftSettings
         ),
