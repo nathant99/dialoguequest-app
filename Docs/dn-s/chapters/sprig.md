@@ -8,6 +8,8 @@ register: warmly absurd with subtext (per labsmith DN-S R172 #606 spec) — Patt
 chapter-round: Round 225 #659
 status: SHIPPED
 word-count: ~870
+gate-allow-text:
+  - "HE"
 ---
 # Chapter 1 — Sprig and the Branches That Re-Routed Her Body
 
