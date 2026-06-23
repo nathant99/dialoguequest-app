@@ -179,13 +179,85 @@ public enum DialogueQuestGamification {
         ),
     ]
 
-    /// All achievements registered with the engine. Phase 2 + Phase 3
-    /// entries are always registered; they simply don't fire until the
-    /// kid is on the right path (triangle / read-aloud / export).
-    /// Keeping them in the same definitions array avoids per-flag config
-    /// branches in `makeConfig()`.
+    /// Phase 4 advanced achievements — synthesis-tier badges that fire
+    /// after the kid has accumulated enough activity across the four
+    /// craft axes (voice / subtext / tag balance / branch meaningfulness)
+    /// AND used the Phase 4 surfaces (anthology curation + Performance
+    /// Booth + audio export). Per `Docs/FEATURE_PLAN.md` § Phase 4 row 162.
+    public nonisolated static let phase4Achievements: [AchievementDefinition] = [
+        AchievementDefinition(
+            id: "synthesis_published",
+            title: "All four axes",
+            description: "You published a tree where voice + subtext + tag balance + branch meaningfulness all read strong.",
+            iconAssetName: "achievement_synthesis_published",
+            xpValue: 60,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "cross_craft_recognized",
+            title: "Craft travels",
+            description: "You completed the cross-craft kit and recognized the moves that hold in short stories, comics, poems, and plays.",
+            iconAssetName: "achievement_cross_craft",
+            xpValue: 45,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "revision_published",
+            title: "Second pass",
+            description: "You saved a tree as a sketch, came back, and published it. Revision is where the real writing lives.",
+            iconAssetName: "achievement_revision_published",
+            xpValue: 40,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "anthology_curator",
+            title: "First collection",
+            description: "You curated your first themed collection. Your anthology has a shape now.",
+            iconAssetName: "achievement_anthology_curator",
+            xpValue: 50,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "themed_collection_complete",
+            title: "Five-strong collection",
+            description: "You filled a themed collection with five published trees. That's a book in miniature.",
+            iconAssetName: "achievement_themed_collection_complete",
+            xpValue: 50,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "sixteen_kits_complete",
+            title: "Every kit explored",
+            description: "You opened every one of the sixteen question kits. You've seen the whole craft.",
+            iconAssetName: "achievement_sixteen_kits_complete",
+            xpValue: 100,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "voice_master_published",
+            title: "Voice mastery",
+            description: "You published a tree where the per-character voice match averaged above 0.92. Every line sounds like the person who said it.",
+            iconAssetName: "achievement_voice_master_published",
+            xpValue: 80,
+            standard: nil
+        ),
+        AchievementDefinition(
+            id: "dialogue_craft_graduate",
+            title: "Dialogue craft graduate",
+            description: "You published thirty trees. The craft is yours.",
+            iconAssetName: "achievement_dialogue_craft_graduate",
+            xpValue: 100,
+            standard: nil
+        ),
+    ]
+
+    /// All achievements registered with the engine. Phase 2 + Phase 3 +
+    /// Phase 4 entries are always registered; they simply don't fire
+    /// until the kid is on the right path (triangle / read-aloud /
+    /// export / curation / mastery). Keeping them in the same
+    /// definitions array avoids per-flag config branches in `makeConfig()`.
     public nonisolated static let allAchievements: [AchievementDefinition] =
-        phase1Achievements + phase2Achievements + phase3Achievements
+        phase1Achievements + phase2Achievements + phase3Achievements + phase4Achievements
 
     public nonisolated static func makeConfig() -> GamificationConfig {
         GamificationConfig(

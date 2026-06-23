@@ -83,6 +83,18 @@ public final class AchievementService {
         /// IS an audio export, but Anthology row exports do NOT count).
         /// Drives the `performance_booth_premiere` badge gate.
         public let performanceBoothExportCount: Int
+        // Phase 4 — synthesis-tier signals. Counters live on
+        // `AnthologyCollectionService` snapshots + `QuestionKitLoader`
+        // session-history + the per-tree `WritingEvaluator.VoiceSummary`
+        // that `WriteTabView` already computes on publish.
+        public let averageVoiceMatchScore: Double
+        public let strongVoiceAxis: Bool
+        public let subtextAxisStrong: Bool
+        public let kitsOpenedCount: Int
+        public let collectionsCreatedCount: Int
+        public let largestCollectionEntryCount: Int
+        public let publishedFromDraftCount: Int
+        public let crossCraftKitCompleted: Bool
 
         public init(
             publishedTreeCount: Int,
@@ -97,7 +109,15 @@ public final class AchievementService {
             audioExportCount: Int = 0,
             hasActionBeat: Bool = false,
             pacingPausesCount: Int = 0,
-            performanceBoothExportCount: Int = 0
+            performanceBoothExportCount: Int = 0,
+            averageVoiceMatchScore: Double = 0,
+            strongVoiceAxis: Bool = false,
+            subtextAxisStrong: Bool = false,
+            kitsOpenedCount: Int = 0,
+            collectionsCreatedCount: Int = 0,
+            largestCollectionEntryCount: Int = 0,
+            publishedFromDraftCount: Int = 0,
+            crossCraftKitCompleted: Bool = false
         ) {
             self.publishedTreeCount = publishedTreeCount
             self.confirmedSubtextLineCount = confirmedSubtextLineCount
@@ -112,6 +132,14 @@ public final class AchievementService {
             self.hasActionBeat = hasActionBeat
             self.pacingPausesCount = pacingPausesCount
             self.performanceBoothExportCount = performanceBoothExportCount
+            self.averageVoiceMatchScore = averageVoiceMatchScore
+            self.strongVoiceAxis = strongVoiceAxis
+            self.subtextAxisStrong = subtextAxisStrong
+            self.kitsOpenedCount = kitsOpenedCount
+            self.collectionsCreatedCount = collectionsCreatedCount
+            self.largestCollectionEntryCount = largestCollectionEntryCount
+            self.publishedFromDraftCount = publishedFromDraftCount
+            self.crossCraftKitCompleted = crossCraftKitCompleted
         }
     }
 
@@ -261,6 +289,31 @@ public final class AchievementService {
             // (`markListened` fires before `markExported` is reachable via
             // the SwiftUI surface).
             return criteria.performanceBoothExportCount >= 1
+
+        // Phase 4 — synthesis tier. All require Phase 1 minimum (5+
+        // nodes, published) plus the specific axis combination.
+        case "synthesis_published":
+            return criteria.publishedTreeCount >= 1 &&
+                   criteria.totalNodes >= 5 &&
+                   criteria.strongVoiceAxis &&
+                   criteria.subtextAxisStrong &&
+                   criteria.dominantTagAbsent &&
+                   criteria.reflectedBranchPointCount >= 1
+        case "cross_craft_recognized":
+            return criteria.crossCraftKitCompleted
+        case "revision_published":
+            return criteria.publishedFromDraftCount >= 1
+        case "anthology_curator":
+            return criteria.collectionsCreatedCount >= 1
+        case "themed_collection_complete":
+            return criteria.largestCollectionEntryCount >= 5
+        case "sixteen_kits_complete":
+            return criteria.kitsOpenedCount >= 16
+        case "voice_master_published":
+            return criteria.publishedTreeCount >= 1 &&
+                   criteria.averageVoiceMatchScore >= 0.92
+        case "dialogue_craft_graduate":
+            return criteria.publishedTreeCount >= 30
 
         default:
             return false

@@ -1,0 +1,67 @@
+{
+  "id": "kit_15_cross_craft",
+  "title": "Dialogue craft, across the page",
+  "theme": "voice_consistency",
+  "questions": [
+    {
+      "id": "kit_15_q_01",
+      "prompt": "You're writing a short story (not a dialogue tree). One of your characters has a strong voice register. How does dialogue craft show up in the prose?",
+      "options": [
+        { "id": "a", "label": "The character's dialogue lines stay in their register; the tag and action beats around them don't make the character sound like everyone else." },
+        { "id": "b", "label": "Drop dialogue entirely and use narration for everything." },
+        { "id": "c", "label": "Make every character sound the same so the prose flows smoothly." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Voice register holds wherever the character speaks — dialogue tree, short story, comic panel."
+    },
+    {
+      "id": "kit_15_q_02",
+      "prompt": "You're writing a comic strip. Three panels, three speech bubbles. What does branching-meaningfulness look like there?",
+      "options": [
+        { "id": "a", "label": "Each panel's bubble makes a choice the reader can feel — what gets said vs what doesn't. The branches live in the gaps between panels." },
+        { "id": "b", "label": "Comics don't have branches because the reader doesn't choose." },
+        { "id": "c", "label": "Branches only matter in interactive fiction." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Every choice a character makes is a branch. The reader feels the path NOT taken too."
+    },
+    {
+      "id": "kit_15_q_03",
+      "prompt": "You're writing a poem with two voices alternating. How does subtext show up?",
+      "options": [
+        { "id": "a", "label": "What one voice says out loud is contradicted, completed, or twisted by the other voice's line — the layer underneath the page-surface words." },
+        { "id": "b", "label": "Subtext only happens in dialogue trees." },
+        { "id": "c", "label": "Poems don't carry subtext because they're short." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Subtext is the gap between what someone says and what they mean. It works in any form."
+    },
+    {
+      "id": "kit_15_q_04",
+      "prompt": "You're writing a play script. Tag balance feels different there because plays use stage directions instead of attribution. What's the equivalent craft move?",
+      "options": [
+        { "id": "a", "label": "Use stage directions sparingly — when an action beat (a pause, a gesture, an exit) carries information the dialogue can't say." },
+        { "id": "b", "label": "Use stage directions for every line so the reader knows exactly what's happening." },
+        { "id": "c", "label": "Never use stage directions because they break the dialogue's rhythm." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Stage directions are the play's action beats. Use them where words can't carry the moment."
+    },
+    {
+      "id": "kit_15_q_05",
+      "prompt": "Across every form (dialogue tree / short story / comic / poem / play script), what's the one craft move that travels with you?",
+      "options": [
+        { "id": "a", "label": "Every line a character speaks is a choice. The choice carries voice + subtext + branch + tag. The form changes; the choice doesn't." },
+        { "id": "b", "label": "Use the same dialogue tag style in every form." },
+        { "id": "c", "label": "Pick one form and stick with it forever." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Forms change. The craft of one line at a time stays the same. Patter is grinning."
+    }
+  ]
+}

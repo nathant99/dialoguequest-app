@@ -1,0 +1,67 @@
+{
+  "id": "kit_16_writing_process",
+  "title": "Drafts, revision, and finishing",
+  "theme": "branching",
+  "questions": [
+    {
+      "id": "kit_16_q_01",
+      "prompt": "You saved a tree as a sketch — not published. Why does that 'sketch' setting matter for the writing process?",
+      "options": [
+        { "id": "a", "label": "A sketch is a draft you can come back to. The craft happens in the second pass — not the first. Sketches protect the second pass." },
+        { "id": "b", "label": "Sketches earn more XP than published trees." },
+        { "id": "c", "label": "Sketches are graded more strictly than published trees." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Real writers keep sketches. Publishing is the second look, not the first."
+    },
+    {
+      "id": "kit_16_q_02",
+      "prompt": "Revision means re-seeing — looking at the tree like someone else wrote it. Which of these is a revision move (not just a tweak)?",
+      "options": [
+        { "id": "a", "label": "Re-read the tree out loud (or use Listen mode). The lines that DON'T sound like the character get re-written. The voice score catches up." },
+        { "id": "b", "label": "Add three more lines so the tree is longer." },
+        { "id": "c", "label": "Re-check the title spelling." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Revision is hearing the line out loud. Tweaks are quieter than that."
+    },
+    {
+      "id": "kit_16_q_03",
+      "prompt": "You started a tree, got stuck at five nodes, and put it down for a day. The next day you re-open it. What's the best first move?",
+      "options": [
+        { "id": "a", "label": "Re-read what's there before adding anything. The tree picks up where the kid left off — but the kid forgot what they were thinking." },
+        { "id": "b", "label": "Delete everything and start over." },
+        { "id": "c", "label": "Add five new lines immediately so you reach the minimum tree size." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "The first move when you come back is re-reading. The kid yesterday left clues for the kid today."
+    },
+    {
+      "id": "kit_16_q_04",
+      "prompt": "You finished a tree, listened to it, and one line still feels off. The score is fine — but you hear something. What does a real writer do?",
+      "options": [
+        { "id": "a", "label": "Trust the ear. The scores are guidance, not gospel. If the line sounds wrong, rewrite it even when the meter says it's fine." },
+        { "id": "b", "label": "Publish anyway — the score is the official judge." },
+        { "id": "c", "label": "Delete the line so the score doesn't change." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Scores are advisory. The writer's ear is the deciding voice. Trust your ear."
+    },
+    {
+      "id": "kit_16_q_05",
+      "prompt": "What does 'finishing' a tree actually mean?",
+      "options": [
+        { "id": "a", "label": "Publishing it AND knowing where you'd revisit it later. Finished doesn't mean perfect — it means the kid is willing to share what they have." },
+        { "id": "b", "label": "Reaching the maximum node count." },
+        { "id": "c", "label": "Earning every Phase 1 + 2 + 3 + 4 achievement." }
+      ],
+      "correctOptionID": "a",
+      "freeTextRubric": null,
+      "mentorPostScript": "Finished is willing-to-share. The revision keeps going long after the tree lands in the anthology."
+    }
+  ]
+}
