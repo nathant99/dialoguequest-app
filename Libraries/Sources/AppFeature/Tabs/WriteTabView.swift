@@ -137,21 +137,35 @@ struct WriteTabView: View {
                 // of breaking on a difficult piece.
                 let publishedMood = machine.tree.mood
                 Task { await StreakService.shared.recordPublishedTree(mood: publishedMood) }
-                // Variable-ratio reward: ~1 in 5 publishes surfaces a
-                // curated voice-craft tip in a Patter bubble. The cameo
-                // path (below) is mutually exclusive — when it wins, it
-                // replaces the tip in the same overlay so the kid never
-                // sees two bubbles at once.
+                // Record the just-published mood + title in Patter's
+                // rolling memory BEFORE the bubble decision below — the
+                // callback path reads the freshest history.
+                PatterCallbackService.shared.recordPublishedTree(
+                    mood: machine.tree.mood,
+                    title: machine.tree.title
+                )
+                // Three Patter-bubble paths share the rareVoiceCraftTip
+                // slot, mutually exclusive (so the kid never sees two
+                // bubbles): cameo (12%, flag-gated) → callback (8%,
+                // history-gated) → voice-craft tip (20%, always
+                // allowed). Lower-probability paths win first so they
+                // feel special when they hit.
                 var rewardRNG = SystemRandomNumberGenerator()
-                var cameoFired = false
+                var slotFilled = false
                 if publishedTreeCount >= CharacterCameoInvitations.minimumPublishedTreeCount,
                    CastVoicingFeatureFlag.isEnabled,
                    CharacterCameoInvitations.shouldShowInvitation(rng: &rewardRNG),
                    let invitation = CharacterCameoInvitations.pickInvitation(rng: &rewardRNG) {
                     rareVoiceCraftTip = invitation.bubbleMessage
-                    cameoFired = true
+                    slotFilled = true
                 }
-                if !cameoFired, VariableReward.shouldShowBonus() {
+                if !slotFilled,
+                   PatterCallbackService.shouldShowCallback(rng: &rewardRNG),
+                   let callback = PatterCallbackService.shared.nextCallback() {
+                    rareVoiceCraftTip = callback
+                    slotFilled = true
+                }
+                if !slotFilled, VariableReward.shouldShowBonus() {
                     rareVoiceCraftTip = VariableReward.pickVoiceCraftTip(rng: &rewardRNG)
                 }
                 // Feed the tree's outcome into DDA so the next session's
