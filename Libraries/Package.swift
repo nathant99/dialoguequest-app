@@ -126,6 +126,7 @@ let package = Package(
                 .product(name: "ForgeLiveActivities", package: "forgekit"),
                 .product(name: "ForgeModels", package: "forgekit"),
                 .product(name: "ForgePedagogy", package: "forgekit"),
+                .product(name: "ForgePersistence", package: "forgekit"),
                 .product(name: "ForgeReporting", package: "forgekit"),
                 .product(name: "ForgeSensory", package: "forgekit"),
             ],

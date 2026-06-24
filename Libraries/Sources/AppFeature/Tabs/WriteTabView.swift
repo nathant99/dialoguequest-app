@@ -291,6 +291,14 @@ struct WriteTabView: View {
                 _ = MasteryMomentService.shared.recordPublishedTree(
                     averageVoiceMatch: outcome.averageVoiceMatch
                 )
+                // Voice-pattern axis — record the per-character means
+                // so future Patter coaching surfaces can read trends
+                // across sessions. Cheap O(N-chars) summary call;
+                // safe to re-run alongside computeOutcomeSnapshot.
+                let voiceSummary = voiceAnalyzer.summary(for: machine.tree)
+                VoicePatternHistoryService.shared.recordPublishedTree(
+                    summary: voiceSummary
+                )
             }
             evaluateAchievements()
         }
