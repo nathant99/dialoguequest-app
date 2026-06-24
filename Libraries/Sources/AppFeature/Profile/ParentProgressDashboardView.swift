@@ -22,9 +22,13 @@ public struct ParentProgressDashboardView: View {
     @AppStorage("dq.currentStreak") private var currentStreak: Int = 0
     @AppStorage("dq.streakFreezes") private var streakFreezes: Int = 2
     @AppStorage("dq.earnedBadgeIDs") private var earnedBadgeIDsRaw: String = ""
+    @AppStorage("dq.weeklySummaryOptIn") private var weeklySummaryOptIn: Bool = false
 
     /// Snapshot fetched in `.task` per the read-only dashboard rule.
     @State private var retention: RetentionMetricsService.Snapshot?
+    /// 7-day weekly delta snapshot. Loaded in `.task` when the parent
+    /// has opted in (`dq.weeklySummaryOptIn`).
+    @State private var weeklySummary: WeeklySummarySnapshot?
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -35,6 +39,7 @@ public struct ParentProgressDashboardView: View {
             VStack(alignment: .leading, spacing: 18) {
                 heroSection
                 primaryMetrics
+                weeklySummarySection
                 retentionSection
                 standardSection
                 whatThisMeansSection
@@ -45,6 +50,9 @@ public struct ParentProgressDashboardView: View {
         .navigationTitle("Progress")
         .task {
             retention = RetentionMetricsService.shared.snapshot()
+            if weeklySummaryOptIn {
+                weeklySummary = await WeeklySummaryService.shared.snapshot()
+            }
         }
     }
 
@@ -115,6 +123,113 @@ public struct ParentProgressDashboardView: View {
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Return habit. Day 1 \(retention.hitD1 ? "met" : "pending"), day 7 \(retention.hitD7 ? "met" : "pending"), day 30 \(retention.hitD30 ? "met" : "pending").")
         }
+    }
+
+    @ViewBuilder
+    private var weeklySummarySection: some View {
+        if weeklySummaryOptIn, let summary = weeklySummary {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("This week")
+                    .font(.headline)
+                    .foregroundStyle(DialoguePalette.inkBlue)
+                Text(weeklySummaryFraming(summary))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                if summary.hasAnyActivity {
+                    VStack(spacing: 6) {
+                        weeklyMetricRow(
+                            label: "Conversations published",
+                            value: summary.publishedTreesThisWeek
+                        )
+                        weeklyMetricRow(
+                            label: "Subtext lines confirmed",
+                            value: summary.subtextConfirmedThisWeek
+                        )
+                        weeklyMetricRow(
+                            label: "Branches reflected on",
+                            value: summary.branchesReflectedThisWeek
+                        )
+                        weeklyMetricRow(
+                            label: "Badges earned",
+                            value: summary.badgesEarnedThisWeek
+                        )
+                        weeklyMetricRow(
+                            label: "Days opened",
+                            value: summary.activeDaysThisWeek,
+                            unitLimit: 7
+                        )
+                    }
+                    if !summary.voicePatternHighlights.isEmpty {
+                        Divider()
+                        Text("Voice patterns")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(DialoguePalette.inkBlue)
+                        Text(voicePatternHighlightFraming(summary.voicePatternHighlights))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    Text("No conversations this week yet. Patter is waiting.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding()
+            .background(panelBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(weeklySummaryAccessibilitySummary(summary))
+        }
+    }
+
+    @ViewBuilder
+    private func weeklyMetricRow(label: String, value: Int, unitLimit: Int? = nil) -> some View {
+        HStack {
+            Text(label)
+                .font(.body)
+            Spacer()
+            if let unitLimit {
+                Text("\(value) of \(unitLimit)")
+                    .font(.footnote.monospacedDigit())
+                    .foregroundStyle(DialoguePalette.inkBlue)
+            } else {
+                Text("\(value)")
+                    .font(.footnote.monospacedDigit())
+                    .foregroundStyle(DialoguePalette.inkBlue)
+            }
+        }
+    }
+
+    private func weeklySummaryFraming(_ summary: WeeklySummarySnapshot) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        let start = formatter.string(from: summary.windowStart)
+        let end = formatter.string(from: summary.windowEnd)
+        return "What changed between \(start) and \(end). On-device only."
+    }
+
+    private func voicePatternHighlightFraming(_ highlights: [VoicePatternHighlight]) -> String {
+        let improvingCount = highlights.filter { $0.trend == "improving" }.count
+        let driftingCount = highlights.filter { $0.trend == "drifting" }.count
+        var parts: [String] = []
+        if improvingCount > 0 {
+            parts.append("\(improvingCount) \(improvingCount == 1 ? "character is" : "characters are") sounding more like themselves")
+        }
+        if driftingCount > 0 {
+            parts.append("\(driftingCount) \(driftingCount == 1 ? "character" : "characters") could use a gentle anchor line next session")
+        }
+        if parts.isEmpty {
+            return "All characters held steady this week."
+        }
+        return parts.joined(separator: "; ") + "."
+    }
+
+    private func weeklySummaryAccessibilitySummary(_ summary: WeeklySummarySnapshot) -> String {
+        if !summary.hasAnyActivity {
+            return "This week: no conversations published yet."
+        }
+        return "This week: \(summary.publishedTreesThisWeek) conversations published, \(summary.subtextConfirmedThisWeek) subtext lines confirmed, \(summary.branchesReflectedThisWeek) branches reflected, \(summary.badgesEarnedThisWeek) badges earned, opened on \(summary.activeDaysThisWeek) of 7 days."
     }
 
     private var standardSection: some View {
