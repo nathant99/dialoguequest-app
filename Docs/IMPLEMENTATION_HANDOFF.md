@@ -1,11 +1,31 @@
 ---
 status: ACTIVE
-date: 2026-06-25
+date: 2026-06-26
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
 
+> **2026-06-26 round addendum (seventh mid-session, completed)** — multi-PR session-handoff Priority B + Priority C + Priority F round under the standing auto-cycle, with two NEW user-GUI handoffs filed and one Phase Delight deferred row closed. **4 PRs landed** (#124 → #127). 1 Phase Delight deferred row CLOSED (voice-pattern axis longitudinal store). Net state delta:
+>
+> - **Test count delta**: +16 (`VoicePatternHistoryServiceTests`). Total: ~438 tests.
+> - **ForgeKit module count consumed**: **18** (unchanged in `Sources/` deps; `ServicesTests` gained a 11th dep on `ForgePersistence` to force SPM SwiftFileList re-discovery for the new test file). The `ForgeMasteryEngine` + `PolyaScaffold` modules from 1.0.0-rc.x remain deferred behind the pin bump.
+> - **Open user-GUI handoffs**: +2 (`HANDOFF_TO_USER_FORGEKIT_PIN_BUMP.md` + `HANDOFF_TO_USER_LOCALIZABLE_XCSTRINGS.md`).
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-06-27_ROUND_CLOSE.md` (this round's successor; replaces the 2026-06-26 brief).
+>
+> - **PR 1 (#124) — Xcode safety reaffirmation (Track A).** Appended the 2026-06-26 dated entry to `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` per user-direct (same canonical verbatim phrasing as 2026-06-25). Extended the open-user-handoffs table with the two NEW items this round files. Confirmed no drift in `CLAUDE.md` § Xcode Agent Safety or `.claude/rules/xcode-agent-safety.md` § "Staging + committing Xcode-managed files IS allowed". Pure docs.
+> - **PR 2 (#125) — ForgeKit pin bump handoff (Track B).** New `Docs/HANDOFF_TO_USER_FORGEKIT_PIN_BUMP.md`. Two GUI paths documented: Path A is agent-authored manifest edit + user runs "Update to Latest Package Versions"; Path B is fully user-driven. Both end with the agent staging + committing the resulting `Package.swift` + `Package.resolved` diff. Unblocks `ForgeMasteryEngine` + `PolyaScaffold` adoption. `Package.resolved` is in the forbidden-write glob per `.claude/rules/xcode-agent-safety.md` — handoff is the canonical escape hatch.
+> - **PR 3 (#126) — Localizable.xcstrings handoff (Track C).** New `Docs/HANDOFF_TO_USER_LOCALIZABLE_XCSTRINGS.md`. Single Xcode GUI step: File → New File → String Catalog → save as `Libraries/Sources/AppFeature/Resources/Localizable.xcstrings` on the AppFeature target. Post-GUI, the agent (a) stages + commits the catalog, (b) adds `ForgeLocalization` to AppFeature deps, (c) sweeps user-facing `Text("…")` strings into catalog keys per the three rules in `.claude/rules/localization.md`. Pre-App-Store gate; not blocking TestFlight Beta.
+> - **PR 4 (#127) — VoicePatternHistoryService (Track D; Phase Delight deferred row closure).** Closes the next-session brief's Priority F. New `Libraries/Sources/Services/Pedagogy/VoicePatternHistoryService.swift` — `@MainActor public final class` records `WritingEvaluator.VoiceSummary.perCharacterAverage` into a rolling 5-slot window per character, encoded to a single `dq.voicePattern.perCharacterHistory` UserDefaults key. Public `Trend` enum (`insufficientData` / `improving` / `steady` / `drifting`) collapses the window via a 0.08 delta threshold matching the existing `WritingEvaluator.VoiceBand` step. Wired into `WriteTabView.onChange(.published)` alongside `MasteryMomentService` — uses the same `voiceAnalyzer.summary(for:)` snapshot. 16 tests cover recording / persistence / trim / clamp / cross-character independence / trend bands / contract values. `ServicesTests` gained `ForgePersistence` dep so SPM's SwiftFileList cache picks up the new test file (per `@CLAUDE.md` § "Things That Will Bite You" — "SPM caches the per-test-target SwiftFileList"). 38 adjacent tests (MasteryMoment + PatterCallback + DialogueTreeMachine) still green.
+> - **Track Z — Round-close.** This addendum + `Docs/SESSION_HANDOFF_2026-06-27_ROUND_CLOSE.md` for the next CC session. Test count + ForgeKit module count notes above kept in sync. FEATURE_PLAN Phase Delight voice-pattern axis row updated to reflect closed-this-round.
+>
+> **What this round did NOT do** (intentional + scoped):
+> - Did NOT touch Xcode-managed files (workspace / scheme / xctestplan / Info.plist / entitlements / `Package.resolved`). All code PRs landed via filesystem `Write`/`Edit` against SPM source — synchronized-folder targets convention preserved.
+> - Did NOT bump the ForgeKit pin (Track B FILED the handoff; the GUI step is on the user). Pin update still requires `Package.resolved` regeneration.
+> - Did NOT create the `Localizable.xcstrings` catalog (Track C FILED the handoff; the GUI step is on the user).
+> - Did NOT scaffold any of the `ForgeMasteryEngine` / `PolyaScaffold` / `ForgeLocalization` integration code — all 3 wait on user-GUI completion of Track B + Track C handoffs.
+> - Did NOT touch the existing hub-blocked + user-GUI-blocked handoffs (HubContribution Level 1 / Patter PNG / Curating Together PDF / declared age range / app icon / voice-acting coach Info.plist / widget extension / aimentortests test plan).
+>
 > **2026-06-25 round addendum (sixth mid-session, completed)** — multi-PR session-handoff Priority F + Phase 2 deferred-follow-up + Xcode safety reaffirmation round. **4 PRs landed** (#120 → #123). 1 Phase 2 deferred row CLOSED + 1 Phase A11y row deferred-component CLOSED. Net state delta:
 >
 > - **Test count delta**: +26 (Track B 7 + Track C 13) = ~422 total. ModelsTests gains 7; AppFeatureTests gains 13 (was 6 → 19 in DialoguePaletteContrastTests).
