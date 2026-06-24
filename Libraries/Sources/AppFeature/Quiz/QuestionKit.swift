@@ -1,4 +1,5 @@
 import Foundation
+import Services
 
 /// One of the 4 Phase 1 question kits the kid plays from the Adventure
 /// surface or the Onboarding flow. Loaded from `Bundle.module` JSON.
@@ -70,20 +71,36 @@ public enum QuestionKitLoader {
     }
 
     public nonisolated static func load(id: String) throws -> QuestionKit {
-        // `.process("Resources/Questions")` flattens the JSON files into
-        // the root of `Bundle.module`, so we look up without a subdirectory.
-        guard let url = Bundle.module.url(forResource: id, withExtension: "json") else {
-            throw LoaderError.kitNotFound(id)
-        }
+        // Delegates to `QuestionKitContentService` (Services/Persistence/)
+        // which wraps `ForgeContentLoader` for a portfolio-canonical
+        // two-tier lookup: disk cache first, `Bundle.module` (AppFeature)
+        // second. Today the disk cache is always empty (no hub-shipped
+        // kit manifest URL), so behavior is identical to the prior
+        // pure-Bundle.module path. The seam is ready when hub ships
+        // a kit manifest — see `Docs/HANDOFF_TO_HUB_HUBCONTRIBUTION_LEVEL_1.md`
+        // for the cross-repo path.
+        let service = QuestionKitContentService(bundle: .module)
         do {
-            let data = try Data(contentsOf: url)
-            let decoder = JSONDecoder()
-            return try decoder.decode(QuestionKit.self, from: data)
-        } catch let error as LoaderError {
-            throw error
+            return try service.load(QuestionKit.self, filename: "\(id).json")
+        } catch let error as QuestionKitContentService.LoadError {
+            switch error {
+            case .notFound:
+                throw LoaderError.kitNotFound(id)
+            case .decodeFailed(let detail):
+                throw LoaderError.decodeFailed(id, KitDecodeDetail(detail))
+            }
         } catch {
             throw LoaderError.decodeFailed(id, error)
         }
+    }
+
+    /// Lightweight error carrier that preserves the underlying decoder
+    /// detail string for `LoaderError.decodeFailed`'s `any Error`
+    /// requirement without dragging `DecodingError` (or
+    /// `ForgeContentError`) through the AppFeature surface.
+    public nonisolated struct KitDecodeDetail: Error, Sendable, Equatable {
+        public let detail: String
+        public init(_ detail: String) { self.detail = detail }
     }
 
     /// All 4 Phase 1 kit identifiers in canonical order.
