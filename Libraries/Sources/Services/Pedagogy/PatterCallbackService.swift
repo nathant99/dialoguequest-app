@@ -207,4 +207,115 @@ public final class PatterCallbackService {
         let roll = Double.random(in: 0..<1, using: &rng)
         return roll < probability
     }
+
+    // MARK: - Voice-pattern callback (Phase Delight follow-up)
+
+    /// Probability the voice-pattern callback fires when its gates allow
+    /// it. Sized to match the mood-callback path (0.08) so the two
+    /// callback axes feel symmetrically special. Together the two
+    /// callback paths sum to ~0.16 — still rarer than the 0.20
+    /// voice-craft-tip path, so the kid encounters a callback first when
+    /// one is available + flat tip otherwise.
+    public nonisolated static let defaultVoicePatternProbability: Double = 0.08
+
+    /// Mirror of `shouldShowCallback` for the voice-pattern axis.
+    /// Separate counter so the two axes don't share an RNG draw — the
+    /// kid is equally likely to see either when both are available.
+    public nonisolated static func shouldShowVoicePatternCallback(
+        probability: Double = defaultVoicePatternProbability,
+        rng: inout some RandomNumberGenerator
+    ) -> Bool {
+        guard probability > 0 else { return false }
+        guard probability < 1 else { return true }
+        let roll = Double.random(in: 0..<1, using: &rng)
+        return roll < probability
+    }
+
+    /// Returns a single-line Patter bubble when one of the tree's
+    /// characters has a non-flat voice-pattern trend in
+    /// `VoicePatternHistoryService`. Returns `nil` otherwise so the
+    /// call site (`WriteTabView`'s mutually-exclusive bubble slot)
+    /// falls through to the next path.
+    ///
+    /// Character selection: scans the tree's characters in their
+    /// authored order; the first one with a `.improving` or `.drifting`
+    /// trend wins. Deterministic across publishes so two consecutive
+    /// callbacks about the same character don't surface as a confusing
+    /// "wait, why is Patter only talking about Brogue?" — that's a
+    /// signal Patter is paying attention to who needs the cue most.
+    ///
+    /// The `historyService` parameter is injectable so tests can pass a
+    /// store seeded with a known history without depending on
+    /// `VoicePatternHistoryService.shared`'s UserDefaults state.
+    public func nextVoicePatternCallback(
+        in tree: DialogueTree,
+        historyService: VoicePatternHistoryService = .shared
+    ) -> String? {
+        let publishedCount = defaults.integer(forKey: Self.defaultsKeyPublishedTreeCount)
+        guard publishedCount >= Self.minimumPublishedTreeCount else { return nil }
+        for character in tree.characters {
+            let trend = historyService.trend(for: character.id)
+            if let feedback = Self.voicePatternFeedback(
+                trendKey: trend.rawValue,
+                characterName: character.name
+            ) {
+                return feedback.bubbleLine()
+            }
+        }
+        return nil
+    }
+
+    /// Pure rendering helper — exposed for testing the register copy +
+    /// trend-mapping without round-tripping through the history service.
+    /// Mirrors the AIMentor-side `PatterFallbacks.voicePatternFeedbackFallback`
+    /// shape (observation + nudge) but keeps Services target self-contained
+    /// — the fallback line text is duplicated here so Services tests don't
+    /// need to import AIMentor.
+    public nonisolated static func voicePatternFeedback(
+        trendKey: String,
+        characterName: String
+    ) -> VoicePatternBubble? {
+        let safeName = presentableCharacterName(characterName)
+        switch trendKey {
+        case "improving":
+            return VoicePatternBubble(
+                observation: "\(safeName)'s voice has been getting steadier across your last few conversations.",
+                nudge: "Patter is starting to recognize \(safeName) before you tag the line — keep listening for that pattern."
+            )
+        case "drifting":
+            return VoicePatternBubble(
+                observation: "\(safeName)'s voice has drifted a little across your recent trees.",
+                nudge: "Want to try one line where \(safeName) sounds the MOST like \(safeName) — and see what tugs back?"
+            )
+        case "steady", "insufficientData":
+            return nil
+        default:
+            return nil
+        }
+    }
+
+    /// Whitespace-only-safe name presenter matching the AIMentor-side
+    /// fallback helper. Services target's mirror.
+    public nonisolated static func presentableCharacterName(_ name: String) -> String {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "this character" : trimmed
+    }
+
+    /// Value-type bubble shape mirroring AIMentor's
+    /// `VoicePatternFeedback` so Services callers can render without
+    /// importing AIMentor. `bubbleLine()` collapses to the single
+    /// MentorBubbleView slot shape.
+    public nonisolated struct VoicePatternBubble: Sendable, Equatable, Hashable {
+        public let observation: String
+        public let nudge: String
+
+        public init(observation: String, nudge: String) {
+            self.observation = observation
+            self.nudge = nudge
+        }
+
+        public func bubbleLine() -> String {
+            "\(observation) \(nudge)"
+        }
+    }
 }

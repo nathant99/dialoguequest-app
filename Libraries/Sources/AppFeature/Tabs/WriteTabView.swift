@@ -232,12 +232,24 @@ struct WriteTabView: View {
                     mood: machine.tree.mood,
                     title: machine.tree.title
                 )
-                // Three Patter-bubble paths share the rareVoiceCraftTip
+                // Voice-pattern axis — record the per-character means
+                // BEFORE the bubble decision below so the trend-based
+                // voice-pattern callback path reads a history that
+                // includes THIS publish. Cheap O(N-chars) summary call.
+                let voiceSummary = voiceAnalyzer.summary(for: machine.tree)
+                VoicePatternHistoryService.shared.recordPublishedTree(
+                    summary: voiceSummary
+                )
+                // Four Patter-bubble paths share the rareVoiceCraftTip
                 // slot, mutually exclusive (so the kid never sees two
-                // bubbles): cameo (12%, flag-gated) → callback (8%,
-                // history-gated) → voice-craft tip (20%, always
-                // allowed). Lower-probability paths win first so they
-                // feel special when they hit.
+                // bubbles): cameo (12%, flag-gated) → callback mood (8%,
+                // history-gated) → callback voice-pattern (8%, history-
+                // gated, per-character trend) → voice-craft tip (20%,
+                // always allowed). Lower-probability paths win first so
+                // they feel special when they hit. The mood + voice-
+                // pattern callbacks are mutually exclusive — the kid
+                // sees the more recently anchored one (mood is keyed to
+                // THIS publish; voice-pattern is keyed to recent trend).
                 var rewardRNG = SystemRandomNumberGenerator()
                 var slotFilled = false
                 if publishedTreeCount >= CharacterCameoInvitations.minimumPublishedTreeCount,
@@ -251,6 +263,13 @@ struct WriteTabView: View {
                    PatterCallbackService.shouldShowCallback(rng: &rewardRNG),
                    let callback = PatterCallbackService.shared.nextCallback() {
                     rareVoiceCraftTip = callback
+                    slotFilled = true
+                }
+                if !slotFilled,
+                   PatterCallbackService.shouldShowVoicePatternCallback(rng: &rewardRNG),
+                   let voicePatternCallback = PatterCallbackService.shared
+                    .nextVoicePatternCallback(in: machine.tree) {
+                    rareVoiceCraftTip = voicePatternCallback
                     slotFilled = true
                 }
                 if !slotFilled, VariableReward.shouldShowBonus() {
@@ -290,14 +309,6 @@ struct WriteTabView: View {
                 let outcome = computeOutcomeSnapshot()
                 _ = MasteryMomentService.shared.recordPublishedTree(
                     averageVoiceMatch: outcome.averageVoiceMatch
-                )
-                // Voice-pattern axis — record the per-character means
-                // so future Patter coaching surfaces can read trends
-                // across sessions. Cheap O(N-chars) summary call;
-                // safe to re-run alongside computeOutcomeSnapshot.
-                let voiceSummary = voiceAnalyzer.summary(for: machine.tree)
-                VoicePatternHistoryService.shared.recordPublishedTree(
-                    summary: voiceSummary
                 )
             }
             evaluateAchievements()
