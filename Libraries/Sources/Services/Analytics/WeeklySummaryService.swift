@@ -39,15 +39,18 @@ public final class WeeklySummaryService {
 
     private let analytics: DialogueQuestAnalytics
     private let history: VoicePatternHistoryService
+    private let deltaService: WeeklyDeltaService
     private let calendar: Calendar
 
     public init(
         analytics: DialogueQuestAnalytics = .shared,
         history: VoicePatternHistoryService = .shared,
+        deltaService: WeeklyDeltaService = .shared,
         calendar: Calendar = .current
     ) {
         self.analytics = analytics
         self.history = history
+        self.deltaService = deltaService
         self.calendar = calendar
     }
 
@@ -92,6 +95,18 @@ public final class WeeklySummaryService {
             sessionsThisWeek: sessions,
             voicePatternHighlights: highlights
         )
+    }
+
+    /// Compute the snapshot AND the signed delta versus the previously
+    /// persisted week. Persists the new snapshot as the baseline when
+    /// the window has advanced beyond `WeeklyDeltaService.minWindowSeparationDays`.
+    /// Caller-friendly tuple keeps `snapshot(now:)` callers unaffected.
+    public func snapshotWithDelta(now: Date = .now) async -> (snapshot: WeeklySummarySnapshot, delta: WeeklyDelta?) {
+        let current = await snapshot(now: now)
+        let previous = deltaService.previousSnapshot()
+        let delta = deltaService.delta(from: previous, current: current)
+        deltaService.recordIfWindowAdvanced(current, now: now)
+        return (current, delta)
     }
 
     /// Surface only characters whose rolling-window trend is

@@ -29,6 +29,10 @@ public struct ParentProgressDashboardView: View {
     /// 7-day weekly delta snapshot. Loaded in `.task` when the parent
     /// has opted in (`dq.weeklySummaryOptIn`).
     @State private var weeklySummary: WeeklySummarySnapshot?
+    /// Signed deltas vs the previously persisted weekly snapshot.
+    /// nil on first open (no baseline yet) or when overlapping windows
+    /// would surface a misleading comparison.
+    @State private var weeklyDelta: WeeklyDelta?
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -51,7 +55,9 @@ public struct ParentProgressDashboardView: View {
         .task {
             retention = RetentionMetricsService.shared.snapshot()
             if weeklySummaryOptIn {
-                weeklySummary = await WeeklySummaryService.shared.snapshot()
+                let (snapshot, delta) = await WeeklySummaryService.shared.snapshotWithDelta()
+                weeklySummary = snapshot
+                weeklyDelta = delta
             }
         }
     }
@@ -159,6 +165,15 @@ public struct ParentProgressDashboardView: View {
                             unitLimit: 7
                         )
                     }
+                    if let delta = weeklyDelta, delta.hasAnySignedChange {
+                        Divider()
+                        Text("Change vs last week")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(DialoguePalette.inkBlue)
+                        Text(weeklyDeltaFraming(delta))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                     if !summary.voicePatternHighlights.isEmpty {
                         Divider()
                         Text("Voice patterns")
@@ -223,6 +238,44 @@ public struct ParentProgressDashboardView: View {
             return "All characters held steady this week."
         }
         return parts.joined(separator: "; ") + "."
+    }
+
+    private func weeklyDeltaFraming(_ delta: WeeklyDelta) -> String {
+        var parts: [String] = []
+        if delta.publishedTreesDelta != 0 {
+            parts.append(deltaPhrase(value: delta.publishedTreesDelta, noun: "conversation"))
+        }
+        if delta.subtextConfirmedDelta != 0 {
+            parts.append(deltaPhrase(value: delta.subtextConfirmedDelta, noun: "subtext line"))
+        }
+        if delta.branchesReflectedDelta != 0 {
+            parts.append(deltaPhrase(value: delta.branchesReflectedDelta, noun: "branch reflection"))
+        }
+        if delta.badgesEarnedDelta != 0 {
+            parts.append(deltaPhrase(value: delta.badgesEarnedDelta, noun: "badge"))
+        }
+        if delta.newlyImprovingCount > 0 {
+            let plural = delta.newlyImprovingCount == 1 ? "character" : "characters"
+            parts.append("\(delta.newlyImprovingCount) \(plural) newly improving")
+        }
+        if delta.newlyDriftingCount > 0 {
+            let plural = delta.newlyDriftingCount == 1 ? "character" : "characters"
+            parts.append("\(delta.newlyDriftingCount) \(plural) newly drifting")
+        }
+        if parts.isEmpty {
+            return "Same shape as last week."
+        }
+        return parts.joined(separator: "; ") + " vs last week."
+    }
+
+    private func deltaPhrase(value: Int, noun: String) -> String {
+        let magnitude = abs(value)
+        let plural = magnitude == 1 ? noun : "\(noun)s"
+        if value > 0 {
+            return "\(magnitude) more \(plural)"
+        } else {
+            return "\(magnitude) fewer \(plural)"
+        }
     }
 
     private func weeklySummaryAccessibilitySummary(_ summary: WeeklySummarySnapshot) -> String {
