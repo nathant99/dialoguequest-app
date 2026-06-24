@@ -113,6 +113,55 @@ public final class PatterMentor {
         }
     }
 
+    /// Phase Delight follow-up — voice-pattern trend coaching. Given a
+    /// per-character trend signal + name, surface a Patter observation +
+    /// nudge that the call site can collapse to a single bubble line.
+    /// Returns `nil` when the trend is `.steady` / `.insufficientData`
+    /// (no signal to call out) — the call site falls back to the next
+    /// path in `WriteTabView`'s mutually-exclusive bubble slot.
+    ///
+    /// Takes `trendKey: String` (matching `Trend.rawValue`) rather than
+    /// the Services-side enum because AIMentor can't depend on Services
+    /// without inverting the package graph. The Services-side
+    /// `PatterCallbackService.nextVoicePatternCallback(in:)` maps
+    /// `Trend.rawValue` → `trendKey` before calling.
+    public func voicePatternFeedback(
+        trendKey: String,
+        characterName: String
+    ) async -> VoicePatternFeedback? {
+        guard isAvailable, let session else {
+            return PatterFallbacks.voicePatternFeedbackFallback(
+                trendKey: trendKey,
+                characterName: characterName
+            )
+        }
+        // The fallback gates `.steady` / `.insufficientData` to nil
+        // before we ever spin up the LLM — mirror that gate here so the
+        // live path stays cheap.
+        guard let _ = PatterFallbacks.voicePatternFeedbackFallback(
+            trendKey: trendKey,
+            characterName: characterName
+        ) else {
+            return nil
+        }
+        do {
+            let prompt = makeVoicePatternPrompt(
+                trendKey: trendKey,
+                characterName: characterName
+            )
+            let response = try await session.respond(
+                to: prompt,
+                generating: VoicePatternFeedback.self
+            )
+            return response.content
+        } catch {
+            return PatterFallbacks.voicePatternFeedbackFallback(
+                trendKey: trendKey,
+                characterName: characterName
+            )
+        }
+    }
+
     public func tagBalanceTip(dominant: DialogueTag.Classification) async -> TagBalanceTip {
         guard isAvailable, let session else {
             return PatterFallbacks.tagBalanceFallback(dominant: dominant)
@@ -181,6 +230,31 @@ public final class PatterMentor {
         for that listener (or an empty string if no clear subtext for that listener). \
         Echo the line verbatim as surfaceText, fill in the listener names, and rate the \
         speaker's voiceMatchScore 0.0 to 1.0.
+        """
+    }
+
+    private func makeVoicePatternPrompt(
+        trendKey: String,
+        characterName: String
+    ) -> String {
+        let safeName = PatterFallbacks.presentableCharacterName(characterName)
+        let trendClause: String
+        switch trendKey {
+        case "improving":
+            trendClause = "\(safeName)'s voice has been getting more consistent across the kid's recent trees"
+        case "drifting":
+            trendClause = "\(safeName)'s voice has been drifting across the kid's recent trees"
+        default:
+            // Defensive — caller already gates `.steady` / `.insufficientData`
+            // to nil before this method runs.
+            trendClause = "\(safeName)'s voice"
+        }
+        return """
+        Patter has been listening across the kid's recent trees. \(trendClause).
+        Write a 1-sentence observation Patter would share — warm, never \
+        grade-flavored. Then 1 invitation for the kid's next move — \
+        celebratory on improvement, gentle "want to try one more line in \
+        their voice?" on drift. Don't propose specific rewrites.
         """
     }
 

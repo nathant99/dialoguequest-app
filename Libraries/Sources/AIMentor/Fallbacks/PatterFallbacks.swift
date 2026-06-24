@@ -132,6 +132,63 @@ public nonisolated enum PatterFallbacks {
         )
     }
 
+    // MARK: - VoicePatternFeedback (Phase Delight follow-up)
+
+    /// Per-character voice-pattern trend coaching. The trend is the
+    /// `Trend` value-type emitted by
+    /// `Services.VoicePatternHistoryService.trend(for:)`; the character
+    /// name is the kid's authored `DialogueCharacterRef.displayName`.
+    ///
+    /// Each branch returns a register-clean (observation, nudge) pair
+    /// that the call site collapses via `bubbleLine()` into the
+    /// single-line bubble shape `WriteTabView`'s
+    /// `rareVoiceCraftTip` slot consumes. Returns `nil` for
+    /// `.insufficientData` / `.steady` — there's no signal yet (or it's
+    /// flat), and Patter would sound presumptuous calling a non-trend a
+    /// trend.
+    ///
+    /// The `characterName` is interpolated verbatim into the
+    /// observation. Whitespace-only names fall back to "this character"
+    /// so the line never reads as a missing-template substitution.
+    ///
+    /// The trend signal lives in `Services.VoicePatternHistoryService.Trend`
+    /// but the AIMentor target can't depend on Services (Services
+    /// already depends on AIMentor's siblings — Models — and going the
+    /// other way would invert the dependency graph). So this fallback
+    /// takes a String `trendKey` matching the Trend rawValue. The
+    /// Services consumer maps `Trend.rawValue` → `trendKey`.
+    public static func voicePatternFeedbackFallback(
+        trendKey: String,
+        characterName: String
+    ) -> VoicePatternFeedback? {
+        let safeName = presentableCharacterName(characterName)
+        switch trendKey {
+        case "improving":
+            return VoicePatternFeedback(
+                observation: "\(safeName)'s voice has been getting steadier across your last few conversations.",
+                nudge: "Patter is starting to recognize \(safeName) before you tag the line — keep listening for that pattern."
+            )
+        case "drifting":
+            return VoicePatternFeedback(
+                observation: "\(safeName)'s voice has drifted a little across your recent trees.",
+                nudge: "Want to try one line where \(safeName) sounds the MOST like \(safeName) — and see what tugs back?"
+            )
+        case "steady", "insufficientData":
+            return nil
+        default:
+            return nil
+        }
+    }
+
+    /// Friendly fallback for whitespace-only or empty character names so
+    /// the interpolation never reads as a missing-template substitution.
+    /// Trims whitespace; falls back to "this character" if the trimmed
+    /// name is empty.
+    public nonisolated static func presentableCharacterName(_ name: String) -> String {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "this character" : trimmed
+    }
+
     // MARK: - TagBalanceTip
 
     public static func tagBalanceFallback(
