@@ -240,16 +240,18 @@ struct WriteTabView: View {
                 VoicePatternHistoryService.shared.recordPublishedTree(
                     summary: voiceSummary
                 )
-                // Four Patter-bubble paths share the rareVoiceCraftTip
+                // Five Patter-bubble paths share the rareVoiceCraftTip
                 // slot, mutually exclusive (so the kid never sees two
                 // bubbles): cameo (12%, flag-gated) → callback mood (8%,
                 // history-gated) → callback voice-pattern (8%, history-
-                // gated, per-character trend) → voice-craft tip (20%,
-                // always allowed). Lower-probability paths win first so
-                // they feel special when they hit. The mood + voice-
-                // pattern callbacks are mutually exclusive — the kid
-                // sees the more recently anchored one (mood is keyed to
-                // THIS publish; voice-pattern is keyed to recent trend).
+                // gated, per-character trend) → seasonal-theme (8%,
+                // calendar-window-gated + per-window deduped) → voice-
+                // craft tip (20%, always allowed). Lower-probability
+                // paths win first so they feel special when they hit.
+                // Seasonal-theme is positioned between voice-pattern and
+                // voice-craft tip so a kid writing during one of the 3
+                // curated calendar windows sees the dialogue-craft prompt
+                // at most once per window.
                 var rewardRNG = SystemRandomNumberGenerator()
                 var slotFilled = false
                 if publishedTreeCount >= CharacterCameoInvitations.minimumPublishedTreeCount,
@@ -270,6 +272,14 @@ struct WriteTabView: View {
                    let voicePatternCallback = PatterCallbackService.shared
                     .nextVoicePatternCallback(in: machine.tree) {
                     rareVoiceCraftTip = voicePatternCallback
+                    slotFilled = true
+                }
+                if !slotFilled,
+                   let seasonalTheme = SeasonalThemeService.shared.currentTheme(),
+                   SeasonalThemeService.shared.isPresentable(seasonalTheme),
+                   SeasonalThemeService.shared.shouldSurface(rng: &rewardRNG) {
+                    rareVoiceCraftTip = seasonalTheme.bubbleLine
+                    SeasonalThemeService.shared.markShown(seasonalTheme)
                     slotFilled = true
                 }
                 if !slotFilled, VariableReward.shouldShowBonus() {
