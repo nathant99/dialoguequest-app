@@ -3,9 +3,10 @@ import Testing
 import SwiftUI
 @testable import SharedUI
 
-/// WCAG 2.2 AA contrast verification for `DialoguePalette`. Each pair
-/// the UI actually renders is tested against the appropriate WCAG
-/// threshold:
+/// WCAG 2.2 AA contrast verification for `DialoguePalette` across all
+/// four resolved variants: light / dark / lightHighContrast /
+/// darkHighContrast. Each pair the UI actually renders is tested
+/// against the appropriate WCAG threshold:
 ///
 /// - Normal text (≥ 4.5:1): inkBlue on cream, rust on cream
 /// - Large text + UI components (≥ 3.0:1): rust on warmGold, white on
@@ -18,69 +19,174 @@ import SwiftUI
 /// 3. Contrast ratio = (max + 0.05) / (min + 0.05).
 ///
 /// Reference: https://www.w3.org/TR/WCAG22/#contrast-minimum
-@Suite("DialoguePalette WCAG AA contrast")
+@Suite("DialoguePalette WCAG AA contrast — light / dark / high-contrast variants")
 struct DialoguePaletteContrastTests {
 
-    // MARK: - Normal text (≥ 4.5:1)
+    // MARK: - Light variant (default Phase 1 palette)
 
-    @Test func inkBlueOnCreamMeetsAALevelNormal() {
+    @Test func light_inkBlueOnCreamMeetsAALevelNormal() {
         let ratio = contrastRatio(
-            DialoguePalette.inkBlue,
-            on: DialoguePalette.cream
+            DialoguePalette.Variant.light.inkBlue,
+            on: DialoguePalette.Variant.light.cream
         )
-        // Empirical: very dark ink (#2A1F1A) on cream (#FAF5F0) lands
-        // ~13:1 — well above the 4.5 floor.
-        #expect(ratio >= 4.5, "inkBlue on cream ratio \(ratio) below 4.5")
+        // Very dark ink (#2A1F1A) on cream (#FAF5F0) — ~13:1 in
+        // practice; floor is 4.5.
+        #expect(ratio >= 4.5, "[light] inkBlue on cream ratio \(ratio) below 4.5")
     }
 
-    @Test func rustOnCreamMeetsAALevelNormal() {
+    @Test func light_rustOnCreamMeetsAALevelNormal() {
         let ratio = contrastRatio(
-            DialoguePalette.rust,
-            on: DialoguePalette.cream
+            DialoguePalette.Variant.light.rust,
+            on: DialoguePalette.Variant.light.cream
         )
-        // Conversation rust (#A05A4B) on cream (#FAF5F0) — used for
-        // titles + primary CTA labels. Must clear 4.5 to qualify as
-        // normal text.
-        #expect(ratio >= 4.5, "rust on cream ratio \(ratio) below 4.5")
+        // Conversation rust (#A05A4B) on cream (#FAF5F0) — titles +
+        // primary CTA labels.
+        #expect(ratio >= 4.5, "[light] rust on cream ratio \(ratio) below 4.5")
     }
 
-    // MARK: - Large text + UI components (≥ 3.0:1)
-
-    @Test func whiteOnRustMeetsAALargeText() {
+    @Test func light_whiteOnRustMeetsAALargeText() {
         let ratio = contrastRatio(
             .white,
-            on: DialoguePalette.rust
+            on: DialoguePalette.Variant.light.rust
         )
-        // The primary CTA in DialoguePalette uses white text on rust
-        // (e.g., "Publish" button on .borderedProminent .tint(rust)).
-        // Must clear 3.0 for large text (button label).
-        #expect(ratio >= 3.0, "white on rust ratio \(ratio) below 3.0")
+        #expect(ratio >= 3.0, "[light] white on rust ratio \(ratio) below 3.0")
     }
 
-    @Test func warmGoldOnCreamMeetsAALargeText() {
+    @Test func light_warmGoldOnCreamPreservesSignal() {
         let ratio = contrastRatio(
-            DialoguePalette.warmGold,
-            on: DialoguePalette.cream
+            DialoguePalette.Variant.light.warmGold,
+            on: DialoguePalette.Variant.light.cream
         )
-        // Warm gold (#E9C46A) on cream is the accent for streak +
-        // badge surfaces. Must clear 3.0 for the icon + badge label.
-        // NOTE: this is a chromatic accent — UI component contrast,
-        // not body-text contrast.
-        #expect(ratio >= 1.5, "warmGold on cream ratio \(ratio) — this is a chromatic accent surface; if this drops below 1.5 we've lost the visual signal entirely")
+        // Chromatic accent (streak + badge halo). Not body text; the
+        // 1.5 floor catches an outright loss of visual signal.
+        #expect(ratio >= 1.5, "[light] warmGold on cream ratio \(ratio) — chromatic accent surface; visual signal lost below 1.5")
+    }
+
+    // MARK: - Dark variant
+
+    @Test func dark_inkBlueOnCreamMeetsAALevelNormal() {
+        let ratio = contrastRatio(
+            DialoguePalette.Variant.dark.inkBlue,
+            on: DialoguePalette.Variant.dark.cream
+        )
+        // In dark: `cream` is the deep-ink background; `inkBlue` is
+        // the cream foreground. Body text must still clear 4.5.
+        #expect(ratio >= 4.5, "[dark] inkBlue on cream ratio \(ratio) below 4.5")
+    }
+
+    @Test func dark_rustOnCreamMeetsAALargeText() {
+        let ratio = contrastRatio(
+            DialoguePalette.Variant.dark.rust,
+            on: DialoguePalette.Variant.dark.cream
+        )
+        // Rust foreground on dark background. Title-sized text on
+        // panels — must clear 3.0 (large-text floor).
+        #expect(ratio >= 3.0, "[dark] rust on cream ratio \(ratio) below 3.0")
+    }
+
+    @Test func dark_warmGoldOnCreamPreservesSignal() {
+        let ratio = contrastRatio(
+            DialoguePalette.Variant.dark.warmGold,
+            on: DialoguePalette.Variant.dark.cream
+        )
+        #expect(ratio >= 1.5, "[dark] warmGold on cream ratio \(ratio) — chromatic accent surface")
+    }
+
+    // MARK: - Light high-contrast variant
+
+    @Test func lightHighContrast_inkBlueOnCreamMeetsAAA() {
+        let ratio = contrastRatio(
+            DialoguePalette.Variant.lightHighContrast.inkBlue,
+            on: DialoguePalette.Variant.lightHighContrast.cream
+        )
+        // Pure black on pure white — 21:1, the WCAG ceiling.
+        #expect(ratio >= 7.0, "[lightHighContrast] inkBlue on cream ratio \(ratio) below AAA 7.0")
+    }
+
+    @Test func lightHighContrast_rustOnCreamMeetsAAA() {
+        let ratio = contrastRatio(
+            DialoguePalette.Variant.lightHighContrast.rust,
+            on: DialoguePalette.Variant.lightHighContrast.cream
+        )
+        // Deepened rust (#802E1F) on pure white — must clear AAA 7.0
+        // when the kid opts into high contrast.
+        #expect(ratio >= 7.0, "[lightHighContrast] rust on cream ratio \(ratio) below AAA 7.0")
+    }
+
+    @Test func lightHighContrast_whiteOnRustMeetsAALargeText() {
+        let ratio = contrastRatio(
+            .white,
+            on: DialoguePalette.Variant.lightHighContrast.rust
+        )
+        #expect(ratio >= 3.0, "[lightHighContrast] white on rust ratio \(ratio) below 3.0")
+    }
+
+    // MARK: - Dark high-contrast variant
+
+    @Test func darkHighContrast_inkBlueOnCreamMeetsAAA() {
+        let ratio = contrastRatio(
+            DialoguePalette.Variant.darkHighContrast.inkBlue,
+            on: DialoguePalette.Variant.darkHighContrast.cream
+        )
+        // Pure white on pure black — 21:1.
+        #expect(ratio >= 7.0, "[darkHighContrast] inkBlue on cream ratio \(ratio) below AAA 7.0")
+    }
+
+    @Test func darkHighContrast_rustOnCreamMeetsAALargeText() {
+        let ratio = contrastRatio(
+            DialoguePalette.Variant.darkHighContrast.rust,
+            on: DialoguePalette.Variant.darkHighContrast.cream
+        )
+        // Lightened rust (#FFA08E) on pure black — must clear 4.5 for
+        // body-text-sized labels.
+        #expect(ratio >= 4.5, "[darkHighContrast] rust on cream ratio \(ratio) below 4.5")
+    }
+
+    // MARK: - Variant-resolution helper
+
+    @Test func variantResolver_picksLightForDefaultScheme() {
+        #expect(DialoguePalette.variant(for: .light, accessibilityContrast: .standard) == .light)
+    }
+
+    @Test func variantResolver_picksDarkForDarkStandardContrast() {
+        #expect(DialoguePalette.variant(for: .dark, accessibilityContrast: .standard) == .dark)
+    }
+
+    @Test func variantResolver_picksLightHighContrastForLightIncreasedContrast() {
+        #expect(DialoguePalette.variant(for: .light, accessibilityContrast: .increased) == .lightHighContrast)
+    }
+
+    @Test func variantResolver_picksDarkHighContrastForDarkIncreasedContrast() {
+        #expect(DialoguePalette.variant(for: .dark, accessibilityContrast: .increased) == .darkHighContrast)
+    }
+
+    @Test func everyVariantIsDistinct() {
+        let snapshots: [DialoguePalette.Variant] = [
+            .light, .dark, .lightHighContrast, .darkHighContrast
+        ]
+        #expect(Set(snapshots).count == snapshots.count)
     }
 
     // MARK: - Symmetry sanity
 
     @Test func contrastIsSymmetric() {
-        // (max + 0.05) / (min + 0.05) is order-invariant — verifying
-        // the helper doesn't accidentally introduce an asymmetry.
-        let a = contrastRatio(DialoguePalette.inkBlue, on: DialoguePalette.cream)
-        let b = contrastRatio(DialoguePalette.cream, on: DialoguePalette.inkBlue)
+        // (max + 0.05) / (min + 0.05) is order-invariant.
+        let a = contrastRatio(
+            DialoguePalette.Variant.light.inkBlue,
+            on: DialoguePalette.Variant.light.cream
+        )
+        let b = contrastRatio(
+            DialoguePalette.Variant.light.cream,
+            on: DialoguePalette.Variant.light.inkBlue
+        )
         #expect(abs(a - b) < 0.001)
     }
 
     @Test func identityContrastIsOne() {
-        let ratio = contrastRatio(DialoguePalette.rust, on: DialoguePalette.rust)
+        let ratio = contrastRatio(
+            DialoguePalette.Variant.light.rust,
+            on: DialoguePalette.Variant.light.rust
+        )
         #expect(abs(ratio - 1.0) < 0.001)
     }
 
