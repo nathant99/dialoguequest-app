@@ -110,6 +110,12 @@ struct SubtextPanelView: View {
                             .accessibilityIdentifier("subtext.panel.confirmedBadge")
                     }
                 }
+
+                MultiListenerSubtextDisclosure(
+                    machine: $machine,
+                    node: node,
+                    mentor: mentor
+                )
             }
         }
     }
