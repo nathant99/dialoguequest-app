@@ -100,11 +100,20 @@ struct QuestionKitTests {
         #expect(QuestionKitLoader.phase2Kits.count == 5)
     }
 
-    @Test("allKits is Phase 1 + Phase 2 in order")
-    func allKitsContainsPhase1ThenPhase2() {
-        #expect(QuestionKitLoader.allKits.count == 9)
+    @Test("allKits is Phase 1 + Phase 2 + Phase 3 + Phase 4 in order")
+    func allKitsContainsEveryPhaseInCanonicalOrder() {
+        // Phase 4 row 161 closure (kits 14-16) lifts the canonical
+        // inventory to 16. Per FEATURE_PLAN exit-criterion "full 16-kit
+        // set". The prefix/suffix asserts here both anchor the canonical
+        // ordering (Phase 1 → 2 → 3 → 4) AND surface a regression if a
+        // future phase reorders the slices.
+        #expect(QuestionKitLoader.allKits.count == 16)
         #expect(QuestionKitLoader.allKits.prefix(4) == QuestionKitLoader.phase1Kits[...])
-        #expect(QuestionKitLoader.allKits.suffix(5) == QuestionKitLoader.phase2Kits[...])
+        let phase2Slice = QuestionKitLoader.allKits.dropFirst(4).prefix(5)
+        #expect(Array(phase2Slice) == QuestionKitLoader.phase2Kits)
+        let phase3Slice = QuestionKitLoader.allKits.dropFirst(9).prefix(4)
+        #expect(Array(phase3Slice) == QuestionKitLoader.phase3Kits)
+        #expect(QuestionKitLoader.allKits.suffix(3) == QuestionKitLoader.phase4Kits[...])
     }
 
     @Test("Kit 06 (Voice Crucible) question prompts reference voice register vocabulary")
