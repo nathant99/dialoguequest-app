@@ -1,11 +1,29 @@
 ---
 status: ACTIVE
-date: 2026-06-22
+date: 2026-06-24
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
 
+> **2026-06-24 round addendum (fifth mid-session, completed)** — multi-PR session-handoff Priority B + Priority C-1 + Priority D round + round-close. **4 PRs landed** (#115 → #118). No new Phase rows closed (the session-handoff brief from 2026-06-23 picked up Priorities B / C / D which are post-Phase-4 follow-ons). Net state delta:
+>
+> - **Test count delta**: +10 (PR 1 4 XCUITest + PR 3 6 unit tests) PLUS 1 pre-existing stale test fixed (`allKitsContainsPhase1ThenPhase2` count 9 → 16). Total: ~396 tests.
+> - **ForgeKit module count consumed**: 17 → **18** (PR 3 added `ForgeContent` to Services + ServicesTests target deps).
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-06-25_ROUND_CLOSE.md` (this round's successor; replaces the 2026-06-24 brief).
+>
+> - **PR 1 (#115) — Voice Crucible UI test smoke (session-handoff Priority B).** `Apps/DialogueQuest/DialogueQuestUITests/VoiceCrucibleUITests.swift` ships 4 XCUITest cases mirroring the `PhaseThreeFourSurfacesUITests.swift` pattern: Adventure tab exposes `crucible.entry` / tapping opens the sheet / cast picker surfaces all 5 LESSONS-layer voices (scroll-fallback resilient) / picking a voice reveals the writing surface with Submit disabled while draft is empty. MCP `XcodeWrite` synchronized-folder convention — zero pbxproj diff. Uses the `-uiTestUnlockAdventure` launch arg shipped PR #113.
+> - **PR 2 (#116) — TestFlight Beta checklist (session-handoff Priority D).** New `Docs/CHECKLIST_TESTFLIGHT_BETA.md` (~196 lines) — 9-section pre-upload checklist cribbing verbatim from the three Phase 4 row 163 docs (privacy nutrition label / KIDSAFE plan / parental gates audit) shipped 2026-06-23. Covers pre-archive code verification / Release config / privacy + capability state / Privacy Nutrition Label entry / Made for Kids Category opt-in + 8 attestations / reviewer-notes paste block / Archive + upload steps / TestFlight Beta surface / post-upload follow-ups. Pure docs.
+> - **PR 3 (#117) — ForgeContent integration seam (session-handoff Priority C-1).** Wires ForgeKit 0.99's `ForgeContent` module into the kit-loading pipeline. `Libraries/Sources/Services/Persistence/QuestionKitContentService.swift` wraps `ForgeContentLoader` (two-tier disk cache → bundle fallback) with a stable narrow `LoadError` vocabulary so AppFeature consumers don't import `ForgeContent` directly. `QuestionKitLoader.load(id:)` delegates to the service — behavior identical today (no hub-shipped manifest URL), seam ready for the OTA path. Also fixes a stale `allKitsContainsPhase1ThenPhase2` test that asserted `count == 9` against the actual 16-kit shipped reality from PRs #99 + #104. 6 new tests + 1 fixed test.
+> - **PR 4 (#118) — Round-close (this PR).** Fifth 2026-06-24 mid-session reaffirmation in `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md`. `Docs/SESSION_HANDOFF_2026-06-25_ROUND_CLOSE.md` authored for the next CC session. Test count + ForgeKit module count notes above kept in sync. FEATURE_PLAN Phase 2 ticked Voice Crucible UI test.
+>
+> **What this round did NOT do** (intentional + scoped):
+> - Did NOT touch Xcode-managed files (workspace / scheme / xctestplan / Info.plist / entitlements). PR 1 created a new XCUITest file via MCP `XcodeWrite` (synchronized-folder target — zero pbxproj diff).
+> - Did NOT close any Phase 4 rows — rows 159 / 164 / 165 still blocked (server / hub / hub respectively).
+> - Did NOT wire `ForgeMasteryEngine` (Priority C-2) or `PolyaScaffold` (Priority C-3) — modules don't ship in ForgeKit 0.99.12; await 1.0.0-rc.2 graduation per `.claude/rules/forgekit.md`.
+> - Did NOT wire `ForgeContentSync` (OTA manifest fetch path) — requires hub-shipped manifest URL; seam only.
+> - Did NOT touch the 3 hub-blocked handoffs (HubContribution Level 1 / Patter PNG / Curating Together PDF) or the 5 user-GUI-blocked handoffs (declared age range / app icon / voice-acting coach Info.plist / widget extension / aimentortests test plan).
+>
 > **2026-06-23 round addendum (fourth mid-session, completed)** — multi-PR Phase 4 row 163 close-out + Phase 3 scaffold-active-path bringup round completed. **8 PRs landed** (#107 → #114). Phase 4 row 163 (App Store submission prep) CLOSED; remaining Phase 4: row 159 deferred + row 164 + 165 blocked on hub. Net state delta:
 >
 > - **Test count delta**: +16 (PR β.1 9 + PR β.2 2 + PR δ.1 5). Total ~386. ServicesTests up to ~176; new `PhaseThreeFourSurfacesUITests` adds 5 XCUITest cases.
