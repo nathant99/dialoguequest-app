@@ -1,11 +1,29 @@
 ---
 status: ACTIVE
-date: 2026-06-24
+date: 2026-06-25
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
 
+> **2026-06-25 round addendum (sixth mid-session, completed)** — multi-PR session-handoff Priority F + Phase 2 deferred-follow-up + Xcode safety reaffirmation round. **4 PRs landed** (#120 → #123). 1 Phase 2 deferred row CLOSED + 1 Phase A11y row deferred-component CLOSED. Net state delta:
+>
+> - **Test count delta**: +26 (Track B 7 + Track C 13) = ~422 total. ModelsTests gains 7; AppFeatureTests gains 13 (was 6 → 19 in DialoguePaletteContrastTests).
+> - **ForgeKit module count consumed**: **18** (unchanged — Track C uses native `UIColor(dynamicProvider:)` rather than introducing a new ForgeKit dep).
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-06-26_ROUND_CLOSE.md` (this round's successor; replaces the 2026-06-25 brief).
+>
+> - **PR 1 (#120) — Xcode safety reaffirmation (Track A).** Appended the 2026-06-25 dated entry to `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` per user-direct: workspace + scheme + test-plan files must never be authored; file handoff docs for UI work; staging + committing GUI diffs is OK. Reviewed `CLAUDE.md` § Xcode Agent Safety + `.claude/rules/xcode-agent-safety.md` — both remain canonical verbatim. No drift this round. Pure docs.
+> - **PR 2 (#121) — Multi-listener subtext picker (Track B; Phase 2 deferred row closure).** Closes the FEATURE_PLAN Phase 2 deferred row "UI surface (multi-listener picker in SubtextPanelView) lands once CharacterForge import enables per-relationship cueing" — CharacterForge import landed PR #92, satisfying the dependency. New `Libraries/Sources/Models/ValueTypes/MultiListenerCandidates.swift` ships a pure helper that picks the two listener candidates given a speaker + ≥3-character cast (deterministic UUID-string-sort tie-break). New `Libraries/Sources/AppFeature/Panels/MultiListenerSubtextDisclosure.swift` surfaces a `DisclosureGroup` inside `SubtextPanelView` when `dq.experiments.thirdCharacter` is on AND the tree has ≥3 characters. Disclosure expansion runs `PatterMentor.analyzeMultiSpeaker(...)` and renders per-listener subtext rows with separate "Yes — that's what I meant for X" confirm buttons. Confirming either listener row routes through `machine.confirmSubtext(for:inferredSubtext:)` — same persistence + gamification + sensory paths as Phase 1 single-line confirm. 7 helper tests in `MultiListenerCandidatesTests` cover 2-char / 3-char / 4-char / empty / missing-speaker / deterministic-ordering / Hashable invariants.
+> - **PR 3 (#122) — Dark + high-contrast palette variants (Track C; Phase A11y deferred-component closure).** Closes the Phase A11y row "Color-contrast audit (WCAG AA in default + dark + high-contrast themes)" — first cut shipped 2026-06-22 covered light only; this PR ships the deferred dark + high-contrast variant work. `DialoguePalette.Variant` 4-case snapshot type (`.light` / `.dark` / `.lightHighContrast` / `.darkHighContrast`) ships per-mode tokens. `DialoguePalette.rust` / `.warmGold` / `.cream` / `.inkBlue` now resolve adaptively via `UIColor(dynamicProvider:)` so every existing view picks up dark + high-contrast automatically — **zero call-site changes** across the 10+ surfaces wrapping `panelBackground` etc. `DialoguePalette.variant(for:accessibilityContrast:)` is the pure variant resolver. 19 contrast tests (was 6 → 19, +13) cover every (mode × pair) combo + variant-resolver lookups + symmetry / identity. High-contrast variants meet WCAG AAA (≥ 7.0); standard variants meet AA (≥ 4.5 normal / ≥ 3.0 large).
+> - **PR 4 (#123) — Round-close (this PR).** Sixth 2026-06-25 mid-session reaffirmation in `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` (appended in PR 1; carried in this PR as the brief reference). `Docs/SESSION_HANDOFF_2026-06-26_ROUND_CLOSE.md` authored for the next CC session. Test count + ForgeKit module count notes above kept in sync. FEATURE_PLAN Phase 2 row + Phase A11y row updated to reflect closed-this-round.
+>
+> **What this round did NOT do** (intentional + scoped):
+> - Did NOT touch Xcode-managed files (workspace / scheme / xctestplan / Info.plist / entitlements). All PRs landed via filesystem `Write`/`Edit` against SPM source — synchronized-folder targets convention preserved.
+> - Did NOT bump the ForgeKit pin to 1.0.0-rc.3 (which would unblock `ForgeMasteryEngine` + `PolyaScaffold`). Pin update requires `Package.resolved` regeneration which is Xcode-managed — defer to a user-GUI handoff next round.
+> - Did NOT wire any new ForgeKit modules. Track C uses native `UIColor(dynamicProvider:)` rather than introducing a ForgeKit module dep.
+> - Did NOT touch the 3 hub-blocked handoffs (HubContribution Level 1 / Patter PNG / Curating Together PDF) or the 5 user-GUI-blocked handoffs (declared age range / app icon / voice-acting coach Info.plist / widget extension / aimentortests test plan).
+> - Did NOT scaffold the `.xcstrings` localization catalog (Priority F.2) — `.xcstrings` is an Xcode-editor-managed asset; defer to a user-GUI handoff next round.
+>
 > **2026-06-24 round addendum (fifth mid-session, completed)** — multi-PR session-handoff Priority B + Priority C-1 + Priority D round + round-close. **4 PRs landed** (#115 → #118). No new Phase rows closed (the session-handoff brief from 2026-06-23 picked up Priorities B / C / D which are post-Phase-4 follow-ons). Net state delta:
 >
 > - **Test count delta**: +10 (PR 1 4 XCUITest + PR 3 6 unit tests) PLUS 1 pre-existing stale test fixed (`allKitsContainsPhase1ThenPhase2` count 9 → 16). Total: ~396 tests.
