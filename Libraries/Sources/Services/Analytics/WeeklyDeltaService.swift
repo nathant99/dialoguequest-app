@@ -50,10 +50,12 @@ public final class WeeklyDeltaService {
     /// Read the persisted previous-week snapshot if one exists.
     public func previousSnapshot() -> WeeklySummarySnapshot? {
         guard let data = defaults.data(forKey: Self.storageKey) else { return nil }
-        guard let persisted = try? JSONDecoder().decode(PersistedWeeklySnapshot.self, from: data) else {
+        do {
+            return try JSONDecoder().decode(PersistedWeeklySnapshot.self, from: data).toSnapshot()
+        } catch {
+            DialogueQuestDebugLog.data("WeeklyDeltaService.previousSnapshot — decode failed; treating as fresh install", error: error)
             return nil
         }
-        return persisted.toSnapshot()
     }
 
     /// Write the snapshot as the new "previous-week" baseline if the
@@ -69,7 +71,13 @@ public final class WeeklyDeltaService {
             }
         }
         let persisted = PersistedWeeklySnapshot(from: snapshot)
-        guard let data = try? JSONEncoder().encode(persisted) else { return false }
+        let data: Data
+        do {
+            data = try JSONEncoder().encode(persisted)
+        } catch {
+            DialogueQuestDebugLog.data("WeeklyDeltaService.recordIfWindowAdvanced — encode failed; baseline not persisted this week", error: error)
+            return false
+        }
         defaults.set(data, forKey: Self.storageKey)
         return true
     }
