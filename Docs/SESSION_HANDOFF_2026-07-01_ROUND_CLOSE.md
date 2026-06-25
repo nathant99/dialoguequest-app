@@ -1,11 +1,12 @@
 ---
-status: ACTIVE
+status: SUPERSEDED
 date: 2026-06-30
 direction: session → next CLAUDE Code session
 audience: future Claude Code session opening DialogueQuest cold
 intent: brief the next session on what just shipped this round, what's still open, and what's worth picking up next
 freshness-horizon: 30 days
 supersedes: Docs/SESSION_HANDOFF_2026-06-30_ROUND_CLOSE.md
+superseded-by: Docs/SESSION_HANDOFF_2026-07-02_ROUND_CLOSE.md
 ---
 
 # Session Handoff — 2026-06-30 mid-session (5 PRs; Priority J closed + DebugLog seam adopted)
