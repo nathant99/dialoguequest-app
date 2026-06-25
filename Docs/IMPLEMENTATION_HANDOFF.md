@@ -1,10 +1,31 @@
 ---
 status: ACTIVE
-date: 2026-06-29
+date: 2026-06-30
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
+
+> **2026-06-30 round addendum (eleventh mid-session, completed)** — multi-PR session-handoff Priority J closure + portfolio-canonical detection-logging adoption round under the standing auto-cycle. **5 PRs landed** (#142 → #145 + this round-close). Net state delta:
+>
+> - **Test count delta**: +23 (11 CastIllustrationsCoverageAudit + 12 DialogueQuestDebugLog). Total: ~557 tests.
+> - **ForgeKit module count consumed**: **20** (unchanged in `Sources/` deps — this round adds new in-app infrastructure on top of already-wired ForgeIllustrations + extends the silent-try?-site coverage via the new DialogueQuestDebugLog seam; no new module dependencies). The `ForgeMasteryEngine` + `PolyaScaffold` + `ForgeLocalization` modules remain deferred behind the 2026-06-26 user-GUI handoffs (still pending after 96h).
+> - **Open user-GUI handoffs**: unchanged at 7 (no new handoffs filed; no existing ones closed).
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-07-01_ROUND_CLOSE.md` (this round's successor; replaces the 2026-06-30 brief).
+>
+> - **PR 1 (#142) — Xcode safety reaffirmation (Track A).** Appended the 2026-06-30 dated entry to `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` per user-direct (same canonical verbatim phrasing as 2026-06-29 / 2026-06-28 / 2026-06-27 / 2026-06-26 / 2026-06-25). Confirmed no drift in `CLAUDE.md` § Xcode Agent Safety or `.claude/rules/xcode-agent-safety.md` § "Staging + committing Xcode-managed files IS allowed". Pure docs.
+> - **PR 2 (#143) — CastIllustrationsCoverageAudit value type (Track B; Priority J closure from 2026-06-30 handoff).** New `Libraries/Sources/AppFeature/Mentor/CastIllustrationsCoverageAudit.swift` — pure nonisolated enum + `Report` nonisolated Sendable Equatable value type. `audit(registry:)` async function reads from `IllustrationRegistry`, classifies missing IDs vs missing-alt-text IDs, returns a sorted Report. `auditShared()` convenience runs against the populated singleton. Report.summary is reader-clean (register-stoplist scrubbed) so the value can flow into a debug surface without re-stripping. 11 new tests cover the 3-axis isFullyCovered logic + summary register stoplist + happy-path / empty / partial-coverage audits + read-only contract + Equatable. RunSomeTests 11/11 green.
+> - **PR 3 (#144) — Debug-only Settings diagnostics surface (Track C).** `SettingsView` gains a `#if DEBUG`-gated "Diagnostics (debug)" section with a tappable `CastIllustrationsCoverageRow` that runs the audit on first appear + on tap. The row is itself `#if DEBUG`-gated at the type level so release builds compile to nothing — TestFlight + App Store builds do NOT see the surface. Copy stays reader-clean via the already-scrubbed `Report.summary`. BuildProject 26s, 0 errors; 36/36 tests green across SettingsLabsFlagTests + CastIllustrationsCoverageAuditTests + CastIllustrationsRegistryTests.
+> - **PR 4 (#145) — DialogueQuestDebugLog seam + wire 4 silent try? sites (Track D).** Adopts the portfolio-canonical categorized detection-logging utility per `.claude/rules/debug-logging.md`. Until this round DialogueQuest had **zero detection-logging infrastructure**; silent failures in `try? modelContext.save()` + `try? JSONEncoder.encode` + privacy-gated `Bundle.main.object(...)` probes were invisible. New `Libraries/Sources/Services/Analytics/DialogueQuestDebugLog.swift` ships a nonisolated public enum with 6 typed category methods (`.startup` / `.lifecycle` / `.data` / `.state` / `.permission` / `.error`); single `#if DEBUG`-gated emission seam with thread tag + caller-name auto-context; `@autoclosure` message parameter so release builds don't pay the string-interpolation cost. Wired 4 silently-swallowed try? sites: `AnthologyCurationView.deleteCollection` (modelContext.save failure), `VoicePatternHistoryService.persist + decodedHistory` (JSONEncoder/Decoder failure), `WeeklyDeltaService.previousSnapshot + recordIfWindowAdvanced` (JSONEncoder/Decoder failure), `DeclaredAgeRangeGate.isWired` probe (permission-gate decision visible at launch). 12 new tests cover the public surface contract + MainActor/nonisolated cross-isolation reachability + @autoclosure deferred-eval; 50/50 green when run alongside touched-site suites; 9/9 green on adjacent AnthologyCollectionServiceTests.
+> - **Track Z — Round-close.** This addendum + `Docs/SESSION_HANDOFF_2026-07-01_ROUND_CLOSE.md` for the next CC session. Test count + ForgeKit module count notes above kept in sync.
+>
+> **What this round did NOT do** (intentional + scoped):
+> - Did NOT touch Xcode-managed files (workspace / scheme / xctestplan / Info.plist / entitlements / `Package.resolved`). All code PRs landed via filesystem `Write`/`Edit` against SPM source — synchronized-folder targets convention preserved.
+> - Did NOT advance the two 2026-06-26 user-GUI handoffs (ForgeKit pin bump + Localizable.xcstrings). Both remain pending after 96h. Priority B + Priority C from the prior session handoffs stay blocked.
+> - Did NOT scaffold any of the `ForgeMasteryEngine` / `PolyaScaffold` / `ForgeLocalization` integration code — all 3 wait on user-GUI completion of the 2026-06-26 handoffs.
+> - Did NOT touch the existing hub-blocked + user-GUI-blocked handoffs (HubContribution Level 1 / Patter PNG / Curating Together PDF / declared age range API / app icon / voice-acting coach Info.plist / widget extension / aimentortests test plan).
+> - Did NOT add additional ForgeKit module adoptions — the existing 20-module surface is unchanged. The 2026-06-30 brief's Priority I (survey unconsumed modules) stays at the survey level; no clean adoption shape surfaced this round.
+> - Did NOT touch every silent try? site — wired 4 high-value ones to demonstrate the seam. The other ~12 sites (JSONEncoder paths in `PatterCallbackService` / `AnthologyCollectionService` decode helpers / various decode-tree-from-blob sites in Anthology / Performance Booth) remain candidates for future rounds — non-urgent because they default to safe-empty / safe-skip paths.
 
 > **2026-06-29 round addendum (tenth mid-session, completed)** — multi-PR session-handoff Priority F + Priority G closure round under the standing auto-cycle. **4 PRs landed** (#138 → #140 + this round-close). Net state delta:
 >
