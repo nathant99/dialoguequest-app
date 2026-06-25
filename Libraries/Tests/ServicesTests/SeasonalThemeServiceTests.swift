@@ -20,11 +20,11 @@ struct SeasonalThemeServiceTests {
         return Calendar.current.date(from: comps)!
     }
 
-    @Test("curatedThemes contract — 3 themes ship by default")
+    @Test("curatedThemes contract — 4 themes ship by default")
     func curatedThemesContract() {
-        #expect(SeasonalThemeService.curatedThemes.count == 3)
+        #expect(SeasonalThemeService.curatedThemes.count == 4)
         let ids = Set(SeasonalThemeService.curatedThemes.map { $0.id })
-        #expect(ids == ["conversation_month", "storytelling_days", "year_close"])
+        #expect(ids == ["conversation_month", "storytelling_days", "summer_writers_days", "year_close"])
     }
 
     @Test("presentationProbability contract — 0.08 lower bound")
@@ -56,6 +56,26 @@ struct SeasonalThemeServiceTests {
         let service = SeasonalThemeService(defaults: makeIsolatedDefaults())
         let theme = service.currentTheme(now: date(2026, 3, 20))
         #expect(theme?.id == "storytelling_days")
+    }
+
+    @Test("Summer Writers' Days active around June 1")
+    func summerWritersDaysActive() {
+        let service = SeasonalThemeService(defaults: makeIsolatedDefaults())
+        let earlyJune = service.currentTheme(now: date(2026, 6, 1))
+        #expect(earlyJune?.id == "summer_writers_days")
+        let lateMay = service.currentTheme(now: date(2026, 5, 27))
+        #expect(lateMay?.id == "summer_writers_days")
+        let midJune = service.currentTheme(now: date(2026, 6, 12))
+        #expect(midJune?.id == "summer_writers_days")
+    }
+
+    @Test("Summer Writers' Days NOT active just outside window (May 20 / June 20)")
+    func summerWritersDaysInactiveOutsideWindow() {
+        let service = SeasonalThemeService(defaults: makeIsolatedDefaults())
+        let pre = service.currentTheme(now: date(2026, 5, 20))
+        #expect(pre == nil)
+        let post = service.currentTheme(now: date(2026, 6, 20))
+        #expect(post == nil)
     }
 
     @Test("Author Your Year active late December AND early January")

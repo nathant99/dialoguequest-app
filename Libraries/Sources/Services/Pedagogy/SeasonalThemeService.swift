@@ -60,8 +60,10 @@ public final class SeasonalThemeService {
     }
 
     /// All curated themes — pure value-type, safe to surface from any
-    /// isolation context. 3 narrowly-scoped windows that each touch a
-    /// distinct dialogue-craft register.
+    /// isolation context. 4 narrowly-scoped windows that each touch a
+    /// distinct dialogue-craft register. Spaced ~3 months apart so a
+    /// kid playing through the year encounters one rare-but-special
+    /// seasonal-theme bubble per season at most.
     public nonisolated static let curatedThemes: [SeasonalTheme] = [
         // Late September → late October — anchored loosely to
         // National Dialogue Day (Oct 16) without naming it. Window
@@ -91,6 +93,25 @@ public final class SeasonalThemeService {
             ),
             bubbleLine: "Storytelling days are here — pick a character and write a line they'd only say if no one else was in the room. That's where their real voice lives.",
             accessibilityLabel: "Storytelling days writing prompt: write a private line for a character."
+        ),
+        // Late May → mid-June — anchored loosely on the start of
+        // summer writers' camp / the "what story will you write this
+        // summer?" register. Event-day June 1 captures the
+        // first-day-of-summer feel for most school calendars without
+        // naming a holiday. Pairs cleanly with the kid's looser summer
+        // play cadence so a seasonal-theme bubble can land before the
+        // long break.
+        SeasonalTheme(
+            id: "summer_writers_days",
+            displayName: "Summer Writers' Days",
+            // May 25 → June 14; event-day June 1
+            dateRule: .fixedRange(
+                startMonth: 5, startDay: 25,
+                endMonth: 6, endDay: 14,
+                eventDayMonth: 6, eventDayDay: 1
+            ),
+            bubbleLine: "Summer Writers' Days are here — pick a character who's about to spend a long afternoon doing nothing, and write the small line they say when no one expects them to say anything.",
+            accessibilityLabel: "Summer Writers' Days writing prompt: write a quiet line for a character with nothing to do."
         ),
         // Late December → early January. Reflective register; pair
         // with the welcome-back banner cadence so the kid sees both
