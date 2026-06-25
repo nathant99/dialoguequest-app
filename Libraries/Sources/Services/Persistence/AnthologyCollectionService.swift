@@ -83,7 +83,16 @@ public enum AnthologyCollectionService {
         guard let theme = AnthologyCollectionThemeHint(rawValue: model.themeHintRawValue) else {
             return nil
         }
-        let ids = (try? decodeEntryIDs(from: model.encodedEntryIDs)) ?? []
+        let ids: [UUID]
+        do {
+            ids = try decodeEntryIDs(from: model.encodedEntryIDs)
+        } catch {
+            DialogueQuestDebugLog.data(
+                "AnthologyCollectionService.projection — decodeEntryIDs failed; returning empty list",
+                error: error
+            )
+            ids = []
+        }
         return CollectionSnapshot(
             id: model.id,
             title: model.title,

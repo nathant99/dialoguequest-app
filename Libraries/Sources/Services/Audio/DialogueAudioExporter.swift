@@ -89,7 +89,16 @@ public struct DialogueAudioExporter: Sendable {
         let outputURL = outputDirectory.appendingPathComponent(filename)
 
         // Clear any prior render at the same URL.
-        try? FileManager.default.removeItem(at: outputURL)
+        do {
+            try FileManager.default.removeItem(at: outputURL)
+        } catch CocoaError.fileNoSuchFile {
+            // Expected on first render — no log emission for the steady-state path.
+        } catch {
+            DialogueQuestDebugLog.data(
+                "DialogueAudioExporter.exportAIFF — failed to clear prior render at \(outputURL.lastPathComponent); render may write into a stale file",
+                error: error
+            )
+        }
 
         return try await Self.performRender(jobs: jobs, outputURL: outputURL)
     }

@@ -95,7 +95,14 @@ public final class DialogueWritingSessionActivity {
         guard Self.isWired else { return }
         let forgeAttributes = attributes.toForgeAttributes()
         let forgeState = state.toForgeState()
-        try? manager.start(attributes: forgeAttributes, initialState: forgeState)
+        do {
+            try manager.start(attributes: forgeAttributes, initialState: forgeState)
+        } catch {
+            DialogueQuestDebugLog.error(
+                "DialogueWritingSessionActivity.start — ForgeActivityManager.start threw; Live Activity not surfaced",
+                error: error
+            )
+        }
     }
 
     /// Push an updated state into the current Live Activity. No-op when not wired
@@ -103,7 +110,14 @@ public final class DialogueWritingSessionActivity {
     public func update(state: WritingSessionContentState) {
         guard Self.isWired, manager.isActive else { return }
         let forgeState = state.toForgeState()
-        try? manager.update(forgeState)
+        do {
+            try manager.update(forgeState)
+        } catch {
+            DialogueQuestDebugLog.error(
+                "DialogueWritingSessionActivity.update — ForgeActivityManager.update threw; Lock Screen card stale",
+                error: error
+            )
+        }
     }
 
     /// End the current Live Activity. Idempotent.
