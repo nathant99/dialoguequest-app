@@ -28,6 +28,18 @@ import ForgeIllustrations
 /// repeat populates (test isolation; future hot-reload path) don't
 /// trip the registry's duplicate-ID guard.
 public enum CastIllustrationsRegistry {
+    /// Shared `IllustrationRegistry` instance for DialogueQuest. App
+    /// launch (`RootView.task`) fires `populateShared()` exactly once
+    /// per cold-launch so future surfaces (Patter portrait sheet,
+    /// cast-coverage audit, accessibility-metadata query) hit a single
+    /// populated registry rather than re-deriving from disk.
+    ///
+    /// `nonisolated static let` is required so consumers in nonisolated
+    /// contexts (value-type machines, test fixtures, the future audit
+    /// surface) can grab the reference without a MainActor hop.
+    /// Constructing the underlying actor is cheap and side-effect-free.
+    public nonisolated static let shared: IllustrationRegistry = IllustrationRegistry()
+
     /// Canonical IDs for the 5 LESSONS-layer cast portraits.
     public nonisolated static let castPortraitIDs: [String] = [
         "cast.brogue.portrait",
@@ -115,5 +127,12 @@ public enum CastIllustrationsRegistry {
     public static func populate(_ registry: IllustrationRegistry) async throws {
         await registry.clear()
         try await registry.register(canonicalAssets())
+    }
+
+    /// Populate the shared registry. Convenience wrapper called from
+    /// `RootView.task` so app-launch wiring stays a single-liner.
+    /// Idempotent because `populate(_:)` clears first.
+    public static func populateShared() async throws {
+        try await populate(shared)
     }
 }

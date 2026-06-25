@@ -2,6 +2,7 @@ import SwiftUI
 import Services
 import SharedUI
 import ForgeCelebration
+import ForgeIllustrations
 
 /// The 4-tab DialogueQuest root view per `Docs/TECHNICAL_DESIGN.md`
 /// § Home Screen & Navigation. App's `@main` should host this view.
@@ -140,6 +141,17 @@ public struct RootView: View {
                 welcomeBackMessage = return_.welcomeBackMessage()
                 DialogueQuestAnalytics.shared.track(.welcomeBackShown)
             }
+            // Populate the shared `ForgeIllustrations.IllustrationRegistry`
+            // with DialogueQuest's 7 canonical assets (5 cast portraits +
+            // 2 anthology book covers) so future surfaces (Patter portrait
+            // sheet, cast-coverage audit, accessibility-metadata query)
+            // can read canonical alt-text + tier + category without
+            // re-deriving from the file system. `populate` clears first,
+            // so this is idempotent across hot-reload / multi-window
+            // cold-launch paths. Best-effort `try?` because the registry
+            // is metadata-only — a populate failure must not crash the
+            // kid's first-launch flow.
+            try? await CastIllustrationsRegistry.populateShared()
         }
         .onChange(of: sessionTimer.phase) { _, newPhase in
             switch newPhase {

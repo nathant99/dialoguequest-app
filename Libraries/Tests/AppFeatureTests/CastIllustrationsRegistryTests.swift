@@ -3,7 +3,13 @@ import Testing
 import ForgeIllustrations
 @testable import AppFeature
 
-@Suite("CastIllustrationsRegistry")
+@Suite("CastIllustrationsRegistry", .serialized)
+// FIXME: serialized because the shared `IllustrationRegistry` actor is
+// process-global; parallel tests calling `populateShared()` would race
+// on clear-then-register. Tests of `populate(_:)` on a local registry
+// stay isolated by construction; the few tests covering `.shared` need
+// global ordering. The cost is small (~16 tests run sequentially within
+// this suite) and worth the determinism.
 struct CastIllustrationsRegistryTests {
 
     @Test("expected asset count contract — 5 cast + 2 covers = 7")
@@ -138,6 +144,38 @@ struct CastIllustrationsRegistryTests {
         #expect(heroes.count == 2)
         let heroIDs = Set(heroes.map { $0.id })
         #expect(heroIDs == Set(CastIllustrationsRegistry.bookCoverIDs))
+    }
+
+    @Test("populateShared() registers all 7 assets into the shared registry")
+    func populateSharedPopulatesAll() async throws {
+        try await CastIllustrationsRegistry.populateShared()
+        let count = await CastIllustrationsRegistry.shared.count()
+        #expect(count == 7)
+    }
+
+    @Test("populateShared() is idempotent — repeat calls do not throw")
+    func populateSharedIdempotent() async throws {
+        try await CastIllustrationsRegistry.populateShared()
+        try await CastIllustrationsRegistry.populateShared()
+        let count = await CastIllustrationsRegistry.shared.count()
+        #expect(count == 7)
+    }
+
+    @Test("shared registry surfaces canonical asset metadata after populate")
+    func sharedRegistryYieldsCanonicalMetadata() async throws {
+        try await CastIllustrationsRegistry.populateShared()
+        // A representative cast portrait carries the curricular-primitive
+        // alt-text so a future audit surface can read it without re-
+        // deriving from the file system.
+        let glance = await CastIllustrationsRegistry.shared
+            .asset(id: "cast.glance.portrait")
+        #expect(glance != nil)
+        #expect(glance?.accessibility.altText.contains("subtext") == true)
+        // A representative book cover carries the .hero category so a
+        // future gallery surface can filter without metadata reload.
+        let coverStandard = await CastIllustrationsRegistry.shared
+            .asset(id: "anthology.cover.standard")
+        #expect(coverStandard?.category == .hero)
     }
 
     @Test("alt-text references the curricular primitive for cast portraits")
