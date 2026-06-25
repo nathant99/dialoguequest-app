@@ -63,8 +63,10 @@ public final class DeclaredAgeRangeGate {
             let raw = Bundle.main.object(forInfoDictionaryKey: "NSChildUseDescription") as? String,
             !raw.trimmingCharacters(in: .whitespaces).isEmpty
         else {
+            DialogueQuestDebugLog.permission("DeclaredAgeRangeGate.isWired — NSChildUseDescription missing; FamilyControls path stays no-op until GUI handoff lands")
             return false
         }
+        DialogueQuestDebugLog.permission("DeclaredAgeRangeGate.isWired — NSChildUseDescription present; FamilyControls path is unblocked")
         return true
     }()
 

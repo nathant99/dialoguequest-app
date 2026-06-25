@@ -142,18 +142,24 @@ public final class VoicePatternHistoryService {
     // MARK: - Persistence helpers
 
     private func decodedHistory() -> [String: [Double]] {
-        guard
-            let data = defaults.data(forKey: Self.defaultsKey),
-            let decoded = try? JSONDecoder().decode([String: [Double]].self, from: data)
-        else {
+        guard let data = defaults.data(forKey: Self.defaultsKey) else {
             return [:]
         }
-        return decoded
+        do {
+            return try JSONDecoder().decode([String: [Double]].self, from: data)
+        } catch {
+            DialogueQuestDebugLog.data("VoicePatternHistoryService.decodedHistory — decode failed; treating as empty", error: error)
+            return [:]
+        }
     }
 
     private func persist(_ history: [String: [Double]]) {
-        guard let encoded = try? JSONEncoder().encode(history) else { return }
-        defaults.set(encoded, forKey: Self.defaultsKey)
+        do {
+            let encoded = try JSONEncoder().encode(history)
+            defaults.set(encoded, forKey: Self.defaultsKey)
+        } catch {
+            DialogueQuestDebugLog.data("VoicePatternHistoryService.persist — encode failed; rolling window not persisted this round", error: error)
+        }
     }
 
     // MARK: - Trend enum

@@ -312,7 +312,11 @@ public struct AnthologyCurationView: View {
     private func deleteCollection(id: UUID) {
         guard let record = fetchCollection(id: id) else { return }
         modelContext.delete(record)
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            DialogueQuestDebugLog.data("AnthologyCurationView.deleteCollection — modelContext.save failed", error: error)
+        }
         refresh()
     }
 
