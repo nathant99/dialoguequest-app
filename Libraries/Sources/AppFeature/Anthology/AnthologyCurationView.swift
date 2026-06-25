@@ -254,8 +254,14 @@ public struct AnthologyCurationView: View {
 
             var cache: [UUID: DialogueTree] = [:]
             for model in entryModels {
-                if let tree = try? DialoguePersistenceService.decodeTree(from: model.encodedTreeData) {
+                do {
+                    let tree = try DialoguePersistenceService.decodeTree(from: model.encodedTreeData)
                     cache[model.id] = tree
+                } catch {
+                    DialogueQuestDebugLog.data(
+                        "AnthologyCurationView.refresh — decodeTree failed for id=\(model.id); entry hidden from curation picker",
+                        error: error
+                    )
                 }
             }
             treeCache = cache

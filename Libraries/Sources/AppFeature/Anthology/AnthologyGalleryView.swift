@@ -266,8 +266,14 @@ public struct AnthologyGalleryView: View {
             // list still renders.
             var cache: [UUID: DialogueTree] = [:]
             for model in models {
-                if let tree = try? DialoguePersistenceService.decodeTree(from: model.encodedTreeData) {
+                do {
+                    let tree = try DialoguePersistenceService.decodeTree(from: model.encodedTreeData)
                     cache[model.id] = tree
+                } catch {
+                    DialogueQuestDebugLog.data(
+                        "AnthologyGalleryView.refresh — decodeTree failed for id=\(model.id); entry hidden from share + spotlight",
+                        error: error
+                    )
                 }
             }
             treeCache = cache

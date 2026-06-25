@@ -153,4 +153,39 @@ struct PatterCallbackServiceTests {
             }
         }
     }
+
+    // MARK: - Corrupt-data fallback (DebugLog wiring; Priority K)
+
+    @Test("Corrupt mood data falls back to empty history without crash")
+    func corruptMoodDataFallsBackEmpty() {
+        let suite = makeSuite()
+        // Write garbage bytes under the canonical key. The decode path must
+        // log the failure (via DialogueQuestDebugLog.data, debug-only) and
+        // return [] so callers stay on the safe-empty path.
+        let garbage = Data([0xFF, 0xFE, 0xFD, 0x00, 0x01])
+        suite.set(garbage, forKey: PatterCallbackService.defaultsKeyRecentMoods)
+        let service = PatterCallbackService(defaults: suite)
+        #expect(service.recentMoods().isEmpty)
+    }
+
+    @Test("Corrupt title data falls back to empty history without crash")
+    func corruptTitleDataFallsBackEmpty() {
+        let suite = makeSuite()
+        let garbage = Data([0xFF, 0xFE, 0xFD, 0x00, 0x01])
+        suite.set(garbage, forKey: PatterCallbackService.defaultsKeyRecentTitles)
+        let service = PatterCallbackService(defaults: suite)
+        #expect(service.recentTitles().isEmpty)
+    }
+
+    @Test("After corrupt fallback, recording a new publish overwrites the garbage cleanly")
+    func corruptFallbackThenRecordHeals() {
+        let suite = makeSuite()
+        let garbage = Data([0xFF, 0xFE, 0xFD, 0x00, 0x01])
+        suite.set(garbage, forKey: PatterCallbackService.defaultsKeyRecentMoods)
+        suite.set(garbage, forKey: PatterCallbackService.defaultsKeyRecentTitles)
+        let service = PatterCallbackService(defaults: suite)
+        service.recordPublishedTree(mood: .warmReunion, title: "Healed")
+        #expect(service.recentMoods() == [.warmReunion])
+        #expect(service.recentTitles() == ["Healed"])
+    }
 }

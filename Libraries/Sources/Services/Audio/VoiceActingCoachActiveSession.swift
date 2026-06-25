@@ -256,7 +256,14 @@ public final class VoiceActingCoachActiveSession {
         recognitionRequest = nil
         audioEngine?.stop()
         audioEngine = nil
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        } catch {
+            DialogueQuestDebugLog.error(
+                "VoiceActingCoachActiveSession.teardownEngine — AVAudioSession deactivation threw; other audio apps may still see DialogueQuest's session active",
+                error: error
+            )
+        }
     }
     #endif
 }

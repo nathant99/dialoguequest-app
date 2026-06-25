@@ -90,13 +90,18 @@ public final class PatterCallbackService {
 
     /// Snapshot of the rolling title history. Order is most-recent-first.
     public func recentTitles() -> [String] {
-        guard
-            let data = defaults.data(forKey: Self.defaultsKeyRecentTitles),
-            let decoded = try? JSONDecoder().decode([String].self, from: data)
-        else {
+        guard let data = defaults.data(forKey: Self.defaultsKeyRecentTitles) else {
             return []
         }
-        return decoded
+        do {
+            return try JSONDecoder().decode([String].self, from: data)
+        } catch {
+            DialogueQuestDebugLog.data(
+                "PatterCallbackService.recentTitles — JSONDecoder failed; returning []",
+                error: error
+            )
+            return []
+        }
     }
 
     // MARK: - Generation
@@ -154,23 +159,42 @@ public final class PatterCallbackService {
     // MARK: - Persistence helpers
 
     private func recentMoodRaws() -> [String] {
-        guard
-            let data = defaults.data(forKey: Self.defaultsKeyRecentMoods),
-            let decoded = try? JSONDecoder().decode([String].self, from: data)
-        else {
+        guard let data = defaults.data(forKey: Self.defaultsKeyRecentMoods) else {
             return []
         }
-        return decoded
+        do {
+            return try JSONDecoder().decode([String].self, from: data)
+        } catch {
+            DialogueQuestDebugLog.data(
+                "PatterCallbackService.recentMoodRaws — JSONDecoder failed; returning []",
+                error: error
+            )
+            return []
+        }
     }
 
     private func persistMoods(_ moods: [String]) {
-        guard let encoded = try? JSONEncoder().encode(moods) else { return }
-        defaults.set(encoded, forKey: Self.defaultsKeyRecentMoods)
+        do {
+            let encoded = try JSONEncoder().encode(moods)
+            defaults.set(encoded, forKey: Self.defaultsKeyRecentMoods)
+        } catch {
+            DialogueQuestDebugLog.data(
+                "PatterCallbackService.persistMoods — JSONEncoder failed; mood history not persisted",
+                error: error
+            )
+        }
     }
 
     private func persistTitles(_ titles: [String]) {
-        guard let encoded = try? JSONEncoder().encode(titles) else { return }
-        defaults.set(encoded, forKey: Self.defaultsKeyRecentTitles)
+        do {
+            let encoded = try JSONEncoder().encode(titles)
+            defaults.set(encoded, forKey: Self.defaultsKeyRecentTitles)
+        } catch {
+            DialogueQuestDebugLog.data(
+                "PatterCallbackService.persistTitles — JSONEncoder failed; title history not persisted",
+                error: error
+            )
+        }
     }
 
     /// `recentMoods()` returns a `[DialogueMood?]` because trees may
