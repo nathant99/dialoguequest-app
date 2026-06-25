@@ -92,6 +92,9 @@ struct SettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            #if DEBUG
+            diagnosticsSection
+            #endif
             Section("About") {
                 HStack {
                     Text("Version")
@@ -145,6 +148,32 @@ struct SettingsView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Family Age Band. \(gate.statusDescription)")
     }
+
+    #if DEBUG
+    /// Developer-only diagnostics surface. Compiles to nothing in
+    /// release builds (the entire section is `#if DEBUG`-gated, the
+    /// section binding is `#if DEBUG`-gated, and the consumed audit
+    /// helper is reachable from any build). Surfaces the
+    /// `CastIllustrationsCoverageAudit` report so a developer can
+    /// confirm at a glance whether the shared registry populated
+    /// correctly at cold-launch without writing a unit test.
+    ///
+    /// Copy stays in the kid / parent register stoplist by virtue of
+    /// the audit's `summary` value already being scrubbed; the
+    /// section label + footer copy are also reader-clean.
+    @ViewBuilder
+    private var diagnosticsSection: some View {
+        Section {
+            CastIllustrationsCoverageRow()
+        } header: {
+            Text("Diagnostics (debug)")
+        } footer: {
+            Text("Visible in development builds only. Not shipped to TestFlight or the App Store.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+    #endif
 
     @ViewBuilder
     private var consentStatusRow: some View {
@@ -229,3 +258,60 @@ private struct ParentalConsentGateView: View {
 #Preview {
     NavigationStack { SettingsView() }
 }
+
+#if DEBUG
+/// Read-only diagnostics row that runs the
+/// `CastIllustrationsCoverageAudit` against the shared registry on
+/// appear + render. Shows the report `summary` line + count when
+/// the audit is ready. Re-runs on tap so a developer can probe a
+/// fresh populate state without leaving Settings.
+///
+/// Pure debug-only surface — wrapped in `#if DEBUG` at the
+/// `SettingsView` call site AND on the type itself. Release builds
+/// never see this code. The view does not write to UserDefaults +
+/// does not fire analytics.
+private struct CastIllustrationsCoverageRow: View {
+    @State private var report: CastIllustrationsCoverageAudit.Report?
+    @State private var isAuditing: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Cast illustrations", systemImage: "photo.on.rectangle.angled")
+                .foregroundStyle(DialoguePalette.inkBlue)
+            if let report {
+                Text(report.summary)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !report.missingAssetIDs.isEmpty {
+                    Text("Missing: " + report.missingAssetIDs.joined(separator: ", "))
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } else if isAuditing {
+                Text("Reading registry…")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("Tap to run.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            Task { await runAudit() }
+        }
+        .task {
+            await runAudit()
+        }
+    }
+
+    private func runAudit() async {
+        isAuditing = true
+        defer { isAuditing = false }
+        report = await CastIllustrationsCoverageAudit.auditShared()
+    }
+}
+#endif
