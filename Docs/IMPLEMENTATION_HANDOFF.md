@@ -1,11 +1,31 @@
 ---
 status: ACTIVE
-date: 2026-06-28
+date: 2026-06-29
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
 
+> **2026-06-29 round addendum (tenth mid-session, completed)** — multi-PR session-handoff Priority F + Priority G closure round under the standing auto-cycle. **4 PRs landed** (#138 → #140 + this round-close). Net state delta:
+>
+> - **Test count delta**: +5 (3 CastIllustrationsRegistry shared-singleton + 2 SeasonalThemeService new-window boundary). Total: ~534 tests.
+> - **ForgeKit module count consumed**: **20** (unchanged in `Sources/` deps — this round wires existing `ForgeIllustrations` infrastructure to fire at app launch + extends the existing `ForgeEvents` curated theme set; no new module dependencies). The `ForgeMasteryEngine` + `PolyaScaffold` + `ForgeLocalization` modules remain deferred behind the 2026-06-26 user-GUI handoffs (still pending after 72h).
+> - **Open user-GUI handoffs**: unchanged at 7 (no new handoffs filed; no existing ones closed).
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-06-30_ROUND_CLOSE.md` (this round's successor; replaces the 2026-06-29 brief).
+>
+> - **PR 1 (#138) — Xcode safety reaffirmation (Track A).** Appended the 2026-06-29 dated entry to `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` per user-direct (same canonical verbatim phrasing as 2026-06-28 and 2026-06-27 and 2026-06-26 and 2026-06-25). Confirmed no drift in `CLAUDE.md` § Xcode Agent Safety or `.claude/rules/xcode-agent-safety.md` § "Staging + committing Xcode-managed files IS allowed". Pure docs.
+> - **PR 2 (#139) — CastIllustrationsRegistry app-launch wiring (Track F; Priority F closure from 2026-06-28 handoff).** `CastIllustrationsRegistry` gains a `public nonisolated static let shared: IllustrationRegistry = IllustrationRegistry()` process-global instance + a `populateShared()` convenience that wraps the existing `populate(_:)` call site. `RootView.task` fires `try? await CastIllustrationsRegistry.populateShared()` at cold-launch so the shared registry carries canonical alt-text + tier + category metadata for the 7 portfolio-distributed assets (5 cast portraits + 2 anthology book covers) from process start. Best-effort `try?` — the registry is metadata-only; a populate failure must not crash first-launch. Future surfaces (Patter portrait sheet; cast-coverage audit; accessibility-metadata query) can read from a single populated registry instead of re-deriving from disk. CastIllustrationsRegistryTests suite gains 3 tests covering populateShared() count, idempotency, and metadata recovery via the shared singleton. Suite marked `.serialized` because the shared actor is process-global and parallel populate calls would race on the clear-then-register sequence (FIXME comment per `.claude/rules/testing.md`). 18/18 suite green.
+> - **PR 3 (#140) — Fourth curated seasonal theme (Track G; Priority G closure from 2026-06-28 handoff).** New `SeasonalTheme` "Summer Writers' Days" covers May 25 → June 14 with event-day June 1 (start-of-summer "what story will you write this summer?" register; matches first-day-of-summer for most school calendars without naming a holiday). Coverage now spans ~75 calendar days/year across 4 windows roughly 3 months apart: Conversation Month (Sep 26 → Oct 26) → Year-Close (Dec 28 → Jan 8) → Storytelling Days (Mar 14 → Mar 28) → Summer Writers' Days (May 25 → June 14). Bubble line stays in the age-9-14 reader register per `.claude/rules/distributed-narrative.md` § Chapter content register stoplist — no engineering jargon. +2 tests covering active-window boundaries (May 27 / June 1 / June 12 in-window; May 20 / June 20 out-of-window); existing 4-themes contract test updated (3 → 4). 20/20 suite green.
+> - **Track Z — Round-close.** This addendum + `Docs/SESSION_HANDOFF_2026-06-30_ROUND_CLOSE.md` for the next CC session. Test count + ForgeKit module count notes above kept in sync.
+>
+> **What this round did NOT do** (intentional + scoped):
+> - Did NOT touch Xcode-managed files (workspace / scheme / xctestplan / Info.plist / entitlements / `Package.resolved`). All code PRs landed via filesystem `Write`/`Edit` against SPM source — synchronized-folder targets convention preserved.
+> - Did NOT advance the two 2026-06-26 user-GUI handoffs (ForgeKit pin bump + Localizable.xcstrings). Both remain pending after 72h. Priority B + Priority C from the prior session handoffs stay blocked.
+> - Did NOT scaffold any of the `ForgeMasteryEngine` / `PolyaScaffold` / `ForgeLocalization` integration code — all 3 wait on user-GUI completion of the 2026-06-26 handoffs.
+> - Did NOT touch the existing hub-blocked + user-GUI-blocked handoffs (HubContribution Level 1 / Patter PNG / Curating Together PDF / declared age range / app icon / voice-acting coach Info.plist / widget extension / aimentortests test plan).
+> - Did NOT advance Priority A (DN-S Move D Phase 3 telemetry rollout) — partly hub-side; deferred until hub ships the telemetry surface.
+> - Did NOT add additional ForgeKit module adoptions (ForgeAudio, ForgeEmotionAware, ForgeSettings, ForgeWidgets) — surveyed; none had an adoption-driving feature this round (existing services use `@AppStorage` for prefs/flags; DialogueReadAloudService uses AVSpeechSynthesizer for per-character voice variants which doesn't map cleanly to ForgeAudio's SFX/playback surface; ForgeWidgets blocked on widget extension handoff).
+>
 > **2026-06-28 round addendum (ninth mid-session, completed)** — multi-PR session-handoff Priority F closure + ForgeKit integration maximization round under the standing auto-cycle. **5 PRs landed** (#133 → #136 + this round-close). Net state delta:
 >
 > - **Test count delta**: +50 (17 WeeklyDeltaServiceTests + 15 CastIllustrationsRegistryTests + 18 SeasonalThemeServiceTests). Total: ~529 tests.
