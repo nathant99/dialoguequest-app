@@ -22,12 +22,20 @@ import ForgeEmotionAware
 ///   field is intentionally re-seeded to `nil` on every read — the
 ///   parent dashboard surfaces the kid's current emotional read, not
 ///   the trajectory shape.
-/// - It does NOT decorate the snapshot with a timestamp readable by
-///   callers today. A future round can layer `lastSnapshotAt` if the
-///   dashboard needs "stale snapshot" framing; for now the snapshot is
-///   timeless from the reader's perspective.
 /// - It does NOT throw. UserDefaults writes are infallible; reads
 ///   return `nil` cleanly when the keys are missing.
+///
+/// **Stale-snapshot framing** (added 2026-07-05 — Priority M.4):
+/// `record(signals:)` now timestamps every write with `Date()` under
+/// the stable `dq.lastSession.lastSnapshotAt` key.
+/// `latestTimestamp()` is the read accessor — returns `nil` when no
+/// snapshot has been captured yet (fresh install) OR when an older
+/// install upgraded past the additive key add (graceful nil fallback).
+/// The parent-progress dashboard reads it via `.task` alongside
+/// `latest()` and renders a "Last read N minutes/hours ago" line in
+/// the "How writing felt" section so the parent isn't misled into
+/// reading a 3-day-old snapshot as today's. Backward compatible — the
+/// signal round-trip is unchanged; the timestamp is strictly additive.
 ///
 /// **Reader pattern**: `ParentProgressDashboardView` calls
 /// `EmotionalSignalsPersistence.latest()` in `.task`. The view
@@ -42,6 +50,11 @@ public nonisolated enum EmotionalSignalsPersistence {
         public static let branchReflectionRatio = "dq.lastSession.branchReflectionRatio"
         public static let minutesSinceLastPublish = "dq.lastSession.minutesSinceLastPublish"
         public static let hasSnapshot = "dq.lastSession.hasSnapshot"
+        /// Added 2026-07-05 (Priority M.4 — stale-snapshot framing).
+        /// Absent on installs that recorded snapshots before this key
+        /// landed; `latestTimestamp()` returns `nil` in that case so
+        /// the dashboard renders without the staleness suffix.
+        public static let lastSnapshotAt = "dq.lastSession.lastSnapshotAt"
     }
 
     /// Capture a signal snapshot. Called by `PatterReactionService`
@@ -51,8 +64,14 @@ public nonisolated enum EmotionalSignalsPersistence {
     /// distinguish "no publish this session" from "publish was 0 min
     /// ago"). UserDefaults writes never throw; the call is fire-and-
     /// forget.
+    ///
+    /// **Timestamp** (added 2026-07-05 — Priority M.4): every write
+    /// stamps `now` into `Key.lastSnapshotAt`. Pass `now:` explicitly
+    /// in tests to inject a fixed `Date`; production callers use the
+    /// `Date.init()` default.
     public static func record(
         signals: DialogueEmotionalStateProbe.Signals,
+        now: Date = Date(),
         defaults: UserDefaults = .standard
     ) {
         defaults.set(signals.voiceDriftCount, forKey: Key.voiceDriftCount)
@@ -63,6 +82,7 @@ public nonisolated enum EmotionalSignalsPersistence {
         } else {
             defaults.removeObject(forKey: Key.minutesSinceLastPublish)
         }
+        defaults.set(now.timeIntervalSinceReferenceDate, forKey: Key.lastSnapshotAt)
         defaults.set(true, forKey: Key.hasSnapshot)
     }
 
@@ -84,13 +104,33 @@ public nonisolated enum EmotionalSignalsPersistence {
         )
     }
 
+    /// Read back the timestamp of the most recent snapshot (Priority
+    /// M.4 — stale-snapshot framing). Returns `nil` when no snapshot
+    /// exists OR when an older install upgraded past the additive key
+    /// add and never re-wrote — the reader treats `nil` as "no
+    /// staleness suffix" and renders the section without the line.
+    public static func latestTimestamp(
+        defaults: UserDefaults = .standard
+    ) -> Date? {
+        guard defaults.bool(forKey: Key.hasSnapshot) else { return nil }
+        // `object(forKey:)` returns nil cleanly for missing keys; only
+        // upgraded installs that haven't re-recorded land here.
+        guard let raw = defaults.object(forKey: Key.lastSnapshotAt) as? TimeInterval else {
+            return nil
+        }
+        return Date(timeIntervalSinceReferenceDate: raw)
+    }
+
     /// Clear the persisted snapshot. Test seam + future "reset
-    /// privacy" hook on the Settings surface.
+    /// privacy" hook on the Settings surface. Clears the timestamp
+    /// alongside the signal keys so a subsequent `latestTimestamp()`
+    /// call returns `nil` cleanly.
     public static func reset(defaults: UserDefaults = .standard) {
         defaults.removeObject(forKey: Key.voiceDriftCount)
         defaults.removeObject(forKey: Key.tagImbalanceCount)
         defaults.removeObject(forKey: Key.branchReflectionRatio)
         defaults.removeObject(forKey: Key.minutesSinceLastPublish)
+        defaults.removeObject(forKey: Key.lastSnapshotAt)
         defaults.removeObject(forKey: Key.hasSnapshot)
     }
 }

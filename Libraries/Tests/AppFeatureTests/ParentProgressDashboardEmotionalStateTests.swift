@@ -77,4 +77,64 @@ struct ParentProgressDashboardEmotionalStateTests {
         let descriptor = DialogueEmotionalStateProbe.descriptor(forSignals: signals)
         #expect(descriptor.parentSummary == "Settled writing rhythm")
     }
+
+    // MARK: - Priority M.4 (2026-07-05) — stale-snapshot framing
+
+    @Test("staleness framing reads 'just now' for snapshots under 60s")
+    func stalenessJustNow() {
+        let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
+        let snapshotAt = now.addingTimeInterval(-30)
+        let framing = ParentProgressDashboardView.stalenessFraming(for: snapshotAt, now: now)
+        #expect(framing == "Last read just now")
+    }
+
+    @Test("staleness framing reads minutes for snapshots within an hour")
+    func stalenessMinutes() {
+        let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
+        let snapshotAt = now.addingTimeInterval(-4 * 60)
+        let framing = ParentProgressDashboardView.stalenessFraming(for: snapshotAt, now: now)
+        #expect(framing == "Last read 4 minutes ago")
+    }
+
+    @Test("staleness framing reads hours for snapshots within a day")
+    func stalenessHours() {
+        let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
+        let snapshotAt = now.addingTimeInterval(-2 * 60 * 60)
+        let framing = ParentProgressDashboardView.stalenessFraming(for: snapshotAt, now: now)
+        #expect(framing == "Last read about 2 hours ago")
+    }
+
+    @Test("staleness framing reads days for snapshots beyond a day")
+    func stalenessDays() {
+        let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
+        let snapshotAt = now.addingTimeInterval(-3 * 24 * 60 * 60)
+        let framing = ParentProgressDashboardView.stalenessFraming(for: snapshotAt, now: now)
+        #expect(framing == "Last read 3 days ago")
+    }
+
+    @Test("staleness framing returns nil when timestamp is nil (omits the line)")
+    func stalenessNilWhenNoTimestamp() {
+        let framing = ParentProgressDashboardView.stalenessFraming(for: nil, now: Date())
+        #expect(framing == nil)
+    }
+
+    @Test("staleness framing pluralizes 1-minute / 1-hour / 1-day correctly")
+    func stalenessSingularPlurals() {
+        let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
+        let oneMin = ParentProgressDashboardView.stalenessFraming(
+            for: now.addingTimeInterval(-65),
+            now: now
+        )
+        #expect(oneMin == "Last read 1 minute ago")
+        let oneHour = ParentProgressDashboardView.stalenessFraming(
+            for: now.addingTimeInterval(-60 * 60 + -30),
+            now: now
+        )
+        #expect(oneHour == "Last read about 1 hour ago")
+        let oneDay = ParentProgressDashboardView.stalenessFraming(
+            for: now.addingTimeInterval(-24 * 60 * 60 - 60),
+            now: now
+        )
+        #expect(oneDay == "Last read 1 day ago")
+    }
 }
