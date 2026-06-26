@@ -1,10 +1,30 @@
 ---
 status: ACTIVE
-date: 2026-07-01
+date: 2026-07-02
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
+
+> **2026-07-02 round addendum (thirteenth mid-session, completed)** — multi-PR session-handoff Priority K closure + Priority M adoption round under the standing auto-cycle. **4 PRs landed** (#152 → #155). Net state delta:
+>
+> - **Test count delta**: +16 (DialogueEmotionalStateProbe). Total: **~589 tests**.
+> - **ForgeKit module count consumed**: **22** (21 → 22 via `ForgeEmotionAware` adoption — see PR 3 below). `ForgeMasteryEngine` + `PolyaScaffold` + `ForgeLocalization` remain deferred behind the 2026-06-26 user-GUI handoffs (still pending after 144h).
+> - **Silent-fail-site coverage**: **16 of ~16 sites** in the codebase now flow through `DialogueQuestDebugLog` (Priority K closed to 100% with the `AnthologyGalleryView.indexInSpotlight` Spotlight pair landed this round).
+> - **Open user-GUI handoffs**: unchanged at 7 (no new handoffs filed; no existing ones closed).
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-07-03_ROUND_CLOSE.md` (this round's successor; replaces the 2026-07-02 brief).
+>
+> - **PR 1 (#152) — Xcode safety reaffirmation (Track A).** Appended the 2026-07-02 dated entry to `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` per user-direct (same canonical verbatim phrasing as 2026-07-01 / 2026-06-30 / 2026-06-29 / 2026-06-28 / 2026-06-27 / 2026-06-26 / 2026-06-25). Confirmed no drift in `CLAUDE.md` § Xcode Agent Safety or `.claude/rules/xcode-agent-safety.md` § "Staging + committing Xcode-managed files IS allowed". Pure docs.
+> - **PR 2 (#153) — Last silent-fail site closure (Track B; Priority K → 100%).** Replaces the last raw `try? await` pair at `AnthologyGalleryView.indexInSpotlight` (`deindexAllAnthology` + `indexAll(payloads)`) with logged `do { try } catch` arms routing through `DialogueQuestDebugLog.data`. The Task.detached background path stays non-fatal (Spotlight is the documented nice-to-have; in-app gallery is canonical) while the failure now surfaces in `#if DEBUG` logs. Silent-fail-site coverage now 16/16. BuildProject clean (19s).
+> - **PR 3 (#154) — ForgeEmotionAware adoption + DialogueEmotionalStateProbe (Track C; Priority M).** ForgeKit catalog 21 → 22 modules. Adopts `ForgeEmotionAware` (emotion-aware adaptive seam). New `Libraries/Sources/Services/Pedagogy/DialogueEmotionalStateProbe.swift` — pure nonisolated enum wrapper. Maps DialogueQuest behavioral signals (voiceDriftCount, tagImbalanceCount, branchReflectionRatio, minutesSinceLastPublish, optional priorState) to one of `EmotionalState`'s 7 cases via a deterministic 5-tier classifier (frustrated / confused / bored / disengaged / confident → flow default; recovering layered on top via priorState). Boredom precedence above disengagement because zero-events-with-stalled-cadence is the more specific case than "branching without depth." Companion `DialogueEmotionalStateDescriptor` value type carries register-stoplist-clean parent-readable strings (parentSummary / whatThisMeans / howWeSupport / nextMilestone). 2-commit recipe per the SPM rule "Land in isolated commits, never bundle with multi-file changes": C.1 (Package.swift dep + SPM re-resolution: 57s) followed by C.2 (wrapper + tests: 7s). 16 new tests; 16/16 green. Probe stays value-type only; no persistence, no GUI hook today — future-ready for `PatterReactionService` suppression + `ParentProgressDashboardView` adoption.
+> - **PR 4 (#155) — Round-close (Track Z).** This addendum + `Docs/SESSION_HANDOFF_2026-07-03_ROUND_CLOSE.md` for the next CC session. Test count + ForgeKit module count notes above kept in sync.
+>
+> **What this round did NOT do** (intentional + scoped):
+> - Did NOT touch Xcode-managed files (workspace / scheme / xctestplan / Info.plist / entitlements / `Package.resolved`). All code PRs landed via filesystem `Write`/`Edit` against SPM source. No MCP `XcodeUpdate` calls needed (no app-shell edit this round).
+> - Did NOT advance the two 2026-06-26 user-GUI handoffs (ForgeKit pin bump + Localizable.xcstrings). Both remain pending after 144h. Priority B + Priority C from the prior session handoffs stay blocked.
+> - Did NOT scaffold any of the `ForgeMasteryEngine` / `PolyaScaffold` / `ForgeLocalization` integration code — all 3 wait on user-GUI completion of the 2026-06-26 handoffs.
+> - Did NOT wire `DialogueEmotionalStateProbe` into `PatterReactionService` (suppression of celebrations) or `ParentProgressDashboardView` (descriptor rendering) — both are pure-value-type-ready consumer surfaces but the wiring lands once the parent-progress dashboard refresh path is set up to consume the per-session signal snapshot.
+> - Did NOT touch the existing hub-blocked + user-GUI-blocked handoffs (HubContribution Level 1 / Patter PNG / Curating Together PDF / declared age range API / app icon / voice-acting coach Info.plist / widget extension / aimentortests test plan).
 
 > **2026-07-01 round addendum (twelfth mid-session, completed)** — multi-PR session-handoff Priority I + K + L closure round under the standing auto-cycle. **5 PRs landed** (#147 → #151). Net state delta:
 >
