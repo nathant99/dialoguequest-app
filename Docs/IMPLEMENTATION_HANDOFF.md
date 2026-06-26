@@ -1,10 +1,34 @@
 ---
 status: ACTIVE
-date: 2026-07-04
+date: 2026-07-05
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
+
+> **2026-07-05 round addendum (sixteenth mid-session, completed)** — multi-PR session-handoff Priority M.4 + Priority N.3 pickup round under the standing auto-cycle. **4 PRs landed** (#164 → #167). Net state delta:
+>
+> - **Test count delta**: +15 (4 EmotionalSignalsPersistence timestamp coverage + 6 ParentProgressDashboardEmotionalState staleness framing + 5 ParentProgressDashboardExperimentCohorts). Total: **~645 tests**.
+> - **ForgeKit module count consumed**: **23** (unchanged this round — consumer-wiring on the already-adopted catalog; `ForgeMasteryEngine` + `PolyaScaffold` + `ForgeLocalization` still wait on the 2026-06-26 user-GUI handoffs, pending after 216h).
+> - **Silent-fail-site coverage**: **16 of ~16 sites = 100%** (unchanged; closed three rounds ago).
+> - **Open user-GUI handoffs**: unchanged at 7 (no new handoffs filed; no existing ones closed).
+> - **`EmotionalSignalsPersistence` extended with a per-write timestamp**: every `record(signals:)` now stamps `Date()` (injectable for tests) into a stable `Key.lastSnapshotAt` UserDefaults key. New `latestTimestamp()` reader gates on `hasSnapshot` so upgraded installs missing the additive key fall through cleanly to `nil`. `reset()` clears the timestamp alongside the rest. Strictly additive — the signal round-trip API is unchanged.
+> - **Parent dashboard "How writing felt" section now reads the staleness**: caption renders "Last read just now" / "Last read 4 minutes ago" / "Last read about 2 hours ago" / "Last read 3 days ago" so a parent reading a 3-day-old snapshot isn't misled into treating it as today's. Pure value-type framing helper (`stalenessFraming(for:now:)`) keeps the branch logic testable without driving the view. Backward compatible — when the timestamp is `nil` the suffix line is omitted.
+> - **Parent dashboard "Experiment cohorts" section now reads variant assignments**: new section between emotional + retention surfaces one row per cohort assignment (`experiment.name — variant.name`) from `DialogueExperimentsService.shared.definitions`. Read-only transparency, not control — no flag mutation, no `@AppStorage` write. Pairs with the cold-launch `experiment_variant_assigned` analytics events shipped in PR #162 last round; parents can now SEE which cohort the install is in instead of just READING about it in the events stream.
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-07-06_ROUND_CLOSE.md` (this round's successor; replaces the 2026-07-05 brief).
+>
+> - **PR 1 (#164) — Xcode safety reaffirmation (Track A).** Appended the 2026-07-05 dated entry to `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` per user-direct (same canonical verbatim phrasing as 2026-07-04 / 2026-07-03 / 2026-07-02 / 2026-07-01 / 2026-06-30 / 2026-06-29 / 2026-06-28 / 2026-06-27 / 2026-06-26 / 2026-06-25). 17th entry in the reaffirmation chain. Confirmed no drift in `CLAUDE.md` § Xcode Agent Safety or `.claude/rules/xcode-agent-safety.md` § "Staging + committing Xcode-managed files IS allowed". Pure docs.
+> - **PR 2 (#165) — Stale-snapshot framing on parent dashboard (Track B; Priority M.4).** `EmotionalSignalsPersistence.record(signals:now:defaults:)` now stamps every write with the injected `Date()` (production callers use `Date.init()` default; tests pin `now:` for determinism) into the additive `Key.lastSnapshotAt`. New `latestTimestamp(defaults:)` reader returns `nil` on fresh install OR upgraded install missing the key. `ParentProgressDashboardView` reads via `.task` into new `@State emotionalSnapshotTimestamp`; the `emotionalStateSection` renders a small caption between the parent summary and descriptor rows ("Last read just now" / "Last read N minutes/hours/days ago"). Static `stalenessFraming(for:now:)` helper is the testable seam. Accessibility label folds the staleness line into the VoiceOver read. 10 new tests; 21/21 green on the touched suites + zero regression to the 7 prior signal round-trip + descriptor mapping tests. BuildProject clean (27.7s).
+> - **PR 3 (#166) — Experiment cohorts section on parent dashboard (Track C; Priority N.3).** `ParentProgressDashboardView` gains a new `experimentCohortsSection` between emotional + retention. Loads `@State experimentCohorts: [ExperimentCohortReadout]` in `.task` from `DialogueExperimentsService.shared`. One row per cohort assignment (`experiment.name — variant.name`); compact "What this means" copy line explains the kid was assigned to a cohort for the purpose of evaluating new features. Static `cohortReadouts(from:)` helper is the testable value-type seam — iterates `definitions` + resolves the assigned variant per ID; skips unresolved definitions (defensive for future empty-variant catalogs). New `nonisolated struct ExperimentCohortReadout` carries experiment ID + reader-friendly name + variant ID + variant name. 5 new tests in a new suite. BuildProject clean (62.2s).
+> - **PR 4 (#167) — Round-close (Track Z).** This addendum + `Docs/SESSION_HANDOFF_2026-07-06_ROUND_CLOSE.md` for the next CC session. Test count notes above kept in sync.
+>
+> **What this round did NOT do** (intentional + scoped):
+> - Did NOT touch Xcode-managed files (workspace / scheme / xctestplan / Info.plist / entitlements / `Package.resolved`). All code PRs landed via filesystem `Write`/`Edit` against SPM source. No MCP `XcodeUpdate` calls needed (no app-shell edit this round).
+> - Did NOT advance the two 2026-06-26 user-GUI handoffs (ForgeKit pin bump + Localizable.xcstrings). Both remain pending after 216h. Priority B + Priority C from the prior session handoffs stay blocked.
+> - Did NOT scaffold any of the `ForgeMasteryEngine` / `PolyaScaffold` / `ForgeLocalization` integration code — all 3 wait on user-GUI completion of the 2026-06-26 handoffs.
+> - Did NOT pursue Priorities O (Patter palette personalization via `ForgeAvatar`) + P (per-tree snapshot store) — marked "explore-then-decide" in the prior handoff. Carried forward to next session unchanged.
+> - Did NOT touch the existing hub-blocked + user-GUI-blocked handoffs (HubContribution Level 1 / Patter PNG / Curating Together PDF / declared age range API / app icon / voice-acting coach Info.plist / widget extension / aimentortests test plan).
+> - Did NOT adopt any new ForgeKit module — surveyed candidates (ForgeAudio / ForgeMultipeerKit / ForgeWidgets / ForgeSocial / ForgeGameCenter / ForgeSettings / ForgeMath / ForgeGameEngine) all stay held per the prior session's analysis. Next catalog expansion comes after the pin bump.
 
 > **2026-07-04 round addendum (fifteenth mid-session, completed)** — multi-PR session-handoff Priority M.3 + Priority N.2 pickup round under the standing auto-cycle. **4 PRs landed** (#160 → #163). Net state delta:
 >
