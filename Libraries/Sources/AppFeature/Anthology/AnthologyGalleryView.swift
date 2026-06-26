@@ -308,8 +308,25 @@ public struct AnthologyGalleryView: View {
         Task.detached(priority: .background) {
             let indexer = AnthologySpotlightIndexer()
             // Wipe-then-replace so deleted entries fall out of Spotlight too.
-            try? await indexer.deindexAllAnthology()
-            try? await indexer.indexAll(payloads)
+            // Failures are non-fatal (Spotlight is a documented nice-to-have
+            // surface) but flow through `DialogueQuestDebugLog.data` so a
+            // regression in the indexer surfaces in #if DEBUG logs.
+            do {
+                try await indexer.deindexAllAnthology()
+            } catch {
+                DialogueQuestDebugLog.data(
+                    "AnthologyGalleryView.indexInSpotlight — deindexAllAnthology failed; Spotlight may retain stale entries until next refresh",
+                    error: error
+                )
+            }
+            do {
+                try await indexer.indexAll(payloads)
+            } catch {
+                DialogueQuestDebugLog.data(
+                    "AnthologyGalleryView.indexInSpotlight — indexAll(\(payloads.count) payloads) failed; in-app gallery still authoritative",
+                    error: error
+                )
+            }
         }
     }
 }
