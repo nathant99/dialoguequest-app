@@ -134,6 +134,58 @@ struct EmotionalSignalsPersistenceTests {
         #expect(d3.parentSummary == "Settled writing rhythm")
     }
 
+    @Test("record stamps lastSnapshotAt; latestTimestamp reads it back")
+    func timestampRoundTrip() {
+        let defaults = makeDefaults()
+        let fixed = Date(timeIntervalSinceReferenceDate: 800_000_000)
+        let signals = DialogueEmotionalStateProbe.Signals(
+            voiceDriftCount: 1,
+            tagImbalanceCount: 0,
+            branchReflectionRatio: 0.6,
+            minutesSinceLastPublish: 3.0
+        )
+        EmotionalSignalsPersistence.record(signals: signals, now: fixed, defaults: defaults)
+        let read = EmotionalSignalsPersistence.latestTimestamp(defaults: defaults)
+        #expect(read != nil)
+        #expect(abs((read?.timeIntervalSinceReferenceDate ?? 0) - 800_000_000) < 0.001)
+    }
+
+    @Test("latestTimestamp returns nil on fresh install")
+    func timestampNilOnFreshInstall() {
+        let defaults = makeDefaults()
+        #expect(EmotionalSignalsPersistence.latestTimestamp(defaults: defaults) == nil)
+    }
+
+    @Test("reset clears the timestamp alongside the signal keys")
+    func resetClearsTimestamp() {
+        let defaults = makeDefaults()
+        let signals = DialogueEmotionalStateProbe.Signals(
+            voiceDriftCount: 2,
+            tagImbalanceCount: 1,
+            branchReflectionRatio: 0.4,
+            minutesSinceLastPublish: nil
+        )
+        EmotionalSignalsPersistence.record(signals: signals, defaults: defaults)
+        // Sanity — timestamp wrote.
+        #expect(EmotionalSignalsPersistence.latestTimestamp(defaults: defaults) != nil)
+        EmotionalSignalsPersistence.reset(defaults: defaults)
+        #expect(EmotionalSignalsPersistence.latestTimestamp(defaults: defaults) == nil)
+        // hasSnapshot also cleared, so latestTimestamp's gate holds.
+        #expect(defaults.bool(forKey: EmotionalSignalsPersistence.Key.hasSnapshot) == false)
+    }
+
+    @Test("latestTimestamp returns nil when hasSnapshot was cleared but key lingered")
+    func timestampGatesOnHasSnapshot() {
+        // Models the "older install upgraded past the key add" path:
+        // the timestamp key is present in defaults but hasSnapshot is
+        // false (because the install was reset and no new record landed).
+        // The reader treats this as nil so the staleness suffix omits.
+        let defaults = makeDefaults()
+        defaults.set(Date().timeIntervalSinceReferenceDate, forKey: EmotionalSignalsPersistence.Key.lastSnapshotAt)
+        defaults.set(false, forKey: EmotionalSignalsPersistence.Key.hasSnapshot)
+        #expect(EmotionalSignalsPersistence.latestTimestamp(defaults: defaults) == nil)
+    }
+
     @Test("descriptor copy is reader-register clean (no engineering jargon)")
     func descriptorStoplistClean() {
         // Capture every state's descriptor and grep against the

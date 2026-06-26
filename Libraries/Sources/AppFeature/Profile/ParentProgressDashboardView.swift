@@ -40,6 +40,14 @@ public struct ParentProgressDashboardView: View {
     /// `nil` on a fresh install or before the kid's first signal-
     /// mutating action — the section omits in that case.
     @State private var emotionalDescriptor: DialogueEmotionalStateDescriptor?
+    /// Timestamp of the most recent emotional-signal snapshot. Drives
+    /// the "Last read N minutes/hours/days ago" line in the "How
+    /// writing felt" section so a parent reading a 3-day-old snapshot
+    /// isn't misled into treating it as today's signal. `nil` when no
+    /// snapshot exists OR when an older install upgraded past the
+    /// additive `Key.lastSnapshotAt` key add — the staleness suffix
+    /// is omitted cleanly in that case.
+    @State private var emotionalSnapshotTimestamp: Date?
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -70,6 +78,14 @@ public struct ParentProgressDashboardView: View {
             if let signals = EmotionalSignalsPersistence.latest() {
                 emotionalDescriptor = DialogueEmotionalStateProbe.descriptor(forSignals: signals)
             }
+            // Priority M.4 (2026-07-05) — load the timestamp so
+            // `emotionalStateSection` can render the staleness suffix.
+            // Read independently of `latest()` so an upgraded install
+            // missing the timestamp key still renders the section
+            // (with no suffix). `latestTimestamp()` already gates on
+            // `hasSnapshot` so we never surface a stale Date when the
+            // signals were reset.
+            emotionalSnapshotTimestamp = EmotionalSignalsPersistence.latestTimestamp()
         }
     }
 
@@ -218,6 +234,12 @@ public struct ParentProgressDashboardView: View {
                 Text(descriptor.parentSummary)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(DialoguePalette.rust)
+                if let staleness = stalenessFraming(for: emotionalSnapshotTimestamp) {
+                    Text(staleness)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(DialoguePalette.inkBlue.opacity(0.7))
+                        .accessibilityIdentifier("emotional.staleness")
+                }
                 emotionalDescriptorRow(title: "What this means", body: descriptor.whatThisMeans)
                 emotionalDescriptorRow(title: "How we support", body: descriptor.howWeSupport)
                 emotionalDescriptorRow(title: "Next milestone", body: descriptor.nextMilestone)
@@ -229,8 +251,53 @@ public struct ParentProgressDashboardView: View {
             .background(panelBackground)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .accessibilityElement(children: .contain)
-            .accessibilityLabel("How writing felt. \(descriptor.parentSummary). \(descriptor.whatThisMeans) \(descriptor.howWeSupport) Next milestone: \(descriptor.nextMilestone)")
+            .accessibilityLabel(emotionalSectionAccessibilityLabel(descriptor: descriptor))
         }
+    }
+
+    /// Builds the staleness-framing line ("Last read just now" /
+    /// "Last read 4 minutes ago" / "Last read about 2 hours ago" /
+    /// "Last read 3 days ago"). Returns `nil` when the timestamp is
+    /// `nil` (upgraded install OR fresh install) — the caller omits
+    /// the line in that case. Pure value-type computation; safe to
+    /// call from a SwiftUI body.
+    private func stalenessFraming(for date: Date?) -> String? {
+        ParentProgressDashboardView.stalenessFraming(for: date, now: Date())
+    }
+
+    /// Static seam so tests can pin `now` without driving the view.
+    static func stalenessFraming(for date: Date?, now: Date) -> String? {
+        guard let date else { return nil }
+        let interval = max(0, now.timeIntervalSince(date))
+        if interval < 60 {
+            return "Last read just now"
+        }
+        if interval < 60 * 60 {
+            let minutes = Int(interval / 60)
+            return "Last read \(minutes) minute\(minutes == 1 ? "" : "s") ago"
+        }
+        if interval < 60 * 60 * 24 {
+            let hours = Int(interval / 3600)
+            return "Last read about \(hours) hour\(hours == 1 ? "" : "s") ago"
+        }
+        let days = Int(interval / (3600 * 24))
+        return "Last read \(days) day\(days == 1 ? "" : "s") ago"
+    }
+
+    /// Builds the consolidated accessibility label for the emotional
+    /// state section so the staleness suffix is read aloud alongside
+    /// the descriptor body.
+    private func emotionalSectionAccessibilityLabel(
+        descriptor: DialogueEmotionalStateDescriptor
+    ) -> String {
+        var parts: [String] = ["How writing felt.", descriptor.parentSummary + "."]
+        if let staleness = stalenessFraming(for: emotionalSnapshotTimestamp) {
+            parts.append(staleness + ".")
+        }
+        parts.append(descriptor.whatThisMeans)
+        parts.append(descriptor.howWeSupport)
+        parts.append("Next milestone: \(descriptor.nextMilestone)")
+        return parts.joined(separator: " ")
     }
 
     @ViewBuilder
