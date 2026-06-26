@@ -3,6 +3,7 @@ import Services
 import SharedUI
 import ForgeGamification
 import ForgeReporting
+import ForgeEmotionAware
 
 /// Parent-facing progress dashboard. Surfaces what the kid has done in
 /// DialogueQuest mapped to the primary CCSS standard
@@ -33,6 +34,12 @@ public struct ParentProgressDashboardView: View {
     /// nil on first open (no baseline yet) or when overlapping windows
     /// would surface a misleading comparison.
     @State private var weeklyDelta: WeeklyDelta?
+    /// Reader-side descriptor of the most recent session's emotional
+    /// state. Sourced from `EmotionalSignalsPersistence.latest()`
+    /// captured by `PatterReactionService` during writing sessions.
+    /// `nil` on a fresh install or before the kid's first signal-
+    /// mutating action — the section omits in that case.
+    @State private var emotionalDescriptor: DialogueEmotionalStateDescriptor?
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -44,6 +51,7 @@ public struct ParentProgressDashboardView: View {
                 heroSection
                 primaryMetrics
                 weeklySummarySection
+                emotionalStateSection
                 retentionSection
                 standardSection
                 whatThisMeansSection
@@ -58,6 +66,9 @@ public struct ParentProgressDashboardView: View {
                 let (snapshot, delta) = await WeeklySummaryService.shared.snapshotWithDelta()
                 weeklySummary = snapshot
                 weeklyDelta = delta
+            }
+            if let signals = EmotionalSignalsPersistence.latest() {
+                emotionalDescriptor = DialogueEmotionalStateProbe.descriptor(forSignals: signals)
             }
         }
     }
@@ -194,6 +205,43 @@ public struct ParentProgressDashboardView: View {
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .accessibilityElement(children: .contain)
             .accessibilityLabel(weeklySummaryAccessibilitySummary(summary))
+        }
+    }
+
+    @ViewBuilder
+    private var emotionalStateSection: some View {
+        if let descriptor = emotionalDescriptor {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("How writing felt")
+                    .font(.headline)
+                    .foregroundStyle(DialoguePalette.inkBlue)
+                Text(descriptor.parentSummary)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(DialoguePalette.rust)
+                emotionalDescriptorRow(title: "What this means", body: descriptor.whatThisMeans)
+                emotionalDescriptorRow(title: "How we support", body: descriptor.howWeSupport)
+                emotionalDescriptorRow(title: "Next milestone", body: descriptor.nextMilestone)
+                Text("On-device only. No data ever leaves the device.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding()
+            .background(panelBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("How writing felt. \(descriptor.parentSummary). \(descriptor.whatThisMeans) \(descriptor.howWeSupport) Next milestone: \(descriptor.nextMilestone)")
+        }
+    }
+
+    @ViewBuilder
+    private func emotionalDescriptorRow(title: String, body: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(DialoguePalette.inkBlue)
+            Text(body)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
         }
     }
 

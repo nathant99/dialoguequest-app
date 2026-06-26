@@ -168,6 +168,7 @@ public final class PatterReactionService {
         )
         lastBranchReflectionRatio = max(0.0, min(1.0, reflectionRatio))
         lastPublishAt = clock()
+        EmotionalSignalsPersistence.record(signals: currentSignals)
     }
 
     /// Call when the kid's selection moved to a branch-point node. The
@@ -220,6 +221,7 @@ public final class PatterReactionService {
         // imbalance tip is a coaching surface — does NOT pass through
         // the suppression gate.
         tagImbalanceCount += 1
+        EmotionalSignalsPersistence.record(signals: currentSignals)
         if let castVoicing {
             await castVoicing.respond(to: .tagBalanceImbalance, topic: tree.mood?.displayName)
         }
@@ -260,6 +262,7 @@ public final class PatterReactionService {
         // is a coaching surface — does NOT pass through the suppression
         // gate. The counter feeds the probe's frustration tier.
         voiceDriftCount += 1
+        EmotionalSignalsPersistence.record(signals: currentSignals)
         guard let castVoicing else { return }
         await castVoicing.respond(to: .voiceDrift, topic: mood?.displayName)
     }
