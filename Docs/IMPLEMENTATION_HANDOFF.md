@@ -1,10 +1,32 @@
 ---
 status: ACTIVE
-date: 2026-07-03
+date: 2026-07-04
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
+
+> **2026-07-04 round addendum (fifteenth mid-session, completed)** — multi-PR session-handoff Priority M.3 + Priority N.2 pickup round under the standing auto-cycle. **4 PRs landed** (#160 → #163). Net state delta:
+>
+> - **Test count delta**: +15 (7 EmotionalSignalsPersistence + 4 ParentProgressDashboardEmotionalState + 4 DialogueQuestAnalyticsExperimentVariant). Total: **~630 tests**.
+> - **ForgeKit module count consumed**: **23** (unchanged this round — `ForgeExperiments` adoption shipped last round; this round is consumer-wiring on the already-adopted modules). `ForgeMasteryEngine` + `PolyaScaffold` + `ForgeLocalization` remain deferred behind the 2026-06-26 user-GUI handoffs (still pending after 192h).
+> - **Silent-fail-site coverage**: **16 of ~16 sites = 100%** (unchanged; closed two rounds ago).
+> - **Open user-GUI handoffs**: unchanged at 7 (no new handoffs filed; no existing ones closed).
+> - **`DialogueEmotionalStateProbe` reader consumer wired**: `ParentProgressDashboardView` now renders the descriptor as a read-only "How writing felt" section, fed by a new UserDefaults-backed `EmotionalSignalsPersistence` snapshot that `PatterReactionService` captures at the three signal-mutation seams (`recordTreeOutcome` / `onTreeChanged` dominant-class change / `onVoiceDrift` post-threshold). Section omits cleanly on fresh install.
+> - **`DialogueExperimentsService` consumer wired**: `RootView.task` emits one `experiment_variant_assigned` analytics event per registered experiment at cold launch, with categorical `experiment_id` + `variant_id` properties. The on-device retention reader can now segment by cohort without re-running the SHA-256 hash-bucket assignment.
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-07-05_ROUND_CLOSE.md` (this round's successor; replaces the 2026-07-04 brief).
+>
+> - **PR 1 (#160) — Xcode safety reaffirmation (Track A).** Appended the 2026-07-04 dated entry to `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` per user-direct (same canonical verbatim phrasing as 2026-07-03 / 2026-07-02 / 2026-07-01 / 2026-06-30 / 2026-06-29 / 2026-06-28 / 2026-06-27 / 2026-06-26 / 2026-06-25). 16th entry in the reaffirmation chain. Confirmed no drift in `CLAUDE.md` § Xcode Agent Safety or `.claude/rules/xcode-agent-safety.md` § "Staging + committing Xcode-managed files IS allowed". Pure docs.
+> - **PR 2 (#161) — Wire EmotionalSignalsPersistence + parent dashboard surface (Track B; Priority M.3).** NEW `Libraries/Sources/Services/Pedagogy/EmotionalSignalsPersistence.swift` — `nonisolated public enum` UserDefaults-backed snapshot store with `record(signals:)` + `latest()` + `reset()` seam under stable `dq.lastSession.*` keys. `PatterReactionService` calls `record(signals: currentSignals)` at the three signal-mutation seams (`recordTreeOutcome` / `onTreeChanged` dominant-class change / `onVoiceDrift` post-threshold). `ParentProgressDashboardView` reads `latest()` in `.task` and renders a new "How writing felt" section between weekly summary + retention, with the descriptor's four reader-facing fields verbatim (`parentSummary` / `whatThisMeans` / `howWeSupport` / `nextMilestone`). Section omits cleanly when the snapshot is `nil` (fresh install). Reader-side register is stoplist-clean (verified by test). 11 new tests; 11/11 green + 20/20 prior `PatterReactionService` tests still green. BuildProject clean (10.2s).
+> - **PR 3 (#162) — experiment_variant_assigned analytics event at cold launch (Track C; Priority N.2).** New event case `experimentVariantAssigned = "experiment_variant_assigned"` on `DialogueQuestAnalytics.Event` (15 stable cases — vocabulary stability test extended). New helper `DialogueQuestAnalytics.recordExperimentAssignments(experiments:)` iterates `DialogueExperimentsService.definitions` and emits one event per definition with categorical `experiment_id` + `variant_id` properties (raw IDs only — no display names, no PII). `RootView` calls the helper from the existing cold-launch `.task` block, alongside `RetentionMetricsService.recordAppOpen` + `CastIllustrationsRegistry.populateShared`. 4 new tests + 4 existing analytics tests + 13 existing experiments tests; all 21 green. BuildProject clean (10.8s).
+> - **PR 4 (#163) — Round-close (Track Z).** This addendum + `Docs/SESSION_HANDOFF_2026-07-05_ROUND_CLOSE.md` for the next CC session. Test count notes above kept in sync.
+>
+> **What this round did NOT do** (intentional + scoped):
+> - Did NOT touch Xcode-managed files (workspace / scheme / xctestplan / Info.plist / entitlements / `Package.resolved`). All code PRs landed via filesystem `Write`/`Edit` against SPM source. No MCP `XcodeUpdate` calls needed (no app-shell edit this round).
+> - Did NOT advance the two 2026-06-26 user-GUI handoffs (ForgeKit pin bump + Localizable.xcstrings). Both remain pending after 192h. Priority B + Priority C from the prior session handoffs stay blocked.
+> - Did NOT scaffold any of the `ForgeMasteryEngine` / `PolyaScaffold` / `ForgeLocalization` integration code — all 3 wait on user-GUI completion of the 2026-06-26 handoffs.
+> - Did NOT pursue Priority O (Patter palette personalization via `ForgeAvatar`) — marked "explore-then-decide" in the prior handoff; even a palette tweak risks Patter identity drift per DN methodology and warrants a design pass before code. Carried forward to next session.
+> - Did NOT touch the existing hub-blocked + user-GUI-blocked handoffs (HubContribution Level 1 / Patter PNG / Curating Together PDF / declared age range API / app icon / voice-acting coach Info.plist / widget extension / aimentortests test plan).
 
 > **2026-07-03 round addendum (fourteenth mid-session, completed)** — multi-PR session-handoff Priority M.2 + Priority N pickup round under the standing auto-cycle. **4 PRs landed** (#156 → #159). Net state delta:
 >
