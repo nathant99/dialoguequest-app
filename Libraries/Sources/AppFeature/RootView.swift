@@ -152,6 +152,13 @@ public struct RootView: View {
             // is metadata-only — a populate failure must not crash the
             // kid's first-launch flow.
             try? await CastIllustrationsRegistry.populateShared()
+            // Cold-launch emission of the deterministic A/B variant
+            // assignment for every registered experiment. Stable per
+            // install (variant assignment is SHA-256 hash-bucket over
+            // the seed) so the cadence is one event per app open. The
+            // on-device retention reader picks the latest event per
+            // experiment when segmenting by cohort.
+            DialogueQuestAnalytics.shared.recordExperimentAssignments()
         }
         .onChange(of: sessionTimer.phase) { _, newPhase in
             switch newPhase {

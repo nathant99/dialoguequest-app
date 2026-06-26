@@ -42,6 +42,7 @@ public final class DialogueQuestAnalytics {
         case anthologyEntryShared = "anthology_entry_shared"
         case castVoicingShown = "cast_voicing_shown"
         case performanceBoothExported = "performance_booth_exported"
+        case experimentVariantAssigned = "experiment_variant_assigned"
     }
 
     /// Fire-and-forget tracking for SwiftUI call sites. Properties whose keys
@@ -69,5 +70,35 @@ public final class DialogueQuestAnalytics {
 
     public func activeDays(last days: Int = 30) async -> Int {
         await engine.activeDays(last: days)
+    }
+
+    /// Emit one `experimentVariantAssigned` event per registered
+    /// experiment. Called at cold launch from `RootView.task` so the
+    /// on-device retention pipeline can segment by experiment cohort
+    /// without re-running the deterministic assignment.
+    ///
+    /// **Why cold launch, not per-variant-lookup**: the variant is
+    /// stable per install — duplicate emissions are noise. The cold-
+    /// launch hook emits once per app open, which is the natural cadence
+    /// for the on-device retention reader.
+    ///
+    /// **Properties are categorical** (raw experiment + variant IDs,
+    /// never display names). The PII blocklist at the engine layer is
+    /// the second line of defense; this discipline is the first.
+    public func recordExperimentAssignments(
+        experiments: DialogueExperimentsService = .shared
+    ) {
+        for definition in experiments.definitions {
+            guard let variant = experiments.variant(forExperimentID: definition.id) else {
+                continue
+            }
+            track(
+                .experimentVariantAssigned,
+                properties: [
+                    "experiment_id": definition.id,
+                    "variant_id": variant.id,
+                ]
+            )
+        }
     }
 }
