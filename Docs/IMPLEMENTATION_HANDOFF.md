@@ -1,10 +1,32 @@
 ---
 status: ACTIVE
-date: 2026-07-02
+date: 2026-07-03
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
+
+> **2026-07-03 round addendum (fourteenth mid-session, completed)** — multi-PR session-handoff Priority M.2 + Priority N pickup round under the standing auto-cycle. **4 PRs landed** (#156 → #159). Net state delta:
+>
+> - **Test count delta**: +26 (13 PatterReactionServiceEmotionalSuppression + 13 DialogueExperimentsService). Total: **~615 tests**.
+> - **ForgeKit module count consumed**: **23** (22 → 23 via `ForgeExperiments` adoption — see PR 3 below). `ForgeMasteryEngine` + `PolyaScaffold` + `ForgeLocalization` remain deferred behind the 2026-06-26 user-GUI handoffs (still pending after 168h).
+> - **Silent-fail-site coverage**: **16 of ~16 sites = 100%** (unchanged; closed last round).
+> - **Open user-GUI handoffs**: unchanged at 7 (no new handoffs filed; no existing ones closed).
+> - **`DialogueEmotionalStateProbe` consumer wired**: `PatterReactionService` now suppresses cast voicing at the two CELEBRATION surfaces (`onBranchReflectionConfirmed` + `onSubtextConfirmed`) when the per-session signals trip `.frustrated` / `.disengaged`. Coaching surfaces (`onBranchPointSelected` / `onSubtextDiscovered` / `onVoiceDrift` / `onTreeChanged`) always fire — coaching is never suppressed by emotional state.
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-07-04_ROUND_CLOSE.md` (this round's successor; replaces the 2026-07-03 brief).
+>
+> - **PR 1 (#156) — Xcode safety reaffirmation (Track A).** Appended the 2026-07-03 dated entry to `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` per user-direct (same canonical verbatim phrasing as 2026-07-02 / 2026-07-01 / 2026-06-30 / 2026-06-29 / 2026-06-28 / 2026-06-27 / 2026-06-26 / 2026-06-25). 15th entry in the reaffirmation chain. Confirmed no drift in `CLAUDE.md` § Xcode Agent Safety or `.claude/rules/xcode-agent-safety.md` § "Staging + committing Xcode-managed files IS allowed". Pure docs.
+> - **PR 2 (#157) — Wire DialogueEmotionalStateProbe into PatterReactionService (Track B; Priority M.2).** `PatterReactionService` now captures four per-session signals (`voiceDriftCount` bumped in `onVoiceDrift` post-threshold / `tagImbalanceCount` bumped in `onTreeChanged` on dominant change / `lastPublishAt` stamped by `recordTreeOutcome` / `lastBranchReflectionRatio` captured by `recordTreeOutcome`) and runs the two CELEBRATION cast voicing surfaces through `DialogueEmotionalStateProbe.shouldSuppressCelebrations(forSignals:)`. Public read-only surfaces: `currentSignals` (snapshot consumable by parent-progress dashboard); `shouldSuppressCelebrationsNow` (callers in `WriteTabView` — variable reward, mastery moments, celebration cinematics — can consult the gate themselves); `suppressedCelebrationCount` (diagnostic counter). Injectable clock for tests. Default-OFF behavior unchanged — when no signals accumulate, `shouldSuppressCelebrationsNow == false` so the celebration surfaces fire as before. 13 new tests; 13/13 green + 7/7 existing `PatterReactionServiceCastVoicingTests` still green. BuildProject clean (7.8s).
+> - **PR 3 (#158) — ForgeExperiments adoption + DialogueExperimentsService wrapper (Track C; Priority N).** ForgeKit catalog 22 → 23 modules. Adopts `ForgeExperiments` (on-device A/B harness with deterministic SHA-256 hash-bucket assignment). New `Libraries/Sources/Services/Pedagogy/DialogueExperimentsService.swift` — `@MainActor public final class` wrapper. Two canonical definitions ship: `dq.experiment.castVoicing` (DN-S Move D Step 3 cast voicing) + `dq.experiment.thirdCharacter` (triangle dynamics 3rd character); each has 50/50 control/treatment split + `parameters["enabled"]` bool. Per-install seed auto-generated UUID persists in `dq.experiments.installSeed` UserDefaults. Wrapper sits ALONGSIDE the existing `@AppStorage("dq.experiments.*")` flag pattern — does NOT replace the flags (flags stay the operator-toggle control); the experiment seam surfaces the deterministic A/B-assigned variant the assigner WOULD have picked absent operator override. 2-commit recipe per the SPM rule "Land in isolated commits, never bundle with multi-file changes": C.1 (Package.swift dep + SPM re-resolution: 32s) followed by C.2 (wrapper + tests: 16.7s). 13 new tests; 13/13 green. Service stays value-type only; no behavioral wiring at call sites today — future-ready for `DialogueQuestAnalytics` event emission + parent-progress dashboard adoption.
+> - **PR 4 (#159) — Round-close (Track Z).** This addendum + `Docs/SESSION_HANDOFF_2026-07-04_ROUND_CLOSE.md` for the next CC session. Test count + ForgeKit module count notes above kept in sync.
+>
+> **What this round did NOT do** (intentional + scoped):
+> - Did NOT touch Xcode-managed files (workspace / scheme / xctestplan / Info.plist / entitlements / `Package.resolved`). All code PRs landed via filesystem `Write`/`Edit` against SPM source. No MCP `XcodeUpdate` calls needed (no app-shell edit this round).
+> - Did NOT advance the two 2026-06-26 user-GUI handoffs (ForgeKit pin bump + Localizable.xcstrings). Both remain pending after 168h. Priority B + Priority C from the prior session handoffs stay blocked.
+> - Did NOT scaffold any of the `ForgeMasteryEngine` / `PolyaScaffold` / `ForgeLocalization` integration code — all 3 wait on user-GUI completion of the 2026-06-26 handoffs.
+> - Did NOT register a `DialogueQuestAnalytics` event for experiment-variant assignment — the analytics event vocabulary stays stable this round; a future round adds `experiment_variant_assigned` once the dashboard consumes the assignment.
+> - Did NOT wire `DialogueExperimentsService` into any consumer surface today — wrapper is pure-value-type-ready, mirrors last round's `DialogueEmotionalStateProbe` shape. Future-round candidates: parent-progress dashboard "in cohort" row; `DialogueQuestAnalytics` event property carrying the variant ID.
+> - Did NOT touch the existing hub-blocked + user-GUI-blocked handoffs (HubContribution Level 1 / Patter PNG / Curating Together PDF / declared age range API / app icon / voice-acting coach Info.plist / widget extension / aimentortests test plan).
 
 > **2026-07-02 round addendum (thirteenth mid-session, completed)** — multi-PR session-handoff Priority K closure + Priority M adoption round under the standing auto-cycle. **4 PRs landed** (#152 → #155). Net state delta:
 >
