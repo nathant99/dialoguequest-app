@@ -48,6 +48,13 @@ public struct ParentProgressDashboardView: View {
     /// additive `Key.lastSnapshotAt` key add — the staleness suffix
     /// is omitted cleanly in that case.
     @State private var emotionalSnapshotTimestamp: Date?
+    /// Cohort assignments loaded from `DialogueExperimentsService` on
+    /// the cold-launch task. Each row carries the experiment ID +
+    /// reader-friendly name + assigned variant ID + variant name. Empty
+    /// when no definitions resolve a variant (fresh install before
+    /// the install-seed is first written, OR a future round that
+    /// catalogs no experiments).
+    @State private var experimentCohorts: [ExperimentCohortReadout] = []
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -60,6 +67,7 @@ public struct ParentProgressDashboardView: View {
                 primaryMetrics
                 weeklySummarySection
                 emotionalStateSection
+                experimentCohortsSection
                 retentionSection
                 standardSection
                 whatThisMeansSection
@@ -86,6 +94,15 @@ public struct ParentProgressDashboardView: View {
             // `hasSnapshot` so we never surface a stale Date when the
             // signals were reset.
             emotionalSnapshotTimestamp = EmotionalSignalsPersistence.latestTimestamp()
+            // Priority N.3 (2026-07-05) — surface variant assignments
+            // on the parent dashboard alongside the `experiment_variant_assigned`
+            // analytics events emitted at cold launch. Read-only
+            // transparency; no control affordance + no mutation of
+            // the existing `@AppStorage("dq.experiments.*")` flags
+            // (those remain the runtime control surface).
+            experimentCohorts = ParentProgressDashboardView.cohortReadouts(
+                from: DialogueExperimentsService.shared
+            )
         }
     }
 
@@ -311,6 +328,95 @@ public struct ParentProgressDashboardView: View {
                 .foregroundStyle(.secondary)
         }
     }
+
+    // MARK: - Priority N.3 (2026-07-05) — experiment cohorts surface
+
+    @ViewBuilder
+    private var experimentCohortsSection: some View {
+        if !experimentCohorts.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Experiment cohorts")
+                    .font(.headline)
+                    .foregroundStyle(DialoguePalette.inkBlue)
+                Text("What this means")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(DialoguePalette.inkBlue)
+                Text("Your writer is in one cohort per experiment so we can compare new features against the existing ones. Cohort assignment stays on-device. No data leaves the device.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(experimentCohorts, id: \.experimentID) { cohort in
+                        experimentCohortRow(cohort)
+                    }
+                }
+                .padding(.top, 2)
+                Text("On-device only. No data ever leaves the device.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding()
+            .background(panelBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(experimentCohortsAccessibilityLabel())
+            .accessibilityIdentifier("experiment.cohorts")
+        }
+    }
+
+    @ViewBuilder
+    private func experimentCohortRow(_ cohort: ExperimentCohortReadout) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(cohort.experimentName)
+                .font(.subheadline)
+                .foregroundStyle(DialoguePalette.inkBlue)
+            Spacer()
+            Text(cohort.variantName)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(DialoguePalette.rust)
+        }
+    }
+
+    private func experimentCohortsAccessibilityLabel() -> String {
+        let body = experimentCohorts
+            .map { "\($0.experimentName) — \($0.variantName) cohort." }
+            .joined(separator: " ")
+        return "Experiment cohorts. \(body)"
+    }
+
+    /// Pure value-type test seam. Iterates the service's definitions
+    /// and resolves the assigned variant per experiment. Skips
+    /// definitions where no variant resolves (defensive — Phase 1
+    /// always resolves; future definitions could carry an empty
+    /// variant list while the catalog is shaped).
+    @MainActor
+    static func cohortReadouts(
+        from service: DialogueExperimentsService
+    ) -> [ExperimentCohortReadout] {
+        service.definitions.compactMap { definition in
+            guard let variant = service.variant(forExperimentID: definition.id) else {
+                return nil
+            }
+            return ExperimentCohortReadout(
+                experimentID: definition.id,
+                experimentName: definition.name,
+                variantID: variant.id,
+                variantName: variant.name
+            )
+        }
+    }
+}
+
+/// Read-only reader-side projection of a single experiment / variant
+/// assignment. Surfaces on the parent dashboard's
+/// "Experiment cohorts" section. Value-type; safe to compare in tests.
+nonisolated struct ExperimentCohortReadout: Equatable, Hashable, Sendable {
+    let experimentID: String
+    let experimentName: String
+    let variantID: String
+    let variantName: String
+}
+
+extension ParentProgressDashboardView {
 
     @ViewBuilder
     private func weeklyMetricRow(label: String, value: Int, unitLimit: Int? = nil) -> some View {
