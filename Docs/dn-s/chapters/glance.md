@@ -17,6 +17,11 @@ gate-allow-text:
   - stain
   - stop
 gate-allow-text-pattern: '^\d+(?:/\d+)?$|^[A-Z]{2,}(?: [A-Z]{2,})?$|^[a-z]+$'
+reflection-prompts:
+  - beat-after: 1
+    prompt: "Glance noticed the arctic fox's speech bubble was half-empty — the bottom half said 'I do not want to talk right now.' Have you ever said 'I'm fine' when you weren't, hoping someone would notice the half you didn't say out loud?"
+  - beat-after: 4
+    prompt: "Glance's job is hearing the ghost-words next to the spoken ones. When was a time you read someone's mood not from their words but from how they sat, what they looked at, or what they didn't say?"
 ---
 # Chapter 2 — Glance and the Half-Empty Speech-Bubble
 
