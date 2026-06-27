@@ -159,6 +159,15 @@ public struct RootView: View {
             // on-device retention reader picks the latest event per
             // experiment when segmenting by cohort.
             DialogueQuestAnalytics.shared.recordExperimentAssignments()
+            // Priority A (2026-07-07) — DN-S Move D Phase 3 telemetry
+            // rollout. Attach the experiment-cohort lens AFTER the
+            // assignment emission so every event recorded this session
+            // — including the `experiment_variant_assigned` events that
+            // just fired — carries `cohort.<experiment-id>` properties.
+            // Stable per install; no per-event lookup cost; on-device
+            // retention reader can segment any event by cohort without
+            // a time-join.
+            DialogueQuestAnalytics.shared.attachExperimentCohorts()
         }
         .onChange(of: sessionTimer.phase) { _, newPhase in
             switch newPhase {

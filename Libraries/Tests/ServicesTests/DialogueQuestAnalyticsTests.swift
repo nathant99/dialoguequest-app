@@ -48,7 +48,8 @@ struct DialogueQuestAnalyticsTests {
             "anthology_entry_shared",
             "cast_voicing_shown",
             "performance_booth_exported",
-            "experiment_variant_assigned"
+            "experiment_variant_assigned",
+            "emotional_snapshot_reset"
         ]
         #expect(actual == expected, "Event vocabulary drift will break historical mining; coordinate the change.")
     }
