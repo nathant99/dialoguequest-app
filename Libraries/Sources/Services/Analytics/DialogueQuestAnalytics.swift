@@ -43,6 +43,13 @@ public final class DialogueQuestAnalytics {
         case castVoicingShown = "cast_voicing_shown"
         case performanceBoothExported = "performance_booth_exported"
         case experimentVariantAssigned = "experiment_variant_assigned"
+        /// Parent tapped "Reset emotional snapshot" in Settings → Privacy
+        /// (Priority R, 2026-07-06). Fires after the
+        /// `ParentalGateChallenge` clears AND
+        /// `EmotionalSignalsPersistence.reset()` has run. No properties —
+        /// the action is binary + categorical and the on-device retention
+        /// reader only needs to know it happened.
+        case emotionalSnapshotReset = "emotional_snapshot_reset"
     }
 
     /// Fire-and-forget tracking for SwiftUI call sites. Properties whose keys
