@@ -13,6 +13,18 @@ struct SettingsView: View {
     @AppStorage(CastVoicingFeatureFlag.storageKey) private var castVoicingEnabled: Bool = false
     @State private var consentService = ParentalConsentService.shared
     @State private var showConsentGate: Bool = false
+    /// Sheet-presentation state for the "Reset emotional snapshot"
+    /// (Priority R, 2026-07-06) parent-gate. Mirrors `showConsentGate`
+    /// rather than reusing it so the two flows can't race and an
+    /// in-flight consent challenge isn't accidentally hijacked by the
+    /// reset path.
+    @State private var showEmotionalSnapshotResetGate: Bool = false
+    /// Inline acknowledgement after the reset action lands. Cleared on
+    /// next sheet present so the row reads "Reset…" again. The dashboard
+    /// reader is the source-of-truth visible-elsewhere confirmation; the
+    /// inline acknowledgement is the immediate one for the same-screen
+    /// reader.
+    @State private var emotionalSnapshotResetAcknowledged: Bool = false
 
     var body: some View {
         Form {
@@ -70,6 +82,7 @@ struct SettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                 ageBandRow
+                emotionalSnapshotResetRow
             }
             Section {
                 Toggle(isOn: $thirdCharacterEnabled) {
@@ -123,6 +136,68 @@ struct SettingsView: View {
             )
             .presentationDetents([.medium])
         }
+        .sheet(isPresented: $showEmotionalSnapshotResetGate) {
+            ParentalConsentGateView(
+                onGranted: {
+                    performEmotionalSnapshotReset()
+                    showEmotionalSnapshotResetGate = false
+                },
+                onCancel: { showEmotionalSnapshotResetGate = false }
+            )
+            .presentationDetents([.medium])
+        }
+    }
+
+    /// Read-only-then-action surface for the parent-side privacy-mode
+    /// reset of the persisted emotional snapshot (Priority R,
+    /// 2026-07-06). The button is gated behind the same multiplication
+    /// `ParentalGateChallenge` that revoke-consent uses so a kid can't
+    /// shoulder-surf past it; on success the handler clears every
+    /// `EmotionalSignalsPersistence.Key` and emits the
+    /// `emotionalSnapshotReset` analytics event. The dashboard reader
+    /// surfaces the cleared state via `latestTimestamp() == nil` →
+    /// section-omit cleanly (per the 2026-07-05 staleness-framing
+    /// landing) so the parent's reset is visible on next dashboard
+    /// open. The inline acknowledgement under the button is the same-
+    /// screen confirmation that the reset landed.
+    @ViewBuilder
+    private var emotionalSnapshotResetRow: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button {
+                emotionalSnapshotResetAcknowledged = false
+                showEmotionalSnapshotResetGate = true
+            } label: {
+                Label("Reset emotional snapshot", systemImage: "heart.slash")
+                    .foregroundStyle(DialoguePalette.rust)
+            }
+            .accessibilityIdentifier("settings.emotionalSnapshot.reset.button")
+            .accessibilityHint("Clear the parent dashboard's 'How writing felt' snapshot. A parent gate confirms the action.")
+            Text("Clears the kid's most recent emotional read from the parent dashboard. The next writing session captures a fresh snapshot.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if emotionalSnapshotResetAcknowledged {
+                Label("Snapshot cleared. Next session will start a fresh read.", systemImage: "checkmark.seal.fill")
+                    .font(.footnote)
+                    .foregroundStyle(DialoguePalette.rust)
+                    .accessibilityIdentifier("settings.emotionalSnapshot.reset.acknowledged")
+            }
+        }
+    }
+
+    /// Handler invoked after the parent gate clears. Wired as a
+    /// non-private helper so the test target can `@testable import` it
+    /// and assert the reset path independently of SwiftUI's sheet-
+    /// presentation machinery. Pure-Swift body — UserDefaults writes are
+    /// infallible; analytics dispatch is fire-and-forget. The inline
+    /// acknowledgement flag is the only `@State` mutation.
+    func performEmotionalSnapshotReset(
+        defaults: UserDefaults = .standard,
+        analytics: DialogueQuestAnalytics = .shared
+    ) {
+        EmotionalSignalsPersistence.reset(defaults: defaults)
+        analytics.track(.emotionalSnapshotReset)
+        emotionalSnapshotResetAcknowledged = true
     }
 
     @ViewBuilder
