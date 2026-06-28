@@ -14,12 +14,18 @@ struct QuestionKitLoaderPhase3Tests {
         ])
     }
 
-    @Test func allKitsConcatenatesAllThreePhases() {
+    @Test func allKitsConcatenatesAllPhases() {
+        // allKits spans Phase 1 + 2 + 3 + 4 (kits 01–16). Phase 4
+        // (kits 14–16; synthesis / cross-craft / writing process) shipped
+        // after this test was first authored — the count + last-kit
+        // assertions are kept in lockstep with the phase arrays so adding
+        // a phase fails here loudly rather than silently drifting.
         let total = QuestionKitLoader.phase1Kits.count
             + QuestionKitLoader.phase2Kits.count
             + QuestionKitLoader.phase3Kits.count
+            + QuestionKitLoader.phase4Kits.count
         #expect(QuestionKitLoader.allKits.count == total)
-        #expect(QuestionKitLoader.allKits.last == "kit_13_audio_export_craft")
+        #expect(QuestionKitLoader.allKits.last == "kit_16_writing_process")
     }
 
     @Test func phase3KitsLoadAndDecode() throws {

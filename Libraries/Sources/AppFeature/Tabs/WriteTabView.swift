@@ -240,6 +240,20 @@ struct WriteTabView: View {
                 VoicePatternHistoryService.shared.recordPublishedTree(
                     summary: voiceSummary
                 )
+                // Per-tree snapshot (Priority P) — persist the whole-tree
+                // artifact (title + node count + mood + self-contained
+                // per-character voice list) so the parent-progress
+                // dashboard can surface "longest conversation" + "most
+                // recent published mood" + per-character voice without a
+                // live tree. Distinct from the per-character rolling
+                // window above: this is one record per published tree.
+                PublishedTreeSnapshotStore.shared.record(
+                    PublishedTreeSnapshot.from(
+                        tree: machine.tree,
+                        summary: voiceSummary,
+                        now: Date()
+                    )
+                )
                 // Five Patter-bubble paths share the rareVoiceCraftTip
                 // slot, mutually exclusive (so the kid never sees two
                 // bubbles): cameo (12%, flag-gated) → callback mood (8%,

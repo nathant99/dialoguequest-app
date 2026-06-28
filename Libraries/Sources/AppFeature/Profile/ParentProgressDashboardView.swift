@@ -1,4 +1,5 @@
 import SwiftUI
+import Models
 import Services
 import SharedUI
 import ForgeGamification
@@ -55,6 +56,12 @@ public struct ParentProgressDashboardView: View {
     /// the install-seed is first written, OR a future round that
     /// catalogs no experiments).
     @State private var experimentCohorts: [ExperimentCohortReadout] = []
+    /// Per-published-tree snapshots loaded from `PublishedTreeSnapshotStore`
+    /// (Priority P). Most-recent-first. Drives the "Published works"
+    /// section (longest conversation + most recent published mood +
+    /// per-character voice for the latest tree). Empty on a fresh install
+    /// before the kid's first publish — the section omits in that case.
+    @State private var publishedSnapshots: [PublishedTreeSnapshot] = []
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -66,6 +73,7 @@ public struct ParentProgressDashboardView: View {
                 heroSection
                 primaryMetrics
                 weeklySummarySection
+                publishedWorksSection
                 emotionalStateSection
                 experimentCohortsSection
                 retentionSection
@@ -103,6 +111,12 @@ public struct ParentProgressDashboardView: View {
             experimentCohorts = ParentProgressDashboardView.cohortReadouts(
                 from: DialogueExperimentsService.shared
             )
+            // Priority P (2026-07-08) — load the per-published-tree
+            // snapshots so the "Published works" section can surface the
+            // longest conversation + most recent published mood + per-
+            // character voice. Read-only; the store is the source of
+            // truth, captured at each publish in WriteTabView.
+            publishedSnapshots = PublishedTreeSnapshotStore.shared.recent()
         }
     }
 
@@ -239,6 +253,122 @@ public struct ParentProgressDashboardView: View {
             .accessibilityElement(children: .contain)
             .accessibilityLabel(weeklySummaryAccessibilitySummary(summary))
         }
+    }
+
+    // MARK: - Priority P (2026-07-08) — published works surface
+
+    /// Tree-average voice-match from the most recent published tree that
+    /// scored at least one line. Falls back through the buffer so a
+    /// recent voiceless tree (treeAverage == nil) doesn't blank the
+    /// report. `nil` only when no published tree has a scored line yet.
+    private var latestTreeAverageVoiceMatch: Double? {
+        publishedSnapshots.first { $0.treeAverageVoiceMatch != nil }?.treeAverageVoiceMatch
+    }
+
+    @ViewBuilder
+    private var publishedWorksSection: some View {
+        if let mostRecent = publishedSnapshots.first {
+            let longest = publishedSnapshots.max { $0.nodeCount < $1.nodeCount } ?? mostRecent
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Published works")
+                    .font(.headline)
+                    .foregroundStyle(DialoguePalette.inkBlue)
+                Text("The conversations your writer has shipped. On-device only.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                publishedWorkRow(
+                    label: "Most recent",
+                    snapshot: mostRecent
+                )
+                if longest.id != mostRecent.id {
+                    Divider()
+                    publishedWorkRow(
+                        label: "Longest conversation",
+                        snapshot: longest
+                    )
+                }
+                if !mostRecent.characterVoices.isEmpty {
+                    Divider()
+                    Text("How each character sounded")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(DialoguePalette.inkBlue)
+                    VStack(spacing: 6) {
+                        ForEach(mostRecent.characterVoices) { voice in
+                            characterVoiceRow(voice)
+                        }
+                    }
+                }
+            }
+            .padding()
+            .background(panelBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(publishedWorksAccessibilityLabel(mostRecent: mostRecent, longest: longest))
+            .accessibilityIdentifier("published.works")
+        }
+    }
+
+    @ViewBuilder
+    private func publishedWorkRow(label: String, snapshot: PublishedTreeSnapshot) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(DialoguePalette.inkBlue)
+            HStack(alignment: .firstTextBaseline) {
+                Text(snapshot.title.isEmpty ? "Untitled conversation" : snapshot.title)
+                    .font(.subheadline)
+                    .foregroundStyle(DialoguePalette.rust)
+                Spacer()
+                Text("\(snapshot.nodeCount) line\(snapshot.nodeCount == 1 ? "" : "s")")
+                    .font(.footnote.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            if let mood = snapshot.mood {
+                Text("Mood: \(mood.displayName)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func characterVoiceRow(_ voice: PublishedTreeSnapshot.CharacterVoice) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(voice.name)
+                .font(.subheadline)
+                .foregroundStyle(DialoguePalette.inkBlue)
+            Spacer()
+            Text(voiceBandLabel(voice.band))
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(DialoguePalette.rust)
+        }
+    }
+
+    /// Maps the voice band to a kid-and-parent-readable phrase. Avoids
+    /// surfacing the raw "drifting / acceptable / strong" enum tokens.
+    private func voiceBandLabel(_ band: WritingEvaluator.VoiceBand) -> String {
+        switch band {
+        case .strong: return "Sounds like themselves"
+        case .acceptable: return "Mostly in voice"
+        case .drifting: return "Could use an anchor line"
+        }
+    }
+
+    private func publishedWorksAccessibilityLabel(
+        mostRecent: PublishedTreeSnapshot,
+        longest: PublishedTreeSnapshot
+    ) -> String {
+        var parts: [String] = ["Published works."]
+        let recentTitle = mostRecent.title.isEmpty ? "Untitled conversation" : mostRecent.title
+        parts.append("Most recent: \(recentTitle), \(mostRecent.nodeCount) lines.")
+        if longest.id != mostRecent.id {
+            let longestTitle = longest.title.isEmpty ? "Untitled conversation" : longest.title
+            parts.append("Longest: \(longestTitle), \(longest.nodeCount) lines.")
+        }
+        for voice in mostRecent.characterVoices {
+            parts.append("\(voice.name): \(voiceBandLabel(voice.band)).")
+        }
+        return parts.joined(separator: " ")
     }
 
     @ViewBuilder
@@ -566,7 +696,7 @@ extension ParentProgressDashboardView {
             badgesEarned: earnedBadgeIDs.count,
             activeDays: derivedActiveDays(from: retention),
             totalXP: 0,                                   // future: pipe from ForgeGamification XPEngine
-            averageVoiceMatchScore: 0.65,                 // placeholder until WritingEvaluator.VoiceSummary persists
+            averageVoiceMatchScore: latestTreeAverageVoiceMatch ?? 0.65,  // Priority P: most-recent persisted tree-average; 0.65 fallback before first publish
             confirmedSubtextCount: 0,                     // future: pipe from AchievementService earned set
             branchesReflectedCount: 0                     // future: same — counter persists in PatterReactionService
         )
