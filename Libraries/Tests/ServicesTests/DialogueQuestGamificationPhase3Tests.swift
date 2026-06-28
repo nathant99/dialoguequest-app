@@ -25,9 +25,14 @@ struct DialogueQuestGamificationPhase3Tests {
     }
 
     @Test func allAchievementsConcatenatesAllPhases() {
+        // allAchievements spans Phase 1 + 2 + 3 + 4. Phase 4 achievements
+        // shipped after this test was first authored — keep the total in
+        // lockstep with every phase array so adding a phase fails here
+        // loudly rather than silently drifting.
         let total = DialogueQuestGamification.phase1Achievements.count
             + DialogueQuestGamification.phase2Achievements.count
             + DialogueQuestGamification.phase3Achievements.count
+            + DialogueQuestGamification.phase4Achievements.count
         #expect(DialogueQuestGamification.allAchievements.count == total)
     }
 
