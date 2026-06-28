@@ -1,10 +1,31 @@
 ---
 status: ACTIVE
-date: 2026-07-07
+date: 2026-07-08
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
+
+> **2026-07-08 round addendum (nineteenth mid-session, completed)** — multi-PR session-handoff Priority-pickup round under the standing auto-cycle, on an open "all approved, go with your recs, don't stop" mandate. **4 PRs landed** (#176 → #178 + this round-close). Net state delta:
+>
+> - **Test count delta**: +20 net (Wave 1: +10 ModelsTests `PublishedTreeSnapshotTests` + 9 ServicesTests `PublishedTreeSnapshotStoreTests`, minus the 2 drift-test edits which are in-place; Wave 2: +8 ServicesTests `CohortHistoryServiceTests` + 2 AppFeatureTests). Full plan now **881 tests, 881 passing** (up from 871; the prior round's "~652" was a touched-suites count — the full plan is larger and now runs green end-to-end).
+> - **Two PRE-EXISTING count-drift failures repaired**: running the FULL plan (prior rounds ran only touched suites) surfaced `QuestionKitLoaderPhase3Tests.allKitsConcatenatesAllThreePhases` (omitted `phase4Kits` / kits 14–16) and `DialogueQuestGamificationPhase3Tests.allAchievementsConcatenatesAllPhases` (omitted `phase4Achievements`). Both now include phase 4 and are in lockstep — same drift class as PR #172's `eventVocabularyIsStable` fix.
+> - **ForgeKit module count consumed**: **23** (unchanged — no new module adopted; Wave 1 + 2 are app-local value-type/persistence seams, Wave 3 is a decision doc that explicitly declines a `ForgeAvatar` integration). `ForgeMasteryEngine` + `PolyaScaffold` + `ForgeLocalization` still wait on the 2026-06-26 user-GUI handoffs, pending after 288h.
+> - **Silent-fail-site coverage**: **100%** maintained — both new stores (`PublishedTreeSnapshotStore`, `CohortHistoryService`) route decode/encode failures through `DialogueQuestDebugLog` and degrade to empty.
+> - **Open user-GUI handoffs**: unchanged at 7. No new handoffs filed; none closed.
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-07-08_ROUND_CLOSE.md` (supersedes the 2026-07-07 brief).
+>
+> - **Wave 1 (#176) — Priority P: per-tree snapshot persistence.** NEW `Models/ValueTypes/PublishedTreeSnapshot.swift` (`nonisolated` Codable value type + `CharacterVoice` nested type + `from(tree:summary:now:)` factory; carries character NAMES so the dashboard resolves without a live tree — distinct from `VoicePatternHistoryService`'s per-character rolling means). NEW `Services/Persistence/PublishedTreeSnapshotStore.swift` (ring-buffered cap-20 UserDefaults JSON; de-dups on tree id; `longest()`/`mostRecent()`/`recent()`). `WriteTabView` captures at the publish `onChange` reusing the computed `voiceSummary`. `ParentProgressDashboardView` gains a "Published works" section + feeds `averageVoiceMatchScore` from the latest persisted tree-average (replaces the long-standing 0.65 placeholder at line 569). +19 tests. Includes the two drift-test repairs above.
+> - **Wave 2 (#177) — Priority Q: cohort change-history ring buffer.** NEW `Services/Pedagogy/CohortHistoryService.swift` (`@MainActor` final class; ring-buffered cap-30 UserDefaults JSON keyed by experiment id; `recordLaunch(from:now:)` / `history` / `currentVariantID` / `consecutiveSessions` / `reset`; `Entry = {variantID, at}`). `RootView.task` records each cold launch after `attachExperimentCohorts`. `ParentProgressDashboardView`'s `ExperimentCohortReadout` gains `sessionsInCohort` (default 0; `cohortReadouts` gains optional `history:` param — back-compat preserved) and the cohort row shows "In this cohort for the past N sessions" only when `>= 2`. +10 tests. Honest scope note: deterministic single cohort today, so the count is accurate transparency (not a migration chronicle) until a future `defaultDefinitions()` change — the buffer is the seam that makes that re-bucket visible (proven by the `reset-on-rebucket` test).
+> - **Wave 3 (#178) — Priority O: DECIDE-DEFER Patter ForgeAvatar customization.** NEW `Docs/DECISION_PATTER_AVATAR_SURFACE_2026-07-08.md`. Resolves the carried explore-then-decide item: Patter stays a fixed authored identity; DialogueQuest does NOT route its mentor mascot through `ForgeAvatar`'s composable/customizable system (DN Pattern B recurring-character pedagogy; `ForgeAvatar` already correctly hosts the KID's avatar in `ProfileDashboardView`; the real Patter-visual gap is a fixed illustration in `MentorBubbleView` = a hub asset-gen request, not a customization surface). Pure docs; re-eval triggers documented.
+> - **Wave 4 — round-close.** This addendum + `Docs/SESSION_HANDOFF_2026-07-08_ROUND_CLOSE.md` + the 2026-07-08 agent-safety reaffirmation.
+>
+> **What this round did NOT do** (intentional + scoped — and surfaced honestly to the user up front):
+> - Did NOT touch Xcode-managed files. All PRs landed via filesystem `Write`/`Edit` against SPM source + Docs. No app-shell edit, so no MCP `XcodeUpdate` needed.
+> - Did NOT advance the externally-blocked priorities — **B** (ForgeMasteryEngine + PolyaScaffold; pin still `from: "0.99.0"`, resolved 0.99.12), **C** (Localization; `Localizable.xcstrings` still absent), **D** (voice-coach UI tests; Info.plist mic/speech keys), **E** (ForgeContentSync; hub manifest), **L** (DevelopmentalCapacityProbe; age-range entitlement). All verified still blocked this round and documented in the session handoff.
+> - Did NOT ship **Priority S** (cohort delta on weekly summary). Deferred with rationale: for a single fixed cohort the per-cohort cut of weekly craft moments renders identical to the total (N/N) — genuinely uninformative until a real second/third experiment lands. Q (transparency line) carries the cohort-surface value in the meantime.
+> - Did NOT pursue **Priority T** (test-side mirror-source reorg). It requires quitting Xcode + nuking `.swiftpm`/DerivedData — which terminates the in-Xcode agent session mid-task (the exact Xcode-agent-safety hazard). Deferred to a human-driven Xcode-restart window.
+> - **Priority H** (Patter callback-rate observation) has no source change to make (pure observation; no 6th bubble path landed). No-op.
 
 > **2026-07-07 round addendum (eighteenth mid-session, completed)** — multi-PR session-handoff Priority A pickup + SPM-layout audit + ForgeKit re-survey checkpoint round under the standing auto-cycle. **5 PRs landed** (#170 → #174). Net state delta:
 >
