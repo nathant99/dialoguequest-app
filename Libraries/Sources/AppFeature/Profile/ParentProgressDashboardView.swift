@@ -109,7 +109,8 @@ public struct ParentProgressDashboardView: View {
             // the existing `@AppStorage("dq.experiments.*")` flags
             // (those remain the runtime control surface).
             experimentCohorts = ParentProgressDashboardView.cohortReadouts(
-                from: DialogueExperimentsService.shared
+                from: DialogueExperimentsService.shared,
+                history: CohortHistoryService.shared
             )
             // Priority P (2026-07-08) — load the per-published-tree
             // snapshots so the "Published works" section can surface the
@@ -495,20 +496,34 @@ public struct ParentProgressDashboardView: View {
 
     @ViewBuilder
     private func experimentCohortRow(_ cohort: ExperimentCohortReadout) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(cohort.experimentName)
-                .font(.subheadline)
-                .foregroundStyle(DialoguePalette.inkBlue)
-            Spacer()
-            Text(cohort.variantName)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(DialoguePalette.rust)
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(cohort.experimentName)
+                    .font(.subheadline)
+                    .foregroundStyle(DialoguePalette.inkBlue)
+                Spacer()
+                Text(cohort.variantName)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(DialoguePalette.rust)
+            }
+            // Priority Q — only surface the duration line once there's a
+            // run of 2+ launches; a single launch reads as noise.
+            if cohort.sessionsInCohort >= 2 {
+                Text("In this cohort for the past \(cohort.sessionsInCohort) sessions")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
     private func experimentCohortsAccessibilityLabel() -> String {
         let body = experimentCohorts
-            .map { "\($0.experimentName) — \($0.variantName) cohort." }
+            .map { cohort -> String in
+                if cohort.sessionsInCohort >= 2 {
+                    return "\(cohort.experimentName) — \(cohort.variantName) cohort, for the past \(cohort.sessionsInCohort) sessions."
+                }
+                return "\(cohort.experimentName) — \(cohort.variantName) cohort."
+            }
             .joined(separator: " ")
         return "Experiment cohorts. \(body)"
     }
@@ -520,7 +535,8 @@ public struct ParentProgressDashboardView: View {
     /// variant list while the catalog is shaped).
     @MainActor
     static func cohortReadouts(
-        from service: DialogueExperimentsService
+        from service: DialogueExperimentsService,
+        history: CohortHistoryService? = nil
     ) -> [ExperimentCohortReadout] {
         service.definitions.compactMap { definition in
             guard let variant = service.variant(forExperimentID: definition.id) else {
@@ -530,7 +546,8 @@ public struct ParentProgressDashboardView: View {
                 experimentID: definition.id,
                 experimentName: definition.name,
                 variantID: variant.id,
-                variantName: variant.name
+                variantName: variant.name,
+                sessionsInCohort: history?.consecutiveSessions(forExperimentID: definition.id) ?? 0
             )
         }
     }
@@ -544,6 +561,11 @@ nonisolated struct ExperimentCohortReadout: Equatable, Hashable, Sendable {
     let experimentName: String
     let variantID: String
     let variantName: String
+    /// Consecutive launches the kid has been in this cohort (Priority Q).
+    /// `0` when no cohort history has been recorded yet (e.g. tests that
+    /// pass no history service). The dashboard surfaces the
+    /// "for the past N sessions" line only when this is `>= 2`.
+    var sessionsInCohort: Int = 0
 }
 
 extension ParentProgressDashboardView {

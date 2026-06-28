@@ -168,6 +168,18 @@ public struct RootView: View {
             // retention reader can segment any event by cohort without
             // a time-join.
             DialogueQuestAnalytics.shared.attachExperimentCohorts()
+            // Priority Q (2026-07-08) — record this launch's resolved
+            // cohort per experiment into the change-history ring buffer.
+            // Deterministic per install today (one fixed cohort), so the
+            // record is a constant until a future `defaultDefinitions()`
+            // change re-buckets the kid — at which point the buffer makes
+            // the migration visible. The parent dashboard reads the
+            // consecutive-session count as a transparency line. Runs after
+            // attach so the experiments service the analytics lens read
+            // is the same one recorded here.
+            CohortHistoryService.shared.recordLaunch(
+                from: DialogueExperimentsService.shared
+            )
         }
         .onChange(of: sessionTimer.phase) { _, newPhase in
             switch newPhase {
