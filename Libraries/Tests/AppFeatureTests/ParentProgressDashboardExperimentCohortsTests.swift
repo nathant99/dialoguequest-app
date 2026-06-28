@@ -102,4 +102,32 @@ struct ParentProgressDashboardExperimentCohortsTests {
         let second = ParentProgressDashboardView.cohortReadouts(from: service)
         #expect(first == second)
     }
+
+    // MARK: - Priority Q (2026-07-08) — cohort change-history wiring
+
+    private func makeHistory() -> CohortHistoryService {
+        let suite = "dq.cohorthist.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        return CohortHistoryService(defaults: defaults)
+    }
+
+    @Test("sessionsInCohort defaults to 0 when no history is passed")
+    func sessionsDefaultZero() {
+        let service = makeService()
+        let readouts = ParentProgressDashboardView.cohortReadouts(from: service)
+        #expect(readouts.allSatisfy { $0.sessionsInCohort == 0 })
+    }
+
+    @Test("sessionsInCohort reflects recorded launches when history is passed")
+    func sessionsReflectHistory() {
+        let service = makeService()
+        let history = makeHistory()
+        // Record three launches with the same deterministic service.
+        history.recordLaunch(from: service)
+        history.recordLaunch(from: service)
+        history.recordLaunch(from: service)
+        let readouts = ParentProgressDashboardView.cohortReadouts(from: service, history: history)
+        #expect(readouts.allSatisfy { $0.sessionsInCohort == 3 })
+    }
 }
