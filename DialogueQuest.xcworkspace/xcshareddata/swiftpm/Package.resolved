@@ -1,5 +1,5 @@
 {
-  "originHash" : "229d50f900941e236ad48cdf3f8ae53d7c739b47d5cc70760b1be1a4188ab69e",
+  "originHash" : "d0edbd9bd99f5c23cef69fe3221aaaf2d72600c37cef930ed5dae2c0dd74462b",
   "pins" : [
     {
       "identity" : "client-sdk-swift",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nathant99/forgekit.git",
       "state" : {
-        "revision" : "9b49eb7d7b1d491db866fb7987636a51fcad67a7",
-        "version" : "0.99.12"
+        "revision" : "b91222c5afe33358a62d9a7c645618f9759d04b5",
+        "version" : "1.0.0-rc.3"
       }
     },
     {
