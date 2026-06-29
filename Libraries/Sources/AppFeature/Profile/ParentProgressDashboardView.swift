@@ -75,6 +75,11 @@ public struct ParentProgressDashboardView: View {
     /// before the first publish or when nothing is recommended).
     @State private var masteredCraftCount: Int = 0
     @State private var masteryFocus: DialogueCraftTopic?
+    /// Up to three reader-facing coaching cards (extend / consolidate /
+    /// stretch) from `DialogueCraftMasteryService.recommendationReadouts()`.
+    /// Surfaces the FULL `NextProblemPicker` output, not just the first row.
+    /// Empty before the first publish or when the picker has nothing to say.
+    @State private var craftRecommendations: [DialogueCraftMasteryService.CraftRecommendationReadout] = []
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -138,6 +143,7 @@ public struct ParentProgressDashboardView: View {
             // FSRS-6 mastery state is captured at each publish in WriteTabView.
             masteredCraftCount = DialogueCraftMasteryService.shared.masteredTopics().count
             masteryFocus = DialogueCraftMasteryService.shared.nextFocusTopic()
+            craftRecommendations = DialogueCraftMasteryService.shared.recommendationReadouts()
         }
     }
 
@@ -200,11 +206,51 @@ public struct ParentProgressDashboardView: View {
                         .font(.footnote.weight(.medium))
                         .foregroundStyle(DialoguePalette.inkBlue)
                 }
+                if !craftRecommendations.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(craftRecommendations) { recommendation in
+                            craftRecommendationCard(recommendation)
+                        }
+                    }
+                    .padding(.top, 4)
+                }
             }
             .padding()
             .background(panelBackground)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .accessibilityElement(children: .combine)
+            .accessibilityElement(children: .contain)
+        }
+    }
+
+    /// One extend / consolidate / stretch coaching card. The leading symbol
+    /// keys the rationale (build / revisit / stretch) for quick parent scanning.
+    private func craftRecommendationCard(
+        _ recommendation: DialogueCraftMasteryService.CraftRecommendationReadout
+    ) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: Self.symbol(for: recommendation.kind))
+                .font(.footnote)
+                .foregroundStyle(DialoguePalette.rust)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(recommendation.headline)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(DialoguePalette.inkBlue)
+                Text(recommendation.detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(recommendation.headline). \(recommendation.detail)")
+    }
+
+    private static func symbol(for kind: DialogueCraftMasteryService.CraftRecommendationReadout.Kind) -> String {
+        switch kind {
+        case .extend:      return "arrow.up.right.circle"
+        case .consolidate: return "arrow.counterclockwise.circle"
+        case .stretch:     return "sparkles"
         }
     }
 

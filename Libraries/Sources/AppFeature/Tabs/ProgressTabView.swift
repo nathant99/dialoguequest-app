@@ -1,4 +1,5 @@
 import SwiftUI
+import Services
 import SharedUI
 
 /// Hosts the XP / streak / badge dashboard. Phase 1 persistence uses
@@ -11,6 +12,13 @@ struct ProgressTabView: View {
     @AppStorage("dq.streakFreezes") private var availableFreezes: Int = 2
     @AppStorage("dq.earnedBadgeIDs") private var earnedBadgeIDsRaw: String = ""
 
+    /// Per-pillar mastery bars + focus caption (Priority B → P-follow). Loaded
+    /// from `DialogueCraftMasteryService` in `.task` so `ProgressDashboardView`
+    /// stays a pure renderer. The FSRS-6 mastery state is captured at each
+    /// publish in `WriteTabView`.
+    @State private var craftBars: [DialogueCraftMasteryService.CraftMasteryReadout] = []
+    @State private var craftFocusName: String?
+
     var body: some View {
         NavigationStack {
             anthologyStripeHost {
@@ -18,10 +26,16 @@ struct ProgressTabView: View {
                     totalXP: totalXP,
                     currentStreak: currentStreak,
                     availableFreezes: availableFreezes,
-                    earnedBadgeIDs: earnedBadgeIDs
+                    earnedBadgeIDs: earnedBadgeIDs,
+                    craftBars: craftBars,
+                    craftFocusName: craftFocusName
                 )
             }
             .navigationTitle("Progress")
+            .task {
+                craftBars = DialogueCraftMasteryService.shared.masteryReadouts()
+                craftFocusName = DialogueCraftMasteryService.shared.nextFocusTopic()?.displayName
+            }
         }
     }
 

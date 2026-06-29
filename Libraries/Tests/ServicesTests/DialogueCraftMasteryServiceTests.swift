@@ -153,6 +153,84 @@ struct DialogueCraftMasteryServiceTests {
         }
     }
 
+    // MARK: - Dashboard readouts (B-follow)
+
+    @Test func masteryReadoutsCoverAllSixPillarsInCanonicalOrder() {
+        let service = DialogueCraftMasteryService(defaults: makeSuite())
+        let readouts = service.masteryReadouts()
+        #expect(readouts.map(\.topic) == DialogueCraftTopic.allCases)
+        // Fresh install — every bar reads 0, none mastered.
+        #expect(readouts.allSatisfy { $0.score == 0 && !$0.isMastered })
+    }
+
+    @Test func masteryReadoutReflectsRecordedScoreAndMasteryFlag() {
+        let service = DialogueCraftMasteryService(defaults: makeSuite())
+        service.recordPublishedTree(
+            averageVoiceMatch: 0.95, reflectionRatio: 0.95,
+            dominantTagAbsent: true, subtextConfirmed: true, characterCount: 3
+        )
+        // NB: `masteryScore` derives from FSRS retrievability (time-decayed), so
+        // two reads microseconds apart differ at ~1e-9 — assert the meaningful
+        // invariant (a high-quality publish lands the pillar above threshold +
+        // flips the mastered flag), not bit-exact equality across reads.
+        let voice = service.masteryReadouts().first { $0.topic == .voiceConsistency }
+        #expect((voice?.score ?? 0) >= 0.85)
+        #expect(voice?.isMastered == true)
+    }
+
+    @Test func recommendationReadoutsAreBoundedAndOnePerKind() {
+        // A fresh install surfaces a gentle starting suggestion (the picker's
+        // `.stretch` into an unblocked, unattempted pillar) — NOT empty. After a
+        // weak publish the picker may surface up to three (extend/consolidate/
+        // stretch). In both cases the readout is bounded at three with at most
+        // one card per kind, and every card carries non-empty reader copy.
+        let fresh = DialogueCraftMasteryService(defaults: makeSuite())
+        assertBoundedOnePerKind(fresh.recommendationReadouts())
+
+        let weak = DialogueCraftMasteryService(defaults: makeSuite())
+        weak.recordPublishedTree(
+            averageVoiceMatch: 0.3, reflectionRatio: 0.3,
+            dominantTagAbsent: false, subtextConfirmed: false, characterCount: 2
+        )
+        let readouts = weak.recommendationReadouts()
+        #expect(!readouts.isEmpty)
+        assertBoundedOnePerKind(readouts)
+    }
+
+    private func assertBoundedOnePerKind(
+        _ readouts: [DialogueCraftMasteryService.CraftRecommendationReadout]
+    ) {
+        #expect(readouts.count <= 3)
+        // `recommendations()` appends at most one per rationale, so no kind
+        // repeats across the readout.
+        #expect(Set(readouts.map(\.kind)).count == readouts.count)
+        for readout in readouts {
+            #expect(!readout.headline.isEmpty)
+            #expect(!readout.detail.isEmpty)
+        }
+    }
+
+    @Test func recommendationReadoutCopyIsRegisterStoplistClean() {
+        let service = DialogueCraftMasteryService(defaults: makeSuite())
+        service.recordPublishedTree(
+            averageVoiceMatch: 0.3, reflectionRatio: 0.3,
+            dominantTagAbsent: false, subtextConfirmed: false, characterCount: 2
+        )
+        // Engineering / framework jargon must never reach the parent surface
+        // (per .claude/rules/distributed-narrative.md § R-CHAPTER-REGISTER).
+        let forbidden = [
+            "load-bearing", "codified", "fsrs", "mastery score", "rationale",
+            "forgekit", "primitive", "samhsa", "phase ", "extend", "consolidate",
+            "retrievability", "vygotsky", "frontier"
+        ]
+        for readout in service.recommendationReadouts() {
+            let text = (readout.headline + " " + readout.detail).lowercased()
+            for token in forbidden {
+                #expect(!text.contains(token), "register leak '\(token)' in: \(text)")
+            }
+        }
+    }
+
     // MARK: - Topic value-type smoke
 
     @Test func topicSlugsMatchSkillGraphNodeIDs() {
