@@ -25,6 +25,12 @@ public struct ParentProgressDashboardView: View {
     @AppStorage("dq.streakFreezes") private var streakFreezes: Int = 2
     @AppStorage("dq.earnedBadgeIDs") private var earnedBadgeIDsRaw: String = ""
     @AppStorage("dq.weeklySummaryOptIn") private var weeklySummaryOptIn: Bool = false
+    /// Lifetime cumulative craft counters (Priority P-follow) — written at
+    /// each publish by WriteTabView. Feed the standards report's
+    /// `confirmedSubtextCount` / `branchesReflectedCount` (previously 0
+    /// placeholders).
+    @AppStorage("dq.confirmedSubtextTotal") private var confirmedSubtextTotal: Int = 0
+    @AppStorage("dq.branchesReflectedTotal") private var branchesReflectedTotal: Int = 0
 
     /// Snapshot fetched in `.task` per the read-only dashboard rule.
     @State private var retention: RetentionMetricsService.Snapshot?
@@ -62,6 +68,13 @@ public struct ParentProgressDashboardView: View {
     /// per-character voice for the latest tree). Empty on a fresh install
     /// before the kid's first publish — the section omits in that case.
     @State private var publishedSnapshots: [PublishedTreeSnapshot] = []
+    /// Adaptive-mastery readout (Priority B → P-follow surface). Loaded from
+    /// `DialogueCraftMasteryService` in `.task`. `masteredCraftCount` is how
+    /// many of the six craft pillars have reached the mastery threshold;
+    /// `masteryFocus` is the pillar Patter suggests focusing on next (`nil`
+    /// before the first publish or when nothing is recommended).
+    @State private var masteredCraftCount: Int = 0
+    @State private var masteryFocus: DialogueCraftTopic?
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -74,6 +87,7 @@ public struct ParentProgressDashboardView: View {
                 primaryMetrics
                 weeklySummarySection
                 publishedWorksSection
+                craftFocusSection
                 emotionalStateSection
                 experimentCohortsSection
                 retentionSection
@@ -118,6 +132,12 @@ public struct ParentProgressDashboardView: View {
             // character voice. Read-only; the store is the source of
             // truth, captured at each publish in WriteTabView.
             publishedSnapshots = PublishedTreeSnapshotStore.shared.recent()
+            // Priority B → P-follow (2026-07-09) — surface the adaptive
+            // mastery readout: how many craft pillars are solid + which
+            // pillar Patter suggests focusing on next. Read-only; the
+            // FSRS-6 mastery state is captured at each publish in WriteTabView.
+            masteredCraftCount = DialogueCraftMasteryService.shared.masteredTopics().count
+            masteryFocus = DialogueCraftMasteryService.shared.nextFocusTopic()
         }
     }
 
@@ -159,6 +179,33 @@ public struct ParentProgressDashboardView: View {
         }
         .background(panelBackground)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    /// Adaptive-mastery readout (Priority B → P-follow). Renders once the
+    /// kid has published at least one tree (so the mastery state is
+    /// non-empty); omits cleanly on a fresh install. Surfaces how many of
+    /// the six craft pillars are solid + which one Patter suggests next.
+    @ViewBuilder
+    private var craftFocusSection: some View {
+        if masteredCraftCount > 0 || masteryFocus != nil {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Craft focus")
+                    .font(.headline)
+                    .foregroundStyle(DialoguePalette.inkBlue)
+                Text("\(masteredCraftCount) of \(DialogueCraftTopic.allCases.count) dialogue-craft skills are looking solid.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                if let focus = masteryFocus {
+                    Text("Patter suggests focusing on \(focus.displayName) next.")
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(DialoguePalette.inkBlue)
+                }
+            }
+            .padding()
+            .background(panelBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .accessibilityElement(children: .combine)
+        }
     }
 
     @ViewBuilder
@@ -719,8 +766,8 @@ extension ParentProgressDashboardView {
             activeDays: derivedActiveDays(from: retention),
             totalXP: 0,                                   // future: pipe from ForgeGamification XPEngine
             averageVoiceMatchScore: latestTreeAverageVoiceMatch ?? 0.65,  // Priority P: most-recent persisted tree-average; 0.65 fallback before first publish
-            confirmedSubtextCount: 0,                     // future: pipe from AchievementService earned set
-            branchesReflectedCount: 0                     // future: same — counter persists in PatterReactionService
+            confirmedSubtextCount: confirmedSubtextTotal,    // Priority P-follow: lifetime cumulative, bumped at each publish in WriteTabView
+            branchesReflectedCount: branchesReflectedTotal   // Priority P-follow: same
         )
         return DialogueQuestProgressReportBuilder().build(from: inputs)
     }
