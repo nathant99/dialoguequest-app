@@ -32,6 +32,11 @@ struct WriteTabView: View {
     @State private var showCrisisResourcesFromAdvisory: Bool = false
     @State private var discoveryCameoSurfacedThisSession: Bool = false
     @State private var readAloudService = DialogueReadAloudService()
+    /// Articulate-before-hint authoring-loop scaffold (Priority B —
+    /// PolyaScaffold). Advisory: captures each publish as a completed
+    /// understand → plan → execute → look-back trace; future Patter coaching
+    /// surfaces gate hints on `hintsAllowedNow`.
+    @State private var authoringScaffold = DialogueAuthoringScaffold()
     @State private var liveActivity = DialogueWritingSessionActivity.shared
     @State private var liveActivityStartedAt: Date?
     @State private var liveActivityStarted: Bool = false
@@ -326,6 +331,20 @@ struct WriteTabView: View {
                 } else {
                     DialogueScaffoldingService.shared.recordPublishedWithReflection()
                 }
+                // Articulate-before-hint authoring loop (Priority B —
+                // PolyaScaffold). Capture this publish as one completed
+                // understand (scene cast) → plan (branch strategy) → execute
+                // (lines) → look-back (reflection) trace. Advisory for Phase
+                // 1: a future Patter coaching surface reads
+                // `authoringScaffold.hintsAllowedNow` to keep hints behind the
+                // kid naming + planning the scene (`hintsAllowedBeforePlan: 0`).
+                authoringScaffold.captureCompletedTree(
+                    premise: machine.tree.title,
+                    characterNames: machine.tree.characters.map(\.name),
+                    hadBranchPoints: !machine.tree.branchPoints.isEmpty,
+                    lineCount: machine.tree.nodes.count,
+                    reflectedAnyBranch: !machine.reflectedBranchPointIDs.isEmpty
+                )
                 // Mastery moment — first time the tree's average
                 // voice-match crosses 0.85, fire a `.epic` cinematic.
                 // Subsequent crossings render normal acknowledgement
