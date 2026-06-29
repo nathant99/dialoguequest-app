@@ -334,6 +334,22 @@ struct WriteTabView: View {
                 _ = MasteryMomentService.shared.recordPublishedTree(
                     averageVoiceMatch: outcome.averageVoiceMatch
                 )
+                // Adaptive mastery (Priority B — ForgeMasteryEngine) —
+                // record one attempt per craft pillar the tree exercised
+                // into the FSRS-6 mastery spine. Voice + branch + tag
+                // balance fire on every publish; subtext only when the kid
+                // confirmed one; multi-listener + triangle only for 3+
+                // character trees. The parent dashboard surfaces the
+                // resulting "where Patter suggests focusing next"
+                // recommendation; nothing here blocks the kid's publish.
+                let masteryTagReport = tagBalancer.report(for: machine.tree)
+                DialogueCraftMasteryService.shared.recordPublishedTree(
+                    averageVoiceMatch: outcome.averageVoiceMatch,
+                    reflectionRatio: outcome.reflectionRatio,
+                    dominantTagAbsent: masteryTagReport.dominant == nil,
+                    subtextConfirmed: !machine.confirmedSubtextLineIDs.isEmpty,
+                    characterCount: machine.tree.characters.count
+                )
             }
             evaluateAchievements()
         }
