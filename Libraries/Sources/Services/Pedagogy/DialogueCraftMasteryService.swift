@@ -154,6 +154,102 @@ public final class DialogueCraftMasteryService {
         recommendations().first?.topic
     }
 
+    // MARK: - Dashboard readouts (B-follow)
+
+    /// A per-pillar mastery bar for the kid's Progress tab. `score` is the
+    /// derived 0...1 mastery; `isMastered` reflects `masteryThreshold`.
+    public nonisolated struct CraftMasteryReadout: Sendable, Identifiable, Equatable {
+        public let topic: DialogueCraftTopic
+        public let score: Double
+        public let isMastered: Bool
+        public var id: DialogueCraftTopic { topic }
+        public var displayName: String { topic.displayName }
+
+        public init(topic: DialogueCraftTopic, score: Double, isMastered: Bool) {
+            self.topic = topic
+            self.score = score
+            self.isMastered = isMastered
+        }
+    }
+
+    /// One coaching recommendation projected for a reader-facing surface (the
+    /// parent dashboard's three-card extend / consolidate / stretch layout).
+    /// Copy is age-9-14 / parent register — no engineering jargon per
+    /// `.claude/rules/distributed-narrative.md` § R-CHAPTER-REGISTER.
+    public nonisolated struct CraftRecommendationReadout: Sendable, Identifiable, Equatable {
+        public enum Kind: String, Sendable, Equatable {
+            case extend, consolidate, stretch
+        }
+        public let topic: DialogueCraftTopic
+        public let kind: Kind
+        public let headline: String
+        public let detail: String
+        public var id: DialogueCraftTopic { topic }
+
+        public init(topic: DialogueCraftTopic, kind: Kind, headline: String, detail: String) {
+            self.topic = topic
+            self.kind = kind
+            self.headline = headline
+            self.detail = detail
+        }
+    }
+
+    /// Per-pillar mastery bars for all six craft primitives, in the canonical
+    /// `DialogueCraftTopic.allCases` order. A never-attempted pillar reads `0`.
+    /// The Progress-tab surface gates its own visibility on whether ANY bar is
+    /// non-zero (i.e. the kid has published at least once).
+    public func masteryReadouts() -> [CraftMasteryReadout] {
+        let states = decoded()
+        let mastered = masteredTopics()
+        return DialogueCraftTopic.allCases.map { topic in
+            CraftMasteryReadout(
+                topic: topic,
+                score: states[topic]?.masteryScore ?? 0,
+                isMastered: mastered.contains(topic)
+            )
+        }
+    }
+
+    /// Up to three reader-facing coaching cards (extend / consolidate /
+    /// stretch), one per `NextProblemPicker.SelectionRationale`. Empty when the
+    /// picker has nothing to surface (fresh install, or everything solid).
+    /// Preserves the picker's extend → consolidate → stretch ordering.
+    public func recommendationReadouts() -> [CraftRecommendationReadout] {
+        recommendations().map { recommendation in
+            Self.readout(for: recommendation.topic, rationale: recommendation.rationale)
+        }
+    }
+
+    private nonisolated static func readout(
+        for topic: DialogueCraftTopic,
+        rationale: NextProblemPicker<DialogueCraftTopic, DialogueCraftTopic>.SelectionRationale
+    ) -> CraftRecommendationReadout {
+        let name = topic.displayName
+        switch rationale {
+        case .extend:
+            return CraftRecommendationReadout(
+                topic: topic,
+                kind: .extend,
+                headline: "Keep building: \(name)",
+                detail: "\(name) is right at the edge of what your writer has — a great skill to keep practising."
+            )
+        case .consolidate:
+            return CraftRecommendationReadout(
+                topic: topic,
+                kind: .consolidate,
+                headline: "Worth revisiting: \(name)",
+                detail: "It has been a while since \(name) came up. A quick refresher will help it stick."
+            )
+        case .stretch:
+            return CraftRecommendationReadout(
+                topic: topic,
+                kind: .stretch,
+                headline: "Ready to stretch: \(name)",
+                detail: "\(name) just opened up. Your writer's earlier skills set them up to try it."
+            )
+        }
+    }
+
     // MARK: - Outcome mapping
 
     private func record(
