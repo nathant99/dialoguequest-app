@@ -10,6 +10,8 @@ supersedes: none (first formal re-survey audit for DialogueQuest)
 
 # Audit — ForgeKit module re-survey (2026-07-07)
 
+> **PARTIALLY SUPERSEDED 2026-07-09**: the pin bumped to 1.0.0-rc.3 (PR #180, 2026-07-08), and on 2026-07-09 **`ForgeMasteryEngine` + `PolyaScaffold` were ADOPTED** (PRs #183/#184) — module count is now **25 of ~58 consumed**, not 23. Of the 3 modules this audit listed as "held behind user-GUI handoffs," only **`ForgeLocalization`** remains held (behind `Localizable.xcstrings`, Priority C). The per-module held-verdict criteria for the OTHER unconsumed modules still stand.
+
 > **TL;DR**: **23 of 58 ForgeKit modules consumed.** The remaining 35 split into **3 categories**: 11 server-only (N/A — DialogueQuest has no server), 3 handoff-blocked (`ForgeMasteryEngine` / `PolyaScaffold` / `ForgeLocalization` — pin bump + xcstrings catalog), 21 held with documented trigger criteria. **Zero incremental adoption candidates pass the trigger criteria this round** — the catalog is at structural equilibrium until either the pin bump lands or a new feature requirement maps cleanly onto a held module.
 
 ## How to use this doc

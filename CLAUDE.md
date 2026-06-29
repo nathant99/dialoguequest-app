@@ -54,7 +54,7 @@ Full rule: `@.claude/rules/xcode-agent-safety.md`.
 - **Testing**: Swift Testing (`@Test`, `#expect`)
 - **Min Target**: iOS 26 / Xcode 26
 - **Architecture**: App shell + local Swift Package (`Libraries/Package.swift`)
-- **Framework**: ForgeKit (pinned via `.package(url:, from: "0.99.0")`)
+- **Framework**: ForgeKit (pinned via `.package(url:, .upToNextMajor(from: "1.0.0-rc.3"))` — bumped 2026-07-08, PR #180; 25 of ~58 modules consumed)
 
 Portfolio-wide tech stack rules live in `@.claude/rules/forgekit.md` + `@.claude/rules/concurrency.md` + `@.claude/rules/swiftui.md` + `@.claude/rules/swiftdata.md` + `@.claude/rules/spritekit.md` + `@.claude/rules/foundationmodels.md`. All auto-load with this file.
 
@@ -97,7 +97,7 @@ Libraries/
     └── AppFeatureTests/              # machine + view-model tests
 ```
 
-ForgeKit pin: `from: "0.99.0"`. Per-target wiring documented in `@Docs/IMPLEMENTATION_HANDOFF.md` § 7.
+ForgeKit pin: `.upToNextMajor(from: "1.0.0-rc.3")` (bumped 2026-07-08, PR #180). Per-target wiring documented in `@Docs/IMPLEMENTATION_HANDOFF.md` § 7.
 
 ## SPM File Layout Convention (load-bearing)
 
@@ -118,7 +118,7 @@ Libraries/Sources/Services/
 ├── Analyzers/                            # BranchMeaningfulnessScorer + VoiceConsistencyAnalyzer + TagBalancer + TriangleDynamics
 ├── Audio/                                # DialogueReadAloudService (AVSpeechSynthesizer + per-character voice variants) + DialogueAudioExporter (AIFF render via AVSpeechSynthesizer.write) + VoiceActingCoachService (SFSpeechRecognizer scaffold, privacy-gated)
 ├── Gamification/                         # DialogueQuestGamification + StreakService + AchievementService
-├── Pedagogy/                             # DDAEngine + DialogueScaffoldingService + ReturnLoopService + SessionTimerService + VariableReward + PatterCallbackService + MasteryMomentService + DialogueCraftSkillGraph (ForgeKnowledgeGraph DAG)
+├── Pedagogy/                             # DDAEngine + DialogueScaffoldingService + ReturnLoopService + SessionTimerService + VariableReward + PatterCallbackService + MasteryMomentService + DialogueCraftSkillGraph (ForgeKnowledgeGraph DAG) + DialogueCraftMasteryService (ForgeMasteryEngine FSRS-6 spine) + DialogueAuthoringScaffold (PolyaScaffold articulate-before-hint loop)
 ├── Persistence/                          # DialoguePersistenceService + AnthologyCollectionService + helpers
 ├── Privacy/                              # ParentalConsentService + ParentalGateChallenge + DeclaredAgeRangeGate + CrisisResourcesProvider + TraumaAxisAdvisoryService
 ├── Reporting/                            # DialogueQuestProgressReportBuilder (ForgeReporting StudentReportData projection)
@@ -195,6 +195,8 @@ Specific to DialogueQuest. Portfolio-wide bites live in `@.claude/rules/`; the e
 - **`DialogueTree` reconstruction sites in `DialogueTreeMachine` must thread every field** — when adding a new `DialogueTree` field (e.g., `isDraft` in PR D 2026-06-23), every `mutating func` site that rebuilds `tree = DialogueTree(...)` must pass the existing value (`isDraft: tree.isDraft`), or the mutation silently clears the new field. 7 reconstruction sites in `DialogueTreeMachine.swift` had to be patched in lockstep. Reference impl: `setDraft(_:)` is idempotent (early-return on no-op) to guard against unnecessary rebuilds. Codified 2026-06-23 (second mid-session) shipping the Phase Delight § Agency surface.
 - **Privacy-gated scaffold tests must assert availability relative to `isWired`, not absolute states** — services like `VoiceActingCoachService` + `DialogueWritingSessionActivity` + `DeclaredAgeRangeGate` cache an `isWired: Bool` static-let at first access (probing `Bundle.main.object(forInfoDictionaryKey:)` for the required usage description / capability key). Unit tests that assert `availability == .notWired` will fail flakily because the SPM test bundle uses the FULL app process's synthesized Info.plist — Xcode 26 stores `INFOPLIST_KEY_*` build settings in `project.pbxproj` rather than a separate file, so the synthesized dictionary at test-run time may or may not contain the key depending on target build settings. Canonical pattern: `if isWired { availability != .notWired } else { availability == .notWired }`. Codified 2026-06-23 (third mid-session) shipping `VoiceActingCoachServiceTests` + `DialogueWritingSessionActivityTests`.
 - **Pre-App-Store `@Model` additions land directly on the existing `VersionedSchema`** — when adding a new SwiftData `@Model` class before App Store launch (e.g., `AnthologyCollectionRecord` in PR #103 2026-06-23), do NOT spin a new `SchemaV2` enum + `MigrationStage`. Append the new class to the existing `DialogueQuestSchemaV1.models` array; SwiftData picks it up via lightweight migration on existing dev builds. Per `.claude/rules/swiftdata.md` § "Pre-App Store: don't create new `VersionedSchema` for unreleased models" — creating V2 prematurely crashes dev devices with existing data because the migration plan expects a V1→V2 stage that doesn't exist. ALSO required: the app shell's `ModelContainer` init list (`Apps/DialogueQuest/DialogueQuest/DialogueQuestApp.swift`) must add the new class as a positional arg (`for: PersistentDialogueTree.self, AnthologyCollectionRecord.self, migrationPlan: ...`). The app-shell edit MUST go through MCP `XcodeUpdate` (synchronized-folder target convention) — filesystem `Write`/`Edit` tolerates it but routing through MCP is the canonical-safe path. Codified 2026-06-23 (third mid-session) shipping Phase 4 anthology curation.
+- **`ForgeMasteryEngine.MasteryGraph(nodes:)` throws — build with `try?` + optional storage, never force-try** — `MasteryGraph.init` throws on `duplicateTopic` / `cycleDetected` / `unknownPrerequisite`. A static, acyclic, fully-resolved node set never throws in practice, but force-try (`try!`) is a swiftlint error. Canonical pattern (`DialogueCraftMasteryService.buildGraph()`): build with `do { try ... } catch { log; return nil }`, store as `let graph: MasteryGraph<Topic>?`, and `guard let graph else { return [] }` in the readers — a (provably-impossible) build failure degrades to "no recommendations" instead of a crash. A unit test asserting the graph builds covers the invariant. Codified 2026-07-09 (twentieth mid-session) adopting `ForgeMasteryEngine`.
+- **`PolyaMachine.advance()` throws `.alreadyAtFinalPhase` at LOOK BACK *after* appending to history — use `complete()` for the terminal phase** — for the understand→plan→execute transitions, `advance()` throwing means a validation failure (no transition). At the lookBack phase it throws `.alreadyAtFinalPhase` as a *success* signal (history already appended). If a single `tryAdvance()` helper treats every throw as failure, the terminal phase looks like it failed. Drive lookBack via `complete()` (which validates + appends without the misleading throw) so `advance()` is only ever called for the three non-terminal transitions. Reference impl: `DialogueAuthoringScaffold.tryAdvance()` vs `recordPublishReflection()`. Codified 2026-07-09 (twentieth mid-session) adopting `PolyaScaffold`.
 
 ## Reference Documents
 
