@@ -18,6 +18,13 @@ struct WriteTabView: View {
     /// launches with no extra service layer.
     @AppStorage("dq.readAloudCount") private var readAloudCount: Int = 0
     @AppStorage("dq.audioExportCount") private var audioExportCount: Int = 0
+    /// Lifetime cumulative counters (Priority P-follow) — bumped by the
+    /// current tree's counts at each publish so the parent-progress
+    /// dashboard's standards report can surface real subtext / branch
+    /// totals instead of the prior 0 placeholders. `@AppStorage`-backed to
+    /// match the `dq.readAloudCount` pattern (no extra service layer).
+    @AppStorage("dq.confirmedSubtextTotal") private var confirmedSubtextTotal: Int = 0
+    @AppStorage("dq.branchesReflectedTotal") private var branchesReflectedTotal: Int = 0
 
     @State private var machine = DialogueTreeMachine()
     @State private var mentor = PatterMentor()
@@ -210,6 +217,13 @@ struct WriteTabView: View {
                 // activity was never started (unwired build).
                 endLiveActivity()
                 publishedTreeCount += 1
+                // Lifetime cumulative craft counters (Priority P-follow) —
+                // add this tree's confirmed-subtext + reflected-branch counts
+                // so the parent dashboard's standards report reads real
+                // totals. Bumped exactly once per publish (this branch fires
+                // once per stage→.published transition).
+                confirmedSubtextTotal += machine.confirmedSubtextLineIDs.count
+                branchesReflectedTotal += machine.reflectedBranchPointIDs.count
                 // On-device privacy-safe analytics: count + mood + character
                 // count are categorical, no PII. ForgeAnalytics PII blocklist
                 // is the last-line guard.
