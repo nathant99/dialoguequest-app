@@ -9,7 +9,6 @@ import SharedUI
 /// `.claude/rules/forgekit.md` § AvatarStudioView gotcha.
 struct ProfileDashboardView: View {
     @State private var store = AppGroupStore(achievements: [])
-    @State private var catalog = AvatarAssetCatalog()
     @State private var displayName: String = "Dialogue Quester"
     @State private var currentAvatar: AvatarConfig = .default
     @State private var baselineEditedAt: Date?
@@ -34,8 +33,7 @@ struct ProfileDashboardView: View {
             AvatarStudioView(
                 initialConfig: currentAvatar,
                 baselineEditedAt: baselineEditedAt,
-                catalog: catalog,
-                presentation: .lite,
+                displayName: displayName,
                 appGroupStore: store,
                 onSaved: { saved in
                     currentAvatar = saved
