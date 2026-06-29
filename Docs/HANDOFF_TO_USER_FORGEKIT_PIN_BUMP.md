@@ -1,11 +1,18 @@
 ---
-status: ACTIVE
+status: RESOLVED
 date: 2026-06-26
+resolved-date: 2026-07-08
 direction: agent → user
 audience: Nghi (Xcode operator)
 intent: bump the ForgeKit pin in Libraries/Package.swift from `from: "0.99.0"` to a 1.0.0-rc.x-aware constraint so the workspace resolves into `ForgeMasteryEngine` + `PolyaScaffold` (shipped in ForgeKit 1.0.0-rc.2/-rc.3)
 freshness-horizon: 30 days
 ---
+
+> **RESOLVED 2026-07-08 (Path A, agent-executed per user-direct "you bump the forgekit pin").** The agent edited `Libraries/Package.swift` line 26 to `.upToNextMajor(from: "1.0.0-rc.3")`; Xcode re-resolved the workspace `Package.resolved` to ForgeKit **1.0.0-rc.3** (revision `b91222c5`) during the agent's `BuildProject`. The bump required exactly two breaking-change catches, both swept in the same PR:
+> 1. **`AvatarAssetCatalog` removed from `ForgeAvatar`** (rc.3 "avatar-cleanup"): `AvatarStudioView` dropped its `catalog:` + `presentation:` params and added `displayName:` + `previewSize:`. `ProfileDashboardView` migrated accordingly (removed the `@State catalog`; new init call).
+> 2. **`ForgeKitVersion.major` is now `1`**: `ForgeKitIntegrationTests.versionStringPopulated` updated to assert `major >= 1`.
+>
+> **`CastDialog` v2 was a NON-event for DialogueQuest** — the app's `CastVoiceRegistry` trigger enum + `CastVoiceProfile` init are fully compatible with rc.3; no migration needed. (An initial full-suite run showed 6 failures, but reclassifying on a freshly-erased simulator per `.claude/rules/test-crash-recovery.md` proved 5 of them were Xcode-26 simulator-brick / test-runner `-308` cascade flakes — only the version assertion was real.) Build clean; full plan **881/881 green** on rc.3. `ForgeMasteryEngine` + `PolyaScaffold` are now resolvable for the Priority B adoption round. The "still pending" references in older dated entries (agent-safety reaffirmation chain, session handoffs) are superseded by this closure.
 
 # Handoff to User — ForgeKit pin bump to 1.0.0-rc.3
 

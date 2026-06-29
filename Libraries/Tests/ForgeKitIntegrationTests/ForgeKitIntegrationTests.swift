@@ -6,12 +6,13 @@ import ForgeGamification
 @Suite("ForgeKit integration sanity checks")
 struct ForgeKitIntegrationTests {
 
-    @Test("ForgeKit version string is populated and matches the 0.99 line")
+    @Test("ForgeKit version string is populated and on the 1.0.0-rc line or later")
     func versionStringPopulated() throws {
         let version = ForgeKitVersion.version
         #expect(!version.isEmpty)
-        #expect(ForgeKitVersion.major == 0)
-        #expect(ForgeKitVersion.minor >= 99)
+        // Bumped to the 1.0.0-rc.x line (2026-07-08 pin bump). Accept
+        // 1.x and beyond so future stable releases don't trip this.
+        #expect(ForgeKitVersion.major >= 1)
     }
 
     @Test("BloomLevel is Comparable by cognitive complexity")
