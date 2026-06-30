@@ -154,6 +154,47 @@ public final class DialogueCraftMasteryService {
         recommendations().first?.topic
     }
 
+    // MARK: - Patter-bubble focus nudge (B-follow)
+
+    /// Minimum number of published trees before the kid-facing Patter-bubble
+    /// focus nudge is eligible. A brand-new install surfaces a `.stretch`
+    /// recommendation immediately (the FSRS frontier always offers a starting
+    /// suggestion), so `nextFocusTopic()` is non-nil from launch — gating the
+    /// nudge on `nextFocusTopic() != nil` would fire it before the kid has any
+    /// real mastery signal. Gate on a genuine "has published a few times"
+    /// signal instead. Matches `PatterCallbackService`'s history threshold.
+    public nonisolated static let minimumPublishedForFocusNudge = 3
+
+    /// Probability the focus nudge fills the shared Patter-bubble slot on a
+    /// publish, when eligible. Sized to match the other low-probability bubble
+    /// paths (callback / voice-pattern / seasonal at 0.08) so it feels special
+    /// rather than nagging.
+    public nonisolated static let focusNudgeProbability: Double = 0.08
+
+    /// Slot-gate roll for the focus nudge. Pure value-type; takes the caller's
+    /// RNG so the `WriteTabView` publish path threads one generator through
+    /// every mutually-exclusive bubble path. Pass a `SeedableRandom` in tests.
+    public nonisolated static func shouldShowFocusNudge(
+        probability: Double = focusNudgeProbability,
+        rng: inout some RandomNumberGenerator
+    ) -> Bool {
+        guard probability > 0 else { return false }
+        guard probability < 1 else { return true }
+        let roll = Double.random(in: 0..<1, using: &rng)
+        return roll < probability
+    }
+
+    /// A warm, kid-facing one-line invitation to lean into the pillar Patter
+    /// suggests focusing on next, or `nil` when the picker has nothing to
+    /// recommend. Calls `recommendations()` exactly ONCE (via
+    /// `nextFocusTopic()`) per the picker-non-determinism gotcha — never call
+    /// it again expecting parity. Register-stoplist clean (no engineering /
+    /// FSRS / picker-rationale jargon reaches the bubble).
+    public func nextFocusNudge() -> String? {
+        guard let topic = nextFocusTopic() else { return nil }
+        return "Patter has an idea for next time — a conversation that leans into \(topic.displayName.lowercased())."
+    }
+
     // MARK: - Dashboard readouts (B-follow)
 
     /// A per-pillar mastery bar for the kid's Progress tab. `score` is the

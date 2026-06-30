@@ -273,18 +273,21 @@ struct WriteTabView: View {
                         now: Date()
                     )
                 )
-                // Five Patter-bubble paths share the rareVoiceCraftTip
+                // Six Patter-bubble paths share the rareVoiceCraftTip
                 // slot, mutually exclusive (so the kid never sees two
                 // bubbles): cameo (12%, flag-gated) → callback mood (8%,
                 // history-gated) → callback voice-pattern (8%, history-
                 // gated, per-character trend) → seasonal-theme (8%,
-                // calendar-window-gated + per-window deduped) → voice-
-                // craft tip (20%, always allowed). Lower-probability
-                // paths win first so they feel special when they hit.
-                // Seasonal-theme is positioned between voice-pattern and
-                // voice-craft tip so a kid writing during one of the 3
-                // curated calendar windows sees the dialogue-craft prompt
-                // at most once per window.
+                // calendar-window-gated + per-window deduped) → mastery
+                // focus nudge (8%, ForgeMasteryEngine, gated on ≥3
+                // published trees) → voice-craft tip (20%, always
+                // allowed). Lower-probability paths win first so they
+                // feel special when they hit. The mastery nudge sits just
+                // before the always-on tip — it gives gentle direction
+                // ("what to lean into next") sourced from the FSRS-6
+                // mastery spine, gated on a real "has published a few
+                // times" signal because a fresh install non-
+                // deterministically surfaces a starting suggestion.
                 var rewardRNG = SystemRandomNumberGenerator()
                 var slotFilled = false
                 if publishedTreeCount >= CharacterCameoInvitations.minimumPublishedTreeCount,
@@ -313,6 +316,13 @@ struct WriteTabView: View {
                    SeasonalThemeService.shared.shouldSurface(rng: &rewardRNG) {
                     rareVoiceCraftTip = seasonalTheme.bubbleLine
                     SeasonalThemeService.shared.markShown(seasonalTheme)
+                    slotFilled = true
+                }
+                if !slotFilled,
+                   publishedTreeCount >= DialogueCraftMasteryService.minimumPublishedForFocusNudge,
+                   DialogueCraftMasteryService.shouldShowFocusNudge(rng: &rewardRNG),
+                   let masteryNudge = DialogueCraftMasteryService.shared.nextFocusNudge() {
+                    rareVoiceCraftTip = masteryNudge
                     slotFilled = true
                 }
                 if !slotFilled, VariableReward.shouldShowBonus() {
