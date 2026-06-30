@@ -1,10 +1,27 @@
 ---
 status: ACTIVE
-date: 2026-07-10
+date: 2026-07-11
 direction: hub → app (filled in by engineering session)
 target-audience: any future Claude Code session opening this repo
 freshness-horizon: 60 days
 ---
+
+> **2026-07-11 round addendum (twenty-second mid-session, completed)** — multi-PR session-handoff Priority-pickup round under the standing auto-cycle, on an open "all approved, go with your recs, don't stop, describe options first" mandate. **Third round on the post-pin-bump baseline (ForgeKit 1.0.0-rc.3).** The headline is a **second B-follow DEEPENING** of the `ForgeMasteryEngine` adoption — wiring the existing `nextFocusTopic()` recommendation into the **live WriteTabView Patter bubble** as a sixth mutually-exclusive kid-facing path. **No new module.** **3 PRs landed** (#191 → #192 + this round-close). Net state delta:
+> - **Test count delta**: **+6** (all in ServicesTests `DialogueCraftMasteryServiceTests`: `focusNudgeThresholdAndProbabilityContracts` / `freshInstallStillOffersAFocusNudge` / `focusNudgeLineNamesARecommendedPillar` / `shouldShowFocusNudgeRespectsProbabilityBounds` / `focusNudgeIsDeterministicForASeed` / `focusNudgeCopyIsRegisterStoplistClean`). Full plan now **909 tests, 909 passing** on a clean full `RunAllTests` — the previously-flaky `testTappingPerformanceBoothEntryOpensTheSheet` UI test passed this round under the full run.
+> - **ForgeKit module count consumed**: **25 (unchanged)** — this DEEPENS the already-linked `ForgeMasteryEngine`, not a new adoption. No `Package.swift` edit. `ForgeLocalization` still waits on `Localizable.xcstrings` (Priority C, the only remaining user-GUI blocker).
+> - **Silent-fail-site coverage**: **100%** maintained (the nudge adds no fallible IO; it reuses `DialogueCraftMasteryService`'s existing logged decode path).
+> - **Open user-GUI handoffs**: 6 active, unchanged. No new handoffs filed; none closed.
+> - **Session handoff for next CC session**: `Docs/SESSION_HANDOFF_2026-07-11_ROUND_CLOSE.md` (supersedes the 2026-07-10 brief).
+>
+> - **Wave A (#191) — Xcode safety reaffirmation.** 2026-07-11 dated entry in `Docs/HANDOFF_AGENT_SAFETY_RECONFIRMED.md` (22nd in the chain; same canonical verbatim user-direct phrasing). Confirmed no drift in `CLAUDE.md` § Xcode Agent Safety or `.claude/rules/xcode-agent-safety.md`. Pure docs.
+> - **Wave B (#192) — B-follow: mastery-focus nudge into the live Patter bubble.** `DialogueCraftMasteryService` gained `nextFocusNudge() -> String?` (builds a warm, register-stoplist-clean kid line — *"Patter has an idea for next time — a conversation that leans into &lt;pillar&gt;."* — calling `recommendations()` exactly ONCE per the picker non-determinism gotcha), plus `shouldShowFocusNudge(rng:)` (0.08 probability gate, mirrors the callback/voice-pattern/seasonal paths) and `minimumPublishedForFocusNudge = 3`. `WriteTabView` extended its mutually-exclusive publish-path bubble chain from **5 → 6 paths**: cameo (12%) → callback mood (8%) → callback voice-pattern (8%) → seasonal (8%) → **mastery focus nudge (8%, gated on `publishedTreeCount >= 3`)** → voice-craft tip (20%). Critically gated on the publish count, NOT on `nextFocusTopic() != nil` — a fresh install non-deterministically surfaces a `.stretch`, so the topic is non-nil from launch (codified gotcha). +6 tests; build clean (12s); full plan 909/909.
+> - **Wave Z — round-close.** This addendum + `Docs/SESSION_HANDOFF_2026-07-11_ROUND_CLOSE.md` + a CLAUDE.md "Things That Will Bite You" entry refining the picker-non-determinism gotcha (a post-publish state can legitimately return NO recommendation, so `nextFocusNudge()` can be nil — only a fresh install reliably surfaces a `.stretch`).
+>
+> **What this round did NOT do** (intentional + scoped):
+> - Did NOT touch Xcode-managed files. Both PRs landed via filesystem `Write`/`Edit` against SPM source + Docs. No `Package.swift` edit (no new module), no app-shell edit.
+> - Did NOT REPLACE `DialogueScaffoldingService` with the Polya scaffold (still the documented forward retire-round). Rationale strengthened this round: the retire would REMOVE a ForgeKit `ScaffoldingEngine` surface rather than add one, working AGAINST the standing "maximize ForgeKit integration" mandate; it also rips out a tested working advisory service mid-Xcode-session for low gain.
+> - Did NOT advance **Priority C** (Localization; `Localizable.xcstrings` still absent) or the other GUI-blocked items (declared-age-range API / app icon / voice-coach Info.plist / widget extension).
+> - Did NOT do the test-side mirror-source reorg (session-hazard; needs an Xcode restart per the SPM `SwiftFileList` cache gotcha).
 
 > **2026-07-10 round addendum (twenty-first mid-session, completed)** — multi-PR session-handoff Priority-pickup round under the standing auto-cycle, on an open "all approved, go with your recs, don't stop, describe options first" mandate. **Second round on the post-pin-bump baseline (ForgeKit 1.0.0-rc.3).** The headline is a **B-follow DEEPENING** of last round's `ForgeMasteryEngine` adoption — additive reader surfaces, **no new module**. **3 PRs landed** (#188 → #189 + this round-close). Net state delta:
 > - **Test count delta**: **+4** (all in ServicesTests `DialogueCraftMasteryServiceTests`: `masteryReadoutsCoverAllSixPillarsInCanonicalOrder` / `masteryReadoutReflectsRecordedScoreAndMasteryFlag` / `recommendationReadoutsAreBoundedAndOnePerKind` / `recommendationReadoutCopyIsRegisterStoplistClean`). Full plan now **903 tests, 903 passing** (902 on the full run + 1 known-flaky UI test `testTappingPerformanceBoothEntryOpensTheSheet` that passes on isolated re-run — XCUITest timing under the Xcode 26 simulator, NOT a source regression; my changes never touch the Performance Booth).
