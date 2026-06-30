@@ -231,6 +231,75 @@ struct DialogueCraftMasteryServiceTests {
         }
     }
 
+    // MARK: - Patter-bubble focus nudge (B-follow)
+
+    @Test func focusNudgeThresholdAndProbabilityContracts() {
+        // Locked constants the WriteTabView publish path + tests both rely on.
+        #expect(DialogueCraftMasteryService.minimumPublishedForFocusNudge == 3)
+        #expect(DialogueCraftMasteryService.focusNudgeProbability == 0.08)
+    }
+
+    @Test func freshInstallStillOffersAFocusNudge() {
+        // Documents the gotcha that drives the WriteTabView gate: a brand-new
+        // install surfaces a `.stretch` recommendation immediately, so the
+        // nudge line is non-nil from launch. That is exactly why the publish
+        // path gates on `publishedTreeCount`, NOT on `nextFocusNudge() != nil`.
+        let service = DialogueCraftMasteryService(defaults: makeSuite())
+        #expect(service.nextFocusNudge() != nil)
+    }
+
+    @Test func focusNudgeLineNamesARecommendedPillar() throws {
+        // A fresh service reliably surfaces a `.stretch` (the FSRS frontier
+        // always offers a starting suggestion), so the line is deterministic
+        // here — unlike a post-publish state, where the picker can legitimately
+        // return no recommendation (nothing at the edge, decayed, or newly
+        // unblocked) and the nudge is nil.
+        let service = DialogueCraftMasteryService(defaults: makeSuite())
+        let nudge = try #require(service.nextFocusNudge())
+        // The line weaves in the lower-cased display name of SOME pillar.
+        let names = DialogueCraftTopic.allCases.map { $0.displayName.lowercased() }
+        #expect(names.contains { nudge.lowercased().contains($0) })
+    }
+
+    @Test func shouldShowFocusNudgeRespectsProbabilityBounds() {
+        var rng = SeedableRandom(seed: 7)
+        // Probability 0 never fires; probability 1 always fires (both
+        // short-circuit before consuming the generator).
+        #expect(DialogueCraftMasteryService.shouldShowFocusNudge(probability: 0, rng: &rng) == false)
+        #expect(DialogueCraftMasteryService.shouldShowFocusNudge(probability: 1, rng: &rng) == true)
+    }
+
+    @Test func focusNudgeIsDeterministicForASeed() {
+        // Same seed → same sequence of fires, so the bubble decision is
+        // reproducible in tests.
+        var rngA = SeedableRandom(seed: 4242)
+        var rngB = SeedableRandom(seed: 4242)
+        for _ in 0..<20 {
+            let a = DialogueCraftMasteryService.shouldShowFocusNudge(rng: &rngA)
+            let b = DialogueCraftMasteryService.shouldShowFocusNudge(rng: &rngB)
+            #expect(a == b)
+        }
+    }
+
+    @Test func focusNudgeCopyIsRegisterStoplistClean() {
+        let service = DialogueCraftMasteryService(defaults: makeSuite())
+        service.recordPublishedTree(
+            averageVoiceMatch: 0.4, reflectionRatio: 0.4,
+            dominantTagAbsent: false, subtextConfirmed: false, characterCount: 2
+        )
+        // The kid-facing bubble must never leak engineering / framework jargon.
+        let forbidden = [
+            "load-bearing", "codified", "fsrs", "mastery score", "rationale",
+            "forgekit", "primitive", "samhsa", "phase ", "extend", "consolidate",
+            "stretch", "retrievability", "vygotsky", "frontier", "pillar"
+        ]
+        let text = (service.nextFocusNudge() ?? "").lowercased()
+        #expect(!text.isEmpty)
+        for token in forbidden {
+            #expect(!text.contains(token), "register leak '\(token)' in: \(text)")
+        }
+    }
+
     // MARK: - Topic value-type smoke
 
     @Test func topicSlugsMatchSkillGraphNodeIDs() {
