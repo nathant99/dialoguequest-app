@@ -63,6 +63,72 @@ If the queue claims SHIPPED but `gh pr list --state open` shows the branch, the 
 
 **Common failure mode**: bg agents create a feature branch + PR but the agent process ends before `gh pr merge` runs (or runs but check-blocks). The agent's report says "shipped" but the merge never happened. **The main session must verify** — agent reports are not authoritative for merge state.
 
+## CRITICAL: Verify origin state before claiming portfolio-wide content coverage
+
+**This rule extends "Verify PR Merged" to cover content distribution.** Wave runners that `cp` assets directly into a sibling repo's working tree (e.g., `t2_coverage_wave_runner.sh` → `spark-anvil-site/public/chapters/`) do NOT auto-commit. The operator MUST run a separate commit + push cycle, AND verify origin reflects the new state, BEFORE authoring any handoff doc that quotes coverage numbers.
+
+**Codified after V10 (2026-06-23) — the 1497-file orphan-state incident**: V10's wave runner generated 252 Tier-2 chapters + distributed to the site working tree, but a mid-round P0 YAML drift incident pulled the operator's attention. The bulk content sat staged-but-unpushed while the V10 handoff doc claimed "252/252 Tier-2 audio drama m4a files at site, zero partials, 100% portfolio coverage" — true locally, false at origin (origin had 86). V11 Wave 1 had to ship a P0 sync push (spark-anvil-site PR #280) to close the gap before continuing.
+
+### Required verification before authoring any handoff coverage claim
+
+```bash
+# 1. Fetch origin to ensure local view of origin is current
+cd ../spark-anvil-site && git fetch origin main
+
+# 2. Verify origin state matches local state for the path in question
+git ls-tree -r origin/main public/chapters/ | grep -c '\-advanced_chapter\.m4a'  # origin count
+git ls-tree -r HEAD public/chapters/ | grep -c '\-advanced_chapter\.m4a'         # local-tracked count
+
+# 3. Check for uncommitted local state — MUST be empty before SHIPPED claim
+git status --porcelain public/chapters/ | wc -l                                  # MUST = 0
+```
+
+If `git status --porcelain` shows ≥1 file in the distribution path, the round is NOT actually shipped. Either commit + push the pending state, OR change the handoff to mark IN-FLIGHT.
+
+### Wave-runner self-report (enforcement at source)
+
+All three wave runners (`t2_coverage_wave_runner.sh` / `path_b_wave_runner.sh` / `path_b_tier2_audio_wave_runner.sh`) end with a check that warns when the site working tree has uncommitted content in `public/chapters/` + `src/data/`. Codified V11 (2026-06-23). Sample output:
+
+```
+⚠  spark-anvil-site has 1497 uncommitted files in public/chapters/ + src/data/.
+   Run cd ../spark-anvil-site && git status to inspect; commit + push before claiming coverage.
+   Origin state ≠ local state; handoff docs MUST verify against origin.
+```
+
+Operators must heed the warning before round-close. The warning fires regardless of context-switch / interruption / etc. — it's the last line of defense against the V10 failure mode.
+
+### When this rule applies
+
+- Every wave runner that distributes assets to a sibling repo's working tree (current: 3 site wave runners; future: any new `gen_*_to_site.py` / `copy_*_to_repos.sh` script that produces site assets)
+- Every handoff doc that quotes site coverage numbers (e.g., "X/Y chapters at site", "100% coverage")
+- Every round-close that bundles cross-repo content distribution
+
+### Companion to existing rules
+
+- `.claude/rules/workflow.md` § "CRITICAL: Verify PR Merged Before Claiming SHIPPED" — sister rule for PRs (this rule extends to direct-distribution paths)
+- `.claude/rules/workflow.md` § "CRITICAL: Pull origin BEFORE freshness queries" — reads against origin, not local
+- `.claude/rules/portfolio.md` § "Per-repo pull-then-audit BEFORE work" — pull-audit-then-work; this rule extends to push-verify-then-claim
+
+## Stale-clone recovery — verify 3 safety conditions before `git reset --hard` (2026-07-02)
+
+**When a clone shows a large "modified + untracked" working tree AND `git pull --ff-only` aborts, do NOT assume it's an orphan-state (unpushed local work) and do NOT blindly reset.** The far more common cause is a **stale local `main` pointer** — the branch is dozens/hundreds of commits behind origin with a superseded working tree, and the "untracked" files are already tracked upstream. Codified after the 2026-06-30 FractionForge session: the hub clone showed **822 "modified" + 467 untracked** files with `--ff-only` aborting; it turned out `main` was **563 commits behind** origin with a ~2026-06-11-era tree — zero real local work. This is DISTINCT from the V10 orphan-state rule above (that was genuinely *unpushed local content*; this is *stale pointer + superseded tree*).
+
+**Before any `git reset --hard origin/main`, verify all 3 safety conditions — and STOP if any fails:**
+
+```bash
+git fetch origin main
+# (a) No unpushed commits on HEAD (== 0)
+git rev-list --count origin/main..HEAD          # MUST print 0
+# (b) HEAD is a strict ancestor of origin/main (reset is a pure fast-forward, loses no commits)
+git merge-base --is-ancestor HEAD origin/main && echo "ff-safe" || echo "DIVERGED — STOP"
+# (c) Sampled "untracked" files already exist on origin (they're not new local work)
+for f in <sample-untracked-path-1> <sample-untracked-path-2>; do
+  git cat-file -e "origin/main:$f" 2>/dev/null && echo "$f: on origin (safe)" || echo "$f: NOT on origin — INVESTIGATE"
+done
+```
+
+Only when (a) == 0 AND (b) is ff-safe AND (c) all sampled untracked files exist on origin → `git reset --hard origin/main` is safe (it discards a stale tree, not real work). If (a) > 0 or (b) reports DIVERGED or (c) finds a genuinely-new file, STOP and surface to the user — that IS unpushed work and needs the orphan-state handling, not a reset.
+
 ## CRITICAL: Stagger Background Agents — Never 4+ in Parallel
 
 **Spawn background agents one at a time (sequentially), not 4+ simultaneously.** Codified after a Round 90 (2026-05-27) incident where 4 parallel `run_in_background: true` agents all hit the Anthropic API rate-limit cap within ~12 minutes wall-clock with zero/minimal work completed across the wave. Round 91 (same day) re-ran the same 4 work items staggered (1 at a time) and shipped all 4 successfully — total ~552K agent tokens, no rate-limit caps.

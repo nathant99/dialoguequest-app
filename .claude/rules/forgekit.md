@@ -241,6 +241,69 @@ GamificationConfig(
 | `BadgeDisplayData` | `id`, `title`, `iconAssetName`, `earnedAt` | UI display struct from `AchievementEngine.displayData()` |
 | `FSRSState` | `stability`, `difficulty`, `lastReview`, `repetitions` | Spaced repetition memory state |
 
+## ForgePedagogy — scaffolding theory alignment (R-FORGEPEDAGOGY-SCAFFOLDING; 2026-06-13)
+
+ForgePedagogy's `PolyaScaffold` primitives are grounded in a converging cluster of developmental-psych + learning-science frameworks. The alignment is load-bearing for portfolio brand-positioning (competing surfaces — Khanmigo / Synthesis / Sizzle / Khan Academy — surface "Socratic" / "scaffolding" prominently; the portfolio's existing primitives quietly outperform them on articulate-before-hint discipline + cast-character delivery, but the alignment is under-named in canonical refs). Per `Docs/RESEARCH_DEVELOPMENTAL_SCAFFOLDING_APP_EQUIVALENTS_2026-06-13.md` Phase 1.
+
+### Follow-the-learner's-lead (R1)
+
+DIR/Floortime (Greenspan + Wieder 1998) + Vygotsky ZPD (1978) + Collins-Brown-Newman cognitive apprenticeship (1989) converge on the SAME design principle: **adaptive systems follow the learner's choice + initiative; they do NOT push curriculum-first**. The portfolio operationalizes this across 5 primitives:
+
+| Primitive | Where | How it follows the learner's lead |
+|---|---|---|
+| Per-kit `castCameos[]` variant selection (Move B) | Per-app kit JSON; selector keyed off `ForgeMasteryEngine.TopicMasteryState.masteryScore` | extend / consolidate / stretch variants surface based on learner-revealed competence, NOT a fixed kit-N → cameo-N mapping |
+| `CastDialog` open-ended responses (Move D) | `ForgeAI.CastDialog` per-character voice | Dialog follows the conversation thread the learner opens; doesn't redirect to scripted curriculum |
+| `ForgeKnowledgeGraph` next-content suggestions | `ForgeKnowledgeGraph` traversal | Suggestions respect learner interest signals (recent traversal + dwell time) over flat sequence |
+| `ForgeMasteryEngine.NextProblemPicker` | `Sources/Client/ForgeMasteryEngine/` | extend / consolidate / stretch keyed off learner-revealed mastery; Vygotsky ZPD edge-of-competence (target difficulty in [mastery + 0.10, 0.20] band) |
+| `PolyaScaffold.hintsAllowedBeforePlan: 0` | `ForgePedagogy.PolyaScaffold` `Configuration` | Articulation precedes any hint — the learner must surface their thinking before the scaffold acts |
+
+**Why this matters**: ForgeKit modules don't override learner choice; they curate offerings the learner can choose from. When authoring per-app handoffs, name this seam — apps that bypass it (forced linear curriculum / hint-on-demand without articulation) regress to the failure mode the research literature consistently flags.
+
+### Articulate-before-hint trio (R3)
+
+`PolyaScaffold`'s `hintsAllowedBeforePlan: 0` default operationalizes three converging research frameworks. The trio surfaces the SAME pedagogical principle from different angles:
+
+| Framework | Reference | Mechanism | Portfolio operationalization |
+|---|---|---|---|
+| **Articulation method** | Collins + Brown + Newman 1989 § cognitive apprenticeship | Learner surfaces reasoning explicitly; articulation IS the metacognitive scaffold | `PolyaPhase.plan` requires `StrategyPlan` struct populated before `.execute` transitions |
+| **Productive failure** | Kapur 2008; Sinha + Kapur 2021 meta-analysis | Pre-instruction problem-attempt activates + differentiates prior knowledge; subsequent instruction maps onto richer substrate | The learner's (likely-incomplete) plan IS the productive-failure activation step; subsequent CastDialog hints map onto articulated misconceptions |
+| **Desirable difficulties** | Schmidt + Bjork 1992; Bjork + Bjork 2020 | Challenging conditions that initially reduce performance enhance long-term learning + transfer | Articulation effort + delayed hint = desirable difficulty; pairs with `ForgeGamification.SpacedRepetitionEngine` (FSRS-6) on the spacing axis |
+
+**Companion guardrail — failure-reluctance pattern**: Pan et al. 2020 + Zepeda et al. 2020 surface that learners are often reluctant to engage failure-bearing activities. The portfolio's anti-shame discipline mitigates this — cast voice register normalizes failure as learning (per `.claude/rules/distributed-narrative.md` § Voice register card); the CQ `CONTENT_STYLE_GUIDE.md` § 4.5 anti-credentialism gate applies portfolio-wide. The articulate-before-hint discipline ONLY works when paired with anti-shame; surface this when authoring per-app PolyaScaffold handoffs.
+
+### Per-cluster `Configuration` preset guidance (R2)
+
+`PolyaScaffold` ships 3 `Configuration` presets. Cluster fit:
+
+| Cluster | Recommended preset | Why |
+|---|---|---|
+| Play / Practice (Math / Science / Logic) | `.default` (1 hint after plan articulation) | Mathematical correctness rewards articulation; learner benefits from scaffold once stuck |
+| Create (Writing / Music / Art) | `.permissive` (hints earlier; lower articulation barrier) | Iteration ≠ correctness; writing-craft scaffolds work via continuous nudge rather than gated reveal |
+| Reflect (Journaling / Awareness / Mindfulness) | `.strict` (`hintsAllowedBeforePlan: 0`; no shortcut past articulation) | Reflection IS the work; hints undermine the surface area being practiced |
+| Together (Pass-and-play / Multipeer / Classroom) | `.default` | Peer mediation handles affect; standard scaffold sufficient |
+
+**Younger-cluster overlay (ages 9-10)**: cognitive-load research (Sweller; failure mode #3 per RESEARCH_DEVELOPMENTAL_SCAFFOLDING_APP_EQUIVALENTS_2026-06-13 § Q2) suggests `.permissive` as the recommended default for ages 9-10 across ALL clusters, with cluster-specific defaults activating at ages 11+. When authoring per-app handoffs, route ages 9-10 apps to `.permissive` regardless of cluster.
+
+### When this rule applies
+
+- Authoring a new per-app PolyaScaffold adoption handoff: name the three R1 / R3 alignments explicitly + pick the R2 preset matching the cluster + audience age
+- Reviewing a CastDialog Move D handoff: verify the dialog responds to learner-articulated thinking, NOT a curriculum-driven script (R1 follow-the-learner's-lead test)
+- Defending the portfolio's competitive position in a public-facing artifact (site `/method`, parent-facing copy, press): cite the alignment to legitimate the existing primitives (Khanmigo / Synthesis surface Socratic prominently; the portfolio's articulate-before-hint discipline is the same family with stronger guardrails)
+
+### What this rule does NOT cover
+
+- **CastDialog Move D-specific per-character voice register**: lives in `.claude/rules/distributed-narrative.md` § DN-S + per-character chapter MD voice cards
+- **ReflectionPromptModifier consumption pattern for Reflect-pillar apps**: codified 2026-06-13 as `Docs/TEMPLATE_HANDOFF_FROM_LABSMITH_REFLECTION_EXPLORATION_PATTERNS.md` v1 — pairs Move R2 (journal hooks) with R1 follow-the-learner's-lead via 3 learner-choice patterns (A end-of-question choice card / B open-world hub / C pacing-aware re-entry). Per-app filing flows through the standard per-app handoff workflow
+- **Screen-Floortime co-regulation patterns (R7)**: codified 2026-06-13 as `Docs/RESEARCH_SCREEN_FLOORTIME_PATTERNS_2026-06-13.md` — synthesizes 7 design patterns (attuned latency / embodied stand-in caregiver / shared attention anchor / calibrated challenge / visible regulation / asynchronous caregiver bridge / sensory ramp) for DIR/Floortime alignment in solo-screen contexts. NOT yet a standing rule — re-review after 60d field-test
+- **Pattern 5 (Visible Regulation) Move R3 mood-body check-in template**: codified 2026-06-15 as `Docs/TEMPLATE_HANDOFF_FROM_LABSMITH_MOOD_BODY_CHECK_IN.md` v1 — operationalizes the visible-regulation gap surfaced in the R7 research. 3-surface pattern (session-start / mid-session affect-mismatch / session-close sidecar) wires `EmotionSnapshot` + `AffectCalibrator` + cluster-specific quadrant register. Per-app filing via standard per-app handoff workflow. Trauma-axis-flagged apps MUST use body-sensation register (not emotion register) per SAMHSA TIP 57. Affect-labeling research foundation (Lieberman 2007 + Torre + Lieberman 2018 + Greenspan + Wieder 1998 + SAMHSA TIP 57 + Porges 2011) cited in template body
+
+### Cross-references
+
+- `Docs/RESEARCH_DEVELOPMENTAL_SCAFFOLDING_APP_EQUIVALENTS_2026-06-13.md` — parent research (Q1 + Q3 + Q4 source the R1 / R3 alignments; Q2 sources the R2 cluster guidance)
+- `.claude/rules/distributed-narrative.md` § Academic foundation — sister rule (Naul + Liu 4-feature framework; the 4th feature (adaptive storytelling) consumes the same R1 follow-the-learner's-lead primitive set)
+- `forgekit/Docs/HANDOFF_FROM_LABSMITH_POLYASCAFFOLD.md` + `HANDOFF_FROM_FORGEKIT_POLYASCAFFOLD_SHIPPED.md` — PolyaScaffold spec + ship receipt
+- `Docs/PORTFOLIO_PATTERNS.md` § App-creation checklist — per-cluster preset guidance lives here for app-author surface
+
 ## Avatar Edit Authority (ForgeAvatar + ForgeSync, 0.85.0+)
 
 Locked-in portfolio policy — see `spark-anvil-hub/Docs/DECISION_AVATAR_EDIT_AUTHORITY.md` for full rationale (**R3** revision: universal full editor + hub-as-cross-portfolio-manager). `AvatarStudioView` **shipped in ForgeKit 0.85.0** (2026-05-17).

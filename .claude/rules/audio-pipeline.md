@@ -82,6 +82,26 @@ Canonical script: `scripts/gen_dn_s_audio_drama.py`. Pattern lifted from CQ's `G
 - **SDK**: `google-genai` Python (`pip3 install google-genai`); `genai.Client(api_key=...).models.generate_content(model=..., config=GenerateContentConfig(response_modalities=["AUDIO"]))`
 - **Pro tier** (`gemini-2.5-pro-preview-tts`) reserved for hero-character voicing where Flash quality is insufficient
 
+#### Verify the key BEFORE any paid batch (R-GEMINI-KEY-VERIFY-BEFORE-BATCH; 2026-07-02)
+
+**Before running any paid Gemini wave (TTS, illustrations, cast portraits, book covers), sanity-check the key shape AND run a cheap auth probe — never assume the key is live.** Codified after the 2026-06-30 FractionForge session opened with `~/.config/labsmith/gemini_api_key` holding the 14-char literal placeholder `gemini api key`, which silently blocked all paid gen (the failure looked like a gen bug, not a config gap). Memory `project-gemini-key-placeholder.md` records the placeholder history.
+
+Two-step check:
+
+```bash
+# 1. Shape check — a real key is ~39 chars, starts with "AIza", has no spaces
+KEY=$(cat ~/.config/labsmith/gemini_api_key)
+[ "${#KEY}" -ge 39 ] && [[ "$KEY" == AIza* ]] && [[ "$KEY" != *" "* ]] \
+    && echo "shape OK (${#KEY} chars)" || echo "SUSPECT KEY — do NOT run a paid batch"
+
+# 2. Cheap auth probe — one free list call; if it errors, the key is invalid/unauthorized
+python3 -c "from google import genai; import os; \
+c=genai.Client(api_key=open(os.path.expanduser('~/.config/labsmith/gemini_api_key')).read().strip()); \
+print('auth OK:', next(iter(c.models.list())).name)"
+```
+
+Only run the wave once BOTH pass. This is cheaper than a half-completed batch that fails partway (Gemini partial-batch failures leave the pipeline in a mixed state; per R-GEMINI-KEY-SERIAL waves are single-flight, so a mid-batch auth failure wastes the whole serial run). When the probe passes but throughput crawls, suspect throttle (R-GEMINI-KEY-SERIAL), not the key.
+
 ### Per-character voice — prompt-driven, NOT cloning
 
 Gemini 2.5 TTS does not clone custom voices (that's Studio-tier Cloud TTS, enterprise). Instead, per-character voice register from `<app>-app/Docs/dn-s/chapters/<char>.md` § Voice register becomes the TTS prompt prefix:
@@ -92,21 +112,66 @@ Read the following AS <character>. Voice style: <directive from script>. Pace: s
 
 Apps NEVER author this prompt — hub does at gen time. The per-character voiceRegister card is the single source of truth.
 
-### Output format chain (updated 2026-06-02 per ADR-022 Q2)
+### Output format chain (updated 2026-06-17 Option PC; was 2026-06-02 ADR-022 Q2)
 
 1. Gemini 2.5 TTS returns `audio/L16;codec=pcm;rate=24000` (raw signed-16-bit PCM mono @ 24kHz)
 2. Hub concatenates per-line PCM bytes + tracks per-line byte offsets for WebVTT timing
 3. Wrap concatenated PCM in 44-byte RIFF/WAVE header → WAV (port of CQ's `wrapPCMInWAV` in Python at `scripts/gen_dn_s_audio_drama.py:wrap_pcm_in_wav`)
 4. **Triple-emit from the single WAV**:
-   - **`.caf`** (app-bundled; iOS-native): `afconvert -f caff -d aac -b 64000 -c 1 in.wav out.caf`
-   - **`.m4a`** (web-distributed; universal browser support): `afconvert -f m4af -d aac -b 64000 -c 1 in.wav out.m4a`
+   - **`.caf`** (app-bundled; iOS-native): `afconvert -f caff -d aac -b 64000 -c 1 in.wav out.caf` — **64 kbps**
+   - **`.m4a`** (web-distributed; universal browser support): `afconvert -f m4af -d aac -b 48000 -c 1 in.wav out.m4a` — **48 kbps** per § Web M4A bitrate below
    - **`.vtt`** (WebVTT chapter+transcript): per-line PCM offset → timestamp; `<v Character>line text` voice tag for WCAG accessibility + per-speaker player styling
 5. Ship all three (`.caf` + `.m4a` + `.vtt`) + `catalog.json` to `<app>-app/Resources/AudioDramas/<app>/` via cross-repo PR
 6. App-side `ForgeAudio.AudioDramaPlayer` (ForgeKit 0.99.11+) consumes the bundled `.caf` via `Bundle.module`; spark-anvil-site `<AudioDramaPlayer />` component consumes `.m4a` + `.vtt` via static `public/audio/<app>/` serving
 
 **Catalog metadata** (post-ADR-022): `catalog.json` per-drama entries now carry `bundlePath` (CAF), `webM4APath`, `webVTTPath`, and `chapters[]` (array of `{index, startMs, endMs, character}` per line) so consumers can build chapter-marker navigation in either client.
 
-**Legacy CAF backfill** (for the 124 dramas shipped before ADR-022): the gen script only emits the new sibling files going forward. For existing CAFs, backfill via `afconvert -f m4af -d aac -b 64000 -c 1 existing.caf out.m4a` + write a placeholder VTT (or re-run the full gen script for line-accurate VTT timings).
+**Legacy CAF backfill** (for the 124 dramas shipped before ADR-022): the gen script only emits the new sibling files going forward. For existing CAFs, backfill via `afconvert -f m4af -d aac -b 48000 -c 1 existing.caf out.m4a` (48 kbps per § Web M4A bitrate below) + write a placeholder VTT (or re-run the full gen script for line-accurate VTT timings).
+
+### Web M4A bitrate — 48 kbps (R-WEB-M4A-BITRATE; 2026-06-17)
+
+**The web-distributed `.m4a` leg uses 48 kbps mono AAC-LC at 24 kHz.** The app-bundled `.caf` leg stays at 64 kbps.
+
+Codified after `Docs/AUDIT_AUDIO_BITRATE_DEDUP_2026-06-17.md` (Option OD) surfaced that the prior portfolio-wide 64 kbps default contributed materially to Cloudflare Pages `public/` footprint at portfolio scale (3.36 GB across 1513 audio files). 48 kbps mono AAC-LC at 24 kHz on spoken-word lives well within the AAC-LC transparent band per ISO/IEC 14496-3 + AAC-LC perceptual-quality literature; the bitrate drop reduces site `public/audio/` + `public/chapters/` audio footprint by ~25% (~0.92 GB) at zero perceptible quality cost for portfolio TTS register.
+
+**Why the asymmetry**:
+
+| Leg | Bitrate | Where it ships | Sizing constraint |
+|---|---|---|---|
+| `.caf` | **64 kbps** | App bundle (`<app>-app/Resources/AudioDramas/<app>/*.caf` → bundled into IPA via `Bundle.module`) | App Store / TestFlight ceiling; CAF size is part of overall bundle size where IPA cap is at 4 GB+; current portfolio audio per app is <100 MB so 64 kbps headroom is fine |
+| `.m4a` | **48 kbps** | Cloudflare Pages (`spark-anvil-site/public/{audio,chapters}/<app>/*.m4a`) | Cloudflare Pages `public/` deploy-size ceiling; saw ENOSPC at ~4.2 GB; 48 kbps mono drops audio footprint enough to push the ENOSPC ceiling out 24+ months |
+
+**Forward gen**:
+- `scripts/pilot_interleaved_ensemble_chapter.py::wav_to_m4a` — emits at 48 kbps (ffmpeg `-b:a 48k` / afconvert `-b 48000`)
+- `scripts/gen_dn_s_audio_drama.py::encode_wav_to_m4a` — emits at 48 kbps (default arg); CAF leg unchanged at 64 kbps
+- `scripts/backfill_audio_m4a_vtt.sh` — emits at 48 kbps when backfilling from CAF
+- All other scripts emitting M4A for web distribution MUST follow
+
+**Bulk re-encode**: `scripts/reencode_audio_to_48kbps.py` re-encodes the 1500+ historical M4A files already shipped to spark-anvil-site at 60-69 kbps. Operates on `public/{audio,chapters}/*/*.m4a`; skips versioned archives (defense in depth over PR #929 sync filter); idempotent (skip-if-already-at-target with 5 kbps margin); dry-run by default. Source-of-truth `.m4a` siblings in app-repo `Resources/AudioDramas/<app>/` are NOT touched by the bulk re-encode — those align to the source on next gen-run.
+
+**Transcode-at-sync seam (R-TRANSCODE-AT-SYNC; 2026-06-17, Option RD)**: `sync_content_to_site.sh` now transcodes source `.m4a` files above target on-the-fly during sync. The seam closes the re-bloat regression class — without it, future syncs from un-updated 64 kbps sources would re-emit at the source rate on top of the already-transcoded 48 kbps site files.
+
+| Source .m4a state | Sync behavior |
+|---|---|
+| At-target (≤ 53 kbps; 48 + 5 kbps margin) | Plain `cp -p` source to dst (preserves quality; no upscale) |
+| Above-target (> 53 kbps) | `ffmpeg -c:a aac -b:a 48k -ac 1 -movflags +faststart -f mp4` source → dst |
+| ffmpeg / ffprobe missing OR `--no-transcode` | Plain `cp -p` + warning emission |
+| Transcode failure (corrupt source) | Cleanup tmp + fall back to plain `cp -p` (FAILED_TRANSCODE_FALLBACK_COPY counter) |
+
+`sync_content_to_site.sh --no-transcode` reverts to pre-seam plain `cp` behavior for emergency-rollback / debugging. The seam is per-file independent; if one source m4a corrupts, the others still sync.
+
+**Opportunistic per-app re-encode (companion of the seam)**: when an app session re-runs `gen_dn_s_audio_drama.py` (or any audio gen), the regenerated `.m4a` in `<app>-app/Resources/AudioDramas/<app>/` lands at 48 kbps by default. The next `sync_content_to_site.sh` run becomes a no-op for that app. Over time, the portfolio's source-of-truth `.m4a` files trend toward 48 kbps without a coordinated retroactive wave — closes Option A of the QC plan (`Docs/PLAN_APP_REPO_SOURCE_M4A_REENCODE_2026-06-17.md`) opportunistically.
+
+**Reversibility**: a future rule supersession can restore 64 kbps. Re-encoding 48 → 64 is a non-recoverable lossy step (information lost in the 64 → 48 pass); if quality issues surface in the field, re-gen from source via `gen_dn_s_audio_drama.py --regen-all`. Source TTS PCM bytes are not retained, but Gemini API determinism for the same prompt is high enough that re-gen approximates the original within imperceptible margin.
+
+**Bitrate selection** (why 48 not 32 or 56):
+
+- 32 kbps mono AAC-LC: borderline for kid dialog clarity — perceptual audits flag artifact at high-energy plosives + sibilance
+- 48 kbps mono AAC-LC: well within transparent band for 24 kHz spoken-word; chosen default
+- 56 kbps mono AAC-LC: imperceptibly different from 48 kbps for spoken-word; not worth the 8 kbps headroom delta
+- 64 kbps mono AAC-LC: prior portfolio default; transparent but over-spec for kid TTS narration register
+
+**Empirical validation**: ffmpeg AAC-LC encoder hits actual ~50 kbps on portfolio TTS source when targeting 48k (VBR closes within tolerance); ~23% file-size reduction vs prior 64 kbps default observed in single-file smoke test (PR #932 verification).
 
 ### Cost discipline (R410 #888)
 
@@ -134,12 +199,14 @@ A single drama at FK 7-8 serves the entire 9-14 audience because:
 - If a script needs revision (e.g., voice-register drift), edit `<drama-title>.script.md` directly + re-run `gen_dn_s_audio_drama.py`.
 - Existing dramas generated from pre-rewrite chapters (FK 10.5) do NOT need re-generation — the gen pipeline reads the script file, not the chapter MD.
 
-### TTS vendor choice (canonical per RESEARCH_TTS_QUALITY_GOOGLE_CLOUD_VS_ELEVENLABS_VS_GEMINI_2026-06-04)
+### TTS vendor choice — Gemini 2.5 canonical (post-V15 codification 2026-06-24)
 
-- **Gemini 2.5 Flash TTS — canonical for ~615 portfolio dramas.** Native multi-speaker single-call is unique in the 2026 vendor landscape. Cost ~$25-75 portfolio-wide.
-- **ElevenLabs v3 — reserved for hero-character A/B pilots only** (3 dramas: Sir Pinwell + Direct-Proof Dora + Lexa). Audio tag system (`[whispers]`, `[laughs]`) + voice cloning capability. Stitched single-speaker-per-call.
-- **Google Cloud TTS classic/WaveNet/Neural2/Studio — do NOT use.** No native multi-speaker; same cost as Gemini Pro but without the multi-speaker advantage.
-- **Gemini 2.5 Pro TTS — reserve for hero characters only** (~$2 per drama vs Flash ~$0.20). Use when register fidelity matters more than cost.
+Per `RESEARCH_TTS_QUALITY_GOOGLE_CLOUD_VS_ELEVENLABS_VS_GEMINI_2026-06-04` + V15 production verification: **Gemini 2.5 TTS won the A/B pilot.** As of V15 (2026-06-24) all 963 audio drama M4A files in production are Gemini-generated; 0 ElevenLabs variants reached production. The vendor decision is codified — new dramas ship Gemini Flash by default with NO A/B parallel.
+
+- **Gemini 2.5 Flash TTS — CANONICAL for all portfolio dramas.** Native multi-speaker single-call is unique in the 2026 vendor landscape. Cost ~$0.20/drama; ~$25-75 portfolio-wide. This is the default; no per-drama vendor flag needed.
+- **Gemini 2.5 Pro TTS — hero-character override only** (~$2 per drama vs Flash ~$0.20). Use when register fidelity matters more than cost. ~5 hero characters portfolio-wide.
+- **ElevenLabs v3 — RETIRED from production rotation.** 3 Phase 2A pilot dramas (Sir Pinwell + Direct-Proof Dora + Lexa) preserved in `<app>-app/Resources/AudioDramas/<app>/<drama>-elevenlabs.caf` as A/B artifacts; not used for forward gen. ElevenLabs may return if a future audio-tag-driven hero drama justifies the ~$30-100 spend, but that requires per-drama founder approval.
+- **Google Cloud TTS classic/WaveNet/Neural2/Studio — do NOT use.** No native multi-speaker; same cost as Gemini Pro without the multi-speaker advantage.
 
 ### Version preservation discipline (keep-all-versions policy)
 

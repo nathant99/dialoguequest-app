@@ -214,6 +214,60 @@ When the normalizer's quoting rules change, **update BOTH copies in the same cha
 - Static output mode preserved per existing `astro.config.mjs` lock-in; no SSR adapter added.
 - Build-time content-collection load handles 663 entries cleanly with the permissive schema.
 
+### R-SITE-BUILD-QUIET-PRERENDER — the build looks hung but isn't (2026-06-29)
+
+**The site has since grown to ~9000+ routes on the `@astrojs/cloudflare` HYBRID adapter, and a full `rm -rf dist && npm run build` now takes ~12-20 min.** The phase after the log line `building client (vite) ✓ N modules transformed` is SILENT — Astro emits no further stdout while it bundles the SSR `_worker.js` and copies the entire `public/` tree (chapters + cast + audio + books = thousands of files) into `dist/`. During this phase the PARENT node process sits at **0.0% CPU** (a child worker does the work at low, I/O-bound CPU), and `find dist -name '*.html'` stays near 0 because most routes (cast / cluster pages) are **SSR, not prerendered** — they live in `_worker.js`, not as `.html` files.
+
+**DO NOT kill the build because the log is quiet, the parent shows 0% CPU, or there's no HTML yet.** All three are normal. The definitive "working vs hung" test is whether `find dist -type f | wc -l` is GROWING over ~15-20s:
+
+```bash
+a=$(find dist -type f|wc -l); sleep 15; b=$(find dist -type f|wc -l); echo "$a -> $b"
+```
+
+If it's climbing (even ~50-100 files/15s), the build is fine — wait for it. Only suspect a real hang if the file count is flat for several minutes AND no child node proc shows any CPU. **Reference incident (2026-06-29 ELA wave):** a build was killed + restarted twice on the false belief it had hung at "10 modules transformed"; each was actually prerendering/copying normally. Net waste ~20 min. Verify growth before ever killing a site build.
+
+## Build-disk budget + R2 media hosting (R-SITE-BUILD-DISK-BUDGET + R-SITE-MEDIA-R2; 2026-06-30)
+
+**The site build has a finite disk budget, and heavy media committed into `public/` is the thing that blows it.** Codified after a 2026-06-30 Cloudflare Pages `ENOSPC: no space left on device` build failure (during Astro `staticBuild` → `generatePath`, writing prerendered HTML). Work-queue § "V28 P0 — Cloudflare Pages build FAIL: ENOSPC".
+
+### Why it happens (the doubling)
+
+Cloudflare Pages **clones the whole git repo** (media included), then Astro **copies the entire `public/` tree into `dist/`** during build, then writes prerendered HTML for the ~9000 routes. Peak build disk ≈ `repo (public/) + dist/ copy of public/ + node_modules + generated HTML`. When `public/` is multiple GB, the copy alone doubles it and the container runs out of disk.
+
+Measured 2026-06-30: `public/` ≈ **4.7 GB** — `public/chapters` 2.5 GB (742 chapter `.m4a` = 2.0 GB + 3716 beat `.webp` = 0.54 GB), `public/audio` 1.4 GB (audio dramas), `public/books` 0.77 GB (PDFs). **`.m4a` audio is 3.4 GB of the 4.7 GB — the dominant cost.** Every cast-expansion wave (each chapter = 5 beat WebPs + a narration `.m4a` + portrait) pushes the budget up; this is a growth cliff, not a one-off.
+
+### R-SITE-MEDIA-R2 — heavy binary media belongs on R2, and the `git rm` is the load-bearing step
+
+**R2 IS already provisioned** (`cdn.spark-and-anvil.com`; ADR-031 for PDFs, § V18 P1 for audio). The code-side is done: `src/lib/{audio-url,pdf-url}.ts` resolve to the CDN when `PUBLIC_AUDIO_CDN_URL` / `PUBLIC_PDF_CDN_URL` are set; `scripts/upload_{audio,pdfs}_to_r2.py` push to the bucket; the audio players consume the helpers. **The 2026-06-30 ENOSPC recurrence was NOT "we don't have R2" — it was that the local copies were never removed from `public/` (964 audio m4a + 742 chapter-narration m4a + 244 PDFs still git-tracked).**
+
+**THE LOAD-BEARING LESSON: uploading to R2 + adding env-gated URL indirection does NOTHING for build disk. Cloudflare clones the whole repo and Astro copies `public/` into `dist/` regardless of where the runtime serves from. A media R2 migration is ONLY complete when the files are `git rm`'d out of `public/`.** Leaving them gives runtime CDN serving but zero build-disk relief — exactly the trap that recurred here.
+
+The target split:
+- **On R2 (removed from the repo):** `.m4a` audio (chapter narration `public/chapters/**/*_chapter.m4a` + audio dramas `public/audio/`) + book `.pdf` (`public/books/`). Large, binary, never Astro-processed — serve only.
+- **Stay in-repo `public/`:** small per-page assets — beat `.webp` (image pipeline + gates depend on local presence), cast portrait `.webp` (R-CAST-PORTRAIT-SLUG CI check needs them local), `.vtt`, `.beats.json`, snapshot `.md`.
+
+**Completing / re-verifying the migration (the checklist that was skipped):**
+1. Confirm the surface is uploaded to R2 (`upload_audio_to_r2.py` / `upload_pdfs_to_r2.py` ran for it).
+2. Confirm `PUBLIC_AUDIO_CDN_URL` + `PUBLIC_PDF_CDN_URL` are set in the Cloudflare Pages env (Production **and** Preview) — else the site 404s after removal.
+3. `git rm` the local copies: `git rm -r public/audio public/books` + `git rm public/chapters/**/chapter_*_chapter.m4a public/chapters/**/chapter_*_chapter.vtt`.
+4. Grep for any unconditional local-path reference (`/audio/`, `/books/`, `_chapter.m4a`) that bypasses the URL helper — there must be none.
+5. Verify `du -sh public` dropped (audio+PDF removal → ~4.7 GB → ~0.6 GB).
+
+**Ownership split:** account-level (R2 bucket, custom domain, Pages env vars) is user-managed; the upload + `git rm` + helper wiring is hub-side. Beat-`.webp` migration (V18 P1 § Tier 2) is a separate, higher-complexity effort — do NOT bundle it with the audio/PDF `git rm`.
+
+### R-SITE-BUILD-DISK-BUDGET — watch the number every content wave
+
+- Before a large content wave, check `du -sh spark-anvil-site/public` and `du -sh public/*`. Treat **`public/` > ~4 GB** as the danger zone until the R2 `git rm` completes; **> ~5 GB** risks ENOSPC on Cloudflare.
+- The single biggest lever is `.m4a` audio. New audio-bearing chapters are the fastest way to grow the budget.
+- **Never** re-encode or delete shipped audio to save space without user approval (destructive to a shipped surface).
+- Interim mitigations if a deploy is blocked before R2: (1) lower audio bitrate (48 kbps mono) — destructive, needs approval; (2) prune verified-orphaned dirs (`public/pilot`, `public/companion-pack`) — small; (3) pause new audio-bearing content. None substitute for R2.
+
+### Cross-references
+
+- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "V28 P0 — Cloudflare Pages build FAIL: ENOSPC" — the incident + full fix plan
+- § R-SITE-BUILD-QUIET-PRERENDER (above) — sibling build-behavior note (the same `public/`-copy phase that overflows here is the one that looks "hung")
+- `.claude/rules/spark-anvil-website.md` "Tech stack" / "Hub does NOT own" — R2 bucket + DNS are user-managed; hub owns the code-side migration
+
 ## Cast portrait slug convention (R-CAST-PORTRAIT-SLUG; 2026-06-05)
 
 **The portrait file at `spark-anvil-site/public/cast/<app>/<char>.webp` MUST match the chapter MD filename slug at `src/content/chapters/<app>/<char>.md`.** Both are the same `<char>` token. This is load-bearing because chapter pages at `/cast/<app>/<char>` render `<img src="/cast/<app>/<char>.webp">` with no fallback; Astro static-build doesn't verify `<img src>` targets, so a slug mismatch ships as a silently-broken portrait link with no build-time error.
@@ -253,15 +307,37 @@ This matches `slugChar` in `spark-anvil-site/src/pages/cast/[app]/[char].astro` 
 
 The chapter MD filename (Tier-1 lives at `<app>-app/Docs/dn-s/chapters/<char>.md`; Tier-2 at `spark-anvil-hub/Resources/DN-S-Tier-Upper/chapters/<app>/<char>.md`) is the canonical slug. Portrait filenames must match. The character's display name in `dnCast.members[]` MAY differ from the slug (e.g., "The Bluffer" → `bluffer.md`); when the registry-derived slug doesn't match the chapter slug, the canonical slug is the chapter filename, and the post-gen fix script (`fix_cast_portrait_slugs.py`) renames the portrait to the chapter slug.
 
-### CI check (prebuild)
+### CI check (prebuild) — defense-in-depth with the sync-time gate
 
-`spark-anvil-site/package.json` `prebuild` runs `python3 ../spark-anvil-hub/scripts/audit_cast_portrait_coverage.py --json` and FAILS the build if any portrait is missing. This makes the regression class build-time-visible — a chapter MD without a matching portrait file blocks deploy. Local dev catches the regression before commit; Cloudflare Pages catches it before deploy.
+Two complementary gates BOTH stay in place; neither replaces the other.
+
+| Gate | Where | When it fires | Coverage class | Bypass |
+|---|---|---|---|---|
+| **Sync-time portrait gate** (V20 W1; 2026-06-26) | `spark-anvil-hub/scripts/sync_content_to_site.sh` | Per-app sync (post-content-copy / pre-commit) | **NEW gaps** — chapters being synced in this invocation | `--skip-portrait-gate` (trauma-axis carve-outs) |
+| **Cloudflare prebuild audit** (R-CAST-PORTRAIT-SLUG; 2026-06-05) | `spark-anvil-site/package.json` `prebuild` → `audit_cast_portrait_coverage.py` | Every spark-anvil-site build | **HISTORICAL gaps** — any chapter page in any app, regardless of last-sync time | `SKIP_CAST_PORTRAIT_CHECK=1 npm run build` (emergency only) |
+
+The prebuild gate makes the regression class build-time-visible — a chapter MD without a matching portrait file blocks deploy. Local dev catches the regression before commit; Cloudflare Pages catches it before deploy.
 
 Per `.claude/rules/spark-anvil-website.md` § "CRITICAL: Normalizer auto-runs in site prebuild" the prebuild chain is the canonical self-healing seam. The cast portrait audit joins it.
+
+**Historical-gap class (V21 P0 2026-06-26 incident)**: when a new gate ships, it does NOT retroactively audit historical content. Pre-gate chapter MDs that have a portrait gap stay invisible to the sync gate until the app is re-synced for some other reason. The prebuild gate's enumeration-over-all-chapter-pages model catches these. Reference incident: `readquest/frame-and-plume` shipped 2026-06-24 (V12 ensemble round) without the V16-step-6.5 pair portrait gen step. Sync-time gate didn't catch it (it landed AFTER the V12 sync). Cloudflare prebuild gate caught it on the next site build. **Do NOT remove either gate** — they cover different failure modes. See `Docs/AUDIT_READQUEST_FRAME_AND_PLUME_PORTRAIT_GAP_2026-06-26.md` for the full post-mortem.
 
 ### When this rule applies
 
 - **Authoring a new chapter MD**: name the file with the kebab-case slug of the character name; verify a matching `public/cast/<app>/<char>.webp` exists OR queue gen via `scripts/gen_cast_portraits.py --app <slug> --yes`.
+- **Authoring a new ensemble pair / cohort chapter** (any chapter where `pair-bonds:` is declared in front-matter OR `role: Ensemble*` is set): MUST run `gen_cast_portraits.py --app <slug> --pairs <slug>:<chapter-slug> --include-gated --yes` in the same round as chapter authoring. Per V16 step 6.5 (§ "V15 reference-impl in-session polish discipline" in `.claude/rules/distributed-narrative.md`) — V15 omitted this and 4 chapters tripped Cloudflare; V12 (2026-06-24) omitted it for `readquest/frame-and-plume` and tripped Cloudflare again 2026-06-26 (V21 P0); V21 P0 (PM) caught **23 more historical gaps at once** across V12-V21 ensemble-pair authoring rounds. The portrait belongs to the chapter slug, NOT to the individual member names.
+- **Cloudflare prebuild surfaces N>1 missing pair portraits at once** (the V21 P0 PM scenario): use the BATCH RECOVERY RECIPE:
+  ```bash
+  # 1. Get the full missing-portrait inventory
+  python3 scripts/audit_cast_portrait_coverage.py --json > /tmp/missing.json
+
+  # 2. Build comma-separated pairs argument
+  python3 -c "import json; d=json.load(open('/tmp/missing.json')); print(','.join(f\"{r['app']}:{r['char']}\" for r in d['missing']))"
+
+  # 3. Batch-gen via --all --pairs <list>
+  python3 scripts/gen_cast_portraits.py --all --pairs "<comma-list>" --include-gated --yes
+  ```
+  Cost: ~$0.045 per pair (Gemini Nano Banana Flash). For 23 pairs: ~$1.04. **The 3-step recipe is faster + cheaper than running per-app gen for each app**.
 - **Authoring a new app**: the per-app gen workflow already aligns; the `dnCast.members[]` `name` field flows through canonical slug derivation.
 - **Renaming a chapter MD**: rename the portrait file in the same PR. The prebuild CI check will block the merge if not.
 - **Adding a mentor or ensemble char** that doesn't fit `dnCast.members[]`: add it anyway (Captain Castle + The Pawn Cohort precedent — gambittales gained 2 entries 2026-06-05 to close the chapter-page broken-link surface).
@@ -281,13 +357,130 @@ Per `.claude/rules/spark-anvil-website.md` § "CRITICAL: Normalizer auto-runs in
 ### Cross-references
 
 - `Docs/AUDIT_CAST_PORTRAIT_BROKEN_LINKS_2026-06-05.md` — Phase A + B remediation audit
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § cast portrait broken-image
+- `Docs/AUDIT_READQUEST_FRAME_AND_PLUME_PORTRAIT_GAP_2026-06-26.md` — V21 P0 morning historical-gap incident post-mortem (V12 ensemble round; sync-time gate vs Cloudflare prebuild gate defense-in-depth)
+- `Docs/AUDIT_CAST_PORTRAIT_GAPS_BATCH_2026-06-26.md` — V21 P0 PM batch-recovery audit (23 portraits across 23 apps; same pattern at scale)
+- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § cast portrait broken-image + V21 P0 readquest/frame-and-plume + V21 P0 PM batch
+- `.claude/rules/distributed-narrative.md` § "V15 reference-impl in-session polish discipline" step 6.5 — pair portrait gen for ensemble chapters (the discipline this rule depends on)
 - `.claude/rules/forgekit.md` § "Cast asset filename convention" (app-bundle orthogonal convention)
 - `.claude/rules/portfolio.md` § "Asset Consumer Audit" (precedent for "registered ≠ wired" / "synced ≠ rendered")
+
+## Chapter front-matter duplicate-key gate (R-CHAPTER-YAML-DUP-KEY; 2026-06-26)
+
+**Chapter MD YAML front-matter MUST NOT have any top-level key listed twice.** js-yaml strict mode (used by Astro's `gray-matter` content-collection loader) rejects duplicate keys with `duplicated mapping key` error → Cloudflare Pages prebuild fails. Closes the V21+ P0 incident class surfaced 2026-06-26 evening (depthquest/trench.md + numbersense/pivot-pia.md both shipped with `gate-allow-text: []` listed twice).
+
+### Why the V20 W1 portrait gate didn't catch this
+
+The portrait gate validates portrait-coverage; it doesn't parse YAML. The portfolio normalizer (`normalize_chapter_frontmatter.py`) quotes unquoted values that contain colons/em-dashes but doesn't detect DUPLICATE KEYS. The js-yaml parser is the only thing that does — and it fails at site-build time, not sync time, leaving Cloudflare red until a hub session intervenes.
+
+### The two-gate defense-in-depth (same pattern as R-CAST-PORTRAIT-SLUG)
+
+| Gate | Where | When it fires | Coverage class | Bypass |
+|---|---|---|---|---|
+| **Sync-time duplicate-key gate** (V21+ 2026-06-26) | `spark-anvil-hub/scripts/sync_content_to_site.sh` | Per-app sync (post-content-copy / pre-commit) | **NEW duplicates** introduced in source MDs by a current sync | (none — duplicate keys are always defects) |
+| **Cloudflare prebuild gate** (V21+ 2026-06-26) | `spark-anvil-site/package.json` `prebuild` → `check-chapter-frontmatter-duplicates.py` | Every spark-anvil-site build | **HISTORICAL duplicates** in any synced chapter, regardless of last-sync time | `SKIP_FRONTMATTER_DUP_CHECK=1 npm run build` (emergency only) |
+
+Both gates check ONLY top-level keys. Nested mapping keys (e.g., the `name:` field repeated across sibling items in `pair-bonds:`) are NOT counted as duplicates — they're legitimately repeated per the YAML spec.
+
+### When this rule applies
+
+- **Authoring a new chapter MD front-matter**: never copy-paste a line that already exists at top level. The pattern surfaced this round was `gate-allow-text: []` accidentally pasted twice when an author meant to author the entry once and `gate-allow-text-pattern:` once.
+- **Adding `gate-allow-text` to satisfy R-PATH-B-TEXT-LEAK-GATE**: if a `gate-allow-text:` line already exists in the front-matter, EXTEND it (add list items beneath) — don't add a second `gate-allow-text:` line.
+- **Running `rewrite_chapter_register.py` or any other tool that edits front-matter**: tools MUST preserve the single-occurrence invariant. If a tool needs to add a value to an existing key, it MUST extend the existing entry, not add a parallel one.
+
+### Tools
+
+- `spark-anvil-hub/scripts/check_chapter_frontmatter_duplicates.py` — portfolio-wide scanner (T1 sources + T2 sources + site-synced copies); `--ci-mode` exits non-zero on any finding
+- `spark-anvil-site/scripts/check-chapter-frontmatter-duplicates.py` — in-repo mirror that runs in Cloudflare prebuild; resolves paths relative to `__file__` so it works in any environment
+
+### Companion to R-CAST-PORTRAIT-SLUG defense-in-depth
+
+R-CAST-PORTRAIT-SLUG and R-CHAPTER-YAML-DUP-KEY use the same two-gate pattern (sync-time gate catches new defects in active workflow; Cloudflare prebuild gate catches historical defects across all chapters). The two rules are companion defenses against site-deploy failures at the chapter-content axis. Removing either gate in either rule re-opens an unbounded regression class.
+
+### Cross-references
+
+- `Docs/AUDIT_CHAPTER_YAML_DUPLICATE_KEY_2026-06-26.md` — V21+ P0 incident post-mortem + remediation
+- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § V21+ P0 — work-queue entry
+- `spark-anvil-hub/scripts/check_chapter_frontmatter_duplicates.py` — hub-side audit
+- `spark-anvil-site/scripts/check-chapter-frontmatter-duplicates.py` — site-side prebuild gate
+- `spark-anvil-hub/scripts/sync_content_to_site.sh` — sync-time gate (post-content-copy / pre-commit)
+- `.claude/rules/spark-anvil-website.md` § R-CAST-PORTRAIT-SLUG — sister two-gate defense-in-depth pattern
+
+## Cast-member route-link coverage (R-CAST-ROUTE-COVERAGE; 2026-06-27)
+
+**Any component or page that renders a `/cast/<app>/<char>` LINK from a cast member MUST guard it with `hasChapter(app, member.name)` AND derive the slug with `chapterSlugFor(app, member.name)` — never `slugChar()` directly, and never an unguarded `chapterSlugFor()`.** A member with no authored chapter has no route; linking to it ships a broken internal link → `check-site-internal-links.py` FAIL → red Cloudflare deploy.
+
+### Why the rule exists (2026-06-27 incident)
+
+User-reported Cloudflare FAIL: `[route] 1 unique / 1 refs — /cast/mathcircle/circle`. Root mechanism: `chapterSlugFor(app, name)` (in `src/lib/castSlug.ts`) returns `SLUG_MAP[\`${app}/${name}\`] ?? slugChar(name)`. When a name is NOT in the slug map (e.g. an individual ensemble member "Circle" whose only route is the cohort chapter `circle-circe-echo-edie`), it **falls back to `slugChar("Circle")` = `circle`** — a slug with no route. Rendering that as a link 404s. `hasChapter(app, name)` returns true ONLY when `app/name` is a real slug-map key, so filtering members through it before linking is the fix.
+
+### The guarded pattern (all current call-sites already follow it)
+
+```astro
+{(appData?.dnCast?.members ?? [])
+  .filter((m) => hasChapter(app, m.name))      // ← REQUIRED guard
+  .map((m) => {
+    const slug = chapterSlugFor(app, m.name);  // never slugChar() for a route
+    return <a href={`/cast/${app}/${slug}`}>…</a>;
+  })}
+```
+
+Audited 2026-06-27 — **7 route-link generators, all guarded**: `SiblingCastStrip.astro`, `cast/[app]/[char].astro` (ensemble grid), `cast/[app]/[char]/advanced.astro`, `apps/[slug].astro`, `cast.astro`, `index.astro` (featured + daily carousel). The homepage recency strips key off `recency.cast` (real chapter slugs) so they link only to existing routes. Current `main` builds clean (0 broken refs); the failing build was an earlier state, fixed by these guards.
+
+### Enforcement gate
+
+`spark-anvil-site/scripts/check-site-internal-links.py` (postbuild, runs on every Cloudflare build) resolves every `href`/`src` against `dist/` and FAILS on any unresolved `/cast/...` route. This is the backstop — **never bypass it with `SKIP_SITE_INTERNAL_LINK_CHECK=1` to ship a real broken route.** When it flags a `/cast/<app>/<char>`, the cause is almost always an unguarded link-generator (add the `hasChapter` filter) or a genuinely missing chapter route (author the chapter or stop linking the member).
+
+### When authoring a new link-generator
+
+Any NEW component/page that turns `dnCast.members[]` (or `pair-bonds[]` members, or any member-name list) into `/cast/...` links MUST apply the `hasChapter` filter. Do NOT render individual ensemble/cohort members as separate links unless each has its own authored chapter route — link the cohort chapter instead.
+
+### Hardcoded curated lists bypass the guard — validate them at build time (2026-06-28)
+
+**A hand-authored list of `(app, char)` link targets — e.g. `today.astro`'s `FLAGSHIP_POOL`, or any curated "featured chapter" / "story of the day" pool — bypasses the `hasChapter()` filter entirely, because the slugs are typed by a human, not derived from `dnCast.members`.** A stale entry (a renamed chapter, a member with no individual route) ships a broken `/cast/...` link.
+
+**This failure is INTERMITTENT and that's the trap.** `today.astro` picks ONE entry by `dayOfYear % poolLength`, so a bad entry only renders — and only fails the build — on the specific day-of-year it's selected. Local builds and Cloudflare builds on every *other* day pass, so the bug looks "already fixed" when it's merely dormant. The 2026-06-28 incident: `FLAGSHIP_POOL` had `mathcircle/circle` (no route; real route is `circle-circe-echo-edie`) at index 3 and `cubesensei/look-ahead` (real: `look`) at index 7 — each failed Cloudflare ~1 day in 8, producing a recurring "`/cast/mathcircle/circle` broken again" report that three prior static audits couldn't reproduce because they ran on the wrong day.
+
+**Required pattern for any curated `(app, char)` pool**: validate the WHOLE pool against the real chapter collection at build time, so a bad entry fails LOUDLY on EVERY build (not 1-in-N days):
+
+```astro
+import { getCollection } from 'astro:content';
+const _validChapterIds = new Set(
+  (await getCollection('chapters')).map((c) => c.id.replace(/\.md$/, '')),
+);
+for (const entry of FLAGSHIP_POOL) {
+  if (!_validChapterIds.has(`${entry.app}/${entry.char}`)) {
+    throw new Error(`[<page>] curated entry has no chapter route: /cast/${entry.app}/${entry.char}`);
+  }
+}
+```
+
+**Reproducing a day-dependent route failure**: a clean-room build is the only reliable repro — `rm -rf dist && npm run build` on the actual failing day, then `grep -rl 'cast/<app>/<char>"' dist/`. The day-of-year is `new Date()`-derived, so the failing entry rotates daily; if the static checks all pass but Cloudflare keeps failing, suspect a `new Date()`/`Math.random()`-seeded picker over a curated or member-derived list.
+
+### Cross-references
+
+- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "V23 P0 — Cloudflare build FAIL: broken /cast/mathcircle/circle route"
+- `spark-anvil-site/src/lib/castSlug.ts` — `chapterSlugFor` / `hasChapter` / `slugChar`
+- `spark-anvil-site/scripts/check-site-internal-links.py` — the postbuild enforcement gate
+- `.claude/rules/spark-anvil-website.md` § R-CAST-PORTRAIT-SLUG — sister rule (portrait-file coverage; same "member without asset" failure family)
 
 ## Multi-beat chapter snapshot convention (R-MULTIBEAT-SNAPSHOT; 2026-06-10)
 
 **Multi-beat chapter pages read prose from a SNAPSHOT at `public/chapters/<app>/chapter_<char>.md` — NOT from `src/content/chapters/<app>/<char>.md`.** When the source-of-truth chapter MD is rewritten (e.g., Option C register cleanup, content corrections, register rewrites), **the snapshot must be regenerated alongside the per-beat sidecar + illustrations + audio**, because the sidecar's `prose-range: { from-line, to-line }` indexes against the snapshot's line numbers AND the per-beat audio narration speaks the snapshot's prose.
+
+### CRITICAL: the snapshot `.md` is a SEPARATE copy — distribute it explicitly (2026-06-27 incident)
+
+**When distributing a NEW multibeat chapter to `public/chapters/<app>/`, the snapshot `chapter_<char>.md` is a DISTINCT file that must be copied separately** — it is a byte copy of the segmented source MD (`<app>-app/Docs/dn-s/chapters/<char>.md`):
+
+```bash
+cp <app>-app/Docs/dn-s/chapters/<char>.md \
+   spark-anvil-site/public/chapters/<app>/chapter_<char>.md
+```
+
+**Do NOT rely on a `chapter_<char>_*` (underscore) glob to carry it** — that glob matches the beat/audio/vtt files (`chapter_<char>_beat_00.webp`, `chapter_<char>_chapter.m4a`, …) but **MISSES the no-underscore snapshot `chapter_<char>.md`** (and the `chapter_<char>.beats.json` sidecar). Use `chapter_<char>.*` (dot) OR copy the snapshot explicitly.
+
+**Why this is load-bearing**: `build-multibeat-chapter-manifest.mjs` requires the snapshot (+ audio + vtt + every beat image) and **SILENTLY rejects** any chapter missing one. A rejected chapter is absent from `multibeat-chapters.json`, so its page evaluates `hasMultibeat === false` and renders `<ChapterIllustration variant="opener">` → `chapter_<char>_opener.webp` which forward-authored (post 2026-06-13 no-opener) chapters never generate → 404 → red Cloudflare deploy.
+
+**Build-time backstop (gate)**: `spark-anvil-site/scripts/check-multibeat-snapshot-coverage.py` runs in `prebuild` (ahead of the manifest builder) and FAILS the build LOUDLY with the exact missing file for any sidecar whose companion set (snapshot/audio/vtt/beat0) is incomplete — turning the silent reject into an actionable error. Bypass: `SKIP_MULTIBEAT_SNAPSHOT_CHECK=1`. **Reference incident**: 2026-06-27 — 5 FractionForge V22 chapters shipped without snapshots; all 5 silently rejected → 10 broken opener refs caught by the postbuild link checker (work-queue § "V23 P0 — Cloudflare build FAIL").
 
 ### Why two prose paths exist
 
@@ -425,7 +618,7 @@ Some chapters describe characters by behavior + setting but NOT species (proofqu
 - Any one-off chapter regen via `pilot_interleaved_ensemble_chapter.py --manifest <sidecar>` — auto-applies
 - Any new Path B / Path C ensemble chapter gen script (e.g., future `gen_app_illustrations.py --interleaved` portfolio rollout) — MUST adopt the same 3-block pattern. The blocks are reusable via the same helper functions (`extract_character_identity()` + `_trim_excerpt_for_prompt()` + `STYLE_REGISTRY` lookup)
 - **Cast portrait gen (`scripts/gen_cast_portraits.py`)** — applies the 3-block pattern with POSE / FRAMING substituted for STORY EXCERPT (portraits are neutral 3/4 head-and-shoulders, not beat-scene depictions). Imports `STYLE_REGISTRY` + `_DEFAULT_STYLE` + `_parse_frontmatter` + `_trim_excerpt_for_prompt` directly from `pilot_interleaved_ensemble_chapter` so the per-app palette + species-defaulting + front-matter parsing helpers are shared, not duplicated. Codified after `Docs/AUDIT_CAST_PORTRAIT_VS_BEAT_0_COHERENCE_2026-06-11.md` surfaced 100% portrait-vs-beat-0 drift across 58 multi-beat chapters. See § "Portrait companion (cast portrait gen)" below
-- **Book cover gen (`scripts/gen_book_covers.py`)** — FUTURE adoption per `Docs/AUDIT_PDF_BOOK_COVER_COHERENCE_2026-06-11.md`; not yet refactored. When refactored, MUST follow the same import + 3-block pattern
+- **Book cover gen (`scripts/gen_book_covers.py`)** — SHIPPED 2026-06-11 (commit 3057c177; "Sister-of-Phase-A book cover refactor + 286-cover portfolio regen wave"). Applies the 3-block pattern with COMPOSITION substituted for STORY EXCERPT (covers are tier-specific layout: top 60% character + bottom 40% title typography + Spark & Anvil footer; per-tier register from `TIER_REGISTERS`). Imports `STYLE_REGISTRY` + `_DEFAULT_STYLE` + `_parse_frontmatter` + `_trim_excerpt_for_prompt` directly from `pilot_interleaved_ensemble_chapter` so the cover, the cast portrait, and beat 0 all inherit the same per-app visual register. See `Docs/AUDIT_PDF_BOOK_COVER_COHERENCE_2026-06-11.md` for the parent audit + `scripts/gen_book_covers.py::build_prompt()` for the canonical 3-block impl.
 
 ### Portrait companion (cast portrait gen)
 
@@ -457,6 +650,236 @@ The `scripts/gen_cast_portraits.py` prompt pipeline (refactored 2026-06-11) adop
 - `labsmith/scripts/gen_cast_portraits.py` — `build_prompt()` portrait impl (imports STYLE_REGISTRY + helpers from pilot module)
 - `labsmith/scripts/auto_segment_chapter.py:278` — generic `scene` placeholder upstream (treated as structural metadata, not artistic direction)
 - `Docs/SPEC_INTERLEAVED_ENSEMBLE_CHAPTER.md` — ensemble sidecar manifest schema (parent spec)
+
+### Pre-distribute text-leak gate (R-PATH-B-TEXT-LEAK-GATE; 2026-06-13)
+
+**`path_b_wave_runner.sh` MUST run `audit_image_text_leaks.py` against each newly-generated beat PNG BEFORE distributing to spark-anvil-site. If any beat verdicts LEAK, the wave runner fails-fast for that chapter — no distribution to public/chapters/ — and the operator regenerates with a tightened prompt.**
+
+#### Why the gate exists
+
+Queue #971 Phase 2 portfolio sweep (`Docs/AUDIT_IMAGE_TEXT_LEAKS_PORTFOLIO_SWEEP_2026-06-13.md`) classified 397 site beat PNGs and surfaced **62 LEAKs (15.6%)**. Without a pre-distribute gate, future Path B waves can ship new leaks. The top-3 leakers (BeatForge 11 + GambitTales 10 + BridgeForge 9 = 48% of total) demonstrate the regression class.
+
+Pre-distribute is the right seam (NOT post-distribute or runtime detection) because:
+
+1. Audit cost is sub-cent per image (~$0.001 Gemini 2.5 Flash); cumulative gate cost per chapter is ~$0.005 (5 beats × $0.001)
+2. Re-running the gen for a failed chapter is cheaper than syncing a leak + then remediating it (avoids cascade through `sync_content_to_site.sh` → site prebuild → Cloudflare deploy)
+3. The operator sees the leak verdict + detected text strings inline in the wave runner output
+
+#### Gate mechanics (`scripts/path_b_wave_runner.sh` step 2.5)
+
+```bash
+if [ "${SKIP_TEXT_LEAK_GATE:-0}" != "1" ]; then
+    for beat in beat_00..beat_04; do
+        audit_image_text_leaks.py --image $beat --json-out tmp
+        verdict=$(jq -r '.results[0].verdict' tmp)
+        if [ "$verdict" = "LEAK" ]; then
+            echo "✗ $app/$slug — text-leak gate FAIL on beat $i"
+            mark-failed; break-chapter
+        fi
+    done
+fi
+```
+
+The gate enumerates each `${slug}_beat_0N.png` produced by `pilot_interleaved_ensemble_chapter.py`, calls the audit script per-beat, and parses the per-image verdict. LEAK verdict → fail the chapter; the wave runner records `<app>/<slug>:text-leak-gate` in the FAILED_LIST and moves to the next chapter. Operator inspects the leak diagnostics + reruns the wave.
+
+#### Override
+
+Set `SKIP_TEXT_LEAK_GATE=1` to bypass. Use sparingly:
+
+- Trauma-axis carve-outs where transient text leaks are operationally acceptable
+- Diagnostic runs where the operator wants to ship + inspect the leak in-context
+- Math-app override is already handled inside `audit_image_text_leaks.py` (MULTI_DIGIT is OK for math apps; see `MATH_APPS` set) — don't reach for `SKIP_TEXT_LEAK_GATE` for math apps unless the gate misfires
+
+Default = gate enabled. Anytime a math-app beat surfaces a false-positive LEAK because of legitimate single-digit / multi-digit numerals not caught by the math-app override, FIRST extend `MATH_APPS` in the audit script; only use the env-var bypass when extension isn't appropriate.
+
+#### Companion: per-app remediation queue (R1)
+
+The 62 LEAKs surfaced in the portfolio sweep are NOT auto-remediated by adding this gate. R1 remediation per `Docs/AUDIT_IMAGE_TEXT_LEAKS_PORTFOLIO_SWEEP_2026-06-13.md` § Recommendations:
+
+1. Per-app regen for top-3 leakers (BeatForge / GambitTales / BridgeForge = 30 of 62)
+2. Per-app spot-check + selective regen for tail-15 apps (32 of 62)
+3. Verify post-regen via `audit_image_text_leaks.py --app <slug>` returning 0 LEAKs
+
+The gate prevents NEW leaks; R1 remediates EXISTING leaks. Both are required for full closure of Queue #971.
+
+#### When this rule applies
+
+- Every `path_b_wave_runner.sh` invocation — auto-applies via step 2.5 (chapter beats)
+- Every `gen_cast_portraits.py` invocation — auto-applies via `gate_single_image()` between PNG render and WebP conversion (R-PATH-B-TEXT-LEAK-GATE companion, 2026-06-15)
+- Every `gen_book_covers.py` invocation — auto-applies via `gate_single_image()` between PNG render and WebP conversion (R-PATH-B-TEXT-LEAK-GATE companion, 2026-06-15)
+- Any one-off chapter regen via direct `pilot_interleaved_ensemble_chapter.py` invocation — operator MUST manually run `audit_image_text_leaks.py --image <beat>.png` before copying to spark-anvil-site (the gate is currently wired into the wave runner only; one-off path is operator-discipline)
+- Future Path C ensemble gen (when portfolio-scale `gen_app_illustrations.py --interleaved` ships) — MUST adopt the same pre-distribute gate pattern
+
+#### Reusable gate function
+
+The per-image gate is canonicalized in `audit_image_text_leaks.py:gate_single_image()`. New gen scripts MUST import + call this function rather than re-implement the audit + verdict logic. Signature:
+
+```python
+from audit_image_text_leaks import gate_single_image
+
+passed, audit = gate_single_image(
+    image_path,                # Path to the rendered PNG
+    app_slug="myapp",          # Optional explicit override; falls back to path detection
+    client=client,             # Optional google.genai.Client; lazy-built if None
+    skip_env="SKIP_TEXT_LEAK_GATE",  # Env override knob
+)
+if not passed:
+    # quarantine, log, continue (don't crash; assets are independent)
+```
+
+The function respects `SKIP_TEXT_LEAK_GATE=1` for trauma-axis carve-outs + diagnostic runs. `passed=False` only on `verdict == "LEAK"`; CLEAN / BORDERLINE / NON_ENGLISH_FLAG / GATE_SKIPPED all pass.
+
+`app_slug_from_path()` recognizes three layouts: `chapters/<app>/`, `cast/<app>/`, and `CustomArt/<app>/`. The math-app override (multi-digit numerals OK for `MATH_APPS`) carries through.
+
+#### Gate quarantine
+
+Gate-blocked assets are moved to `labsmith/tmp/text-leak-gate-failed/<asset-kind>/<app-slug>/` (NOT distributed). Inspect, manually decide whether to regen or accept; do NOT `mv` back to the source path without re-auditing.
+
+#### INTENTIONAL_CURRICULUM_SIGNAGE — 6th-category allow-list (2026-06-16)
+
+For chapters where curricular signage (compass cardinals N/E/S/W on a compass scene; angle measures 60° / 120° on a polygon; variable letters x / y in equation visuals; cable-tension RATIOS in bridge engineering scenes; etc.) is intentional and load-bearing per the chapter's curricular surface, declare the allow-list IN the chapter MD's YAML front-matter:
+
+```yaml
+---
+character: Apprentice Sides
+role: ...
+gate-allow-text:
+  - N
+  - E
+  - S
+  - W
+  - 60
+  - 120
+gate-allow-text-pattern: '^[0-9]{1,3}°?$'   # OPTIONAL regex for ranges (e.g., any angle measure)
+---
+```
+
+When the audit detects text that would normally LEAK (ENGLISH_WORDS or non-math-app MULTI_DIGIT), it consults the chapter MD's front-matter. If ALL detected text matches the `gate-allow-text` list OR the `gate-allow-text-pattern` regex, the verdict downgrades from `LEAK` → `LEAK_ALLOWLISTED` (PASSING). The audit emits the allow-list match in the per-image JSON for audit-trail clarity.
+
+**Resolution mechanism**:
+
+| Image path pattern | Resolved chapter MD |
+|---|---|
+| `spark-anvil-site/public/chapters/<app>/chapter_<char>_beat_NN.png` | `<app>-app/Docs/dn-s/chapters/<char>.md` (Tier-1) |
+| `spark-anvil-site/public/chapters/<app>/chapter_<char>-advanced_beat_NN.png` | `labsmith/Resources/DN-S-Tier-Upper/chapters/<app>/<char>.md` (Tier-2) |
+
+**When to use the allow-list**:
+
+- Chapter prose explicitly references curricular signage (compass / angle measures / equation variables / ratios / scale labels / etc.)
+- Math-app chapters where multi-digit signage IS the curriculum (already handled by `MATH_APPS` set; allow-list is BELT-AND-SUSPENDERS for non-math-app math content like cable-tension RATIOS)
+- Trauma-gated chapters where SAMHSA register intentionally surfaces small affect labels in the scene
+- Op β R1 accept-residual chapters: bridgeforge/cable (cable-tension RATIOS), fractionforge/equi (equivalent-fraction labels), numbersense/splitter-sasha (digit-split visuals), quillspell/ember (spelling letters)
+- Geometryforge curricular bypasses surfaced 2026-06-16: apprentice-sides + compass-wraith (N/E/S/W cardinals), captain-construction (workshop labels), madame-polygon (angle measures + variables), axia-and-theora (background village signage)
+
+**Don'ts**:
+
+- Don't use the allow-list to bypass real defect text (typos / hallucinated brand names / wrong-character signage). The allow-list is for INTENTIONAL curricular content, not accidental leaks
+- Don't make the allow-list too permissive (e.g., `gate-allow-text-pattern: '.*'` accepts everything; defeats the gate's purpose)
+- Don't omit `gate-allow-text` when SKIP_TEXT_LEAK_GATE=1 was used as the bypass — codify the allow-list in the MD so the next audit doesn't need the env override
+
+**Companion**: when SKIP_TEXT_LEAK_GATE=1 is used to bypass the gate, the OPERATOR SHOULD also add a `gate-allow-text:` entry to the chapter MD so future re-audits don't re-flag the same intentional signage.
+
+#### What this rule does NOT cover
+
+- **`copy_cast_portraits_to_site.sh`** — the gen-side gate inside `gen_cast_portraits.py` is sufficient. Optionally extend the sync script with `--gate-on-sync=1` for belt-and-suspenders. Default off
+- **Mascot / topic / modecard / backdrop gen** — separate scripts (`gen_app_illustrations.py` variants); the gate doesn't auto-apply there yet. Pending Item 1 (Queue #971 Phase 5+ portfolio sweep)
+- **Achievement badge gen (`gen_app_badges.py`)** — rarity-tier frame treatment merges text via design; flagged but not gate-wired. Future: extend gate to recognize intentional title typography vs accidental signage leaks
+
+#### Audit script resilience flags (Item 4 — codified V9; expanded V10 2026-06-23)
+
+`scripts/audit_image_text_leaks.py` exposes three resilience knobs added after the V8 stall incident (Gemini API hung 14+ min mid-call; killed via SIGINT lost 1197/1692 images of progress with no JSON written):
+
+| Flag | Default | Behavior |
+|---|---|---|
+| `--call-timeout <seconds>` | 60 | Wraps each `client.models.generate_content()` call in `concurrent.futures.ThreadPoolExecutor.submit().result(timeout=...)`. On timeout, raises + falls into the retry path |
+| `--max-retries <N>` | 1 | Total attempts = `max_retries + 1`. On transient failure (timeout / 503 / 429), retries with backoff |
+| `--checkpoint-every <N>` | 50 | After every N completed classifications, writes partial JSON to `--json-out` so a stall doesn't lose all progress |
+| `--resume <partial.json>` | off | Skips images whose absolute path already appears in `partial.results`. Combine with `--checkpoint-every` for stall recovery |
+
+`SIGINT` (`Ctrl-C`) writes a final checkpoint before `sys.exit(130)` — partial JSON is always preserved.
+
+**When this rule applies** — every audit invocation (portfolio-wide sweep, per-app sweep, spot-check, single-image, gate-mode). The flags are optional but the defaults are tuned for portfolio-scale (1500+ images in ~30 min on Gemini 2.5 Flash classification, with stall-resilient checkpointing).
+
+**Canonical full-portfolio invocation**:
+
+```bash
+/usr/bin/python3 scripts/audit_image_text_leaks.py \
+    --site-sweep \
+    --json-out Docs/AUDIT_IMAGE_TEXT_LEAKS_FULL_<date>.json \
+    --call-timeout 60 \
+    --checkpoint-every 50
+# If a stall recurs mid-sweep:
+/usr/bin/python3 scripts/audit_image_text_leaks.py \
+    --site-sweep \
+    --json-out Docs/AUDIT_IMAGE_TEXT_LEAKS_FULL_<date>.json \
+    --resume Docs/AUDIT_IMAGE_TEXT_LEAKS_FULL_<date>.json
+```
+
+#### Wave Q CI guardrail (Item 5 — codified V9 + Round 488 audit-script discipline + V10 rule-sync 2026-06-23)
+
+`scripts/check_no_hardcoded_paths.sh` + `.github/workflows/check-no-hardcoded-paths.yml` enforce the § P1 standing directive that scripts MUST use relative paths (not `/Volumes/Data/Projects/GitHub/...` hardcodes). Runs on every PR open + push to main that touches `scripts/**.{py,sh}`.
+
+**Why**: per V8 stall incident root-cause + Round 488 `Docs/AUDIT_DOCS_ONLY_APP_RANKING_2026-06-02.md` inventory bug — scripts with hardcoded absolute paths to the (now-moved) `/Volumes/Data/Projects/GitHub/` root silently fail when the portfolio root moves. The CI guardrail prevents regression at PR time.
+
+**Self-skip mechanism**: the check script reconstructs the forbidden pattern from variables (so its own grep doesn't self-flag) AND filters out its own filename (`check_no_hardcoded_paths.sh`) from the match set. Verified: PASS on clean tree; FAIL with exit 1 on planted regression script containing the hardcoded path.
+
+**Companion rule**: `.claude/rules/portfolio.md` § "P1 — Scripts must use relative paths" is the authoritative spec; this CI guardrail is the automated enforcement. Distributed to portfolio app repos via `scripts/copy_rules_to_repos.sh --apply` (V10 round-close).
+
+#### Cross-references
+
+- `Docs/AUDIT_IMAGE_TEXT_LEAKS_PORTFOLIO_SWEEP_2026-06-13.md` — parent audit (62 LEAKs surfaced)
+- `Docs/AUDIT_TEXT_IN_IMAGE_LEAK_SCAN_2026-06-13.md` — original audit policy + category framework
+- `Docs/AUDIT_PORTRAIT_BOOK_COVER_TEXT_LEAK_GATE_WIRE_UP_2026-06-15.md` — companion gate adoption audit (this expansion)
+- `Docs/RESEARCH_OPTION_V_P3_CARRY_ITEMS_SCOPING_2026-06-15.md` § Item 2 — parent scoping for this expansion
+- `labsmith/scripts/audit_image_text_leaks.py` — audit tool + `gate_single_image()` reusable function
+- `labsmith/scripts/path_b_wave_runner.sh:96-122` — wave runner gate impl
+- `labsmith/scripts/gen_cast_portraits.py` — portrait gate wire-up
+- `labsmith/scripts/gen_book_covers.py` — book cover gate wire-up
+
+## Pre-distribute anatomy gate (R-ANATOMY-GATE; 2026-06-29)
+
+**Every newly-generated cast artifact (chapter beat / cast portrait / book cover) MUST pass an anatomy-defect gate before distribution, the same way it must pass the text-leak gate.** Sister rule to R-PATH-B-TEXT-LEAK-GATE. Codified after a user-reported defect ("cast character has 3 hands") + the V25 portfolio anatomy sweep (`scripts/audit_image_anatomy.py --all-sweep`), which surfaced glitches the text-leak gate never looked at (e.g. `chanceforge/flipside` — two faces on one head).
+
+### What the gate blocks (and what it must NOT)
+
+`scripts/audit_image_anatomy.py:gate_single_image()` returns `passed=False` ONLY on verdict `ANATOMY_DEFECT` — a clear UNINTENTIONAL glitch: extra hand/arm/leg/head, six fingers, fused/duplicated/detached limbs, two faces on one head, impossible joints. `CLEAN` and `BORDERLINE` both PASS.
+
+**CRITICAL — intentional stylized/non-human anatomy is NOT a defect and must never be blocked**: octopus-tween with 8 arms, hand-less creatures (snails, birds with wings-not-arms, blobs), cartoon 4-finger hands, partly-hidden hands. The classifier prompt biases toward CLEAN when uncertain to stay low-false-positive. Smoke-tested: Eight-the-octopus (characterforge) = CLEAN ("8 arms, anatomically correct").
+
+### Where it is wired (auto-applies)
+
+| Surface | Wire point | Behavior |
+|---|---|---|
+| Chapter beats (Path B wave) | `path_b_wave_runner.sh` step 2.6 | Per-beat; fail-fast → `<app>/<slug>:anatomy-gate` in FAILED_LIST; operator regens the beat with `--beat-idx N --no-audio` |
+| Cast portraits | `gen_cast_portraits.py` (after text-leak gate, before WebP) | Quarantine to `tmp/anatomy-gate-failed/cast-portraits/<app>/`; retry with `--regen` |
+| Book covers | `gen_book_covers.py` (after text-leak gate, before WebP) | Quarantine to gate-quarantine root with `_ANATOMY_FAIL` suffix |
+
+**Direct-pilot workflow** (gen via `pilot_interleaved_ensemble_chapter.py` + manual audit, not the wave runner): the operator MUST run a per-beat anatomy loop alongside the text-leak loop before distributing — `audit_image_anatomy.py --image <beat>.png` per beat; regen any `ANATOMY_DEFECT`.
+
+### Reusable gate function
+
+```python
+from audit_image_anatomy import gate_single_image as anatomy_gate
+passed, audit = anatomy_gate(png_path, client=client)  # passed=False only on ANATOMY_DEFECT
+```
+
+Respects `SKIP_ANATOMY_GATE=1` (rare; deliberately surreal scenes). **Fails OPEN on API error** (a transient classifier failure does not block a wave) — the periodic `--all-sweep` (run after big gen rounds, → `Docs/AUDIT_IMAGE_ANATOMY_*.json`) is the historical-gap backstop, exactly as the Cloudflare prebuild gate backstops the cast-portrait-slug rule.
+
+### Two-gate defense-in-depth (same pattern as R-CAST-PORTRAIT-SLUG)
+
+| Gate | When | Coverage |
+|---|---|---|
+| Gen-time `gate_single_image()` | every new artifact gen | NEW artifacts in the active gen round |
+| Periodic `--all-sweep` | after major gen rounds / on demand | HISTORICAL artifacts across the whole portfolio (~870 portraits + ~3147 beats) |
+
+Both stay; neither replaces the other. New gen scripts MUST call `anatomy_gate()` alongside the text-leak gate.
+
+### Cross-references
+
+- `scripts/audit_image_anatomy.py` — auditor + `gate_single_image()`
+- `scripts/audit_image_text_leaks.py` — sibling (text) gate this mirrors
+- `Docs/AUDIT_IMAGE_ANATOMY_FULL_2026-06-29.json` — V25 portfolio sweep results
+- `.claude/rules/spark-anvil-website.md` § R-PATH-B-TEXT-LEAK-GATE — sister rule
 
 ## Chapter hero source-of-truth (R-CHAPTER-HERO-SOURCE; 2026-06-11)
 
@@ -505,7 +928,7 @@ Per user-direct 2026-06-13 ("we are not going with openers anymore. this should 
 
 Filed in `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "Opener illustration deprecation":
 
-1. Migrate `/stories` thumbnail source for multi-beat chapters → beat 0 (~1-2h)
+1. ✅ **SHIPPED 2026-06-27 (V23)** — Migrate `/stories` + cluster thumbnail source for multi-beat chapters → beat 0. `src/components/ChapterIllustration.astro` now imports the `multibeat-chapters.json` manifest and resolves `thumbnail` + `opener` variants to `chapter_<char>_beat_00.webp` for any multibeat chapter (all 582 have `beat_00.webp`). **CRITICAL CONSTRAINT**: the resolver MUST use the static manifest import, NOT `node:fs` existence checks — `node:fs` cannot be bundled under the `@astrojs/cloudflare` hybrid adapter (cluster pages are SSR) and breaks the build. This closed a Cloudflare deploy FAIL where forward-authored multibeat chapters (no legacy `_opener.webp` on disk) 404'd the thumbnail. See work-queue § "V23 P0 — Cloudflare build FAIL: broken `chapter_<char>_opener.webp` thumbnail refs".
 2. Strip opener gen from `gen_app_illustrations.py --chapters` (~30 min)
 3. Audit non-GambitTales PDF builders for legacy opener-only fallback (~15 min)
 4. Companion deletion sweep (DEFERRED until app reaches 100% multi-beat coverage)
@@ -525,6 +948,198 @@ Filed in `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "Opener illustratio
 - `.claude/rules/spark-anvil-website.md` § R-PATH-B-PROMPT-PARITY — beat 0 (Pro tier) is the reference seed for downstream Flash beats; removing the separate opener-gen step doesn't change this because beat 0 IS the opener in `pilot_interleaved_ensemble_chapter.py`'s pipeline
 - `Docs/CONTEXT_HANDOFF_2026-06-11_P0_ROUND_CLOSED.md` — predecessor round confirming all 53 chapters have beat 0 Pro-tier assets
 
+## Content upload + manifest rebuild discipline (R-CONTENT-UPLOAD-MANIFEST-DISCIPLINE; 2026-06-19)
+
+**Every content upload to spark-anvil-site MUST result in the corresponding freshness manifest being rebuilt before/during the next Cloudflare Pages deploy.** The site's `package.json` `prebuild` chain handles 5 of 6 manifests automatically via filesystem-scan or git-mtime-scan builders. The 6th manifest (`pdfs-recency.json`) lives hub-side and requires explicit re-run after every PDF render wave.
+
+### 6 manifests + rebuild discipline
+
+| Manifest | Builder | Trigger | Operator responsibility |
+|---|---|---|---|
+| `src/data/cast-recency.json` | `scripts/build-cast-recency-manifest.mjs` | site prebuild | None — auto. Reads git mtime of sidecars + reads `pdfs-recency.json` mirror |
+| `src/data/multibeat-chapters.json` | `scripts/build-multibeat-chapter-manifest.mjs` | site prebuild | None — auto. Scans `public/chapters/<app>/` for sidecar + snapshot + per-beat PNG + M4A + VTT sets |
+| `src/data/audio-drama-manifest.json` | `scripts/build-audio-drama-manifest.mjs` | site prebuild | None — auto. Scans `public/audio/<app>/*.m4a` |
+| `src/data/books-manifest.json` | `scripts/build-books-manifest.mjs` | site prebuild | None — auto. Scans `public/books/*-book.pdf` + `public/books/covers/<app>/{standard,advanced}.webp` |
+| `src/data/cast.json` + `src/data/cast-slug-map.json` | `scripts/build-cast-manifest.mjs` + `build-cast-slug-map.mjs` | site prebuild | None — auto |
+| **`src/data/pdfs-recency.json`** | hub-side `scripts/build_pdfs_recency_manifest.py` | **manual after every PDF render wave** | MANDATORY: run hub-side; copy to site; commit |
+
+### PDF-recency refresh recipe (after every PDF render wave)
+
+```bash
+# In labsmith/
+python3 scripts/build_pdfs_recency_manifest.py
+
+# Mirror to spark-anvil-site/
+cp Resources/PDFBooks/pdfs-recency.json \\
+   ../spark-anvil-site/src/data/pdfs-recency.json
+
+# Commit in spark-anvil-site/
+cd ../spark-anvil-site
+git add src/data/pdfs-recency.json
+git commit -m "PDF recency manifest refresh after <wave-name> render wave"
+git push origin <branch>
+```
+
+If the manifest isn't refreshed after a PDF render wave, the homepage "Freshly Updated PDFs" strip + the per-app PDF-weight bonuses on the recency comparator stale out — newly-rendered PDFs DON'T surface above older ones, even though they're fresher.
+
+### What NOT to do
+
+- **Do NOT skip the PDF-recency refresh after a render wave** — site prebuild can't know about hub-side `.pdf` mtimes unless the mirror is committed
+- **Do NOT auto-run `build-apps-data.mjs`** — destructive; wipes the rich 136-app schema (see ⚠️ banner at `scripts/build-apps-data.mjs:3`). Use targeted Python read+modify+write edits to `apps.generated.ts` instead
+- **Do NOT trust filesystem mtime in cast-recency** — it scans git mtime via `git log -1 --format=%aI`; untracked sidecars get `null` and are excluded from the manifest (correct behavior — only committed content surfaces)
+
+### RSS + sitemap per-entry freshness (this PR codification)
+
+`feed.xml.ts` `<entry><updated>` + `sitemap.xml.ts` `<url><lastmod>` use per-entry mtime sourced from `books-manifest.json` (book entries) + `cast-recency.json` (chapter URLs). Build-time `new Date()` is NOT acceptable for either surface — RSS subscribers + search-engine crawlers depend on these timestamps for novelty / recrawl-priority decisions.
+
+When adding new RSS entry types OR new sitemap URL classes, the per-entry mtime MUST be sourced from an existing manifest OR a fresh one MUST be added to the prebuild chain.
+
+### Cross-references
+
+- `Docs/AUDIT_HOMEPAGE_FRESHNESS_UPDATE_DISCIPLINE_2026-06-19.md` — parent audit
+- `scripts/build-cast-recency-manifest.mjs` — canonical recency builder (git-mtime based)
+- `scripts/build_pdfs_recency_manifest.py` — hub-side PDF recency builder
+
+## Sidecar `tier` field required (R-SIDECAR-TIER-REQUIRED; 2026-06-19)
+
+**Every multi-beat sidecar manifest MUST carry a `tier` field with integer value 1 or 2.** Applies to BOTH source-of-truth sidecars in `labsmith/Resources/AutoSegmentedChapters/<app>/<char>.beats.json` AND distributed copies in `spark-anvil-site/public/chapters/<app>/chapter_<char>.beats.json`.
+
+### Why this rule exists
+
+Surfaced via Wave 4 chanceforge T2 center fix (2026-06-18). The pilot script `scripts/pilot_interleaved_ensemble_chapter.py` resolves the chapter MD path from the sidecar's `tier` field:
+
+- `tier: 1` → `<app>-app/Docs/dn-s/chapters/<char>.md` (Tier-1 source-of-truth)
+- `tier: 2` → `labsmith/Resources/DN-S-Tier-Upper/chapters/<app>/<char>.md` (Tier-2 source-of-truth)
+
+Sidecars missing the field silently default to T1 path. Failure mode: T2 chapter regen reads T1 prose → per-beat audio narrates T1 text → audio + on-page T2 prose mismatch → reader perceives the page as broken.
+
+### How to apply
+
+When `auto_segment_chapter.py` emits a new sidecar, it must include `tier: 1` (default) or `tier: 2` (if `--tier 2` flag set). The flag MUST be threaded through wave runners (`path_b_wave_runner.sh --tier 2`).
+
+When manually authoring a sidecar (rare; usually regenerated):
+
+```json
+{
+  "chapter": "<char>",
+  "app": "<app>",
+  "tier": 2,
+  "beats": [...]
+}
+```
+
+### Canonical Tier-2 sidecar location + use the full wave runner (2026-07-02)
+
+**Tier-2 sidecars live in a SEPARATE root from Tier-1, keyed by BARE slug — the `-advanced` suffix appears only in OUTPUT filenames, never in the sidecar's own path.** Codified after the 2026-06-30 FractionForge session placed `auto_segment_chapter.py --tier 2` output (which emits `<slug>-advanced.beats.json`) into the Tier-1 root, mixing the two tiers' sidecars.
+
+| Tier | Canonical sidecar path |
+|---|---|
+| Tier-1 | `Resources/AutoSegmentedChapters/<app>/<slug>.beats.json` |
+| Tier-2 | `Resources/AutoSegmentedChapters-Tier2/<app>/<slug>.beats.json` (**bare slug** — NOT `<slug>-advanced.beats.json`) |
+
+**Don't hand-assemble a Tier-2 chapter.** For an end-to-end Tier-2 ship (audio + the full 9-file site set + Tier-1 beat reuse per R-TIER-2-MULTIBEAT-REUSE), use `scripts/t2_coverage_wave_runner.sh <app>:<slug,...>` — it emits the sidecar at the correct Tier-2 root, gens audio-only, distributes m4a/vtt/sidecar/snapshot to `spark-anvil-site/public/chapters/`, mirrors the Tier-1 beats, AND (step 5b, per R-TIER-2-CONTENT-ENTRY) writes the `src/content/chapters/<app>/<slug>-advanced.md` content entry that makes the `/advanced` route build. Hand-assembly reliably misses one of these seams.
+
+### Cross-references
+
+- `Docs/AUDIT_HOMEPAGE_FRESHNESS_UPDATE_DISCIPLINE_2026-06-19.md` § "Companion finding" — surfacing audit
+- `scripts/pilot_interleaved_ensemble_chapter.py` — consumer (MD path resolution)
+- `scripts/auto_segment_chapter.py` — emitter (`--tier 2` → Tier-2 root)
+- `scripts/t2_coverage_wave_runner.sh` — canonical end-to-end Tier-2 wave runner
+- `.claude/rules/distributed-narrative.md` § "Dual-tier chapter editions" — parent dual-tier spec
+- `.claude/rules/distributed-narrative.md` § "R-TIER-2-MULTIBEAT-REUSE" — Tier-2 illustration-reuse companion rule
+- § R-TIER-2-CONTENT-ENTRY (below) — the content-entry seam the wave runner's step 5b closes
+
+## Tier-2 `/advanced` route needs a content-collection entry (R-TIER-2-CONTENT-ENTRY; 2026-06-30)
+
+**A Tier-2 `/advanced` page ONLY builds if a `src/content/chapters/<app>/<char>-advanced.md` content-collection entry exists.** Shipping the `public/chapters/<app>/chapter_<char>-advanced.*` asset set (snapshot + sidecar + beats + audio + vtt) and getting the chapter into `multibeat-chapters.json` is **NOT sufficient** — the route `src/pages/cast/[app]/[char]/advanced.astro` builds its paths from `getCollection('chapters')` filtered to `*-advanced.md`, so with no content entry the route never generates and the page **404s** despite every asset being present.
+
+### Why this bites
+
+The two Tier-2 distribution seams write to **different trees**:
+
+| Tool | Writes | Creates the content entry? |
+|---|---|---|
+| `scripts/t2_coverage_wave_runner.sh` (full end-to-end) | `public/chapters/` (snapshot/sidecar/beats/audio/vtt) **+ `src/content/chapters/<app>/<char>-advanced.md` (step 5b, added 2026-06-30)** | ✅ now yes |
+| `scripts/path_b_tier2_audio_wave_runner.sh` (audio-only) | `public/chapters/` audio + vtt only | ❌ no — assumes sidecar/snapshot/**content entry** already exist |
+| `scripts/sync_content_to_site.sh` | both trees (`cp <tier2>.md → <char>-advanced.md`) | ✅ yes (canonical) |
+
+**Reference incident (2026-06-30):** the FractionForge expansion-5 Tier-2 wave (`liner/gather/times/tenth/rank`) distributed all `public/chapters/` assets and the multibeat manifest accepted all 5 (`accepted=728`), but the 5 `/advanced` pages 404'd on the live site — the founding-5 had `src/content/chapters/fractionforge/*-advanced.md` entries and rendered; the expansion-5 did not. Fixed by adding the 5 content entries (spark-anvil-site PR #341) + the wave-runner step 5b (this codification).
+
+### When this rule applies
+
+- Any Tier-2 wave that uses `path_b_tier2_audio_wave_runner.sh` (or hand-distributes only `public/chapters/`) MUST separately ensure the content entry exists (`cp <hub>/Resources/DN-S-Tier-Upper/chapters/<app>/<char>.md → src/content/chapters/<app>/<char>-advanced.md`), or run `sync_content_to_site.sh --app <slug>`.
+- `t2_coverage_wave_runner.sh` now does this automatically (step 5b).
+- **Verification:** after distribution, `git status src/content/chapters/<app>/` MUST show a `<char>-advanced.md` per shipped Tier-2 chapter. If it doesn't, the `/advanced` pages will 404 post-deploy.
+
+### Companion to R-MULTIBEAT-SNAPSHOT
+
+R-MULTIBEAT-SNAPSHOT ensures the `public/chapters/` snapshot + companion assets are complete (else the manifest silently rejects). R-TIER-2-CONTENT-ENTRY ensures the `src/content/` entry exists (else the route never builds). Both must hold for a Tier-2 `/advanced` page to render — the first governs the multibeat manifest, the second governs `getStaticPaths`.
+
+### Cross-references
+
+- `scripts/t2_coverage_wave_runner.sh` step 5b — the fix
+- `spark-anvil-site/src/pages/cast/[app]/[char]/advanced.astro` — `getStaticPaths()` (the consumer that enumerates `*-advanced.md`)
+- `scripts/sync_content_to_site.sh` — canonical both-trees sync
+- `.claude/rules/distributed-narrative.md` § "R-TIER-2-MULTIBEAT-REUSE" + § "Dual-tier chapter editions" — parent Tier-2 spec
+
+## Gemini API key single-flight discipline (R-GEMINI-KEY-SERIAL; 2026-06-30)
+
+**The entire hub content-generation pipeline shares ONE Gemini API key (`~/.config/labsmith/gemini_api_key`), and that key throttles HARD under load. Run exactly ONE key-consuming operation at a time. NEVER run generation, image-gating, and portrait/cover gen concurrently — serialize them.** Codified after the throttle bit every V24–V28 cast-expansion wave (recurring "gen ONE app at a time; don't run gating concurrently with gen" gotcha in the wave handoffs + memory `cast-expansion-program.md` + `[[spark-anvil-gen-pipeline]]`).
+
+### What shares the key (all of these compete)
+
+Every one of these calls the same Gemini key — running any two concurrently saturates the rate limit and causes stalls / failed calls / degraded throughput:
+
+| Script | Key use | Notes |
+|---|---|---|
+| `pilot_interleaved_ensemble_chapter.py` | Pro beat 0 + 4× Flash beats + **Gemini 2.5 TTS narration** | ~4–5 min/chapter; **TTS is the slowest step** |
+| `path_b_wave_runner.sh` | wraps the pilot script | iterates ALL chapters in an app |
+| `gen_cast_portraits.py` | Flash image gen | + inline text-leak + anatomy gates (also key calls) |
+| `gen_book_covers.py` | Pro/Flash image gen | + inline gates |
+| `audit_image_text_leaks.py` (`gate_single_image`) | Gemini 2.5 Flash classifier | per-image; the text-leak gate |
+| `audit_image_anatomy.py` (`gate_single_image`) | Gemini 2.5 Flash classifier | per-image; the anatomy gate |
+
+### The symptom (how to recognize the throttle)
+
+- Generation slows to **~3 images/min** after a heavy run (e.g., a full anatomy `--all-sweep` immediately before a gen wave leaves the key hot).
+- Individual `generate_content()` calls **hang** (the V8 stall incident: 14+ min mid-call). The audit script's `--call-timeout` / `--max-retries` / `--checkpoint-every` / `--resume` flags (per § R-PATH-B-TEXT-LEAK-GATE Item 4) exist specifically to survive this.
+- Parallel streams don't 2× throughput — they **halve** it (or fail), because the shared limit is the bottleneck, not local CPU.
+
+### The rule (single-flight + overlap only non-Gemini work)
+
+1. **One key-op at a time.** Gen OR gate OR portraits — never two at once. This holds across background jobs too: if a `pilot`/wave gen is running in the background, do NOT start portraits/gating/cover-gen in the foreground.
+2. **One app at a time for generation.** Don't fan out gen across multiple apps' chapters concurrently.
+3. **Overlap ONLY non-Gemini work with a single background gen stream.** The productive pattern: background ONE gen loop (the long pole), and in the foreground do work that never touches the key — `distribute_cast_chapters.py` (local PIL→WebP), `add_cast_members.py` (targeted `apps.generated.ts` edit), git/`gh` app-repo PRs, doc/queue/memory edits. Portrait gen and image-gating are Gemini work → they must WAIT for the gen stream to finish.
+4. **Sequence a wave as:** (a) background the gen for the ungenned apps → (b) during gen, do all non-Gemini distribution + `apps.generated.ts` edits + app-repo PRs for already-genned apps → (c) after gen completes, run image-gating on the new beats → (d) then run ALL portraits serially → (e) then finish distribution + site/hub PRs.
+5. **Cool-down before a gen wave.** If a portfolio image sweep (`audit_image_anatomy.py --all-sweep` / `audit_image_text_leaks.py --site-sweep`) just ran, expect the key to be hot; the first gen chapter may crawl. Prefer running big sweeps AFTER a gen wave, not immediately before.
+
+### Bounded-wait pattern for background gen
+
+When a background gen stream holds the key and the remaining work is all Gemini/portrait-dependent, don't idle-poll every few seconds. Run a bounded wait loop that returns when the expected artifact count is reached OR a timeout elapses:
+
+```bash
+for i in $(seq 1 18); do
+  done=$(find <pilot-dir> -name '*_chapter.m4a' | wc -l | tr -d ' ')
+  grep -q "GEN-REST DONE" <gen.log> && { echo "complete"; break; }
+  [ "$done" -ge "$EXPECTED" ] && break
+  echo "$done/$EXPECTED"; sleep 30
+done
+```
+
+### When this rule applies
+
+- Every cast-expansion wave (the round-robin program) — the canonical consumer.
+- Any one-off chapter regen, portrait remediation batch, or book-cover regen wave.
+- Any new Gemini-backed gen script added to the pipeline — it inherits this discipline.
+
+### Cross-references
+
+- `.claude/rules/spark-anvil-website.md` § R-PATH-B-TEXT-LEAK-GATE Item 4 — audit-script resilience flags (`--call-timeout` / `--max-retries` / `--checkpoint-every` / `--resume`) that survive a mid-call stall
+- `.claude/rules/distributed-narrative.md` § R-MULTIBEAT-DEFAULT / R-DIR-FEDC-CHAPTER — the authoring + gen pipeline this throttles
+- `.claude/rules/audio-pipeline.md` — Gemini 2.5 TTS payload handling (the slowest key-op in the pilot)
+- memory `cast-expansion-program.md` + `[[spark-anvil-gen-pipeline]]` — where this gotcha lived pre-codification
+- `Docs/CONTEXT_HANDOFF_2026-06-30_V28_SEL_WAVE1_ENOSPC_FIX_SCIENCE_WAVE2.md` § "Key gotchas carried forward" — V28 statement of the same discipline
+
 ## Cross-references
 
 - `Docs/RESEARCH_SPARK_ANVIL_WEBSITE.md` — research synthesis (~2026-05-20 web search + competitive analysis)
@@ -542,6 +1157,8 @@ Filed in `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "Opener illustratio
 - `Docs/ADR-022_DN_S_WEBSITE_WAVE_1_OPEN_QUESTIONS.md` — Wave 1 decisions (8 questions resolved)
 - `Docs/RESEARCH_DN_S_WEBSITE_INTEGRATION_NEXT_STEPS_2026-06-02.md` — Wave 1 research foundation (24 sources)
 - `Docs/AUDIT_DN_S_6_PILLAR_FINAL_2026-06-02.md` — DN-S 6-pillar coverage baseline + chapter-book content source
+- `Docs/GUIDE_CAST_PAGE_USER.md` — visitor-facing /cast page guide (warm + non-jargon; ages 9-14 readable per R-SITE-CHROME)
+- `Docs/GUIDE_CAST_PAGE_DEVELOPER.md` — maintainer-facing /cast page guide (architecture + data sources + load-bearing rules + extension recipes + gotchas + test plan)
 - `spark-anvil-hub/scripts/sync_content_to_site.sh` — chapter/audio/illustration distribution from app repos
 - `spark-anvil-hub/scripts/normalize_chapter_frontmatter.py` — YAML normalizer for synced chapter MDs (source of truth)
 - `spark-anvil-site/scripts/normalize-chapter-frontmatter.py` — in-repo mirror; auto-runs in prebuild on every site build
