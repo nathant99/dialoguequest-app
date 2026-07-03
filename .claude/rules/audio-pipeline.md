@@ -121,8 +121,8 @@ Apps NEVER author this prompt — hub does at gen time. The per-character voiceR
    - **`.caf`** (app-bundled; iOS-native): `afconvert -f caff -d aac -b 64000 -c 1 in.wav out.caf` — **64 kbps**
    - **`.m4a`** (web-distributed; universal browser support): `afconvert -f m4af -d aac -b 48000 -c 1 in.wav out.m4a` — **48 kbps** per § Web M4A bitrate below
    - **`.vtt`** (WebVTT chapter+transcript): per-line PCM offset → timestamp; `<v Character>line text` voice tag for WCAG accessibility + per-speaker player styling
-5. Ship all three (`.caf` + `.m4a` + `.vtt`) + `catalog.json` to `<app>-app/Resources/AudioDramas/<app>/` via cross-repo PR
-6. App-side `ForgeAudio.AudioDramaPlayer` (ForgeKit 0.99.11+) consumes the bundled `.caf` via `Bundle.module`; spark-anvil-site `<AudioDramaPlayer />` component consumes `.m4a` + `.vtt` via static `public/audio/<app>/` serving
+5. Ship all three (`.caf` + `.m4a` + `.vtt`) + `catalog.json` to the app repo via cross-repo PR — hub **stages** them at `<app>-app/Resources/AudioDramas/<app>/`. ⚠️ **Repo-root `Resources/` is a distribution STAGING mirror, not a bundled location** (it's outside `Libraries/`, so no SPM target's `Bundle.module` can see it, and it's not in the app target's synchronized group either). To ship in the app the assets must be relocated under an SPM target with `.copy` — see § R-AUDIO-DRAMA-BUNDLE-AND-WIRE below.
+6. App-side (per R-AUDIO-DRAMA-BUNDLE-AND-WIRE): relocate to `Libraries/Sources/<Target>/AudioDramas/<app>/` + declare `.copy("AudioDramas")` in `Package.swift`, then `ForgeAudio.AudioDramaPlayer` consumes via that target's `Bundle.module`. spark-anvil-site `<AudioDramaPlayer />` consumes `.m4a` + `.vtt` via static `public/audio/<app>/` serving (the site leg IS correctly served from `public/`).
 
 **Catalog metadata** (post-ADR-022): `catalog.json` per-drama entries now carry `bundlePath` (CAF), `webM4APath`, `webVTTPath`, and `chapters[]` (array of `{index, startMs, endMs, character}` per line) so consumers can build chapter-marker navigation in either client.
 
@@ -138,7 +138,7 @@ Codified after `Docs/AUDIT_AUDIO_BITRATE_DEDUP_2026-06-17.md` (Option OD) surfac
 
 | Leg | Bitrate | Where it ships | Sizing constraint |
 |---|---|---|---|
-| `.caf` | **64 kbps** | App bundle (`<app>-app/Resources/AudioDramas/<app>/*.caf` → bundled into IPA via `Bundle.module`) | App Store / TestFlight ceiling; CAF size is part of overall bundle size where IPA cap is at 4 GB+; current portfolio audio per app is <100 MB so 64 kbps headroom is fine |
+| `.caf` | **64 kbps** | App bundle — staged at `<app>-app/Resources/AudioDramas/<app>/*.caf`, then **relocated to `Libraries/Sources/<Target>/AudioDramas/<app>/` + `.copy("AudioDramas")`** to actually ship in the IPA via that target's `Bundle.module` (see § R-AUDIO-DRAMA-BUNDLE-AND-WIRE) | App Store / TestFlight ceiling; CAF size is part of overall bundle size where IPA cap is at 4 GB+; current portfolio audio per app is <100 MB so 64 kbps headroom is fine |
 | `.m4a` | **48 kbps** | Cloudflare Pages (`spark-anvil-site/public/{audio,chapters}/<app>/*.m4a`) | Cloudflare Pages `public/` deploy-size ceiling; saw ENOSPC at ~4.2 GB; 48 kbps mono drops audio footprint enough to push the ENOSPC ceiling out 24+ months |
 
 **Forward gen**:
@@ -255,6 +255,71 @@ python3 scripts/gen_dn_s_audio_drama.py --regen-all --apply --start-at activefor
 ### Pre-gen vs runtime — orthogonal axes
 
 If an app needs RUNTIME TTS (kid types a word → server proxies → returns audio mid-session), that's the path documented above in § Server: wrap raw PCM in WAV. NOT this pre-gen path. They share the same Gemini model + same WAV-wrap mechanic, but run at different times by different actors (runtime: app server; pre-gen: hub curation).
+
+## Audio-drama staging → bundling → wiring (R-AUDIO-DRAMA-BUNDLE-AND-WIRE; 2026-07-02, corrected 2026-07-03)
+
+**Hub STAGES audio-drama assets at repo-root `<app>-app/Resources/AudioDramas/<app>/`, but that path is NOT bundled into the app. To ship, the app must RELOCATE the assets under an SPM target (`Libraries/Sources/<Target>/AudioDramas/<app>/`) + declare `.copy("AudioDramas")` in `Package.swift`, then WIRE `ForgeAudio.AudioDramaPlayer`.** Three distinct states — staged ≠ bundled ≠ wired — and hub delivery only reaches "staged."
+
+### Why (the FractionForge reference impl, 2026-07-02→03)
+
+FractionForge was the first app to wire audio dramas end-to-end, and it surfaced two cross-repo contract gaps (`fractionforge-app/Docs/HANDOFF_FROM_APP_AUDIO_DRAMA_WIRING.md`). An earlier hub reconciliation wrongly claimed "delivered + git-tracked = done"; it was tracked in *git* but shipped in **no app bundle**:
+
+- Repo-root `Resources/` is a **distribution staging mirror** — outside `Libraries/`, so no SPM target's `Bundle.module` sees it; and not in the app target's `PBXFileSystemSynchronizedRootGroup` set, so not in `Bundle.main` either. **Proof it's a stale mirror:** in FractionForge repo-root `Resources/Cast/` held 5 portraits while the actually-bundled `Libraries/Sources/AppFeature/Resources/Cast/` held 10.
+- So a drama at repo-root plays in **nothing**. The app relocated to `Libraries/Sources/AppFeature/AudioDramas/` + added `.copy("AudioDramas")` and wired the player.
+
+### Gap 1 — bundling: relocate to an SPM target + `.copy` (NOT `.process`)
+
+The canonical **bundled** layout (reference: `fractionforge-app`):
+
+```
+Libraries/Sources/<Target>/AudioDramas/<app>/     ← sibling to the target's Resources/
+  ├── catalog.json
+  ├── <drama-slug>.caf   (.m4a / .vtt siblings)
+```
+```swift
+// Package.swift target:
+resources: [.process("Resources"), .copy("AudioDramas")],
+```
+
+- **`.copy`, not `.process`** — `.copy` preserves the `AudioDramas/<app>/` subdirectory that ForgeAudio's `AudioDramaPlayer.resolveBundleURL` (subdirectory-aware lookup) expects. `.process` FLATTENS to the bundle root (same gotcha class as the cast-portrait/audio flatten bugs).
+- It's a **sibling to `Resources/`** so it doesn't double-match `.process("Resources")`.
+- `<Target>` is the app's primary UI SPM target (e.g., `AppFeature`) — app-owned; hub does not pick it.
+- **Hub's staging delivery stays at repo-root `Resources/AudioDramas/<app>/`** (asset delivery is a hub-allowed cross-repo write); the **relocate + `Package.swift` edit is app-side** (Package.swift is app-owned config). Delete the stale staging copy after relocating so it doesn't rot (the Cast 5-vs-10 drift is the anti-pattern).
+
+### Gap 2 — catalog schema: hub `catalog.json` ≠ ForgeAudio `AudioDramaCatalog`
+
+`JSONDecoder().decode(AudioDramaCatalog.self, …)` **fails** — the schemas diverge (ForgeKit 1.0.0-rc.3):
+
+| ForgeAudio expects | Hub `catalog.json` provides |
+|---|---|
+| `AudioDramaChapter { title, startSeconds, skipSummary }` (navigable) | `chapters[] { index, startMs, endMs, character }` (per-line TTS timing markers) |
+| `AudioDramaCatalog.load(from:)` | *(none)* |
+| `AudioDrama.init` requires `!chapters.isEmpty` | markers aren't navigable chapters |
+
+Until fixed at the source, the app writes a small adapter (decode a lightweight shape → construct `AudioDrama` with one synthesized opener chapter). Reference: `fractionforge-app/Libraries/Sources/AppFeature/AudioDramaSupport.swift`. **Downside:** every app re-writes the adapter AND loses skip-to-chapter navigation (critical for trauma-gated off-ramps). Hub-side fix tracked in `forgekit/Docs/HANDOFF_FROM_HUB_AUDIODRAMA_CATALOG_SCHEMA.md` (preferred: hub emits a ForgeAudio-native catalog with navigable `chapters` + keeps per-line markers in a separate `lineTimings[]`).
+
+### Gap 3 — bundled ≠ wired
+
+Even bundled, a drama is dark until a surface renders it. Consumer audit: `grep -rl 'AudioDramaPlayer(' <app>-app/{Sources,Libraries,Packages}`; 0 hits = unwired → wire `AudioDramaPlayer(bundle: .module, dramaCatalog:)` + a "Listen" surface gated to catalog membership + a badge + off-ramps (skip ±15s / stop; trauma-gated apps add skip-to-chapter + `OutputModerationService.canPlay`). Per `.claude/rules/portfolio.md` § Asset Consumer Audit. Wiring is **app-side Swift** (hub never writes app implementation code).
+
+### Portfolio status (2026-07-03)
+
+Phase 2 distributed drama assets to ~141 apps' staging root, but only **FractionForge** has relocated + wired (reference impl). The other ~140 have **staged-but-dark** dramas. Remediation is per-app (relocate + `.copy` + adapter/native-catalog + wire), tracked by the per-app handoff distributed via `scripts/file_audio_drama_verify_wire_handoff.py`.
+
+### When this rule applies
+
+- Any DN-S Phase 2 audio wiring, per-app — follow the 3-gap checklist (relocate → catalog → wire).
+- Reviewing an `HANDOFF_FROM_APP_AUDIO_DRAMA_*` "delivery gap" claim — the gap is almost always **bundling**, not git: check whether assets are under an SPM target with `.copy`, not just present at repo-root.
+- Any new asset class delivered to repo-root `Resources/` — confirm it reaches a *bundled* location; "delivered to staging" ≠ "ships in the app."
+
+### Cross-references (this rule)
+
+- `fractionforge-app/Docs/HANDOFF_FROM_APP_AUDIO_DRAMA_WIRING.md` — the reference-impl findings (source of this rule)
+- `fractionforge-app/Libraries/Sources/AppFeature/{AudioDramaSupport.swift,../Package.swift}` — reference impl (adapter + `.copy`)
+- `forgekit/Docs/HANDOFF_FROM_HUB_AUDIODRAMA_CATALOG_SCHEMA.md` — Gap 2 hub→ForgeKit fix
+- `Docs/TEMPLATE_HANDOFF_FROM_HUB_AUDIO_DRAMA_VERIFY_AND_WIRE.md` + `scripts/file_audio_drama_verify_wire_handoff.py` — per-app remediation handoff + distributor
+- `.claude/rules/portfolio.md` § Asset Consumer Audit — parent "bundled ≠ wired" rule
+- `.claude/rules/distributed-narrative.md` § R-CAST-EXPANSION-INTEGRATION (drama axis) + § Audio drama source rule
 
 ## Cross-references
 
