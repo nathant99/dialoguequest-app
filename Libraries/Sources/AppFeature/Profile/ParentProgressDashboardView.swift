@@ -80,6 +80,11 @@ public struct ParentProgressDashboardView: View {
     /// Surfaces the FULL `NextProblemPicker` output, not just the first row.
     /// Empty before the first publish or when the picker has nothing to say.
     @State private var craftRecommendations: [DialogueCraftMasteryService.CraftRecommendationReadout] = []
+    /// The exact warm, kid-facing focus-nudge line the child's Write tab might
+    /// surface in Patter's bubble (cast-voiced per Wave B). Mirrored here so a
+    /// parent has transparency into the delight surface — they see what their
+    /// writer sees. `nil` when the picker has nothing to suggest.
+    @State private var masteryNudgeLine: String?
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -144,6 +149,9 @@ public struct ParentProgressDashboardView: View {
             masteredCraftCount = DialogueCraftMasteryService.shared.masteredTopics().count
             masteryFocus = DialogueCraftMasteryService.shared.nextFocusTopic()
             craftRecommendations = DialogueCraftMasteryService.shared.recommendationReadouts()
+            // Mirror the kid-facing bubble line (cast-voiced) so a parent
+            // can see exactly what their writer might be nudged toward.
+            masteryNudgeLine = DialogueCraftMasteryService.shared.nextFocusNudge()
         }
     }
 
@@ -205,6 +213,13 @@ public struct ParentProgressDashboardView: View {
                     Text("Patter suggests focusing on \(focus.displayName) next.")
                         .font(.footnote.weight(.medium))
                         .foregroundStyle(DialoguePalette.inkBlue)
+                }
+                if let masteryNudgeLine {
+                    Text("What your writer might see: “\(masteryNudgeLine)”")
+                        .font(.caption)
+                        .italic()
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel("What your writer might see: \(masteryNudgeLine)")
                 }
                 if !craftRecommendations.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
