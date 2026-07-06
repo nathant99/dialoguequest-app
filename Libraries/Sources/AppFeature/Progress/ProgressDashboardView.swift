@@ -1,6 +1,7 @@
 import SwiftUI
 import ForgeGamification
 import ForgeUI
+import Models
 import Services
 import SharedUI
 
@@ -21,6 +22,11 @@ struct ProgressDashboardView: View {
     var craftBars: [DialogueCraftMasteryService.CraftMasteryReadout] = []
     /// Display name of the pillar Patter suggests focusing on next, or `nil`.
     var craftFocusName: String? = nil
+    /// Empty-state "start here" line for a kid who hasn't published yet (all
+    /// bars zero). Set by the host only when nothing is published; `nil`
+    /// otherwise. Lets the "Your craft" section surface a gentle starting
+    /// invitation instead of hiding entirely on a fresh install.
+    var craftStartNudge: String? = nil
 
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
@@ -76,10 +82,12 @@ struct ProgressDashboardView: View {
         .background(DialoguePalette.cream.opacity(0.6))
     }
 
-    /// Per-pillar "Your craft" section. Renders only after the kid has
-    /// published at least one tree (so at least one bar is non-zero) — a fresh
-    /// install shows just XP + streak + badges. Shows all six pillars so the
-    /// kid sees the whole craft map, including not-yet-started ones at 0%.
+    /// Per-pillar "Your craft" section. Once the kid has published at least
+    /// one tree (a bar is non-zero) it shows the full six-pillar map + the
+    /// focus caption. Before the first publish it shows a gentle "start here"
+    /// invitation (when the host supplied one) instead of hiding entirely —
+    /// so the craft surface exists from launch rather than appearing out of
+    /// nowhere after the first publish.
     @ViewBuilder
     private var craftSection: some View {
         if craftBars.contains(where: { $0.score > 0 }) {
@@ -101,6 +109,18 @@ struct ProgressDashboardView: View {
             .padding()
             .background(reduceTransparency ? AnyShapeStyle(DialoguePalette.cream) : AnyShapeStyle(.thinMaterial))
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        } else if let craftStartNudge {
+            Text("Your craft")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(DialoguePalette.rust)
+            Text(craftStartNudge)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(reduceTransparency ? AnyShapeStyle(DialoguePalette.cream) : AnyShapeStyle(.thinMaterial))
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .accessibilityLabel(craftStartNudge)
         }
     }
 
@@ -172,5 +192,17 @@ struct ProgressDashboardView: View {
             .init(topic: .triangleDynamics, score: 0, isMastered: false)
         ],
         craftFocusName: "Subtext"
+    )
+}
+
+#Preview("Fresh install — craft start nudge") {
+    ProgressDashboardView(
+        totalXP: 0,
+        currentStreak: 0,
+        availableFreezes: 2,
+        earnedBadgeIDs: [],
+        craftBars: DialogueCraftTopic.allCases.map { .init(topic: $0, score: 0, isMastered: false) },
+        craftFocusName: nil,
+        craftStartNudge: DialogueCraftMasteryService.startNudgeLine(for: .voiceConsistency)
     )
 }

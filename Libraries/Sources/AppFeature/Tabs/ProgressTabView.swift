@@ -18,6 +18,10 @@ struct ProgressTabView: View {
     /// publish in `WriteTabView`.
     @State private var craftBars: [DialogueCraftMasteryService.CraftMasteryReadout] = []
     @State private var craftFocusName: String?
+    /// Empty-state "start here" line — set only before the kid's first publish
+    /// (no bar filled) so the "Your craft" section can greet a fresh install
+    /// with a gentle starting invitation instead of hiding.
+    @State private var craftStartNudge: String?
 
     var body: some View {
         NavigationStack {
@@ -28,13 +32,27 @@ struct ProgressTabView: View {
                     availableFreezes: availableFreezes,
                     earnedBadgeIDs: earnedBadgeIDs,
                     craftBars: craftBars,
-                    craftFocusName: craftFocusName
+                    craftFocusName: craftFocusName,
+                    craftStartNudge: craftStartNudge
                 )
             }
             .navigationTitle("Progress")
             .task {
-                craftBars = DialogueCraftMasteryService.shared.masteryReadouts()
-                craftFocusName = DialogueCraftMasteryService.shared.nextFocusTopic()?.displayName
+                let readouts = DialogueCraftMasteryService.shared.masteryReadouts()
+                craftBars = readouts
+                // Single `nextFocusTopic()` call (one `recommendations()`
+                // read) drives both the focus caption and the empty-state
+                // start line, per the picker-non-determinism gotcha.
+                let focus = DialogueCraftMasteryService.shared.nextFocusTopic()
+                craftFocusName = focus?.displayName
+                // Only greet the empty state with a start nudge — once any
+                // bar is filled the full section (with its focus caption)
+                // takes over.
+                if let focus, !readouts.contains(where: { $0.score > 0 }) {
+                    craftStartNudge = DialogueCraftMasteryService.startNudgeLine(for: focus)
+                } else {
+                    craftStartNudge = nil
+                }
             }
         }
     }
