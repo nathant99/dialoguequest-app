@@ -192,7 +192,35 @@ public final class DialogueCraftMasteryService {
     /// FSRS / picker-rationale jargon reaches the bubble).
     public func nextFocusNudge() -> String? {
         guard let topic = nextFocusTopic() else { return nil }
-        return "Patter has an idea for next time — a conversation that leans into \(topic.displayName.lowercased())."
+        return Self.focusNudgeLine(for: topic)
+    }
+
+    /// The kid-facing focus-nudge line for one pillar, voiced by the cast
+    /// member who embodies it (per Pattern B distributed narrative) when one
+    /// exists — so the nudge composes with the cameo system rather than always
+    /// speaking as Patter. Brogue (voice consistency) invites toward voice
+    /// consistency, Glance toward subtext, Weigh toward tag balance, Sprig
+    /// toward branch craft. `triangleDynamics` emerges from the trio and has no
+    /// single embodiment, so it falls back to Patter.
+    ///
+    /// The cast display name is the capitalized `castEmbodiment` slug
+    /// (`brogue` → `Brogue`) — kept here rather than reaching into
+    /// `AIMentor.CastVoiceRegistry` so `Services` never has to import the
+    /// FoundationModels-gated module. Register-stoplist clean: cast names are
+    /// warm narrative, not engineering jargon.
+    public nonisolated static func focusNudgeLine(for topic: DialogueCraftTopic) -> String {
+        let inviter = topic.castEmbodiment?.capitalized ?? "Patter"
+        return "\(inviter) has an idea for next time — a conversation that leans into \(topic.displayName.lowercased())."
+    }
+
+    /// A gentle "start here" line for the Progress tab's empty state — shown
+    /// before the kid has published anything (all mastery bars at zero), naming
+    /// the pillar the picker suggests beginning with. Distinct from
+    /// `focusNudgeLine` ("next time") because there is no "this time" yet.
+    /// Voiced by the pillar's cast member on the same rule as `focusNudgeLine`.
+    public nonisolated static func startNudgeLine(for topic: DialogueCraftTopic) -> String {
+        let inviter = topic.castEmbodiment?.capitalized ?? "Patter"
+        return "\(inviter) suggests starting with a conversation that leans into \(topic.displayName.lowercased())."
     }
 
     // MARK: - Dashboard readouts (B-follow)

@@ -281,6 +281,63 @@ struct DialogueCraftMasteryServiceTests {
         }
     }
 
+    @Test func focusNudgeLineVoicesTheEmbodyingCastMember() {
+        // Each pillar with a cast embodiment is voiced by that member (Pattern B
+        // distributed narrative) so the nudge composes with the cameo system.
+        let cases: [(DialogueCraftTopic, String)] = [
+            (.voiceConsistency, "Brogue"),
+            (.subtextDetection, "Glance"),
+            (.tagBalance, "Weigh"),
+            (.branchMeaningfulness, "Sprig"),
+            (.multiListenerSubtext, "Glance")
+        ]
+        for (topic, inviter) in cases {
+            let line = DialogueCraftMasteryService.focusNudgeLine(for: topic)
+            #expect(line.hasPrefix("\(inviter) "), "expected \(inviter) to voice \(topic): \(line)")
+            #expect(line.lowercased().contains(topic.displayName.lowercased()))
+        }
+    }
+
+    @Test func focusNudgeLineFallsBackToPatterWhenNoEmbodiment() {
+        // Triangle dynamics emerges from the trio — no single embodiment, so
+        // Patter speaks.
+        #expect(DialogueCraftTopic.triangleDynamics.castEmbodiment == nil)
+        let line = DialogueCraftMasteryService.focusNudgeLine(for: .triangleDynamics)
+        #expect(line.hasPrefix("Patter "))
+        #expect(line.lowercased().contains("triangle dynamics"))
+    }
+
+    @Test func startNudgeLineNamesThePillarAndIsDistinctFromFocusLine() {
+        // The empty-state "start here" line names the pillar + is worded for a
+        // kid who has not published yet (not "next time").
+        let start = DialogueCraftMasteryService.startNudgeLine(for: .voiceConsistency)
+        #expect(start.hasPrefix("Brogue "))
+        #expect(start.lowercased().contains("voice consistency"))
+        #expect(start.lowercased().contains("starting"))
+        #expect(start != DialogueCraftMasteryService.focusNudgeLine(for: .voiceConsistency))
+    }
+
+    @Test func startAndFocusNudgeLinesAreRegisterStoplistClean() {
+        // Both cast-voiced lines must stay free of engineering / framework
+        // jargon across every pillar.
+        let forbidden = [
+            "load-bearing", "codified", "fsrs", "mastery score", "rationale",
+            "forgekit", "primitive", "samhsa", "phase ", "extend", "consolidate",
+            "stretch", "retrievability", "vygotsky", "frontier", "pillar"
+        ]
+        for topic in DialogueCraftTopic.allCases {
+            for line in [
+                DialogueCraftMasteryService.focusNudgeLine(for: topic),
+                DialogueCraftMasteryService.startNudgeLine(for: topic)
+            ] {
+                let text = line.lowercased()
+                for token in forbidden {
+                    #expect(!text.contains(token), "register leak '\(token)' in: \(text)")
+                }
+            }
+        }
+    }
+
     @Test func focusNudgeCopyIsRegisterStoplistClean() {
         let service = DialogueCraftMasteryService(defaults: makeSuite())
         service.recordPublishedTree(
