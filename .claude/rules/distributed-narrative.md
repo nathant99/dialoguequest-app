@@ -53,6 +53,33 @@ The portfolio borrows the FIRST feature's name as the umbrella label for the syn
 - Greenspan + Wieder (1998) DIR/Floortime + Vygotsky ZPD (1978) + Collins-Brown-Newman cognitive apprenticeship (1989) — converge on **follow-the-learner's-lead** as the canonical scaffolding principle; portfolio operationalization in 5 primitives (`castCameos[]` variant selection / `CastDialog` open-ended responses / `ForgeKnowledgeGraph` suggestions / `ForgeMasteryEngine.NextProblemPicker` / `PolyaScaffold.hintsAllowedBeforePlan: 0`); full alignment table in `.claude/rules/forgekit.md` § ForgePedagogy — scaffolding theory alignment R1
 - Kapur (2008) productive failure + Bjork + Bjork (2020) desirable difficulties + Collins-Brown-Newman articulation method (1989) — articulate-before-hint trio; converge on the SAME pedagogical principle (effortful encoding before instruction enhances retention + transfer); portfolio operationalization is `PolyaScaffold.hintsAllowedBeforePlan: 0` paired with anti-shame discipline (cast voice register + anti-credentialism gate). Full alignment in `.claude/rules/forgekit.md` § ForgePedagogy — scaffolding theory alignment R3
 
+**Counter-evidence + design-principle layer (2026-07-07 lift; adventure-modes-vs-mini-games research).** DN is validated *as intrinsic integration* — but the same literature warns that **narrative helps *behavioral* outcomes (practice minutes, completion, return), NOT *cognitive* ones**, and *decorative* narrative *during* the learning loop actively hurts. The failure mode to warn against is **decorative narrative as a seductive detail on the critical path + an unwatched game-to-learning ratio.** Sourced from `fractionforge-app/Docs/RESEARCH_ADVENTURE_MODES_VS_MINIGAMES_2026-07-07.md` (~25 sources; primary = a user-supplied deep-research report):
+
+- **Wouters et al. (2013) + Clark, Tanner-Smith + Killingsworth (2016) + Sailer + Homner (2020)** — the *narrative moderator is non-significant* for cognitive learning (Clark's trend even favors *no* narrative; schematic visuals beat realistic/cartoon); "game fiction" yields a positive **behavioral** effect (practice minutes / completion) but **no** cognitive/motivational gain. Narrative wins the *first click*, not the *test score*.
+- **Adams + Mayer et al. (2012) — the distraction hypothesis** — students learned *more* from a plain slideshow than from the narrative games Crystal Island / Cache 17; a strong story functions as a **seductive detail** that drifts attention from "understanding" to "winning."
+- **Seductive-details meta-analysis (2025, 177 effect sizes)** — small but significant **negative** effect on learning (g ≈ −0.16), mechanism = extraneous cognitive load; **worst when the core task is already hard** (cognitive-load moderator).
+- **Brom et al. (2022, N=11,949) — catch vs. hold** — an integrated shooting mini-game *caught* interest better than a plain quiz (61.8% vs 53.6% finished L1) but the quiz *held* it better and produced **~25% more correct practice with fewer errors**. Even minimal game mechanics cut correct practice ~25%. Maps to **Hidi + Renninger (2006)** four-phase interest (catch ≠ hold). "Integrated mechanics are not a panacea."
+- **Sýkora, Stárková + Brom (2021, home RCT)** — story cutscenes added **no** measurable learning advantage. **Habgood's own Zombie Division caution** — children were *more accurate outside* the game than within → argues for **companion reflection outside the loop** (= R-DIR-FEDC reflection-prompts).
+- **The five design principles** every DN app should honor (the operational takeaway): **(P1)** integrate at the mechanic level [= § R-DN-PARITY swap test]; **(P2)** narrative BETWEEN practice, not during it [= § R-NARRATIVE-BETWEEN-NOT-DURING]; **(P3)** guard + measure the game-to-learning ratio [= § R-GUARD-THE-RATIO]; **(P4)** companion reflection outside the loop [= R-DIR-FEDC-CHAPTER reflection-prompts]; **(P5)** monetization orthogonal to learning/status (the Prodigy critique is a telemetry + monetization finding; the portfolio's no-IAP/no-ads posture is a structural moat). P1 + P4 are already codified; P2 + P3 are codified below; P5 is portfolio-structural.
+
+## R-NARRATIVE-BETWEEN-NOT-DURING — narrative at session boundaries, not on the active learning loop (2026-07-07)
+
+**Cast cameos, chapter beats, and any narrative surface MUST render at session boundaries (kit preview / results / the calm chapter reader) — NEVER overlaid on the active problem-solving loop.** During the practice moment itself the surface stays *schematic* (clean primitive representation; no busy scene, no chatter). Grounded in the distraction-hypothesis + seductive-details evidence above (P2): narrative on the critical path is extraneous cognitive load that measurably depresses learning, worst when the primitive is hard.
+
+- **The test**: does this narrative element render *while the learner is actively solving*? If yes → move it to a boundary (before the kit, on the results screen, or in the chapter reader). A cameo that *demonstrates the primitive at a boundary* is integration; a cameo that *chatters during a hard problem* is a seductive detail.
+- **Companion to R-DN-PARITY**: the swap test governs *whether the mechanic is the content*; this rule governs *where the narrative sits relative to the loop*. Both must hold.
+- **Reference impl**: FractionForge (per-kit `castCameos[]` surface at kit-preview/results boundaries; chapters are a separate calm reader; active mode views are schematic). Audit new cameo/illustration placement against this before shipping.
+- **Scope**: applies to every DN app's gameplay + practice surfaces. Does NOT restrict the chapter reader / `/cast` site pages / audio drama (those ARE the between-practice narrative surfaces).
+
+## R-GUARD-THE-RATIO — measure learning-relevant actions per session minute (2026-07-07)
+
+**Every practice / game surface SHOULD instrument the game-to-learning ratio — learning-relevant actions (answers, selects, retrievals) per session minute vs. non-learning (decoration / animation / navigation) time — so decoration can never silently crowd out the content.** The Prodigy cautionary tale (educator estimates of ~5 min decorating : 2 min problem-solving at higher levels; the 2021 Fairplay/FTC complaint audited 16 membership ads vs 4 math problems in 19 min) was a *telemetry* finding — invisible without the ratio signal.
+
+- **What to instrument**: a lightweight per-session counter of learning-relevant interactions ÷ session minutes, watched across levels/kits (the ratio tends to decay as decoration accretes). `ForgeAnalytics` is the natural home; on-device only (COPPA), no new network.
+- **Hub scope**: this rule is DESIGN + Definition-of-Done guidance for app sessions — **hub does not write the Swift**. A shared `ForgeAnalytics` learning-actions-per-minute helper is a candidate **ForgeKit handoff** (queued), so apps adopt one primitive instead of each rolling their own.
+- **Reference impl**: FractionForge L1 (Q29) — a learning-actions-per-minute counter on the mode session lifecycle (extends `DebugLog`; headless-doable).
+- **Pairs with P5** (monetization orthogonal): the portfolio's no-IAP/no-ads posture removes the *incentive* to crowd out learning; the ratio signal makes any accidental crowd-out *observable*.
+
 ## What the cast is NOT
 
 - ❌ Mascots in costumes (decorative)
@@ -321,6 +348,40 @@ The gate is wired into the opt-in per-app pre-push hook (`scripts/git-hooks/pre-
 - `.claude/rules/forgekit.md` § R-FORGEPEDAGOGY-SCAFFOLDING — R1/R3/R7 DIR/Floortime alignment
 - `fractionforge-app/Docs/dn-s/chapters/halver.md` — V18 end-on-feeling rewrite reference impl
 - `scripts/audit_chapter_dir_fedc_compliance.py` — the gate
+
+### R-CHAPTER-NARRATIVE-QUALITY — spec-sheet / raw-spec / register-leak gate (2026-07-07 / V29)
+
+Per the V28 methodology-conformance audit (`Docs/AUDIT_CHAPTER_METHODOLOGY_CONFORMANCE_2026-07-07.md`): the dominant WEAK-tail failure is a **"spec-sheet / character-bible" authoring-debt class** — ~433 chapters (and ~792 deterministically-detectable across both tiers) that shipped as **bullet scaffolds + raw prompt-cue design briefs** and were never rendered into 5-beat narrative. They score 1 on both `bruner_narrative_mode` (no story) and `intrinsic_integration` (concept announced, not dramatized). They slipped every prior gate (text-leak / anatomy / DIR-FEDC / register / dup-key) because none parsed narrative *form*.
+
+**The gate** — `scripts/check_chapter_narrative_quality.py` — is **deterministic (no LLM)** and detects the mechanical signatures of the class. A chapter is a DEFECT if any HARD signal fires:
+
+| Signal | What | Threshold |
+|---|---|---|
+| `register-leak` | high-confidence engineering/PM/reviewer jargon in the NARRATIVE body (`LOAD-BEARING` / `Habgood` / `codified` / `intrinsic integration` / `the primitive I teach` / `ADR-N` / `PR #N` / `Round N #N` / `SAMHSA` …) | any |
+| `spec-phrasing` | character-bible phrasings (`signature feature`, `embodies the … primitive`, `the move is`, `anti-pattern:`, `scaffolds:`, `most novices think`, `is appointed` …) | ≥2 distinct |
+| `bullet-scaffold` | narrative bullet-line ratio > 12% AND zero `---` beat breaks | ratio+beats |
+| `raw-spec-markers` | dense inline-italic design-cue fragments (`*small*`, `*Watch.*`) — **enricher only**, never a standalone trigger (legit chapters use 15-42 emphasis italics) | co-occur |
+
+Calibrated to **near-zero false positives**: 8/8 known P0 bugs flag; 0/68 flagship CONFORMS chapters (alcumusforge/mathcircle/gambittales/proofquest/fractionforge/numbersense) flag. Low false-positive is paramount — a gate that blocks legit authoring is worse than none.
+
+**Two-gate defense-in-depth** (same pattern as R-CAST-PORTRAIT-SLUG / R-CHAPTER-YAML-DUP-KEY):
+
+| Gate | Where | Coverage | Bypass |
+|---|---|---|---|
+| Pre-push gate #4 | `scripts/git-hooks/pre-push-chapter-checks.sh` (scoped to CHANGED chapters) | NEW/modified chapters in the active workflow | `SKIP_NARRATIVE_QUALITY_CHECK=1` |
+| Portfolio backstop | `check_chapter_narrative_quality.py --all` (on demand; the V29 drain worklist) | HISTORICAL spec-sheet backlog | — |
+
+The pre-push gate is **forward-looking** (changed-files only) so it never blocks the pre-convention backlog — it stops the class from *regrowing* while the backlog is drained. The `--all` run IS the drain worklist.
+
+**The qualitative complement (V28c):** the deterministic gate catches *form*; the *quality* judgment (does the character's defining act dramatize the primitive? does emotion travel personal→general→abstract?) is the **in-session-Claude subagent audit** documented in WORK_QUEUE § V28c — run on new chapters at authoring time. **Do NOT build an Anthropic-API judge variant** (V28c); the `.py` scripts stay Gemini-backed as offline/CI fallback, the interactive path is Claude subagents.
+
+**When it applies:** every new/rewritten chapter (pre-push). When draining the backlog, `--app <slug>` lists an app's flagged chapters. Fix = **authoring** (convert to 5-beat narrative), not trimming.
+
+**Cross-references:**
+- `scripts/check_chapter_narrative_quality.py` — the gate
+- `Docs/AUDIT_CHAPTER_METHODOLOGY_CONFORMANCE_2026-07-07.md` — the finding (spec-sheet class)
+- § R-MULTIBEAT-DEFAULT (5-beat target shape) · § R-CHAPTER-REGISTER (jargon stoplist) · § R-DIR-FEDC-CHAPTER (affect-anchor companion gate)
+- WORK_QUEUE § V28 / V28c / V29
 
 ### V15 reference-impl in-session polish discipline (codified V16 2026-06-24)
 
