@@ -138,6 +138,23 @@ override func didChangeSize(_ oldSize: CGSize) {
 }
 ```
 
+#### `ForgeAccessibleSpriteView` + adaptive scenes — the blank-activity footgun (R-FORGEACCESSIBLE-SCALEMODE; 2026-07-08; lifted from FractionForge V36)
+
+**`ForgeAccessibleSpriteView` (ForgeAccessibility) does NOT set the scene's `scaleMode` on present — unlike `ForgeGameView` (ForgeGameEngine), which sets `.resizeFill` for scenes with `prefersAdaptiveLayout == true`.** So the two are NOT interchangeable drop-ins for adaptive scenes. An adaptive scene that defers its layout to `didChangeSize(_:)` renders **BLANK** (HUD chrome visible, center empty) when hosted by `ForgeAccessibleSpriteView`, because the SpriteKit default `.fill` never resizes the scene to the host view, so `didChangeSize(_:)` never fires and the deferred layout never runs.
+
+**The fix (app-side, no ForgeKit change needed):** set `scene.scaleMode = .resizeFill` in your SwiftUI wrapper before presentation, for any `prefersAdaptiveLayout` scene you host via `ForgeAccessibleSpriteView`:
+
+```swift
+// In the SwiftUI wrapper that builds the scene for ForgeAccessibleSpriteView:
+let scene = makeScene(size: size)
+scene.scaleMode = .resizeFill   // ← REQUIRED for adaptive scenes; ForgeAccessibleSpriteView won't set it
+ForgeAccessibleSpriteView(scene: scene, coordinator: coordinator)
+```
+
+**When it applies:** any app using `ForgeAccessibleSpriteView` (chosen over `ForgeGameView` for its VoiceOver / accessibility affordances) to host a scene whose layout is size-dependent. Non-adaptive scenes (fixed layout, no `didChangeSize` dependency) build unconditionally and are unaffected.
+
+**Reference incident:** FractionForge's "Build Fractions" manipulative rendered blank; root-caused to this gap; fixed app-side in `ManipulativeView` (`.resizeFill` before present). A ForgeKit hardening (make `ForgeAccessibleSpriteView` honor `prefersAdaptiveLayout` itself, matching `ForgeGameView`) is speced in `forgekit/Docs/HANDOFF_FROM_HUB_FORGEACCESSIBLESPRITEVIEW_ADAPTIVE_LAYOUT.md` — until that ships, the wrapper-side `.resizeFill` is the canonical guard. Source: `fractionforge-app/Docs/HANDOFF_FROM_APP_FORGE_ACCESSIBLE_SPRITEVIEW_SCALEMODE.md`.
+
 ### Root cause #3 — Base-scene margins too small for modern chrome
 
 ```swift
