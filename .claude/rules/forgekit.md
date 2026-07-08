@@ -304,50 +304,34 @@ DIR/Floortime (Greenspan + Wieder 1998) + Vygotsky ZPD (1978) + Collins-Brown-Ne
 - `forgekit/Docs/HANDOFF_FROM_LABSMITH_POLYASCAFFOLD.md` + `HANDOFF_FROM_FORGEKIT_POLYASCAFFOLD_SHIPPED.md` — PolyaScaffold spec + ship receipt
 - `Docs/PORTFOLIO_PATTERNS.md` § App-creation checklist — per-cluster preset guidance lives here for app-author surface
 
-## Avatar Edit Authority (ForgeAvatar + ForgeSync, 0.85.0+)
+## Avatar system — simplified Contacts-style tint + glyph (ADR-022; supersedes the composable/accessory design)
 
-Locked-in portfolio policy — see `spark-anvil-hub/Docs/DECISION_AVATAR_EDIT_AUTHORITY.md` for full rationale (**R3** revision: universal full editor + hub-as-cross-portfolio-manager). `AvatarStudioView` **shipped in ForgeKit 0.85.0** (2026-05-17).
+> **⚠ The layered-composable avatar (8 layers + accessory packs + `.lite`/`.full` + `AvatarAssetCatalog`) is RETIRED per `Docs/ADR-022_AVATAR_SIMPLIFIED_CONTACTS_STYLE.md` (ACCEPTED, founder ACK 2026-06-02) — shipped in ForgeKit 1.0.0-rc.** Root cause: **image-gen models (Gemini Nano Banana Pro / Imagen 4) cannot reliably produce transparent backgrounds or monochrome-tintable layers**, so the 108-WebP composable pipeline was structurally unfixable at the source (founder bug-saga screenshot CDAAA247, 2026-06-01→02). This section is the CURRENT design; the accessory convention below is RETIRED (do NOT generate new packs). ADR-022 supersedes `DECISION_AVATAR_EDIT_AUTHORITY.md` + parts of `PLAN_COMPOSABLE_AVATAR_PIPELINE.md`.
 
-- **Any app MAY write `ForgeID.avatar`** via `appGroupStore.setAvatar(_:editedAt:)` — but apps using `ForgeAvatar.AvatarStudioView` don't call `setAvatar` directly; the view does it for them on Save. Last-write-wins on `avatarEditedAt`. If you must call `setAvatar` directly (hand-rolled paths are disallowed but the LWW rule still applies), pass `editedAt: .now`. The single-arg overload clears the timestamp; never use it
-- **Render the editor via `ForgeAvatar.AvatarStudioView`, not hand-rolled UI.** Public `Presentation` enum:
-  - **`.lite`** — default entry point in source apps. Skin tone + hair / outfit / eyes tint pickers
-  - **`.full`** — adds background, frame, and accessories pickers. **Every app MAY offer both** (R3). Three adoption patterns observed in production (per `Docs/AUDIT_AVATAR_STUDIO_ADOPTION_RANKS_5_20_2026-05-28.md`):
-    - **`.lite`-only** — recommended for Play-PRIMARY apps (curiosityquest reference impl: `Packages/Libraries/Sources/SharedUI/Onboarding/ForgeAvatarStudioShell.swift`). Profile/Settings entry; "More customization" affordance can re-present `.full` if added later
-    - **`.full`-only** — recommended for Create-PRIMARY + Together-PRIMARY apps where accessory picker is part of identity loop (cubesensei reference impl: `Packages/Libraries/Sources/CubeUI/Tabs/ProfileTabView.swift:201`). Single tap → `.full` directly
-    - **`.lite`+`.full` segmented toggle** — best-in-class R3 "both surfaces" pattern; lets player switch in-view without dismiss/reopen (**creaturecare reference impl**: `Libraries/Sources/AppFeature/AvatarStudioSheet.swift:62-68` — segmented picker with `@State presentation: AvatarStudioView.Presentation`; **quillspell reference impl** verified R141 #572: `Packages/Libraries/Sources/AppFeature/AvatarStudioSheet.swift` — same pattern, themed "Word Wizard" + 8 app-bundle accessories via `AvatarAssetCatalog(appBundles:)` + `.id(presentation)` for clean rebuild on toggle). Use this pattern when both presentations are equally relevant to the app's UX
-- **AdventureHub differentiates by being the cross-portfolio identity manager**, NOT by exclusive access to `.full`. M7 wrapper features (multi-look save slots + badge-driven cosmetic unlock grid) live on top of `AvatarStudioView(.full)` and remain hub-exclusive. The editor itself is universal
-- **Re-read `currentForgeID()?.avatar` when opening the editor** — not just at app launch. Player may have edited in another app since last open. `AvatarStudioView` does this automatically via `baselineEditedAt:` — pass it from your latest snapshot
-- **Concurrent-edit conflict alerts are built into `AvatarStudioView`** — it observes `AppGroupStoreNotification.forgeIDUpdated` while open and surfaces a two-CTA alert (Discard & reload | Save and overwrite). Apps don't wire this themselves
-- **Local cosmetics still OK for things outside the avatar** — apps MAY add in-app-only personalization (mascot tint, username color, app-only sticker pack, HUD palette) stored in their own SwiftData — three rules: (1) in-app only / no `AppGroupStore` writes, (2) no portfolio propagation, (3) no `AvatarLayer` overlap (no hair / face / outfit / eyes / mouth / accessories / background / frame)
-- **Naming**: keep local cosmetics out of the `Avatar*` namespace — use `AppMascot…`, `AppNamePlate…`, `AppHUDPalette…`. Reserve `Avatar*` for the canonical types in `ForgeModels` + `ForgeAvatar`
-- **No hand-rolled avatar editors** — don't build a per-app skin/hair/outfit picker that bypasses `AvatarStudioView`. Fragments the portfolio look and doubles maintenance
+### Current design (ForgeKit 1.0.0-rc line)
 
-### Portfolio-canonical 8-accessory convention (R147 #578 + R150 #581 upgrade to portfolio-canonical)
+- **`AvatarConfig`** (in `ForgeModels`) — just **2 fields**: `tintIndex: Int` (0..<12, clamped; 12 Material-You HCT tone-locked colors, WCAG AA 4.5:1+ vs white) + `glyph: AvatarGlyph`. `.default` = Sky tint + "A". `deterministicTintIndex(seed:)` (djb2) for stable cross-app tint from a UUID seed.
+- **`AvatarGlyph`** enum — `.initial(Character)` / `.symbol(String)` / `.emoji(String)`. `portfolioSymbols` (30 curated SF Symbols) + `portfolioEmojis` (30 kid-friendly emoji).
+- **`AvatarRenderer`** (SwiftUI, `@MainActor`) — pure `ZStack { Circle().fill(tint); glyph }`. Consults `ForgeAvatarRegistry.shared` for themed per-app glyph overrides; sets `accessibilityLabel` automatically. **There is NO layered/accessory rendering** (rc.3 `AvatarRenderer` draws a tinted circle + one glyph only).
+- **`AvatarStudioView`** — SINGLE presentation (no `.lite`/`.full`, no `Presentation` enum, no `catalog:` param): 120-pt preview + 4×3 tint-swatch grid + Initial/Symbol/Emoji segmented picker.
+- **`AvatarThemedGlyphProvider`** protocol + **`ForgeAvatarRegistry`** (`@MainActor` singleton) — apps return an `AnyView?` to substitute a custom glyph (e.g., CubeSensei → Rubik's cube) per `AvatarRenderContext` (`.profile` / `.toolbar` / `.multiplayerHUD` / …) WITHOUT forking `AvatarConfig`. This is the sanctioned per-app personalization seam, replacing accessory packs.
 
-PRIMARY-cluster apps consistently ship **8 themed accessories** with a uniform `lowercase_underscore` naming convention. **Upgraded from "recommendation outside Play" to portfolio-canonical at R150 #581** after corroboration across 5 of 6 audited apps spanning 3 clusters:
+### Edit-authority essentials (still hold)
 
-| App | Cluster | Theme | Status |
-|---|---|---|---|
-| QuillSpell | Play | Word Wizard | ✅ |
-| GrammarForge | Play | Grammar | ✅ (`comma_charm` / `editing_pen` / `editor_satchel` / `grammar_book` / `parts_of_speech_pin` / `punctuation_pendant` / `scholar_cap_red` / `syntax_scarf`) |
-| ReadQuest | Play | Reading | ✅ (`bookmark_charm` / `comprehension_pendant` / `library_satchel` / `narrative_scarf` / `open_book` / `page_marker_pin` / `reading_glasses` / `story_beanie_blue`) |
-| BeatForge | Create | Music/beat | ✅ R148 corroboration (`band_jacket_red` / `beat_pin_quarternote` / `boombox_charm` / `drumstick_pair` / `headphones_red` / `snapback_hat_blue` / `tambourine_hand` / `vinyl_pin`) |
-| BridgeForge | Science/STEM | Civil engineering | ✅ R150 corroboration (`blueprint_roll_civil` / `blueprint_satchel_steel` / `civil_engineer_vest` / `drafting_set` / `engineer_beanie_steel` / `engineer_hardhat_blue` / `load_pin` / `truss_pendant`) |
-| FossilForge | Science/STEM | (paleontology) | ❌ — pack not generated yet |
+- **Any app MAY edit the shared avatar**; render the editor via `ForgeAvatar.AvatarStudioView`, not hand-rolled UI. Last-write-wins on `avatarEditedAt`. Concurrent-edit conflict alerts are built into the view.
+- **No hand-rolled avatar editors** — don't build a per-app tint/glyph picker that bypasses `AvatarStudioView`.
+- **Per-app identity flavor goes through `AvatarThemedGlyphProvider`** (a themed glyph), NOT through bundled accessory WebPs.
+- **Local cosmetics outside the avatar** (mascot tint, username color, HUD palette) remain fine in the app's own SwiftData — in-app only, no `AppGroupStore` writes, no `Avatar*` namespace (use `AppMascot…` / `AppHUDPalette…`).
 
-**Convention rules** (portfolio-canonical):
-- **Bundle location**: `Libraries/Sources/SharedUI/Resources/AvatarShared/accessories/` (flat-bundle for `AvatarAssetCatalog(appBundles:)` resolution)
-- **File format**: `.webp` at 256×256 with alpha
-- **Naming**: `lowercase_underscore.webp`; no app-prefix (the bundle scope provides per-app uniqueness)
-- **Pack size**: 8 per app for visual variety + balanced picker layout in `.full` mode (8 fits cleanly in 2×4 or 4×2 grid)
-- **Theme cohesion**: all 8 should reflect the app's curricular surface area (writing-craft / engineering / etc.) so picker selections feel like identity-curation, not random cosmetics
-- **Cost ceiling**: ~$0.36 generation cost per app via standard accessory pipeline (per `portfolio.md` § Asset generation ownership)
+### RETIRED — the "portfolio-canonical 8-accessory convention" (R147/R150) — do NOT follow (2026-07-08, V38)
 
-**Why 8 not other counts**: empirical convergent count across 5 independent apps spanning 3 clusters. Provides visual balance (2×4 / 4×2 grids), enough variety for personalization, small enough to fit in ~$0.36 generation cost ceiling.
+**The 8-themed-accessory convention (bundle at `AvatarShared/accessories/`, wire via `AvatarAssetCatalog(appBundles:)` + `.full` picker) is RETIRED.** The API it depended on (`AvatarAssetCatalog`, `AvatarLayer`, `AvatarStudioView.Presentation.full`) no longer exists in ForgeKit 1.0-rc. Resolved per `Docs/DECISION_AVATAR_ACCESSORY_1_0_DIRECTION_2026-07-08.md` (Option B), which ratifies ADR-022 against the inbound FractionForge report (`HANDOFF_FROM_APP_AVATAR_ACCESSORY_SURFACE_RC3_REMOVAL.md`).
 
-**Adoption pattern for new PRIMARY-cluster apps**: when scaffolding, plan for 8 themed accessories from day one. Generate via standard accessory pipeline. Wire through `AvatarStudioSheet.swift` per per-cluster recommendation (Play: R3 both-surfaces / Create: `.full`-direct / Science/STEM: `.full`-direct or R3 if identity-cosmetics-heavy). Reference template impl: `quillspell-app/Packages/Libraries/Sources/AppFeature/AvatarStudioSheet.swift`.
+- **Do NOT generate new accessory packs.** The `~$0.36/app accessory pipeline is retired for the avatar surface.
+- **Apps that shipped an 8-pack (the M9 rollout, ~62 apps)** may **delete** the now-dead `AvatarShared/accessories/*.webp` + `avatar_accessories.json` (+ any `loading_hint` pointing at the removed API) for a small bundle-size win. The assets are inert (excluded from build / un-wireable), so deletion is optional cleanup, not urgent — but do NOT re-wire them. This is app-owned cleanup; hub does not `git rm` app source/resources (a per-app handoff notes it).
+- **Want per-app avatar flavor?** Use `AvatarThemedGlyphProvider` (a themed glyph), not accessories.
 
-**Exceptions to portfolio-canonical**: apps where accessory cosmetics don't fit the surface (e.g., reflective-pillar apps where identity-customization would dilute the journaling register; trauma-gated apps where avatar cosmetics could undermine off-ramps). Each exception documented per-app via TECHNICAL_DESIGN.md.
+Migration reference: `Docs/HANDOFF_FROM_LABSMITH_AVATAR_SIMPLIFIED_MIGRATION.md`.
 
 ## Server `/version` endpoint (R151 #582; lifted from CuriosityQuest 2026-05-29)
 
