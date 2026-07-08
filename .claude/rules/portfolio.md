@@ -123,6 +123,8 @@ Display the output for each step so the audit is visible. Only proceed to branch
 
 **Companion**: pair with § Verify Cross-Repo PRs Merged Before Claiming SHIPPED below — pull-audit-then-work on the inbound side; merge-then-verify on the outbound side.
 
+**Multiple hub sessions run concurrently — see `.claude/rules/workflow.md` § R-PARALLEL-HUB-AGENTS** for the consolidated coordination protocol (queue-number allocation, rule-sync single-flight `.claude/.rule-sync.lock`, R2-mutating single-flight, PR-merge-race discipline, lightweight territory claiming via `.claude/CLAIMS.md`, concurrency-safe distribution scripts). The per-repo pull-then-audit above is the inbound-read discipline within that protocol.
+
 ### CRITICAL: Verify Cross-Repo PRs Merged Before Claiming SHIPPED
 
 After every cross-repo PR (spark-anvil-site, app repos, forgekit, forgesync, forgeplay), confirm the merge:

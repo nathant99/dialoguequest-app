@@ -178,6 +178,57 @@ gh pr merge <n> --merge --delete-branch --admin
 
 Pattern proven across Round 91 #468 + #469 (68 cross-repo PRs total).
 
+## R-PARALLEL-HUB-AGENTS — coordination protocol for concurrent hub sessions (2026-07-08)
+
+**Multiple Claude Code sessions run against this hub (and the shared portfolio) at the same time. They share ONE git origin per repo, ONE Gemini API key, ONE R2 bucket, and ONE working tree per clone — so uncoordinated concurrent writes collide.** This section is the single consolidated protocol; the sibling sections it references (§ Stagger Background Agents / § Pre-work origin verification / § Verify origin state before claiming coverage / § Stale-clone recovery / `portfolio.md` § Per-repo pull-then-audit / `spark-anvil-website.md` § R-GEMINI-KEY-SERIAL) remain the detailed treatments — this rule unifies them and adds the cross-session coordination the individual rules didn't cover.
+
+### Why this exists — collisions observed in a single session (all from concurrent hub agents)
+
+1. **Queue-number collision** — a parallel session and this one BOTH added `## V35` to the work queue → git merge conflict; resolved by renumbering to `V36` and keeping BOTH entries.
+2. **Rule-sync `set -e` abort** — `copy_rules_to_repos.sh` committed to a diverged app (a parallel session pushed between the sync's pull and push); the failing `git push` under `set -e` aborted the whole run, silently skipping ~54 apps (fixed reactively via resilient push, hub PR #1157 — but the ROOT is concurrent pushes).
+3. **Per-app push race** — an app needed a rebase onto a parallel commit before its rule push landed.
+4. **PR-merge races** — origin/main advanced mid-round (parallel merges), so hub PRs needed branch-update-then-merge.
+5. **R2 bucket mutated mid-audit** — a backup audit's bucket count grew +20 objects (a parallel creative wave uploaded new audio + left `.vtt` uncommitted) between snapshot and hardening.
+6. **Stale-clone / `index.lock` contention** — a backgrounded `git add` left a stale lock; a stale local `main` pointer.
+
+### The protocol (7 disciplines)
+
+1. **Queue-number allocation — never hard-code the next `V<N>`.** At the moment you commit a work-queue entry, `git pull` the queue first and take `max(existing V-numbers) + 1`. Expect + resolve queue merge-conflicts by **renumbering your entry and keeping BOTH** (the V35/V36 precedent) — never clobber the other session's entry. Same discipline for ADR numbers (`ADR-NNN`) and any other monotonic ID authored across sessions.
+
+2. **Rule-sync single-flight.** Only ONE session runs `copy_rules_to_repos.sh --apply` (or any full portfolio distribution) at a time — concurrent runs race per-app pushes. Acquire the hub lockfile `.claude/.rule-sync.lock` (PID + ISO-timestamp + short purpose) before starting; remove it when done. If the lock exists and its PID is alive, WAIT or coordinate — do not start a second sync. A stale lock (dead PID, or timestamp > ~30 min old) may be reclaimed after verifying no sync is actually running (`ps` the PID). The resilient push (PR #1157) is the SAFETY NET, not a substitute for the lock.
+
+   ```bash
+   LOCK=.claude/.rule-sync.lock
+   if [ -f "$LOCK" ] && kill -0 "$(cut -d' ' -f1 "$LOCK" 2>/dev/null)" 2>/dev/null; then
+     echo "rule-sync in progress by PID $(cat "$LOCK") — WAIT/coordinate"; exit 1
+   fi
+   echo "$$ $(date -u +%FT%TZ) rule-sync" > "$LOCK"
+   trap 'rm -f "$LOCK"' EXIT
+   ```
+
+3. **Bucket-/key-mutating single-flight.** Extend R-GEMINI-KEY-SERIAL's "one op at a time" to ANY shared-resource-mutating op: R2 uploads/prunes, the R2 backup sync, and any Gemini gen/gate/portrait run. An audit or backup must not race a live upload wave. After any wave that mutated R2, re-run the backstop auditor (`audit_r2_upload_coverage.py` / `audit_asset_backup_coverage.py --ci-mode`). If a bucket count shifts mid-audit, a parallel wave is writing — pause, let it finish, re-snapshot.
+
+4. **PR-merge-race discipline.** Immediately before `gh pr merge`, `git pull --ff-only` your branch's base (or fetch + rebase the branch). If `gh pr merge` reports not-mergeable because origin/main advanced, **update-branch-then-retry** — do NOT `--admin`-force past a real divergence. `--admin` is only for genuinely non-blocking CI (Cloudflare build IN_PROGRESS, optional lints) per § Companion utility above, never to bypass a merge conflict a parallel session created.
+
+5. **Territory claiming (lightweight).** A session doing sustained work in a specific app repo, or on a portfolio-scale wave (e.g., the multi-beat chapter sweep, a per-cluster gen wave), ANNOUNCES it — a line in the session handoff doc AND/OR a `.claude/CLAIMS.md` entry (`<repo-or-wave> · <session/PID> · <ISO-timestamp> · <purpose>`). Other sessions read claims before starting concurrent writes to a claimed repo/wave and pick different territory. The "V35 owned by parallel session" note is the informal precedent this formalizes. Claims are advisory, not locks — they prevent the expensive collisions (duplicate paid gen, working-tree churn), not every edit.
+
+6. **Distribution scripts must be concurrency-safe.** Any script that writes to multiple repos MUST: (a) `git pull` per repo immediately before its push; (b) be **resilient** — never `set -e`-abort the whole batch on one repo's push failure; on failure `git pull --rebase` + retry, else record `PUSH-FAILED`, leave the commit local, and CONTINUE the loop (the V32 P2 resilient-push template); (c) be **idempotent / re-runnable** — a second run over already-synced repos is a no-op (merge-aware sync, skip-if-present gen). Never source the target list from a filesystem glob — use the canonical registry per `portfolio.md` § Distribution scripts MUST source from canonical portfolio registry.
+
+7. **Pull-first / verify-origin everywhere (the umbrella).** Every freshness query, every pre-work step, every coverage claim reads/writes against ORIGIN, not stale local state — per the sibling sections. In a parallel-session world these are not optional politeness; they are the only thing that keeps two sessions from acting on each other's stale view.
+
+### When this rule applies
+
+- Any hub session that MIGHT be running alongside another (assume yes by default — the portfolio routinely has ≥2 concurrent sessions).
+- Before any: work-queue/ADR number allocation · portfolio rule sync · R2-mutating op · cross-repo PR merge · sustained per-app or portfolio-wave work.
+
+### Cross-references
+
+- § Stagger Background Agents — Never 4+ in Parallel (intra-session bg agents; this rule is the inter-SESSION analog)
+- § Pre-work origin verification · § Verify origin state before claiming coverage · § Stale-clone recovery
+- `portfolio.md` § Per-repo pull-then-audit BEFORE work, ONE AT A TIME · § Distribution scripts MUST source from canonical portfolio registry
+- `.claude/rules/spark-anvil-website.md` § R-GEMINI-KEY-SERIAL (single-flight the shared Gemini key — the resource-contention precedent this generalizes)
+- hub PRs #1157 (resilient push) · #1161 (V35↔V36 queue-collision resolution)
+
 ## Architecture Decision Records (MADR convention)
 
 **When a non-trivial decision is made — author a MADR.** Industry-standard Markdown Architecture Decision Record format. Captures the decision + alternatives + consequences in a durable, scannable form so future sessions don't re-litigate.
