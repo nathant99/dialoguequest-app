@@ -268,6 +268,74 @@ The target split:
 - § R-SITE-BUILD-QUIET-PRERENDER (above) — sibling build-behavior note (the same `public/`-copy phase that overflows here is the one that looks "hung")
 - `.claude/rules/spark-anvil-website.md` "Tech stack" / "Hub does NOT own" — R2 bucket + DNS are user-managed; hub owns the code-side migration
 
+## Distribute ≠ upload: audio must reach R2 in the same wave (R-R2-AUDIO-UPLOAD-COMPLETENESS; 2026-07-03)
+
+**The site serves EVERY chapter-narration + audio-drama `.m4a` from Cloudflare R2 (`cdn.spark-and-anvil.com`), NOT from the repo. A content wave that distributes a chapter but forgets to push its `.m4a` to R2 ships a SILENT production 404 — the audio player renders (its `.vtt` is committed) but the audio fails to load, with ZERO build-time signal.** This is the load-bearing companion to R-SITE-MEDIA-R2: that rule says "`git rm` the `.m4a` out of `public/`"; THIS rule says "…but only AFTER it is verified on R2." The two together are the complete discipline; doing the `git rm` without the upload is the exact defect this rule exists to prevent.
+
+### Why it's invisible (the trap)
+
+Nothing catches a missing-from-R2 `.m4a` at build time. The R2-aware build gates (multibeat-snapshot / audio-drama) **skip local `.m4a` entirely** when `PUBLIC_AUDIO_CDN_URL` is set (which it is, on Cloudflare Prod+Preview), precisely so they don't false-fail on the R2-migrated files. So a `.vtt`-present / `.m4a`-absent-from-R2 chapter passes every gate and deploys green — then 404s the audio in production. The only detector is an explicit R2-coverage audit.
+
+### Reference incident (2026-07-03)
+
+A CDN + R2-bucket diff found **141 chapter `.m4a` returning 404 live** — essentially every cast-expansion wave's new-member narration (Math V24 / ELA V25 / Science D-1 / SEL Wave 1) that was distributed around/after the 2026-06-30 ENOSPC `git rm` (site PR #340) but never uploaded to R2. Science Wave 2 was the only wave that had uploaded (it did so by hand). **136 were RECOVERABLE** (local source `.m4a` still in `Resources/PilotsAndExperiments/**` → re-staged into `public/` + `upload_audio_to_r2.py` + pruned); **5 were NEEDS-REGEN** (fractionforge Tier-2 `-advanced` — never generated; a separate paid-TTS gen wave). Full write-up: `Docs/AUDIT_R2_UPLOAD_COVERAGE_2026-07-03.md`.
+
+### The rule
+
+1. **Every wave that distributes narration `.m4a` MUST upload it to R2 in the SAME wave, and verify.** `distribute_cast_chapters.py` now does this by default: it uploads via `upload_audio_to_r2.py` then prunes the local `.m4a` from `public/` (keeping the small committed `.vtt`). It **fails loud** if R2 creds are absent and does NOT prune — so a wave can never again silently leave audio un-uploaded. `--no-r2` is an explicit escape hatch that prints a warning.
+2. **Creds live in `~/.r2-env.sh`** (mode 600, auto-sourced from `~/.zshrc`): `R2_ENDPOINT` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` (+ `PUBLIC_AUDIO_CDN_URL` / `PUBLIC_PDF_CDN_URL` for local build-gate parity). Bucket `spark-anvil-books`. `source ~/.r2-env.sh` before any upload; run uploads with a `python3` that has `boto3` (`python3 -m pip install --user boto3` if missing — the sandbox Xcode python 3.9 needs it installed once). NEVER commit the creds file. **Bootstrap (fresh env):** if `~/.r2-env.sh` is absent, the user drops the Cloudflare R2 API token at `~/Downloads/r2.txt` (labels `Access Key ID` / `Secret Access Key` / `Endpoint`); build the env file by parsing that (don't retype secrets) + `chmod 600`.
+3. **Verify with the auditor** after any audio-bearing wave — and periodically as a portfolio backstop: `source ~/.r2-env.sh && /usr/bin/python3 scripts/audit_r2_upload_coverage.py --verify-cdn 5`. Zero RECOVERABLE gaps = clean. It classifies MISSING into RECOVERABLE (re-upload) vs NEEDS-REGEN, prints a `--recover-list` stage+upload recipe, and `--ci-mode` exits non-zero on any recoverable gap.
+4. **`.vtt` stays in `public/` (committed); `.m4a` lives ONLY on R2.** Never commit `.m4a` under `public/chapters/` (R-SITE-MEDIA-R2). If you stage `.m4a` locally to run an upload, delete them after: `find ../spark-anvil-site/public/chapters -name '*_chapter.m4a' -delete`.
+
+### Gotchas
+
+- **CDN bot-block on non-browser UAs**: `cdn.spark-and-anvil.com` returns **403** (not 200) to `urllib`'s default user-agent — a false signal. Use `curl -I` or send a browser UA (the auditor's `--verify-cdn` does). A 403 from a bare script is almost always this, not a real permission problem.
+- **404 caching**: Cloudflare may briefly cache a prior 404; after an upload, allow a few seconds and re-HEAD before concluding it failed.
+- **App+char-aware source resolution**: chapter slugs collide across apps (`surge`, `chain`, `hush`, `sort` exist in multiple apps). When locating a local source `.m4a`, match on BOTH `<app>` dir AND `<char>` filename — a filename-only index picks the wrong app's audio.
+
+### Cross-references
+
+- `Docs/AUDIT_R2_UPLOAD_COVERAGE_2026-07-03.md` — the 141-gap incident + remediation
+- `scripts/audit_r2_upload_coverage.py` — the detector (expected-from-`.vtt` vs R2-bucket diff + local-source classification)
+- `scripts/distribute_cast_chapters.py` — now uploads-then-prunes by default (the source-side fix)
+- `scripts/upload_audio_to_r2.py` — canonical uploader
+- § R-SITE-MEDIA-R2 (above) — the `git rm` half of the discipline; this rule is the upload half
+- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "V29 — Full audit of the R2 audio/PDF uploads" — the queued ask this closes
+
+## R2 is the system-of-record for audio — it MUST be backed up off-R2 (R-R2-SYSTEM-OF-RECORD; 2026-07-07)
+
+**Because R-SITE-MEDIA-R2 `git rm`'d the chapter-narration + audio-drama `.m4a` out of `spark-anvil-site/public/`, Cloudflare R2 (`spark-anvil-books`) is the SYSTEM-OF-RECORD for that audio — not a rebuildable cache. R2 has no automatic backup; a bucket deletion / corruption / accidental lifecycle purge would lose the exact shipped audio take with no one-command restore. Therefore every R2-only `.m4a` MUST have a byte-identical copy committed off-R2 (GitHub).** Codified after the V32 P0 backup audit (`Docs/AUDIT_ASSET_BACKUP_COVERAGE_2026-07-06.md`) proved 0 permanent-loss orphans but surfaced 744 `.m4a` (717 chapter-narration + 27 dramas) whose only copy was on R2 — regenerable from committed text via paid Gemini TTS (~$75–150, and a DIFFERENT voice take with drifted VTT), which is a lossy fallback, **not** a backup.
+
+### Why "regenerable from committed text" is NOT a backup
+
+The source text (chapter MD / drama script) being committed makes the audio *recoverable in content* but not *in fact*: re-running TTS produces a new take with different prosody + re-timed VTT cues. The shipped `.m4a` + its committed `.vtt` are a matched pair; a re-gen breaks that pairing. So committed-text ≠ backed-up-audio. Treat R2 audio as authoritative binary that needs its own durable copy.
+
+### The two-layer backup discipline (both belong; neither alone is complete)
+
+| Layer | What | Owner | Covers |
+|---|---|---|---|
+| **1. Hub byte-backup (load-bearing)** | Commit the R2-only `.m4a` into the hub repo at `Resources/R2AudioBackup/<r2-key>` (mirrors the R2 key path so restore = re-upload at the same key). The hub is NOT Cloudflare-built, so R-SITE-MEDIA-R2's ENOSPC constraint does NOT apply here (same reason the 139 pilot `.m4a` are already committed). | **Hub** — fully executable, no account access | The R2-only `.m4a` set (byte-identical) |
+| **2. Whole-bucket off-site sync (belt-and-suspenders)** | `rclone sync spark-anvil-books → <second store>` (append-only, `--immutable`, no `--delete`) + Cloudflare **R2 object versioning** enabled on the bucket. | **Account-level, user-managed** (hub owns the *script*, not the destination/creds — per "Hub does NOT own") | The WHOLE bucket incl. the 3,060 already-git-backed + 265 PDFs; protects against bucket-level deletion |
+
+**The `git rm` in R-SITE-MEDIA-R2 stays** — this rule does NOT reverse it. `public/` (the Cloudflare-built tree) stays `.m4a`-free for build-disk; the backup lives in the **hub** repo (`Resources/R2AudioBackup/`), which Cloudflare never clones or copies into `dist/`. The two rules are orthogonal: R-SITE-MEDIA-R2 governs the *site* tree; R-R2-SYSTEM-OF-RECORD governs *durability* via the *hub* tree.
+
+### The discipline going forward
+
+1. **Every audio-bearing wave that uploads new `.m4a` to R2 MUST also add the byte-copy to `Resources/R2AudioBackup/`** — in the same wave, exactly as R-R2-AUDIO-UPLOAD-COMPLETENESS requires the R2 upload itself. The two rules chain: distribute → upload-to-R2 (R-R2-AUDIO-UPLOAD-COMPLETENESS) → byte-backup-to-hub (this rule).
+2. **`scripts/backup_r2_audio_to_hub.py`** pulls the current R2-only `.m4a` set (idempotent: skips size-matching files already present) and refreshes `Resources/R2AudioBackup/MANIFEST.json` (key + size + md5). Run it after any audio wave, and periodically as a portfolio backstop.
+3. **`scripts/audit_asset_backup_coverage.py --ci-mode`** is the backstop detector — it now counts `Resources/R2AudioBackup/` as a committed binary source, so a newly-uploaded-but-not-yet-backed-up `.m4a` classifies 🟠 REGENERABLE-TTS (not ✅) and `--ci-mode` exits non-zero. Wire it into audio-wave round-close alongside `audit_r2_upload_coverage.py`.
+4. **Account-level (user):** enable R2 object versioning + schedule `scripts/sync_r2_to_backup.sh`. These protect the bucket as a whole; hub cannot enable them.
+
+### Cross-references
+
+- `Docs/AUDIT_ASSET_BACKUP_COVERAGE_2026-07-06.md` — the audit that surfaced the 744 + ranked the recs this rule codifies
+- `scripts/backup_r2_audio_to_hub.py` — hub byte-backup (layer 1)
+- `scripts/sync_r2_to_backup.sh` — whole-bucket off-site sync recipe (layer 2; user runs)
+- `scripts/audit_asset_backup_coverage.py` — the `--ci-mode` backstop detector
+- § R-SITE-MEDIA-R2 — the `git rm`-from-`public/` rule this one is orthogonal to (site tree vs hub tree)
+- § R-R2-AUDIO-UPLOAD-COMPLETENESS — the upload-to-R2 half; this rule adds the backup-off-R2 half
+- `.claude/rules/spark-anvil-website.md` "Tech stack" / "Hub does NOT own" — R2 bucket + versioning + DNS are user-managed
+
 ## Cast portrait slug convention (R-CAST-PORTRAIT-SLUG; 2026-06-05)
 
 **The portrait file at `spark-anvil-site/public/cast/<app>/<char>.webp` MUST match the chapter MD filename slug at `src/content/chapters/<app>/<char>.md`.** Both are the same `<char>` token. This is load-bearing because chapter pages at `/cast/<app>/<char>` render `<img src="/cast/<app>/<char>.webp">` with no fallback; Astro static-build doesn't verify `<img src>` targets, so a slug mismatch ships as a silently-broken portrait link with no build-time error.
