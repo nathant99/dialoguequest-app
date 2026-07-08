@@ -39,6 +39,96 @@ When making site changes from hub:
 
 If the change is small (palette tweak, copy edit, new page from existing pattern), skip the handoff doc — just ship the PR.
 
+## Web-app clones must keep feature parity with their iOS app (R-WEB-CLONE-PARITY; 2026-07-08)
+
+**A browser learning-app clone of a portfolio iOS app (the `/play/<app>/*` route tree — FractionForge is the first, `/play/fractionforge`) MUST maintain feature parity with that app's LEARNING-RELEVANT features, UNLESS a specific delta is EXPLICITLY WAIVED with a documented rationale in the app's parity ledger.** Parity is the default; every gap is either closed or explicitly justified — never silently dropped. Codified per user-direct 2026-07-08 (*"codify the requirement that fractionforge iOS app and web page need to have feature parity unless explicitly allowed not to"*).
+
+### What "feature parity" covers (and what it doesn't)
+
+Parity is measured on **learning-relevant + pedagogy-load-bearing** surfaces, NOT pixel-identical UI:
+
+- **IN scope (must reach parity or be waived):** the curricular manipulatives / scene modes, the question/kit content, the scaffolding discipline (articulate-before-hint / PolyaScaffold), the DN-S cast + narrative surfacing, co-op / pass-and-play modes, the engagement loop (streak / weekly challenge / boss-encounter / mastery gating), progress + mastery tracking, accessibility, and the anti-shame + narrative-placement disciplines (`R-NARRATIVE-BETWEEN-NOT-DURING` / `R-GUARD-THE-RATIO`).
+- **OUT of scope (never a parity obligation):** native-only affordances (SpriteKit particle polish, haptics, Live Activities, Widgets, App Intents/Siri, Game Center), platform chrome, and exact visual styling. A web-native equivalent of a native affordance satisfies parity (e.g. SVG manipulative ≈ SpriteKit manipulative; a linked site chapter reader ≈ an in-app reader).
+
+### The parity ledger (required artifact)
+
+Each web-clone app maintains a parity ledger — `spark-anvil-hub/Docs/PARITY_<APP>_WEB_VS_IOS.md` — enumerating every in-scope iOS feature → web status, one of:
+
+| Status | Meaning |
+|---|---|
+| ✅ **parity** | Present + equivalent on the web |
+| 🔄 **adapted** | Present via a web-native equivalent (note the adaptation) |
+| 🟡 **gap** | Missing on the web + NOT yet waived → open work item (must be tracked in the work queue) |
+| ⛔ **waived** | Deliberately not built on the web, WITH a one-line rationale (see below) |
+
+A 🟡 gap is a defect against this rule; a ⛔ waiver is compliant. The distinction is the documented rationale.
+
+### What counts as a valid waiver
+
+A delta may be waived (⛔) only for a concrete reason, recorded inline in the ledger. Canonical valid rationales:
+
+- **On-device / COPPA guardrail** — a feature that would require a server, accounts, or off-device data collection is auto-waivable under the site's on-device posture (e.g. classroom sharing / Google Classroom / cross-device sync / global leaderboards). This is the strongest waiver and takes precedence over parity.
+- **Platform-only affordance** — the out-of-scope list above (haptics, Widgets, Siri, Game Center, etc.).
+- **Founder-direct** — the user explicitly approves a specific delta.
+
+"It was more work" is NOT a valid waiver — that's a 🟡 gap (a tracked work item), not a ⛔ waiver.
+
+### The bidirectional-drift rule
+
+When EITHER surface gains a new learning-relevant feature, the parity ledger MUST be updated in the same cycle and the delta closed or explicitly waived:
+
+- **iOS ships a new mode / mechanic / cast member / engagement feature** → the ledger gains a 🟡 gap row (queued for the web) or a ⛔ waiver.
+- **Web ships something the iOS app lacks** → note it (it's fine for the web to lead; but flag it so the iOS app's own session can consider back-porting).
+
+The `R-CAST-EXPANSION-INTEGRATION` "authored ≠ integrated" discipline (`.claude/rules/distributed-narrative.md`) is the sibling pattern one axis over: there, a new cast member opens per-axis integration debt; here, a new iOS feature opens a web-parity gap. Both are "the ship isn't done until every downstream surface is closed or explicitly waived."
+
+### When this rule applies
+
+- Authoring or extending any `/play/<app>` web clone.
+- Auditing a web clone for completeness — enumerate the ledger; every 🟡 gap is a work item, every ⛔ needs a rationale.
+- Any iOS-app round that adds a learning-relevant feature to an app that HAS a web clone — update the clone's ledger (hub-side; the iOS session need not).
+
+### Cross-references
+
+- `Docs/PARITY_FRACTIONFORGE_WEB_VS_IOS.md` — the first/reference parity ledger
+- `Docs/PLAN_FRACTIONFORGE_WEB_CLONE_2026-07-08.md` + `Docs/RESEARCH_FRACTIONFORGE_WEB_CLONE_2026-07-08.md` — the web-clone design
+- `Docs/AUDIT_FRACTIONFORGE_PORTFOLIO_LIFT_2026-07-08.md` — the iOS feature inventory the ledger measures against
+- `.claude/rules/distributed-narrative.md` § R-CAST-EXPANSION-INTEGRATION — sibling "authored ≠ integrated" discipline
+- § "Web-app clone" scope above (hub owns the web; `/play/*` is a learning app distinct from the marketing site)
+
+## Web-clone user + developer guides must track the code (R-WEB-CLONE-GUIDE-SYNC; 2026-07-08)
+
+**Every `/play/<app>` web clone has TWO living guides that MUST be updated in the SAME change-set as any code change that affects what they document — a visitor-facing USER guide and a maintainer-facing DEVELOPER guide.** A code change that lands without the matching guide update is incomplete, exactly like a cross-repo PR that ships without verifying the merge. Codified per user-direct 2026-07-08 (*"codify the requirement that user guide and developer guide for the web clone of fractionforge be kept up-to-date with the web clone code"*). Follows the precedent set by the `/cast` page guides (`GUIDE_CAST_PAGE_USER.md` + `GUIDE_CAST_PAGE_DEVELOPER.md`).
+
+### The two guides (per web-clone app)
+
+| Guide | Path | Audience | Register |
+|---|---|---|---|
+| **User guide** | `spark-anvil-hub/Docs/GUIDE_<APP>_WEB_USER.md` | Parents / educators / kids (ages 9-14 readable) | Warm, non-jargon (per § R-SITE-CHROME register discipline — no engineering terms, file paths, ticket numbers) |
+| **Developer guide** | `spark-anvil-hub/Docs/GUIDE_<APP>_WEB_DEVELOPER.md` | The next maintainer session | Architecture + data flow + file map + load-bearing rules + extension recipes + gotchas + test/verify plan |
+
+### The sync obligation (what "track the code" means)
+
+A change is guide-affecting — and therefore MUST carry the matching guide edit in the same commit/PR — when it:
+
+- **User guide** — adds/removes/renames a mode or screen, changes how a learner does something (controls, keyboard, flow), changes what data is stored or the privacy posture, or changes any user-visible label the guide names.
+- **Developer guide** — adds/removes/renames a file or module, changes the data model or kit schema, changes the build/port pipeline, adds a manipulative mode or a new island, changes a load-bearing rule the guide cites, or introduces a gotcha the next maintainer needs.
+
+Trivial changes (a copy typo, a CSS tweak that doesn't change behavior) don't require a guide edit — the bar is "does this change what the guide asserts?", the same bar the multi-beat-snapshot / register rules use.
+
+### When this rule applies
+
+- Authoring or extending any `/play/<app>` web clone → the guide-affecting parts of the diff pair with a guide edit.
+- Reviewing a web-clone PR → check the diff against both guides; a guide-affecting change with no guide edit is a defect.
+- The parity ledger (`R-WEB-CLONE-PARITY`) and the developer guide overlap intentionally: the ledger tracks iOS↔web feature deltas; the dev guide tracks how the web code is built. Update both when a feature lands.
+
+### Cross-references
+
+- `Docs/GUIDE_FRACTIONFORGE_WEB_USER.md` + `Docs/GUIDE_FRACTIONFORGE_WEB_DEVELOPER.md` — the first/reference web-clone guides
+- `Docs/GUIDE_CAST_PAGE_USER.md` + `Docs/GUIDE_CAST_PAGE_DEVELOPER.md` — the two-guide precedent this rule generalizes
+- § R-WEB-CLONE-PARITY (above) — sibling web-clone completeness rule
+- § R-SITE-CHROME (in `.claude/rules/distributed-narrative.md`) — the register discipline the USER guide follows
+
 ## Asset reuse policy
 
 The website MUST reuse existing portfolio assets. Generation budget for website-specific assets is constrained to:
