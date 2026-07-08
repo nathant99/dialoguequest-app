@@ -315,7 +315,9 @@ The source text (chapter MD / drama script) being committed makes the audio *rec
 | Layer | What | Owner | Covers |
 |---|---|---|---|
 | **1. Hub byte-backup (load-bearing)** | Commit the R2-only `.m4a` into the hub repo at `Resources/R2AudioBackup/<r2-key>` (mirrors the R2 key path so restore = re-upload at the same key). The hub is NOT Cloudflare-built, so R-SITE-MEDIA-R2's ENOSPC constraint does NOT apply here (same reason the 139 pilot `.m4a` are already committed). | **Hub** — fully executable, no account access | The R2-only `.m4a` set (byte-identical) |
-| **2. Whole-bucket off-site sync (belt-and-suspenders)** | `rclone sync spark-anvil-books → <second store>` (append-only, `--immutable`, no `--delete`) + Cloudflare **R2 object versioning** enabled on the bucket. | **Account-level, user-managed** (hub owns the *script*, not the destination/creds — per "Hub does NOT own") | The WHOLE bucket incl. the 3,060 already-git-backed + 265 PDFs; protects against bucket-level deletion |
+| **2. Whole-bucket off-site sync (belt-and-suspenders)** | `rclone sync spark-anvil-books → <second store>` — **append-only** (`--immutable`, no `--delete`), so an accidental overwrite/delete on the source can never propagate to the backup. This IS the account-level durability layer (see note below — R2 has NO native object versioning to lean on). | **Account-level, user-managed** (hub owns the *script*, not the destination/creds — per "Hub does NOT own") | The WHOLE bucket incl. the 3,060 already-git-backed + 265 PDFs; protects against bucket-level deletion |
+
+> **⚠ R2 has NO native object versioning (verified 2026-07-07).** Both `PutBucketVersioning`/`GetBucketVersioning` are **unimplemented** in R2's S3 API (the 2022 `GetBucketVersioning` is a dummy stub returning S3's "not enabled" default); there is **no dashboard toggle**. So the append-only off-site sync (layer 2) — NOT versioning — is the account-level protection against overwrite/delete. If true per-object version *history* is ever wanted, the documented R2 pattern is **Event Notifications → Cloudflare Queue → a consumer Worker** that copies each changed/deleted object into a backup bucket with a version-suffixed key (`wrangler r2 bucket notification create <bucket> --event-type object-create --queue <q>` + a Worker). That's an optional account/Worker-side build, not required given layers 1+2.
 
 **The `git rm` in R-SITE-MEDIA-R2 stays** — this rule does NOT reverse it. `public/` (the Cloudflare-built tree) stays `.m4a`-free for build-disk; the backup lives in the **hub** repo (`Resources/R2AudioBackup/`), which Cloudflare never clones or copies into `dist/`. The two rules are orthogonal: R-SITE-MEDIA-R2 governs the *site* tree; R-R2-SYSTEM-OF-RECORD governs *durability* via the *hub* tree.
 
@@ -324,7 +326,7 @@ The source text (chapter MD / drama script) being committed makes the audio *rec
 1. **Every audio-bearing wave that uploads new `.m4a` to R2 MUST also add the byte-copy to `Resources/R2AudioBackup/`** — in the same wave, exactly as R-R2-AUDIO-UPLOAD-COMPLETENESS requires the R2 upload itself. The two rules chain: distribute → upload-to-R2 (R-R2-AUDIO-UPLOAD-COMPLETENESS) → byte-backup-to-hub (this rule).
 2. **`scripts/backup_r2_audio_to_hub.py`** pulls the current R2-only `.m4a` set (idempotent: skips size-matching files already present) and refreshes `Resources/R2AudioBackup/MANIFEST.json` (key + size + md5). Run it after any audio wave, and periodically as a portfolio backstop.
 3. **`scripts/audit_asset_backup_coverage.py --ci-mode`** is the backstop detector — it now counts `Resources/R2AudioBackup/` as a committed binary source, so a newly-uploaded-but-not-yet-backed-up `.m4a` classifies 🟠 REGENERABLE-TTS (not ✅) and `--ci-mode` exits non-zero. Wire it into audio-wave round-close alongside `audit_r2_upload_coverage.py`.
-4. **Account-level (user):** enable R2 object versioning + schedule `scripts/sync_r2_to_backup.sh`. These protect the bucket as a whole; hub cannot enable them.
+4. **Account-level (user):** schedule `scripts/sync_r2_to_backup.sh` (append-only off-site sync — R2 has no native versioning, so this is the whole-bucket durability layer). Optionally add the Event-Notifications→Queue→Worker version-history pattern above. Hub cannot run these (destination + creds + Worker are account-level).
 
 ### Cross-references
 
@@ -334,7 +336,7 @@ The source text (chapter MD / drama script) being committed makes the audio *rec
 - `scripts/audit_asset_backup_coverage.py` — the `--ci-mode` backstop detector
 - § R-SITE-MEDIA-R2 — the `git rm`-from-`public/` rule this one is orthogonal to (site tree vs hub tree)
 - § R-R2-AUDIO-UPLOAD-COMPLETENESS — the upload-to-R2 half; this rule adds the backup-off-R2 half
-- `.claude/rules/spark-anvil-website.md` "Tech stack" / "Hub does NOT own" — R2 bucket + versioning + DNS are user-managed
+- `.claude/rules/spark-anvil-website.md` "Tech stack" / "Hub does NOT own" — R2 bucket + off-site-sync destination + DNS are user-managed (R2 has no native versioning to configure)
 
 ## Cast portrait slug convention (R-CAST-PORTRAIT-SLUG; 2026-06-05)
 
