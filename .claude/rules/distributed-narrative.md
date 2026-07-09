@@ -608,7 +608,7 @@ Reader-facing pages — including pilot pages, `/cast/<app>/<char>`, `/stories`,
 
 NOT in the rendered DOM that readers see.
 
-**Companion check during PR review**: visually inspect the deployed page (or Cloudflare Pages preview) for any of the stoplist items listed above. If a page leaks engineering register, it's a P0 register defect — fix before merging to main.
+**Companion check during PR review**: visually inspect the deployed page (or Cloudflare Workers preview) for any of the stoplist items listed above. If a page leaks engineering register, it's a P0 register defect — fix before merging to main.
 
 Reference incident: 2026-06-08 the pilot page footer leaked `Total gen cost: $0.3703 ($0.359 illustrations + $0.011 TTS)` + file paths + `R389 #814` ticket on the live spark-and-anvil.com production surface. Caught via user-direct audit screenshot the same day; cleanup PR (spark-anvil-site #183) shipped same day. This rule prevents recurrence.
 

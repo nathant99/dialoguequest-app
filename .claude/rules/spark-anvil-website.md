@@ -17,7 +17,7 @@ Hub owns:
 
 Hub does NOT own:
 
-- Site deployment / DNS / hosting accounts (Cloudflare Pages — user-managed)
+- Site deployment / DNS / hosting accounts (Cloudflare Workers — user-managed)
 - Production domain configuration (Cloudflare account-level)
 
 ### Workflow
@@ -166,14 +166,14 @@ Logomark and lockup are both visually-audited and aesthetically aligned with the
 
 - **Static site generator**: Astro 4.x (per `DECISION_FIGMA_FOR_SPARK_ANVIL_WEBSITE.md` + `PLAN_SPARK_ANVIL_WEBSITE.md`)
 - **Styling**: Tailwind CSS with token-mapped brand palette (`tailwind.config.js` defines `forge`, `anvil`, `spark`, `warm`, `slate`)
-- **Hosting**: Cloudflare Pages (preferred) or Vercel
+- **Hosting**: Cloudflare Workers (static assets, via Workers Builds Git integration; migrated from Cloudflare Pages)
 - **Analytics**: Plausible (privacy-first, no cookies, COPPA-safe)
 - **Forms**: Formspree or Netlify Forms (press contact, parent feedback)
 - **No third-party SDKs** — preserves the "no tracking, no kid data leaves the device" trust signal
 
 ## Design workflow (locked in)
 
-- **No Figma for v1** — code-first; Astro + Tailwind authored via Claude Code / Cursor; iterate in browser DevTools; Cloudflare Pages preview deploys for review (per `DECISION_FIGMA_FOR_SPARK_ANVIL_WEBSITE.md`)
+- **No Figma for v1** — code-first; Astro + Tailwind authored via Claude Code / Cursor; iterate in browser DevTools; Cloudflare Workers per-version preview deploys for review (per `DECISION_FIGMA_FOR_SPARK_ANVIL_WEBSITE.md`)
 - Brand palette doc + logo PNGs + per-app CLAUDE.md = the spec. No parallel design artifacts.
 
 Revisit if: designer joins team, marketing landing page needs novel composition, press-kit / Apple Design Award submission requires pixel-precision.
@@ -254,7 +254,7 @@ The site now ships **663 illustrated chapter-book pages** at `/cast/<app>/<char>
 
 ### CRITICAL: Normalizer auto-runs in site `prebuild` — do NOT remove (2026-06-04 regression-pattern lift)
 
-**The normalizer is wired into `spark-anvil-site/package.json` `prebuild`** so every build (local OR Cloudflare Pages) self-heals from YAML drift. **Never remove the normalizer call from the prebuild chain** — doing so re-opens the regression class below.
+**The normalizer is wired into `spark-anvil-site/package.json` `prebuild`** so every build (local OR Cloudflare Workers Builds) self-heals from YAML drift. **Never remove the normalizer call from the prebuild chain** — doing so re-opens the regression class below.
 
 ```jsonc
 "prebuild": "bash scripts/lint-ios-caps.sh && python3 scripts/normalize-chapter-frontmatter.py && node scripts/build-cast-manifest.mjs && ..."
@@ -325,11 +325,11 @@ If it's climbing (even ~50-100 files/15s), the build is fine — wait for it. On
 
 ## Build-disk budget + R2 media hosting (R-SITE-BUILD-DISK-BUDGET + R-SITE-MEDIA-R2; 2026-06-30)
 
-**The site build has a finite disk budget, and heavy media committed into `public/` is the thing that blows it.** Codified after a 2026-06-30 Cloudflare Pages `ENOSPC: no space left on device` build failure (during Astro `staticBuild` → `generatePath`, writing prerendered HTML). Work-queue § "V28 P0 — Cloudflare Pages build FAIL: ENOSPC".
+**The site build has a finite disk budget, and heavy media committed into `public/` is the thing that blows it.** Codified after a 2026-06-30 Cloudflare `ENOSPC: no space left on device` build failure (during Astro `staticBuild` → `generatePath`, writing prerendered HTML). Work-queue § "V28 P0 — Cloudflare Pages build FAIL: ENOSPC".
 
 ### Why it happens (the doubling)
 
-Cloudflare Pages **clones the whole git repo** (media included), then Astro **copies the entire `public/` tree into `dist/`** during build, then writes prerendered HTML for the ~9000 routes. Peak build disk ≈ `repo (public/) + dist/ copy of public/ + node_modules + generated HTML`. When `public/` is multiple GB, the copy alone doubles it and the container runs out of disk.
+Cloudflare **clones the whole git repo** (media included), then Astro **copies the entire `public/` tree into `dist/`** during build, then writes prerendered HTML for the ~9000 routes. Peak build disk ≈ `repo (public/) + dist/ copy of public/ + node_modules + generated HTML`. When `public/` is multiple GB, the copy alone doubles it and the container runs out of disk.
 
 Measured 2026-06-30: `public/` ≈ **4.7 GB** — `public/chapters` 2.5 GB (742 chapter `.m4a` = 2.0 GB + 3716 beat `.webp` = 0.54 GB), `public/audio` 1.4 GB (audio dramas), `public/books` 0.77 GB (PDFs). **`.m4a` audio is 3.4 GB of the 4.7 GB — the dominant cost.** Every cast-expansion wave (each chapter = 5 beat WebPs + a narration `.m4a` + portrait) pushes the budget up; this is a growth cliff, not a one-off.
 
@@ -345,7 +345,7 @@ The target split:
 
 **Completing / re-verifying the migration (the checklist that was skipped):**
 1. Confirm the surface is uploaded to R2 (`upload_audio_to_r2.py` / `upload_pdfs_to_r2.py` ran for it).
-2. Confirm `PUBLIC_AUDIO_CDN_URL` + `PUBLIC_PDF_CDN_URL` are set in the Cloudflare Pages env (Production **and** Preview) — else the site 404s after removal.
+2. Confirm `PUBLIC_AUDIO_CDN_URL` + `PUBLIC_PDF_CDN_URL` are set in the Cloudflare Workers env (Production **and** Preview) — else the site 404s after removal.
 3. `git rm` the local copies: `git rm -r public/audio public/books` + `git rm public/chapters/**/chapter_*_chapter.m4a public/chapters/**/chapter_*_chapter.vtt`.
 4. Grep for any unconditional local-path reference (`/audio/`, `/books/`, `_chapter.m4a`) that bypasses the URL helper — there must be none.
 5. Verify `du -sh public` dropped (audio+PDF removal → ~4.7 GB → ~0.6 GB).
@@ -514,7 +514,7 @@ Two complementary gates BOTH stay in place; neither replaces the other.
 | **Sync-time portrait gate** (V20 W1; 2026-06-26) | `spark-anvil-hub/scripts/sync_content_to_site.sh` | Per-app sync (post-content-copy / pre-commit) | **NEW gaps** — chapters being synced in this invocation | `--skip-portrait-gate` (trauma-axis carve-outs) |
 | **Cloudflare prebuild audit** (R-CAST-PORTRAIT-SLUG; 2026-06-05) | `spark-anvil-site/package.json` `prebuild` → `audit_cast_portrait_coverage.py` | Every spark-anvil-site build | **HISTORICAL gaps** — any chapter page in any app, regardless of last-sync time | `SKIP_CAST_PORTRAIT_CHECK=1 npm run build` (emergency only) |
 
-The prebuild gate makes the regression class build-time-visible — a chapter MD without a matching portrait file blocks deploy. Local dev catches the regression before commit; Cloudflare Pages catches it before deploy.
+The prebuild gate makes the regression class build-time-visible — a chapter MD without a matching portrait file blocks deploy. Local dev catches the regression before commit; the Cloudflare build catches it before deploy.
 
 Per `.claude/rules/spark-anvil-website.md` § "CRITICAL: Normalizer auto-runs in site prebuild" the prebuild chain is the canonical self-healing seam. The cast portrait audit joins it.
 
@@ -564,7 +564,7 @@ Per `.claude/rules/spark-anvil-website.md` § "CRITICAL: Normalizer auto-runs in
 
 ## Chapter front-matter duplicate-key gate (R-CHAPTER-YAML-DUP-KEY; 2026-06-26)
 
-**Chapter MD YAML front-matter MUST NOT have any top-level key listed twice.** js-yaml strict mode (used by Astro's `gray-matter` content-collection loader) rejects duplicate keys with `duplicated mapping key` error → Cloudflare Pages prebuild fails. Closes the V21+ P0 incident class surfaced 2026-06-26 evening (depthquest/trench.md + numbersense/pivot-pia.md both shipped with `gate-allow-text: []` listed twice).
+**Chapter MD YAML front-matter MUST NOT have any top-level key listed twice.** js-yaml strict mode (used by Astro's `gray-matter` content-collection loader) rejects duplicate keys with `duplicated mapping key` error → Cloudflare Workers Builds prebuild fails. Closes the V21+ P0 incident class surfaced 2026-06-26 evening (depthquest/trench.md + numbersense/pivot-pia.md both shipped with `gate-allow-text: []` listed twice).
 
 ### Why the V20 W1 portrait gate didn't catch this
 
@@ -1148,7 +1148,7 @@ Filed in `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "Opener illustratio
 
 ## Content upload + manifest rebuild discipline (R-CONTENT-UPLOAD-MANIFEST-DISCIPLINE; 2026-06-19)
 
-**Every content upload to spark-anvil-site MUST result in the corresponding freshness manifest being rebuilt before/during the next Cloudflare Pages deploy.** The site's `package.json` `prebuild` chain handles 5 of 6 manifests automatically via filesystem-scan or git-mtime-scan builders. The 6th manifest (`pdfs-recency.json`) lives hub-side and requires explicit re-run after every PDF render wave.
+**Every content upload to spark-anvil-site MUST result in the corresponding freshness manifest being rebuilt before/during the next Cloudflare Workers Builds deploy.** The site's `package.json` `prebuild` chain handles 5 of 6 manifests automatically via filesystem-scan or git-mtime-scan builders. The 6th manifest (`pdfs-recency.json`) lives hub-side and requires explicit re-run after every PDF render wave.
 
 ### 6 manifests + rebuild discipline
 
@@ -1337,6 +1337,36 @@ done
 - `.claude/rules/audio-pipeline.md` — Gemini 2.5 TTS payload handling (the slowest key-op in the pilot)
 - memory `cast-expansion-program.md` + `[[spark-anvil-gen-pipeline]]` — where this gotcha lived pre-codification
 - `Docs/CONTEXT_HANDOFF_2026-06-30_V28_SEL_WAVE1_ENOSPC_FIX_SCIENCE_WAVE2.md` § "Key gotchas carried forward" — V28 statement of the same discipline
+
+## Prefer `-latest` model aliases in pipeline scripts (R-GEMINI-MODEL-ALIAS; 2026-07-09)
+
+**Every Gemini-backed pipeline script MUST reference a rotation-proof `-latest` model alias (or the current preview family) — NEVER a pinned mid-generation version ID like `gemini-2.5-flash` that a family rotation can silently 404 out from under a running batch.** Codified after the V60 incident (2026-07-09): mid-V45 the **entire `gemini-2.5` `generateContent` family was retired** — `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.0-flash`, `gemini-2.5-flash-image-preview` all began returning **`404 NOT_FOUND`** — while ~1300 in-flight text-leak audit images errored and every pipeline script hardcoding a 2.5 ID broke at once. (Wrinkle: the retired IDs still appear in `models.list()` with lagging metadata, so a list check is NOT sufficient to confirm a model is live — you must probe `generateContent`.)
+
+### The alias map (verified live 2026-07-09)
+
+| Use | Prefer | NOT (retired/404) |
+|---|---|---|
+| Flash text / judge / classifier | `gemini-flash-latest` | `gemini-2.5-flash`, `gemini-2.0-flash` |
+| Pro text / authoring / rephrase | `gemini-pro-latest` | `gemini-2.5-pro` |
+| Flash image gen | `gemini-3.1-flash-image-preview` | `gemini-2.5-flash-image(-preview)` |
+| Pro image gen | `gemini-3-pro-image-preview` | — |
+| **TTS** (separate lifecycle — see below) | keep `gemini-2.5-flash-preview-tts` **for now** | — |
+
+### TTS is a SEPARATE lifecycle — do not blanket-migrate it
+
+The 2.5 **TTS** models (`gemini-2.5-flash-preview-tts` / `gemini-2.5-pro-preview-tts`) are on a different deprecation lifecycle than the retired 2.5 `generateContent` models and were **re-probed 2026-07-09 as STILL LIVE** (returned audio OK). **Keep them** — changing the TTS model would drift new chapters' voices from the ~819 shipped narrations + dramas all voiced on 2.5 TTS (a founder-level re-voicing decision, not a mechanical migration). The **validated successor** for when 2.5 TTS eventually retires is `gemini-3.1-flash-tts-preview` (also probed OK 2026-07-09). There is no TTS `-latest` alias, so TTS migration is a deliberate, documented switch — not automatic.
+
+### When this rule applies
+
+- Authoring or editing ANY Gemini-backed pipeline script (audit judges, gen, gates, rewriters, TTS).
+- A batch/gate suddenly 404s mid-run on a `models/<id>` path → first suspect a family rotation; migrate the pinned ID to the `-latest` alias (or current preview), re-run with `--resume`.
+- **Verify a model is live by probing `generateContent`**, never by presence in `models.list()` (the retired 2.5 IDs still list).
+
+### Cross-references
+
+- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § V60 — the incident + full per-script migration table.
+- § R-GEMINI-KEY-SERIAL (above) — the sibling single-flight discipline (both govern the one shared Gemini key).
+- `Docs/AUDIT_DN_S_MULTI_AXIS_FULL_2026-07-08.md` — V45, where the retirement surfaced.
 
 ## Cross-references
 

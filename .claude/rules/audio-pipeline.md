@@ -132,14 +132,14 @@ Apps NEVER author this prompt — hub does at gen time. The per-character voiceR
 
 **The web-distributed `.m4a` leg uses 48 kbps mono AAC-LC at 24 kHz.** The app-bundled `.caf` leg stays at 64 kbps.
 
-Codified after `Docs/AUDIT_AUDIO_BITRATE_DEDUP_2026-06-17.md` (Option OD) surfaced that the prior portfolio-wide 64 kbps default contributed materially to Cloudflare Pages `public/` footprint at portfolio scale (3.36 GB across 1513 audio files). 48 kbps mono AAC-LC at 24 kHz on spoken-word lives well within the AAC-LC transparent band per ISO/IEC 14496-3 + AAC-LC perceptual-quality literature; the bitrate drop reduces site `public/audio/` + `public/chapters/` audio footprint by ~25% (~0.92 GB) at zero perceptible quality cost for portfolio TTS register.
+Codified after `Docs/AUDIT_AUDIO_BITRATE_DEDUP_2026-06-17.md` (Option OD) surfaced that the prior portfolio-wide 64 kbps default contributed materially to Cloudflare Workers `public/` footprint at portfolio scale (3.36 GB across 1513 audio files). 48 kbps mono AAC-LC at 24 kHz on spoken-word lives well within the AAC-LC transparent band per ISO/IEC 14496-3 + AAC-LC perceptual-quality literature; the bitrate drop reduces site `public/audio/` + `public/chapters/` audio footprint by ~25% (~0.92 GB) at zero perceptible quality cost for portfolio TTS register.
 
 **Why the asymmetry**:
 
 | Leg | Bitrate | Where it ships | Sizing constraint |
 |---|---|---|---|
 | `.caf` | **64 kbps** | App bundle — staged at `<app>-app/Resources/AudioDramas/<app>/*.caf`, then **relocated to `Libraries/Sources/<Target>/AudioDramas/<app>/` + `.copy("AudioDramas")`** to actually ship in the IPA via that target's `Bundle.module` (see § R-AUDIO-DRAMA-BUNDLE-AND-WIRE) | App Store / TestFlight ceiling; CAF size is part of overall bundle size where IPA cap is at 4 GB+; current portfolio audio per app is <100 MB so 64 kbps headroom is fine |
-| `.m4a` | **48 kbps** | Cloudflare Pages (`spark-anvil-site/public/{audio,chapters}/<app>/*.m4a`) | Cloudflare Pages `public/` deploy-size ceiling; saw ENOSPC at ~4.2 GB; 48 kbps mono drops audio footprint enough to push the ENOSPC ceiling out 24+ months |
+| `.m4a` | **48 kbps** | Cloudflare Workers (`spark-anvil-site/public/{audio,chapters}/<app>/*.m4a`) | Cloudflare Workers `public/` deploy-size ceiling; saw ENOSPC at ~4.2 GB; 48 kbps mono drops audio footprint enough to push the ENOSPC ceiling out 24+ months |
 
 **Forward gen**:
 - `scripts/pilot_interleaved_ensemble_chapter.py::wav_to_m4a` — emits at 48 kbps (ffmpeg `-b:a 48k` / afconvert `-b 48000`)
