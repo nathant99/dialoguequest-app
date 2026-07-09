@@ -397,6 +397,37 @@ A CDN + R2-bucket diff found **141 chapter `.m4a` returning 404 live** — essen
 - § R-SITE-MEDIA-R2 (above) — the `git rm` half of the discipline; this rule is the upload half
 - `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "V29 — Full audit of the R2 audio/PDF uploads" — the queued ask this closes
 
+## Wave-runner idempotency is `.vtt`-present, NOT `.m4a`-present (R-WAVE-RUNNER-R2-IDEMPOTENCY; 2026-07-08)
+
+**A chapter-audio wave runner's "already shipped?" skip-check MUST treat a chapter as shipped when EITHER the local site `.m4a` exists OR the committed site `.vtt` exists — NEVER a bare `[ -f "$site_m4a" ]`.** Post-`R-SITE-MEDIA-R2` the chapter-narration `.m4a` is pruned from `spark-anvil-site/public/` and lives ONLY on R2, so a local-`.m4a`-only test fails for **every** already-shipped chapter, and the runner **over-regenerates all of them** — burning paid Gemini TTS, overwriting the shipped R2 audio take, and desyncing the committed `.vtt` (line-cue timings drift against the new take). This is the idempotency companion to R-SITE-MEDIA-R2 (which does the `git rm`) and R-R2-AUDIO-UPLOAD-COMPLETENESS (which does the upload): those two rules jointly make the `.m4a` R2-only, so the `.vtt` — which STAYS committed — is the durable proxy for "this chapter shipped."
+
+### Why it's the right signal
+
+`.vtt` and `.m4a` are a matched pair emitted by the same gen (`pilot_interleaved_ensemble_chapter.py`). The `.vtt` stays in `public/chapters/<app>/` (committed) precisely because the audio player needs it locally; the `.m4a` goes to R2 only. So `.vtt`-present is a zero-cost, always-available proxy that a chapter's narration was generated + shipped. Confirmed bitten twice: V29 (T1 regens) + V40 (fractionforge T2 — the runner over-regen'd `dot`, was reverted, and the wave had to be hand-run per-sidecar to dodge the bug).
+
+### The corrected contract (both runners)
+
+`path_b_wave_runner.sh` (T1) and `path_b_tier2_audio_wave_runner.sh` (T2) share an `already_shipped <local-m4a> <committed-vtt> <cdn-m4a-url>` helper:
+
+- local `.m4a` present ⇒ shipped (skip) — pre-migration / not-yet-pruned case
+- `.vtt` present (no local `.m4a`) ⇒ shipped (skip) — the R2-migrated case (default)
+- `--verify-r2` flag ⇒ when only the `.vtt` is present, HEAD the CDN (browser UA — the CDN 403s bare UAs per R-R2-AUDIO-UPLOAD-COMPLETENESS § Gotchas) for certainty before skipping; regen if the HEAD is not 2xx
+- neither present ⇒ regen
+
+`--verify-r2` is opt-in (one HTTP HEAD per chapter). `CDN_BASE` defaults to `https://cdn.spark-and-anvil.com`, overridable via `PUBLIC_AUDIO_CDN_URL`.
+
+### When this rule applies
+
+- Any NEW or edited chapter-audio wave runner, or any script that decides "regen vs skip" for a chapter whose `.m4a` may be R2-only.
+- Do NOT re-introduce a bare `[ -f "$site_m4a" ]` skip-check anywhere in the gen pipeline.
+- A per-sidecar targeted gen (V40's recipe) is still fine for one-off single-chapter regens; this rule fixes the BATCH runners so they no longer need the targeted-gen dodge.
+
+### Cross-references
+
+- `scripts/path_b_wave_runner.sh` + `scripts/path_b_tier2_audio_wave_runner.sh` — the `already_shipped()` helper
+- § R-SITE-MEDIA-R2 (the `git rm`) + § R-R2-AUDIO-UPLOAD-COMPLETENESS (the upload) — the two rules that make the `.m4a` R2-only, which is what makes `.vtt`-present the correct proxy
+- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § V41 — the queued ask this closes; § V40 — the incident recipe-correction
+
 ## R2 is the system-of-record for audio — it MUST be backed up off-R2 (R-R2-SYSTEM-OF-RECORD; 2026-07-07)
 
 **Because R-SITE-MEDIA-R2 `git rm`'d the chapter-narration + audio-drama `.m4a` out of `spark-anvil-site/public/`, Cloudflare R2 (`spark-anvil-books`) is the SYSTEM-OF-RECORD for that audio — not a rebuildable cache. R2 has no automatic backup; a bucket deletion / corruption / accidental lifecycle purge would lose the exact shipped audio take with no one-command restore. Therefore every R2-only `.m4a` MUST have a byte-identical copy committed off-R2 (GitHub).** Codified after the V32 P0 backup audit (`Docs/AUDIT_ASSET_BACKUP_COVERAGE_2026-07-06.md`) proved 0 permanent-loss orphans but surfaced 744 `.m4a` (717 chapter-narration + 27 dramas) whose only copy was on R2 — regenerable from committed text via paid Gemini TTS (~$75–150, and a DIFFERENT voice take with drifted VTT), which is a lossy fallback, **not** a backup.

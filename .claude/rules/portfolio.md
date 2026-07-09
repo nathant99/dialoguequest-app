@@ -382,6 +382,35 @@ Portfolio standard for adding extensive debug logging to detect unexpected runti
 
 **Lift provenance**: CQ shipped the rule + research in PRs #114-#121; filed `HANDOFF_FROM_APP_LIFT_DEBUG_LOGGING_RULE.md` Round 138 #569 requesting portfolio lift. Hub lifted + propagated via `scripts/copy_rules_to_repos.sh --apply` in the same round.
 
+## App user + developer guides must track the code — both surfaces, every app (R-APP-GUIDE-SYNC; 2026-07-09)
+
+**Every portfolio app keeps a visitor-facing USER guide and a maintainer-facing DEVELOPER guide per SHIPPING SURFACE, and each guide MUST be updated in the SAME change-set as any code change that affects what it documents.** This generalizes `R-WEB-CLONE-GUIDE-SYNC` (`.claude/rules/spark-anvil-website.md`, web clones only) to the whole portfolio and to the iOS surface. Codified per user-direct 2026-07-09 (*"are user guide and developer guide for fractionforge ios app and web automatically updated and synced with the code? codify this rule for all portfolio apps too"*).
+
+### The honest status this rule corrects
+
+Guide-sync today is **review-discipline, not automation** — there is no build that fails on a stale guide (unlike the cast-portrait / multibeat / frontmatter-dup prebuild gates). "Same change-set" is enforced by the author + PR review. Do not describe guides as "auto-synced"; they are *kept* synced by discipline. A CI "guide-touch" gate (fail when a guide-affecting path changes without its guide) is an OPTIONAL future enhancement (see V58 open questions), not the current state.
+
+### What the rule requires (per surface)
+
+| Surface | Guides | Path | Owner |
+|---|---|---|---|
+| **Web clone** (`/play/<app>/*`) | `GUIDE_<APP>_WEB_USER.md` + `GUIDE_<APP>_WEB_DEVELOPER.md` | `spark-anvil-hub/Docs/` | **Hub** (hub owns the web) — the existing R-WEB-CLONE-GUIDE-SYNC |
+| **iOS app** | `GUIDE_<APP>_IOS_USER.md` + `GUIDE_<APP>_IOS_DEVELOPER.md` | `<app>-app/Docs/` | The **app's own CC session** (hub never writes Swift/app source) — hub codifies + distributes the *rule*, the app session authors + syncs the *guides* |
+
+A change is **guide-affecting** — and MUST carry the matching guide edit in the same commit/PR — when it: adds/removes/renames a mode, screen, or user-visible label (USER guide); changes controls / flow / stored data / privacy posture (USER guide); adds/removes/renames a file, module, data model, or build step, changes a load-bearing rule the guide cites, or adds a gotcha the next maintainer needs (DEVELOPER guide). Trivial changes (copy typo, behavior-neutral refactor) don't require a guide edit — same bar as R-WEB-CLONE-GUIDE-SYNC / the multi-beat-snapshot rule.
+
+### Rollout (staged, not all-143-at-once)
+
+- **Web guides:** mandatory for every `/play/<app>` clone from day one (FractionForge is the reference — `GUIDE_FRACTIONFORGE_WEB_{USER,DEVELOPER}.md`).
+- **iOS guides:** mandatory for **flagship / shipped** apps first (the app-ranking top tier), then roll out portfolio-wide. A new app SPAWNed post-2026-07-09 authors both iOS guides alongside first feature code.
+- Distribution of this rule text to the 143 app repos rides `copy_rules_to_repos.sh --apply` under the `.claude/.rule-sync.lock` single-flight (R-PARALLEL-HUB-AGENTS) — never concurrently with a content-sweep session.
+
+### Cross-references
+
+- `.claude/rules/spark-anvil-website.md` § R-WEB-CLONE-GUIDE-SYNC — the web-surface specialization (this rule's parent pattern)
+- `Docs/GUIDE_FRACTIONFORGE_WEB_{USER,DEVELOPER}.md` — reference web guides
+- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § V58 — the ask + open questions (scope / enforcement / CI-gate decision)
+
 ## ForgeKit
 
 All portfolio apps share a common SPM framework at `../forgekit/` (49 modules, semver 0.75.0+; sources soft-split into `Client/` + `Server/` + `Shared/`). Apps import only the modules they need. See `@.claude/rules/forgekit.md` for the full module catalog.
