@@ -73,20 +73,25 @@ A delta may be waived (⛔) only for a concrete reason, recorded inline in the l
 
 "It was more work" is NOT a valid waiver — that's a 🟡 gap (a tracked work item), not a ⛔ waiver.
 
-### The bidirectional-drift rule
+### The bidirectional-backport rule (R-CLONE-BIDIRECTIONAL-BACKPORT; strengthened 2026-07-08)
 
-When EITHER surface gains a new learning-relevant feature, the parity ledger MUST be updated in the same cycle and the delta closed or explicitly waived:
+**Parity is SYMMETRIC and backport is MANDATORY in BOTH directions. If EITHER surface has a learning-relevant feature the other lacks, that feature MUST be backported to the other surface — unless the delta is EXPLICITLY WAIVED with a documented rationale in the parity ledger.** Codified per user-direct 2026-07-08 (*"codify the requirement that if the web app has a feature that the ios app doesn't have, that feature has to be backported to the ios app and vice versa unless it's explicitly allowed not to."*). This UPGRADES the former soft "note it / the iOS session can *consider* back-porting" to a hard obligation identical in force to the iOS→web direction. A web-only (or iOS-only) learning-relevant feature that is neither backported nor waived is a **defect** against this rule, tracked as a 🟡 gap.
 
-- **iOS ships a new mode / mechanic / cast member / engagement feature** → the ledger gains a 🟡 gap row (queued for the web) or a ⛔ waiver.
-- **Web ships something the iOS app lacks** → note it (it's fine for the web to lead; but flag it so the iOS app's own session can consider back-porting).
+The parity ledger is the single symmetric record for both directions; when EITHER surface gains a learning-relevant feature, the ledger MUST be updated **in the same cycle** and the delta **closed (backported) or explicitly waived**:
 
-The `R-CAST-EXPANSION-INTEGRATION` "authored ≠ integrated" discipline (`.claude/rules/distributed-narrative.md`) is the sibling pattern one axis over: there, a new cast member opens per-axis integration debt; here, a new iOS feature opens a web-parity gap. Both are "the ship isn't done until every downstream surface is closed or explicitly waived."
+- **iOS ships a new mode / mechanic / cast member / engagement feature** → ledger gains a 🟡 gap row (a web work item, closed by hub — hub owns the web) OR a ⛔ waiver. Hub implements the web backport directly.
+- **Web ships a new learning-relevant feature the iOS app lacks** → ledger gains a 🟡 gap row (an **iOS backport work item**) OR a ⛔ waiver. **Because hub NEVER writes Swift / iOS app source (the single most load-bearing repo rule), hub discharges the iOS-direction obligation by FILING A HANDOFF** — `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md` — that specifies the feature + the web reference impl + the proposed iOS surface, for the iOS app's OWN Claude Code session to implement. The gap row stays 🟡 (open) until the iOS session ships it back (a `HANDOFF_FROM_APP_*_SHIPPED` return closes the row to ✅/🔄). Hub filing the handoff is the *start* of the obligation, not its completion — "handoff filed ≠ backported," mirroring "authored ≠ integrated."
+
+Same waiver criteria as § "What counts as a valid waiver" apply in BOTH directions: on-device/COPPA guardrail · platform-only affordance · founder-direct. Platform-native equivalents are ⛔/🔄, not 🟡 (e.g. the PWA offline install is a *web-native* affordance whose iOS equivalent is the OS's native offline execution — already satisfied, so ⛔ waived, not an iOS backport gap). "It's only on one surface because that's where we built it" is NOT a waiver — that's a 🟡 gap (a tracked backport item).
+
+The `R-CAST-EXPANSION-INTEGRATION` "authored ≠ integrated" discipline (`.claude/rules/distributed-narrative.md`) is the sibling pattern one axis over: there, a new cast member opens per-axis integration debt; here, a new feature on either surface opens a cross-surface backport gap. Both are "the ship isn't done until every downstream surface is closed or explicitly waived."
 
 ### When this rule applies
 
 - Authoring or extending any `/play/<app>` web clone.
 - Auditing a web clone for completeness — enumerate the ledger; every 🟡 gap is a work item, every ⛔ needs a rationale.
-- Any iOS-app round that adds a learning-relevant feature to an app that HAS a web clone — update the clone's ledger (hub-side; the iOS session need not).
+- Any iOS-app round that adds a learning-relevant feature to an app that HAS a web clone — update the clone's ledger (hub-side; the iOS session need not) and close the web gap or waive it.
+- **Any web-clone round that adds a learning-relevant feature the iOS app lacks** → add a 🟡 iOS-backport gap row to the ledger in the same cycle AND file `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md` for the iOS session (or record a ⛔ waiver). The row closes only when the iOS session ships the backport (R-CLONE-BIDIRECTIONAL-BACKPORT).
 
 ### Cross-references
 
