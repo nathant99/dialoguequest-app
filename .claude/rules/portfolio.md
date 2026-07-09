@@ -388,7 +388,14 @@ Portfolio standard for adding extensive debug logging to detect unexpected runti
 
 ### The honest status this rule corrects
 
-Guide-sync today is **review-discipline, not automation** — there is no build that fails on a stale guide (unlike the cast-portrait / multibeat / frontmatter-dup prebuild gates). "Same change-set" is enforced by the author + PR review. Do not describe guides as "auto-synced"; they are *kept* synced by discipline. A CI "guide-touch" gate (fail when a guide-affecting path changes without its guide) is an OPTIONAL future enhancement (see V58 open questions), not the current state.
+Guide-sync today is **review-discipline, not automation** — there is no build that fails on a stale guide (unlike the cast-portrait / multibeat / frontmatter-dup prebuild gates). "Same change-set" is enforced by the author + PR review. Do not describe guides as "auto-synced"; they are *kept* synced by discipline.
+
+### Enforcement decision — per surface (V58 sub-item a, resolved 2026-07-09)
+
+Per `Docs/DECISION_GUIDE_SYNC_CI_GATE_2026-07-09.md` (user-approved):
+
+- **Web clone surface → review-discipline only; NO automated gate.** Web guides live in the **hub** repo while the code lives in **spark-anvil-site** — the two move in separate commits/PRs in separate repos, so neither repo's CI ever sees both diffs. A same-commit "guide-touch" gate is mechanically impossible without cross-repo bot infra (rejected — heavy infra, low ROI; the web surface is hub-owned + single-authored per cycle). The PR-review checklist item is the enforcement.
+- **iOS surface → opt-in, same-repo, WARN-by-default pre-push heuristic.** iOS guides live in the **same repo** as the Swift, so a same-repo hook can detect "guide-affecting Swift changed but no `GUIDE_*_IOS_*` changed in this push." Reference hook: `scripts/git-hooks/pre-push-guide-touch.sh` (WARN by default — "guide-affecting" is a heuristic, so a hard block would false-positive on refactors; set `GUIDE_TOUCH_STRICT=1` to block). Opt-in per app, wired exactly like the sibling `pre-push-chapter-checks.sh` (hub ships + distributes the reference hook; each app's CC session installs it — hub never force-installs hooks into app repos).
 
 ### What the rule requires (per surface)
 
@@ -409,6 +416,8 @@ A change is **guide-affecting** — and MUST carry the matching guide edit in th
 
 - `.claude/rules/spark-anvil-website.md` § R-WEB-CLONE-GUIDE-SYNC — the web-surface specialization (this rule's parent pattern)
 - `Docs/GUIDE_FRACTIONFORGE_WEB_{USER,DEVELOPER}.md` — reference web guides
+- `Docs/DECISION_GUIDE_SYNC_CI_GATE_2026-07-09.md` — the per-surface enforcement decision (V58 sub-item a)
+- `scripts/git-hooks/pre-push-guide-touch.sh` — reference opt-in iOS guide-touch hook
 - `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § V58 — the ask + open questions (scope / enforcement / CI-gate decision)
 
 ## ForgeKit
