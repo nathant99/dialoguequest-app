@@ -20,6 +20,15 @@ Hub does NOT own:
 - Site deployment / DNS / hosting accounts (Cloudflare Workers — user-managed)
 - Production domain configuration (Cloudflare account-level)
 
+### Production domains — `.com` + `.org` both serve (R-SITE-DOMAINS; 2026-07-09)
+
+**Both `spark-and-anvil.com` AND `spark-and-anvil.org` MUST resolve to the live site, serving identical content.** Codified per user-direct 2026-07-09 (*"spark-and-anvil.org should work the same as spark-and-anvil.com too"*).
+
+- **Canonical host:** `spark-and-anvil.com` — Astro `site:` in `astro.config.mjs`, so sitemap / RSS / canonical `<link>` all point at `.com`. `.org` serves the same content; its canonical tags still point to `.com` (single-canonical for SEO — avoids duplicate-content penalties).
+- **Implementation (zero code change):** the site is fronted by the `spark-anvil-dispatcher` Worker (ADR-032), which routes purely by URL **path** and is **host-agnostic** — so `.org` serves identically the moment the domain is attached. Account-level (user-managed): add `spark-and-anvil.org` (+ `www.spark-and-anvil.org`) as additional **Custom Domains** on `spark-anvil-dispatcher`.
+- **Optional (NOT required):** to force a single visible hostname, add a 301 in the dispatcher — `if (new URL(request.url).hostname.endsWith("spark-and-anvil.org")) return Response.redirect(canonicalUrl, 301)`. Default is serve-identically (no redirect), which satisfies "work the same."
+- **Ownership:** attaching the `.org` domain + DNS is account-level (user); the dispatcher code + this policy are hub-owned.
+
 ### Workflow
 
 When making site changes from hub:
