@@ -8,6 +8,9 @@ register: warmly absurd with subtext (per labsmith DN-S R172 #606 spec) — Patt
 chapter-round: Round 226 #660
 status: SHIPPED
 word-count: ~810
+reflection-prompts:
+  - prompt: "Weigh's scale settles level when the rhythm of a conversation feels just right. Have you ever felt a talk find its easy flow — not too rushed, not too quiet — and felt yourself relax into it?"
+  - prompt: "When a conversation is lopsided — one person talking too much, or a silence stretching too long — how does that feel to be part of?"
 ---
 
 # Chapter 3 — Weigh and the Brass Balance-Scale
@@ -46,7 +49,7 @@ He explains: *"Balance has a few moves. Use a tag *when speaker-identification m
 
 Weigh nods. Her scale stays level. She says — in her brisk pangolin-voice — *"Balance the tags. Too many slows the dialogue. Too few loses the reader. Calibrate."*
 
-When students ask Patter whether tag balance is hard to learn, Patter says — quoting Weigh — *"It is not hard. It is *calibration.* Read your dialogue aloud. Does it drag (too many tags)? Does the reader lose track (too few tags)? Adjust until the rhythm flows. Weigh's scale settles when you find it."*
+When students ask Patter whether tag balance is hard to learn, Patter says — quoting Weigh — *"It is not hard. It is *calibration.* Read your dialogue aloud. Does it drag (too many tags)? Does the reader lose track (too few tags)? Adjust until the rhythm flows. Weigh's scale settles when you find it."* And when it settles, Patter adds, the students always feel it in the same warm, relieved way — the dialogue stops fighting them and starts to breathe, easy and steady, like a talk between friends who trust each other.
 
 ---
 

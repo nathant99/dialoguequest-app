@@ -8,6 +8,9 @@ register: warmly absurd with subtext (per labsmith DN-S R172 #606 spec) — Patt
 chapter-round: Round 227 #661
 status: SHIPPED
 word-count: ~810
+reflection-prompts:
+  - prompt: "Brogue sounds like himself in every single line — you could pick his voice out with your eyes closed. Have you ever felt instantly comforted just by hearing someone talk the way they always do?"
+  - prompt: "When you imagine a character you've made up, can you hear how they'd say something? What does it feel like inside when a made-up voice suddenly sounds real to you?"
 ---
 
 # Chapter 4 — Brogue and the Border-Collie-Elder in the Worn Flat-Cap

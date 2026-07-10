@@ -10,6 +10,9 @@ register: "warmly absurd with subtext (V13 ensemble pipeline-and-ship; in-sessio
 pair-bonds:
   - name: Listener and Speaker
     members: [Listener, Speaker]
+reflection-prompts:
+  - prompt: "Speaker's stomach was in a knot until Listener's quiet 'hmmm' let it loosen. Have you ever felt a tight, nervous feeling ease just because someone stayed calm and truly listened to you?"
+  - prompt: "The hardest part for Speaker wasn't the jam — it was saying how it made them feel. When was a time it felt scary to tell someone the real feeling underneath what happened?"
 ---
 # Chapter 7 — Listener and Speaker
 

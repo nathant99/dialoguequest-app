@@ -8,6 +8,9 @@ register: warmly absurd with subtext (per labsmith DN-S R172 #606 spec) — Patt
 chapter-round: Round 227 #661
 status: SHIPPED
 word-count: ~815
+reflection-prompts:
+  - prompt: "Rest waited three whole minutes in the stillness before she moved, and the waiting was calm, not empty. Have you ever felt peaceful just sitting quietly, not rushing to fill the silence?"
+  - prompt: "A held pause can feel heavy — thoughtful, uneasy, or full of something about to happen. When was a time a silence between you and someone else made you feel something you can still remember?"
 ---
 
 # Chapter 5 — Rest and the Silver Pocket-Watch

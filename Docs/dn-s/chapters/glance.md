@@ -57,7 +57,7 @@ He shows them how. He writes on the board:
 
 Glance nods slowly. His ghost words change. They show one of the four ideas. He speaks in his quiet, careful voice. "What you say is half," he says. "What you mean is the other half." He looks at the kids. "Write both." He nods again. "The reader will get both."
 
-Kids often ask Patter. "Is **subtext** hard to write?" they say. Patter shakes his head. He uses Glance's own words. "It's not hard," Patter says. "You just think about what the character *really* means." He smiles. "What people say and what they mean are almost always different in real talks." He points to the board. "Write what they say." He taps his head. "What they mean will come out of the story." He winks. "The reader will get both parts."
+Kids often ask Patter. "Is **subtext** hard to write?" they say. Patter shakes his head. He uses Glance's own words. "It's not hard," Patter says. "You just think about what the character *really* means." He smiles. "What people say and what they mean are almost always different in real talks." He points to the board. "Write what they say." He taps his head. "What they mean will come out of the story." He winks. "The reader will get both parts." And when they do, Patter says, something quiet and warm happens inside them — that little ache of being *understood*, the same feeling you get when a friend hears the sad half of your "I'm fine" and stays anyway.
 
 ---
 

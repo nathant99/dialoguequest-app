@@ -10,6 +10,9 @@ status: SHIPPED
 word-count: ~870
 gate-allow-text:
   - "HE"
+reflection-prompts:
+  - prompt: "Patter felt let down by a story where every choice led to the same bush — the choices only pretended to matter. Have you ever felt a small sting of disappointment when a choice you made turned out not to change anything?"
+  - prompt: "A real choice feels different because you can sense it re-routing what happens next. When did a decision you made feel truly your own — and how did it feel in your body to know it mattered?"
 ---
 # Chapter 1 — Sprig and the Branches That Re-Routed Her Body
 
