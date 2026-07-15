@@ -6,6 +6,8 @@ The studio brand (Spark & Anvil) ships a company website at `spark-and-anvil.com
 
 **Hub owns the website end-to-end.** The app-repo scope rule (hub ≠ implementation) does NOT apply to the website because the site is markup/content (Astro + Tailwind + TypeScript data files), not portfolio Swift app code. Per user 2026-05-25: "web site is not really code so it's okay" + "you own the website."
 
+**Web clones too (reaffirmed 2026-07-10, ADR-033 / work-queue V67-A):** hub owns the `/play/<app>` web clone of every portfolio app — current AND all future clones — not just the marketing site. The iOS↔web learning-design sync flows through R-CLONE-BIDIRECTIONAL-BACKPORT (hub files a handoff for the iOS direction; the app session files back). Web clones are organized per-app inside the single `spark-anvil-site` Astro project (per-app `src/{pages,lib,data}/play/<app>/` + `public/play/<app>/`, a per-app hub `Docs/web/<app>/` doc folder, a `Docs/REGISTRY_WEB_CLONES.txt`, a `scaffold_web_clone.py`, per-cluster deploy units) — the canonical structure + rationale live in **`Docs/ADR-033_WEB_CLONE_ARTIFACT_ORGANIZATION.md`**.
+
 Hub owns:
 
 - **Brand assets**: palette, typography, logo (generated 2026-05-20 to `Branding/Logo/PNG/`), brand guidelines
@@ -48,6 +50,250 @@ When making site changes from hub:
 
 If the change is small (palette tweak, copy edit, new page from existing pattern), skip the handoff doc — just ship the PR.
 
+## Web-clone parity is a two-axis Definition-of-Done gate (R-WEB-CLONE-PARITY-DOD; 2026-07-10)
+
+**A `/play/<app>` web clone is NOT "done" — and must NOT be marked shipped — until it satisfies BOTH parity axes against its iOS app, each recorded in the clone's `Docs/web/<app>/PARITY_WEB_VS_IOS.md` ledger with ZERO unexplained 🟡:**
+
+1. **Feature parity** — `R-WEB-CLONE-PARITY` (§ below): every in-scope iOS learning-relevant feature is ✅ parity / 🔄 adapted / ⛔ waived-with-rationale (never a bare 🟡). Recorded in the ledger's feature table + measured against the `## iOS feature inventory`.
+2. **UI/UX parity** — `R-WEB-CLONE-UX-PARITY` (§ below): the clone carries the app's visual + interaction *character* (accent/semantic palette from the iOS `*Theme.swift`, IA, per-screen flow, HUD, feedback/motion, states, a11y). Recorded in the ledger's `## UI/UX parity` section + measured against `Docs/web/<app>/AUDIT_UX_PARITY_<date>.md`. **The UI/UX axis is verified by SCREENSHOT ANALYSIS, not by the automated suite alone** — see `R-WEB-CLONE-SCREENSHOT-DOD` (a UI/UX change is not DoD-complete until the surface is rendered, captured, and visually analyzed at desktop + mobile).
+
+Both are **default-parity-with-documented-exceptions**, NOT pixel/behavior identity. The exception taxonomy is shared (platform-only affordance · site-chrome-cohesion substrate · web-platform norm · on-device/COPPA · documented diminishing-returns · founder-direct) — *"it was more work"* is never a waiver (that's a tracked 🟡). Both axes are **symmetric**: a learning-relevant feature or interaction that exists on only ONE surface must be backported to the other or waived, per `R-CLONE-BIDIRECTIONAL-BACKPORT` (hub files the iOS-direction handoff; the app session ships it back).
+
+**Codified per founder-direct 2026-07-10** (*"make sure the web clones … are at feature and ui/ux parity with iOS apps"* + *"codify the feature and ui/ux parity requirements too"*). This clause consolidates the two axis-rules below into one standing ship gate so neither can be silently skipped: it applies to **every** clone (current + future), it is verified at ship time (per the `WEB_CLONE_PATTERNS.md` ship-gate checklist + `WEB_CLONE_SPAWN_WORKFLOW.md` Phase 4), and it is re-verified whenever EITHER surface gains a learning-relevant or UI/UX-character change. **The two `PARITY_WEB_VS_IOS.md` ledger sections are the required, living artifacts** — a clone with an unfilled or stale ledger fails this gate.
+
+## A clone is not shipped until its HUB-SIDE artifacts land + are verified — not just the site PR (R-WEB-CLONE-HUB-SIDE-DOD; 2026-07-15)
+
+**A `/play/<app>` clone is NOT "shipped" — and MUST NOT be claimed shipped — until BOTH halves land: (1) the SITE PR (routes + lib + kits + per-app CSS + `clone.meta.ts`, merged + live-verified) AND (2) the HUB-SIDE artifacts. A clone whose site code is live but whose hub-side artifacts are absent is *site-shipped-but-hub-dark* — a Definition-of-Done violation on the same footing as a missing parity axis.** Codified per founder-direct 2026-07-15 (*"codify the hub-side DoD rule"*). The runbook § 7 already says "two PRs per clone" procedurally; this makes the hub half an explicit, enforceable ship gate — because a clone genuinely *can* merge site-only, and when it does, the hub carries no signal that the clone exists or is done.
+
+### The required hub-side artifacts (the "second PR")
+
+1. **`Docs/web/<app>/` doc-set** — at minimum `RESEARCH.md` (incl. the classified `## Backport candidates` list, R-WEB-CLONE-BACKPORT-MINING), `PARITY_WEB_VS_IOS.md` (the two-axis ledger — the living artifact R-WEB-CLONE-PARITY-DOD gates on), `FEATURE_PLAN.md`, `GUIDE_USER.md`, `GUIDE_DEVELOPER.md` (R-WEB-CLONE-GUIDE-SYNC). `scaffold_web_clone.py` also emits `DEPLOYMENT_RUNBOOK.md` / `PERFORMANCE_BUDGET.md` / `TESTING.md` / `DOCUMENT_CATALOG.md` — keep them.
+2. **Porter committed to hub** — `scripts/port_<app>_kits_to_web.py`. The generated `src/data/play/<app>/kits-index.ts` header credits this script by name; a **referenced-but-absent porter is a defect** (the kits-index can't be regenerated / re-verified). The porter MUST reproduce the shipped kits-index + kit JSON exactly (re-runnable / idempotent).
+3. **`REGISTRY_WEB_CLONES.txt` row** — appended and flipped to `shipped` (+ authoritative `grep -c '| shipped |'`) AFTER live-verify (R-WEB-CLONE-NO-DARK-SURFACE § merged≠deployed). A live clone with no registry row is hub-dark.
+4. **Work-queue `V<N>` entry** — the ship record (pull-first `max+1`; renumber-on-conflict).
+5. **iOS backport handoffs** — one `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md` per ✅ FILE candidate + its 🟡 ledger row (R-CLONE-BIDIRECTIONAL-BACKPORT).
+
+### Why it's load-bearing (the motivating incident)
+
+**2026-07-15 lifequest parallel collision.** A sibling hub session merged the `/play/lifequest` site clone (site PR #684) while the hub-side artifacts landed only in *follow-up* commits. During that window the clone was **site-live but hub-dark**: no `Docs/web/lifequest/` doc-set, no registry row, no work-queue entry. A second session (building the same clone in parallel per the pickup handoff) could not tell *from the hub* that the clone was already done — the hub's own "is this claimed/shipped?" signals (the registry row + the parity ledger + CLAIMS) were the missing half — and duplicated the entire build before the collision surfaced at rebase (R-PARALLEL-HUB-AGENTS 5b). The hub-side artifacts are not paperwork: **the registry row + ledger + CLAIMS release are the coordination signals** that stop parallel duplication, and the parity ledger is where R-WEB-CLONE-PARITY-DOD actually lives.
+
+### When it applies
+- **Authoring any clone** → the site PR and the hub-side artifacts are ONE deliverable; don't mark a lane shipped (CLAIMS / work-queue / registry) until both are merged + live-verified. Flip the registry row to `shipped` only after the live-verify (§ 7a).
+- **Reviewing a clone / auditing `/play`** → a live `/play/<app>` with a missing `Docs/web/<app>/` doc-set, absent registry row, or referenced-but-absent porter is a defect (site-shipped-but-hub-dark), same weight as a missing parity axis.
+- **Resuming / picking the next clone** → read the hub signals first (registry row + `Docs/web/<app>/PARITY_WEB_VS_IOS.md` + CLAIMS). Their *absence* is what makes a half-shipped clone look un-built; their *presence* is the sibling-first "already done, pick another" signal (R-PARALLEL-HUB-AGENTS 5a/5b).
+
+### Cross-references
+- `Docs/WEB_CLONE_PICKUP_RUNBOOK.md` § 7 (the "two PRs per clone" the gate formalizes) + § 7a (live-verify before the registry flip)
+- § R-WEB-CLONE-PARITY-DOD (the parity ledger this gate ensures actually ships) · § R-WEB-CLONE-NO-DARK-SURFACE (the site-side wired+visible sibling; this is its hub-side analog) · § R-WEB-CLONE-BACKPORT-MINING / § R-CLONE-BIDIRECTIONAL-BACKPORT (the handoff artifacts) · § R-WEB-CLONE-GUIDE-SYNC (the two guides)
+- `.claude/rules/workflow.md` § R-PARALLEL-HUB-AGENTS 5a/5b (the collision protocol whose signals are these hub-side artifacts) · § "Verify origin state before claiming coverage"
+
+## The canonical UI/UX best-practices reference for every clone (R-WEB-CLONE-UI-UX-BEST-PRACTICES; 2026-07-14)
+
+**Every `/play/<app>` clone — current AND all future — follows the canonical, evidence-based UI/UX best-practices reference at `Docs/GUIDE_WEB_CLONE_UI_UX_BEST_PRACTICES.md`.** It distills what the portfolio has SHIPPED (the prominence program across ~60 themed clones, the shared `.pc-q-*` / `.ff-stage` design system, the screenshot-DoD discipline) into ONE authoring + review guide, grounded in the learning-science + accessibility literature (cognitive-load theory; the 2025 JSIR children's ed-gaming multicriteria study; elaborated-feedback superiority [Shute; Hattie & Timperley]; the seductive-details meta-analysis; WCAG 2.2 target-size/dragging/focus criteria; POE). Codified per founder-direct 2026-07-14 (*"codify the UI/UX best practices for all future web-clones using what we have shipped so far"*).
+
+**This rule is the umbrella** over the per-axis UI/UX rules — it does NOT replace them; it ties them into one reference so a new-clone author has a single entry point + checklist:
+- The **3-card color-coded prominence stack** (accent question card → accent-topped manipulative stage → semantic feedback panel) — § R-WEB-CLONE-QA-PROMINENCE + § R-WEB-CLONE-MANIPULATIVE-PROMINENCE.
+- **Reuse the shipped design system** (studio substrate + `.pc-theme-<app>` tokens + shared `mcRound`/`customRound` shells + `.ff-stage`) — never hand-roll; bespoke CSS per-app only (§ R-WEB-CLONE-MERGE-HYGIENE).
+- **Accessibility floor** (WCAG 2.2: ≥44px kid targets, keyboard + single-pointer drag alt, visible focus, AA contrast, verdict-not-by-colour, reduced-motion) — a HARD obligation, never waived.
+- **Anti-patterns** (decoration on the critical path / clutter / muted feedback / weak hierarchy / dark surface) — the documented flaws.
+- **Register + narrative placement** (ages 9–14 warm copy; narrative only at session boundaries).
+- **Verification** — the mandatory screenshot-DoD pass (§ R-WEB-CLONE-SCREENSHOT-DOD) + the reusable prominence-treatment recipe.
+
+**When it applies:** authoring any new clone (follow the § 10 checklist from day one); reviewing a clone PR (a UI/UX change that violates the 3-card hierarchy, the quiet-stage guardrail, the accessibility floor, or ships an anti-pattern is a defect — same weight as a missing parity axis); any shared `.pc-q-*` / `.ff-stage` change (it lifts every clone — screenshot at least one adopter). Keep the guide current as the shipped patterns evolve (freshness-horizon 180d).
+
+**Cross-references:** `Docs/GUIDE_WEB_CLONE_UI_UX_BEST_PRACTICES.md` (the guide) · `Docs/WEB_CLONE_PATTERNS.md` (structure + ship gate — the companion) · every § R-WEB-CLONE-* UI/UX rule below · `Docs/RESEARCH_WEB_CLONE_QA_FLOW_PROMINENCE_2026-07-13.md` + `RESEARCH_WEB_CLONE_MANIPULATIVE_PROMINENCE_2026-07-13.md` + `RESEARCH_PREDICT_OBSERVE_EXPLAIN_MECHANIC_2026-07-14.md`.
+
+## Web clones have an automated test suite — Vitest units + Playwright a11y/SEL smoke (R-WEB-CLONE-TEST; 2026-07-12)
+
+**Every `/play/<app>` clone is covered by an automated test suite in `spark-anvil-site`: `npm test` (Vitest — the SPM-unit analog) asserts mechanic LOGIC + hand-authored bank invariants + the shared `_shared/` round-shell contract; `npm run test:e2e` (Playwright — the XCUITest analog) drives every `/play` route headless to assert it renders + throws zero console/runtime errors + (SEL routes) exposes the crisis footer. This layer catches the "builds green, ships wrong" class the build-time gates cannot see (a bank with a wrong answer, a mechanic that throws on load).** Codified per founder-direct 2026-07-12 (*"prioritize testing"*) after implementing `Docs/PLAN_WEB_CLONE_TESTING_STRATEGY_2026-07-12.md` (site PR #483). On its first run the Playwright smoke gate found + fixed a real production crash (`/play/sleuthlab/casefiles` `RangeError` on difficulty-5 cases).
+
+### The two layers (both real, both green — **83 unit spec files + 7 e2e specs** as of 2026-07-14; expanded in site PRs #491 → the 7-wave deepening #499/#502/#503/#506/#508/#510/#514 → the all-shipped-clones deepening #515/#518/#519 → the V178 deepening #525 (**portfolio-wide MC-kit STRUCTURAL invariant gate** over all 821 banks / ~3285 checks) + #526 (**keyboard-nav + accessible-name** e2e gates) — per-mechanic bank-invariant specs for the engine-rich + bespoke clones that had none, **including the chess-engine ⇄ 119-puzzle-bank legality cross-check that caught + fixed 2 real puzzle-data defects** [4 illegal `alternativeMoves`], + the a11y-shell e2e spec. A separate in-session **SEMANTIC** kit audit (V178 workstream 3, `Docs/AUDIT_QUESTION_KITS_SEMANTIC_2026-07-13.md`) caught + fixed real WRONG-answer/mislabel defects the structural gate can't see — fractionforge + discretequest, site PR #529. **Perf refactor (site PR #591, 2026-07-14 — see § R-WEB-CLONE-TEST-PERF below):** as routes grew ~20→414 across 66 clones, the unsharded per-PR run trended toward 30–45 min. The e2e gate is now (a) **sharded** across a CI matrix, (b) **scoped** to the clones a PR touches via `PLAY_ROUTE_FILTER` (a one-clone PR runs ~48 tests, not ~2,138; shared-surface change → FULL), and (c) **tiered** — the heavy `round-play` deep-walk moved OFF the PR gate into a **full sweep** (`play-tests-full.yml`, merge-to-main + nightly). `control-names` was folded into `a11y.spec.ts` (one page load/route), so per-route specs dropped 6→5.)
+
+| Layer | Command | What it asserts | Analog |
+|---|---|---|---|
+| **Vitest** (`happy-dom`) | `npm test` | `_shared` engine (star bands, streak tiers, level curve, best%/XP/day-streak, first-try scoring contract) + **portfolio-wide MC-kit STRUCTURAL invariants** (`_shared/kits.test.ts`, V178 — globs all 821 `public/play/<app>/kits/*.json`: non-empty prompt+correct, correct ∈ options exactly once, options unique, bloom valid-when-present, ids unique; schema-aware over both authored shapes) + per-mechanic **bank invariants**: tessellation =360°, constellation valid star indices, dichotomous-key terminates, prob-tree branches sum to 1, sentence-combine exactly-one-best, SEL DIR-FEDC fields, sleuthlab difficulty ∈ [1,5], **affine cipher `coprime` items have exactly one option coprime to 26 + `E(x)=(ax+b) mod 26`, null-cipher extraction reproduces `hidden` from `cover`, symbol-cipher encodings don't collide under the Polybius I/J merge, discretequest `computeAnswer` ⇄ explanation cross-check + nPr/nCr/pigeonhole/gcd/isPrime, circle-of-fifths one-accidental-per-step ordering + dominant/subdominant inverse, stellar tracks reference real stages + correct fates, distance-ladder rungs ordered/overlapping + each challenge's method range contains its distance, geometry proof final step reaches its goal, equation-slip brokenIndex/why integrity** | SPM unit tests |
+| **Playwright** (Chromium vs `astro dev`) | `npm run test:e2e` (full) · `npm run test:e2e:pr` (round-play excluded) · CI: sharded + scoped, see § R-WEB-CLONE-TEST-PERF | (1) **smoke** — every `/play` route resolves + `<main id="main-content">` renders + **zero console/runtime errors**; (2) **interaction** (`tests/e2e/interaction.spec.ts`) — every route **survives a first interaction** (click the first in-`<main>` control, re-assert zero console/runtime errors — the "a click handler crashes the mechanic" class, one step past a load crash); (3) **round-play deep walk** (`tests/e2e/round-play.spec.ts`) — drives every route through **up to 8 sequential in-`<main>` button clicks** (answer → feedback → Next → results) re-asserting the island never blanks + zero errors across the WHOLE walk (the "2nd click / advance-to-results handler throws" class; flash-aware retry for timed reveals; only clicks `<button>`s so it never navigates off-route). **⚠ Tiered OFF the PR gate (PR #591)** — the wall-clock hog runs in the **full sweep** (`play-tests-full.yml`, merge-to-main + nightly), not per-PR; (4) **SEL-safety** — every SEL (mindforge/coregrealm) route exposes the always-visible crisis footer; reduced-motion honored (never scoped — `routesForApp` enumerates unfiltered); (5) **/play-index** (`play-index.spec.ts`) — the landing's grouped sections + filter; (6) **a11y shell + control names** (`tests/e2e/a11y.spec.ts`) — every route inherits the WCAG shell contract from BaseLayout: `<html lang>` set (3.1.1), non-empty `<title>` (2.4.2), exactly ONE `<main>` landmark (1.3.1), landing routes expose a hero `<h1>` (2.4.6), **AND every visible in-`<main>` `<button>` has a non-empty accessible name (aria-label/text/title/labelledby; WCAG 4.1.2 — folded from the former `control-names.spec.ts` into ONE page load/route by PR #591)**; (7) **keyboard-nav** (`tests/e2e/keyboard-nav.spec.ts`) — every route's first in-`<main>` control is programmatically focusable + Enter-activation doesn't crash the island (WCAG 2.1.1 — the keyboard sibling of (2)) | XCUITest |
+
+### The discipline (joins R-WEB-CLONE-PARITY-DOD + R-WEB-CLONE-GUIDE-SYNC)
+
+- **A new clone / new mechanic ships with tests.** Building a bespoke mechanic with a hand-authored bank → add a Vitest invariant spec next to it (export the bank; the round-shell + a11y are already covered by the shared specs + the auto-enumerated Playwright smoke). A logic change pairs with a test update, exactly like the guide-sync rule.
+- **Routes auto-cover:** `tests/e2e/routes.ts` enumerates `/play` routes from `src/pages/play/**`, so a new clone's routes are BOTH smoke-tested AND interaction-tested the moment they land — no spec edit. A new SEL clone must be added to `SEL_APPS` in `routes.ts`. **On a PR the run is SCOPED to touched clones** via `PLAY_ROUTE_FILTER` (§ R-WEB-CLONE-TEST-PERF), so a new clone's routes run on its own PR + then in the full sweep; a shared-surface change runs FULL.
+- **Bank export is the only source change units need** — mechanic banks are module-private `const`; add `export` (non-breaking; not imported by `astro build`, so `build:play` is unaffected).
+- **Dev-server caveat:** `astro dev` does NOT run the prebuild chapter normalizer, so the Playwright `webServer` command runs `normalize-chapter-frontmatter.py` first (else js-yaml crashes content parsing + breaks island render). Never remove it.
+- **Calibration gotchas** (see PLAN § 6): MC/custom rounds SHUFFLE item order (answer by reading the shown prompt, not a fixed label); `/play/<app>/play` routes are param-driven launchers (`?kit=`) that render a no-heading "pick one" fallback bare (assert the `<main>` shell, not a heading).
+- **Subresource-404/403 noise is EXCUSED, not a runtime-error failure** (`BENIGN_CONSOLE_NOISE` in `tests/e2e/routes.ts`, shared by smoke + interaction). Chromium reports a failed cross-unit/CDN chrome asset (a `/cast` or `/apps` image, a CDN font/logo) as a **bare `"Failed to load resource: the server responded with a status of 4xx/5xx"` with NO URL in the message text** — so the URL-only benign filter (`favicon|analytics|plausible|cdn\.spark-and-anvil`) can't see it, and it **false-failed every clone's smoke + interaction suite in a play-only / CDN-offline run** (e.g. a local worktree verify). The gate's job is *runtime/script errors* ("a mechanic that THROWS on load / a click handler crashes"); **asset reachability is owned by `check-site-internal-links.py`** (which already excuses cross-unit refs), so the benign filter also excuses `Failed to load resource: the server responded with a status of`. A missing PLAY-unit asset still surfaces via the mechanic's own `fetch().catch` + surface-wiring + the link checker, so no real coverage is lost. **Keep both specs importing the single `BENIGN_CONSOLE_NOISE` constant** — don't re-inline a divergent regex. (Codified 2026-07-12 during the heatforge clone build; site PR with the heatforge clone.)
+- **CI (Phase D):** `.github/workflows/play-tests.yml` runs the Vitest + Playwright suites on PRs; `.github/workflows/play-tests-full.yml` runs the exhaustive sweep on merge-to-main + nightly (§ R-WEB-CLONE-TEST-PERF). Editing `.github/workflows/` needs a `workflow`-scoped token the hub PAT lacks — same class as the Cloudflare watch-paths; a workflow-file change ships via a worktree branch + PR (as PR #591 did).
+
+### R-WEB-CLONE-TEST-PERF — the e2e gate is SHARDED + SCOPED + TIERED so per-PR cost doesn't grow with portfolio size (2026-07-14, site PR #591)
+
+**The Playwright cost = `routes × per-route-specs`, and BOTH grow with the portfolio (routes ~20→414 across 66 clones in days). An unsharded, unscoped, all-specs run trended toward 30–45 min and climbing ~linearly. Three standing levers keep the PR gate flat:**
+
+1. **Shard** — the PR e2e job is a CI matrix (`--shard=i/N`, blob reports merged by an aggregator job). The aggregator job keeps the exact required-check name **`Playwright (a11y + SEL-safety smoke)`** (+ `Vitest (bank invariants + shell)`) so branch protection stays valid — **never rename those two job names**; the matrix children (`e2e shard`) are NOT required contexts.
+2. **Scope** — a `scope` job diffs the PR: touches a shared surface (`_shared/`, `play.css`, `components/play/`, `pages/play/index.astro`, `clone-types.ts`/`clones.ts`, `layouts/`, `tests/e2e/`, `playwright.config.ts`, `astro.config.mjs`, `package*.json`, build scripts) → **FULL** run (4 shards, `PLAY_ROUTE_FILTER=""`); else → **scoped** to the touched clone slugs (single runner, `PLAY_ROUTE_FILTER=app1,app2`); neither → `__none__` (only the never-scoped SEL crisis-footer + `/play-index` specs run). `routes.ts` reads `PLAY_ROUTE_FILTER`; `routesForApp` (SEL) always enumerates unfiltered. A one-clone PR runs **~48 tests, not ~2,138**.
+3. **Tier** — the heavy `round-play` deep-walk (the wall-clock hog, `test.setTimeout(120s)` + 45s walk budget/route) is **excluded from the PR gate** (`--grep-invert "plays a round error-free"`, or `npm run test:e2e:pr`) and runs only in the **full sweep** (`play-tests-full.yml`: push-to-main + nightly cron + dispatch, 6 shards, all specs, all routes). `control-names` was folded into `a11y.spec.ts` (one page load/route).
+
+**When authoring/reviewing:** a new clone's PR auto-scopes to itself (its routes still get the full sweep post-merge). Do NOT add a monotonic/`workers`-halving hack; scale by shard count. If you add a NEW shared build/test input, extend the `SHARED_RE` in the `scope` job so a change to it triggers a FULL run. Local: `npm run test:e2e` (full) · `npm run test:e2e:pr` (round-play excluded) · `PLAY_ROUTE_FILTER=<app> npm run test:e2e:app` (one clone). Reference timing (PR #591 dogfood): full run = 4 shards × ~3.2 min ≈ ~4 min wall-clock vs. the old single ~30–45 min job; scoped one-clone ≈ ~1 min.
+
+### When this rule applies
+- Authoring/extending any `/play/<app>` clone → add/extend the mechanic's Vitest invariant spec; run `npm test` + `npm run test:e2e` before shipping (they join `build:play` + surface-wiring in the DoD).
+- Reviewing a clone PR that adds a bespoke mechanic with a hand-authored bank + no invariant spec → that's a gap (same weight as a missing parity axis).
+
+### Cross-references
+- `Docs/PLAN_WEB_CLONE_TESTING_STRATEGY_2026-07-12.md` (the adopted strategy + implementation record) · site PR #483
+- `spark-anvil-site/{vitest.config.ts,vitest.setup.ts,playwright.config.ts}` · `src/lib/play/**/*.test.ts` · `tests/e2e/*` · `.github/workflows/{play-tests.yml,play-tests-full.yml}` (the PR gate + full sweep; § R-WEB-CLONE-TEST-PERF) · site PR #591 (shard + scope + tier)
+- § R-WEB-CLONE-PARITY-DOD (the ship gate this joins) · § R-WEB-CLONE-GUIDE-SYNC (the sibling "keep it in sync with the code" discipline) · § R-WEB-CLONE-NO-DARK-SURFACE / § R-PLAY-CSS-PARSE-GATE / § R-SITE-CORE-PARSE-GATE (the build-time gates this complements)
+
+## Screenshot analysis is a MANDATORY gate for UI/UX + Definition of Done (R-WEB-CLONE-SCREENSHOT-DOD; 2026-07-13, made mandatory-per-clone 2026-07-14)
+
+**Screenshot analysis is a MANDATORY ship gate — not optional, not "when convenient." Any UI/UX-affecting change to a `/play` clone (or any site surface), AND every NEW clone at ship time, is NOT done — and NOT DoD-complete — until the surface(s) have been RENDERED, CAPTURED as a screenshot, and VISUALLY ANALYZED by the agent, at BOTH a desktop and a mobile viewport, with the analysis recorded (before/after where it's a refinement).** A clone whose registry row is flipped to `shipped` without a recorded screenshot pass is a DoD violation, exactly as if it were missing a parity axis. The automated suite (R-WEB-CLONE-TEST) asserts a surface *renders, doesn't throw, is keyboard-operable, and has accessible names* — it is BLIND to whether the surface actually *looks right*: visual hierarchy, prominence, colour use, contrast, spacing/dead-space, alignment, font sizing, clipping/overflow, and the question→manipulative→answer→feedback reading order. Only looking at the pixels catches the **"builds green + passes every test + looks wrong"** class. Codified per founder-direct 2026-07-13 (*"codify the rule that screenshots analysis are required for ui/ux testing and definition of done"*), after the prominence-program screenshots drove real fixes automated tests could never have surfaced (a muted "Solve for x", answer options weaker than the question card, an under-used app accent, a small math readout).
+
+### The required step (how)
+Render the surface headless and read the PNG back — the agent literally looks at it:
+```bash
+# In the site worktree (R-SITE-WORKTREE). A tiny throwaway Playwright spec drives the
+# route (clicking into a round for practice surfaces) + screenshots at two widths:
+#   desktop ≥1280×900  AND  mobile ~402×860  (fullPage)
+npx playwright test tests/e2e/_shot.spec.ts   # writes /tmp/shots/<name>-<desktop|mobile>.png
+```
+Then **Read each PNG and analyze it** against the checklist below; iterate CSS/markup until it holds; **re-screenshot to confirm**. Delete the throwaway `_shot*.spec.ts` before committing (never ship it). The screenshots are a verification artifact, not a committed file.
+
+> **Capture gotcha (V250/V251):** a `fullPage` screenshot of a LONG page (marketing/company pages, `/cast`, a tall practice surface) is downscaled so far when Read back that you **cannot judge spacing/contrast detail** — it's only good for gross "whole-page light-in-dark" scans. To judge layout/spacing, colour/AA, and font sizing, capture **viewport (fold) shots at native resolution** (`fullPage: false` at 1440×900 desktop / 390×844 mobile) plus a mid-scroll shot for section rhythm — those read legibly. Use both: `fullPage` for the overview, fold/native for the verdict. (Iterating against a live `astro dev` in the worktree is fastest — HMR picks up each edit, so re-screenshot is a re-run, not a rebuild.)
+
+### What the analysis MUST cover (the visual checklist)
+- **Prominence + hierarchy** — the question card, the manipulative stage, the answer surface, and the feedback panel each read at the intended weight, in the intended order (per R-WEB-CLONE-QA-PROMINENCE + R-WEB-CLONE-MANIPULATIVE-PROMINENCE). No surface out-muscles or is out-muscled by another unintentionally.
+- **Colour** — the app accent/semantic palette actually surfaces (not a monochrome beige blur); WCAG-AA contrast holds; verdict never by colour alone.
+- **Font** — sizing/weight reads at the child-typography register; math/state readouts are prominent + `tabular-nums`; nothing is too small.
+- **Layout** — no dead space that starves the manipulative; no clipping/overflow; the reading column holds; **mobile** is checked, not just desktop (the width where clipping/stacking bugs live).
+- **States** — where relevant, capture the answered/feedback/results state, not just the initial load.
+
+### MANDATORY per-clone ship gate (not just per-change)
+- **Every NEW clone MUST have a screenshot-analysis pass over EVERY surface it ships** (landing + each learning/practice surface), at desktop + mobile, BEFORE its `REGISTRY_WEB_CLONES.txt` row flips to `shipped`. This is a hard gate on the same footing as the two parity axes + no-dark-surface + the automated suite — a clone is not shippable without it. Capture at least one *interactive* state (answered/feedback/reveal) where a surface has one.
+- **The analysis MUST be recorded** — a dated line in the clone's `Docs/web/<app>/PARITY_WEB_VS_IOS.md` DoD sign-off naming the surfaces shot + the verdict (PASS, or the fixes it drove). "I looked at it" with no recorded artifact does not satisfy the gate. Reference pass: MintForge (2026-07-14) — 4 surfaces × desktop+mobile + a Lab feedback state + Budget mobile shock state, PASS.
+
+### When this rule applies
+- **A NEW clone at ship time** → the mandatory all-surface pass above (hard gate; gates the registry `shipped` flip).
+- Authoring or extending any `/play` clone with a UI/UX change; any edit to the shared `.pc-q-*` / `.ff-stage` prominence surfaces (they lift every clone — screenshot at least one adopting clone); any marketing/site surface change.
+- **Reviewing** a clone/site PR with a visual change → the PR body / parity ledger MUST reference the screenshot analysis (before/after for a refinement). A visual change with no recorded screenshot analysis is a DoD gap, same weight as a missing parity axis.
+- It IS a MANDATORY axis of the ship gate alongside: R-WEB-CLONE-PARITY-DOD (feature + UI/UX parity) + R-WEB-CLONE-NO-DARK-SURFACE (wired + visible) + R-WEB-CLONE-TEST (renders + a11y) + **this** (looks right, recorded).
+
+### Cross-references
+- § R-WEB-CLONE-TEST (the automated suite this complements — tests assert *renders*, screenshots assert *looks right*) · § R-WEB-CLONE-QA-PROMINENCE / § R-WEB-CLONE-MANIPULATIVE-PROMINENCE (the prominence intents the screenshot verifies) · § R-WEB-CLONE-UX-PARITY (the visual-character parity the screenshot measures) · § R-WEB-CLONE-PARITY-DOD (the ship gate this joins) · § R-SITE-WORKTREE (where the render happens)
+- `Docs/RESEARCH_WEB_CLONE_QA_FLOW_PROMINENCE_2026-07-13.md` + `Docs/RESEARCH_WEB_CLONE_MANIPULATIVE_PROMINENCE_2026-07-13.md` (the prominence work that screenshot analysis drove)
+
+## UI testing + screenshot-DoD MUST cover DARK MODE, not just light (R-WEB-CLONE-DARK-MODE-TEST; 2026-07-14)
+
+**Every `/play` clone (and every site surface) MUST be verified in BOTH color schemes — `prefers-color-scheme: light` AND `prefers-color-scheme: dark` — by the automated Playwright gate AND the screenshot-DoD pass. A surface that renders + reads correctly in light but is broken in dark (unreadable text on a dark panel, AA-contrast failure, an accent/semantic colour that vanishes, an un-themed white flash) is a defect, exactly as if it failed in light.** Codified per founder-direct 2026-07-14 (*"make sure the UI testing cover dark mode as well because there are a lot of dark mode issues with the web site."*). The site themes via **media queries** (`@media (prefers-color-scheme: dark)` in `global.css` + `play.css` + per-app `.pc-theme-<app>` tokens), so dark mode is the OS/browser default for a large fraction of real users and was previously **untested + un-screenshotted**.
+
+### The two layers (both must cover dark)
+1. **Automated (Playwright) — the `chromium-dark` project.** `playwright.config.ts` carries a second project `chromium-dark` (`use: { colorScheme: 'dark' }`) scoped via `testMatch` to the **cheap contract specs** — `smoke` (every route renders + zero console/runtime errors) + `a11y` (shell contract + accessible names) — so every `/play` route + site surface is asserted to render and stay operable in dark too. It is **NOT** run over the heavy `round-play` deep-walk (R-WEB-CLONE-TEST-PERF — the dark axis rides the light gate's shards; CI runs all projects, no workflow edit). This catches the *dark render-crash / dark-only console-error* class automatically going forward. Adding the dark axis is a `playwright.config.ts` change (a shared surface → triggers a FULL scoped run).
+2. **Screenshot-DoD (visual) — dark is a required capture, analyzed by IN-SESSION Opus.** The mandatory screenshot-DoD pass (R-WEB-CLONE-SCREENSHOT-DOD) MUST capture **dark AND light** at desktop + mobile for a new clone's surfaces (and for any UI/UX change), because the automated gate is BLIND to *contrast/visibility* — only looking at the dark pixels catches "text disappears on the dark card," a washed-out accent, or an un-themed panel. The `_shot.spec.ts` recipe adds `colorScheme: 'dark'` captures (`test.use({ colorScheme: 'dark' })` or a second context). **The dark PNGs are analyzed by the IN-SESSION Opus agent — the running Claude Code session Reads each PNG and judges it** (founder-direct 2026-07-14: *"should we use in-session Opus to analyze the dark-mode screenshots as part of DoD?"* → **yes**). This is the SAME mechanism the base screenshot-DoD already uses ("the agent literally looks at it") and the same in-session-Opus-judgment precedent as R-WEB-CLONE-CLUSTER-MAP + R-AUTHOR-MODEL-CHOICE — **NOT** a paid vision API. The division of labor: the automated `chromium-dark` gate asserts *renders + operable*; in-session Opus asserts *looks right in dark*. The analysis checks the § R-WEB-CLONE-SCREENSHOT-DOD visual checklist under dark (AA contrast on the dark surface, verdict-not-by-colour still holds, no white flash, accent/semantic colours still legible) and is recorded in the clone's `PARITY_WEB_VS_IOS.md` DoD sign-off naming the dark surfaces shot + the verdict — a dark capture with no recorded in-session analysis does not satisfy the gate.
+
+### Distinct from R-WEB-CLONE-NO-DARK-SURFACE
+"Dark **surface**" (R-WEB-CLONE-NO-DARK-SURFACE) = a route/feature that exists in code but is **unwired / unreachable** (nothing to do with colour). "Dark **mode**" (this rule) = the `prefers-color-scheme: dark` *rendering*. Both use the word "dark"; they are unrelated gates — a clone must pass both.
+
+### When it applies
+- **Authoring any new clone** → its screenshot-DoD sign-off in `PARITY_WEB_VS_IOS.md` MUST name dark + light captures; the `chromium-dark` gate covers its routes automatically (auto-enumerated, like the light gate).
+- **Any UI/UX / CSS change** (`play.css`, `global.css`, a `.pc-theme-<app>` block, a shared `.pc-q-*`/`.ff-stage` surface) → screenshot-verify in dark too; a dark regression is a defect.
+- **Reviewing a clone/site PR with a visual change** → the PR must reference the dark screenshot analysis, same weight as the light one.
+
+### Cross-references
+- `spark-anvil-site/playwright.config.ts` (`chromium-dark` project) · `tests/e2e/{smoke,a11y}.spec.ts` · `src/styles/{global,play}.css` `@media (prefers-color-scheme: dark)` · ADR-014 (hybrid Liquid Glass — the glass surfaces most at risk in dark)
+- § R-WEB-CLONE-TEST (the suite this extends) · § R-WEB-CLONE-TEST-PERF (why dark is scoped to smoke+a11y, not round-play) · § R-WEB-CLONE-SCREENSHOT-DOD (the visual gate this makes dual-scheme) · § R-WEB-CLONE-NO-DARK-SURFACE (the unrelated *unwired* gate) · work-queue V235
+
+## Dark-mode SUPPORT best practices — theme through the shared vars; never render light-in-dark (R-WEB-CLONE-DARK-MODE-SUPPORT; 2026-07-15)
+
+**Every `/play` clone MUST render correctly in `prefers-color-scheme: dark` by theming through the SHARED design-system variables — never by hardcoding light hex on its own surfaces. A clone (or a shared-surface change) that renders bright-white-in-dark, or dark-on-dark / light-on-light unreadable, is a defect on the same footing as a failed parity axis.** This is the *design/authoring* companion to `R-WEB-CLONE-DARK-MODE-TEST` (which is the *gate*): -TEST tells you dark is verified; -SUPPORT tells you how to build so it passes. Codified per founder-direct 2026-07-15 (*"codify dark mode support best practices in repo"*) after V237 found the entire `/play` layer rendered light-in-dark and fixed it with one shared block.
+
+### Why it was broken (the root cause every author must avoid)
+The `/play` design system defines its OWN neutral palette vars in `play.css` `:root` — `--ff-paper` (card surface), `--ff-warm` (inset/track/chip), `--ff-anvil` (text), `--ff-outline` (border + hard drop-shadow), `--ff-empty` (manipulable "empty" fill), and the semantic feedback tints `--pc-correct-bg` / `--pc-incorrect-bg`. These are SEPARATE from the site-wide `--sa-*` vars (which `global.css` flips for dark). For a long time the `--ff-*` / `--pc-*-bg` neutrals had **no dark variant anywhere**, so while the marketing/`/cast` pages went fully dark, every `/play` surface stayed bright-white on the dark site. The fix (V237, site PR #683) is a single `@media (prefers-color-scheme: dark)` block near the TOP of `play.css` that dark-themes those shared neutrals + tints, scoped `:root, [class*="pc-theme-"]` with `!important` so it also overrides the ~40 per-app `.pc-theme-<app>` light surface vars without editing each block.
+
+### The best practices (author + review against these)
+1. **Theme through the shared vars, never hardcode surface hex.** A clone's bespoke CSS (`src/styles/play/<app>.css`) + its manipulative markup MUST use `var(--ff-paper)` / `var(--ff-warm)` / `var(--ff-anvil)` / `var(--ff-outline)` / `var(--ff-empty)` / `var(--pc-*-bg)` for surfaces, text, borders, and feedback tints — so it inherits the shared dark flip for free. A literal `#fff` / `#faf8f5` / `#2d2d2d` background or text color on a clone surface is the defect: it won't flip and will render wrong in one scheme. (Exception: `color: #fff` ON a saturated accent fill — e.g. a button/chip whose bg is `--ff-forge`/`--pc-correct` — is fine in both schemes; and saturated MANIPULABLE OBJECT colors [the fraction rods, cipher tiles, constellation stars] are intentionally vivid on the quiet stage, per R-WEB-CLONE-MANIPULATIVE-PROMINENCE.)
+2. **The stage stays quiet + dark-adaptive; objects stay saturated.** `.ff-stage` uses `--ff-paper` (dark in dark mode) with an accent top-edge; the manipulable objects carry the saturated color. Never give a stage a `background-image` or a hardcoded light fill (both break dark + violate the seductive-detail guardrail).
+3. **Per-app `.pc-theme-<app>` blocks set ACCENT identity, not a dark theme.** Keep setting accent vars (`--pc-select`, `--ff-forge`, `--ff-slate`, `--pc-correct`, `--pc-incorrect`) per app; do NOT add a per-clone dark `@media` block — the shared `play.css` block handles neutrals for everyone. If a clone's accent is so dark it's low-contrast as a border/bar on the dark card, pick a slightly lighter accent (identity), don't re-theme surfaces.
+4. **Verdict never by colour alone, in EITHER scheme** (WCAG 1.4.1): icon + word + semantic colour; light text on the dark `-bg` tints (`#22371f` green / `#3a2222` rose) keeps AA, exactly as dark text on the light tints does in light mode.
+5. **WCAG-AA both ways.** Light text (`#ECE8E3`) on dark surfaces (`#33333a`) ≈ 11:1; verify any bespoke surface pairing holds ≥4.5:1 in BOTH schemes.
+   - **When a SHARED dark override must serve a broad accent set, COMPUTE the contrast + prefer the guaranteed-AA neutral over a hue-preserving `color-mix` (V251 lesson).** Flipping the accent-TEXT vars (`--ff-*-text`) for ~40+ clones' worth of accents, a hue-preserving `color-mix(in oklab, var(--ff-forge) N%, #ECE8E3)` **fails AA for dark accents** at every safe ratio (worst accent #1A237E deep-indigo = 3.99:1 at 50/50, still < the 4.5:1 body floor), whereas the light ink `var(--ff-anvil)` clears 11.69:1 vs the darkest surface. So the shared value is `var(--ff-anvil)`; accent HUE still shows in dark via borders/fills/left-bars (`--ff-forge`/`--ff-slate`, not flipped). **General rule:** don't eyeball a shared dark-override colour — compute the WCAG ratio for the WORST member of the set against the darkest surface it lands on; if a hue-preserving mix can't clear AA for all, use the neutral light ink (hue survives elsewhere). A quick oklab-mix + WCAG-contrast calc is a ~30-line script; run it before shipping a portfolio-wide colour override.
+6. **Verify by looking, in dark AND light** (the mandatory gate): the screenshot-DoD pass (R-WEB-CLONE-SCREENSHOT-DOD) captures dark + light at desktop + mobile, in-session-Opus-analyzed; the automated `chromium-dark` smoke+a11y (R-WEB-CLONE-DARK-MODE-TEST) asserts render + operable. A shared-substrate CSS change (`play.css`/`global.css`) MUST re-screenshot at least one adopting clone in dark (it lifts all 99).
+7. **The `*/`-in-a-block-comment trap** (bit V237): never put a glob/regex/`ff-*`-style token containing `*/` inside a `/* */` CSS comment — it closes the comment early and the css-parse gate fails. Reword (space the stars, or use the var names plainly). See § R-SITE-CORE-PARSE-GATE for the sibling TS form.
+
+### When it applies
+- Authoring/extending any `/play` clone → use the shared vars for all surfaces from day one; the shared dark block themes them automatically.
+- Reviewing a clone PR → a hardcoded light surface hex, a `background-image` stage, a per-clone dark `@media` block, or a missing dark screenshot is a defect.
+- Any change to the shared `play.css` dark block or `global.css` `--sa-*` dark block → re-screenshot an adopting clone in dark (it's portfolio-wide).
+
+### Cross-references
+- `src/styles/play.css` `@media (prefers-color-scheme: dark)` (the shared block, V237 site PR #683) · `src/styles/global.css` (`--sa-*` dark) · `Docs/GUIDE_WEB_CLONE_UI_UX_BEST_PRACTICES.md` § dark mode
+- § R-WEB-CLONE-DARK-MODE-TEST (the gate this supports) · § R-WEB-CLONE-SCREENSHOT-DOD (dual-scheme visual gate) · § R-WEB-CLONE-MANIPULATIVE-PROMINENCE (quiet stage / saturated objects) · § R-WEB-CLONE-QA-PROMINENCE (the `.pc-q-*` feedback surfaces) · § R-WEB-CLONE-MERGE-HYGIENE (why the theme block stays in `play.css` + bespoke CSS is per-app) · § R-SITE-CORE-PARSE-GATE (the `*/`-in-comment trap) · § R-WEB-CLONE-NO-DARK-SURFACE (the unrelated *unwired* gate) · work-queue V237
+
+## Dark-mode coverage is WHOLE-SITE, not just /play — marketing/company chrome + light-only imagery (R-SITE-DARK-MODE-WHOLE-SITE; 2026-07-15)
+
+**Dark-mode support + verification apply to EVERY site surface — the marketing/company pages (home, `/for-parents`, `/for-educators`, `/mission`, `/about`, `/press`, `/apps`, `/cast`, `/stories`, `/books`, the `/play` index) and the shared chrome (Nav, Footer, hybrid-glass) — NOT only the `/play` clones.** `R-WEB-CLONE-DARK-MODE-TEST` / `-SUPPORT` were written `/play`-scoped; this rule extends them site-wide. Codified per founder-direct 2026-07-15 (*"the rest of the web site also have dark-mode issues too, not just the /play unit"* + *"fix and codify"*) after the V251 audit (`Docs/AUDIT_SITE_DARK_MODE_2026-07-15.md`).
+
+- **Theme through the shared `--sa-*` tokens** (`global.css` `:root` + its `@media (prefers-color-scheme: dark)` flip) — never hardcode a light surface hex on a company page; a new `--sa-*` token gets a dark value in the same change (the marketing-side analog of R-WEB-CLONE-DARK-MODE-SUPPORT's `--ff-*`/`play.css` discipline).
+- **Light-only RASTER imagery is the load-bearing trap** (the motivating defect): a PNG/JPG with a **baked opaque light background + no alpha** (logos, badges, illustrations) is invisible on a light surface but renders a **glaring light box on a dark surface**. `lockup.png` (Nav) + `logomark.png` (Footer) did exactly this on every page. Fix options, in order of preference: (a) a transparent-background asset with a **dark-mode variant** (light-ink) swapped via `<picture>`/`prefers-color-scheme`; (b) a **deliberate rounded brand tile/plate** (rounded corners + soft dark-mode ring/border) so the light chip reads as intentional, not accidental — the accepted dark-header pattern for light-only logos (the V251 fix, site PR #700); NEVER (c) leave a full-bleed sharp light rectangle. A CSS `dark:` background/ring on an opaque-bg image only *frames* it — it cannot make the baked background transparent, so rounding+plating is the honest interim until a real dark asset exists.
+- **The gate is the SAME two-layer gate, now over marketing routes too:** the `chromium-dark` Playwright project (R-WEB-CLONE-DARK-MODE-TEST) SHOULD enumerate the top-level marketing/company routes (not just `/play/**`) for the render-+-operable assertion; and the mandatory **dark screenshot-DoD** (R-WEB-CLONE-SCREENSHOT-DOD, in-session-Opus-analyzed) covers any company-page or shared-chrome visual change, dual-scheme at desktop+mobile.
+- **When it applies:** any change to Nav/Footer/BaseLayout/global.css/`--sa-*`/a company page/a shared raster asset → screenshot-verify dark + light; a light-in-dark surface, a baked-light-bg image box, or a sub-AA company-page text is a defect on the same footing as a `/play` dark defect.
+
+### Cross-references
+- `Docs/AUDIT_SITE_DARK_MODE_2026-07-15.md` (the V251 audit) · site PR #700 (Nav/Footer logo tile + `/play` accent-text) · `src/styles/global.css` `--sa-*` dark · `src/components/{Nav,Footer}.astro`
+- § R-WEB-CLONE-DARK-MODE-TEST / § R-WEB-CLONE-DARK-MODE-SUPPORT (the `/play` rules this generalizes) · § R-WEB-CLONE-SCREENSHOT-DOD (the dual-scheme visual gate) · § R-SITE-LAYOUT-SPACING (the sibling site-quality rule) · § Liquid Glass policy (the glass surfaces most at risk in dark)
+
+## One shared layout system — 8pt spacing scale + container + reading-measure + section rhythm (R-SITE-LAYOUT-SPACING; 2026-07-15)
+
+**Every site page lays out through ONE shared system — an 8pt spacing scale, a single content container, a 66ch reading-measure for long-form copy, and a consistent section-rhythm token — defined in `global.css`; pages MUST NOT hand-roll ad-hoc widths + spacing per page.** Codified per founder-direct 2026-07-15 (*"almost all web pages on the website have layout and spacing issues. do deep web research if needed"* + *"fix and codify"*). Evidence base: `Docs/RESEARCH_SITE_LAYOUT_SPACING_BEST_PRACTICES_2026-07-15.md`; audit: `Docs/AUDIT_SITE_LAYOUT_SPACING_2026-07-15.md`.
+
+### Why (the systemic root)
+"Almost all pages" = a MISSING SHARED SYSTEM, not N page bugs. `global.css` had `--sa-*` *colour* tokens but **no spacing scale, container, section-rhythm, or measure primitive**, and `BaseLayout` wraps content in a bare `<main><slot/></main>` — so every page hand-rolled its container width + spacing, and they drifted (measured: content max-width across `src/pages/*.astro` split six ways — `max-w-3xl` ×70, `max-w-4xl` ×54, `max-w-6xl` ×24, `max-w-2xl` ×19, `max-w-5xl` ×8, `max-w-7xl` ×1). Columns + section gaps jump page-to-page. Same structural cause + fix as the dark substrate (V237): add the shared system, theme through it.
+
+### The standard (author + review against these)
+1. **8pt spacing scale** — all padding/margin/gap from `--space-*` (4·8·12·16·24·32·48·64·96; 4pt half-step for fine cases). No arbitrary one-off values. Odd bases (5pt) forbidden (split-pixel centering).
+2. **`internal ≤ external`** (Gestalt proximity) — space *around* a group ≥ space *within* it (card outer margin ≥ inner padding; section rhythm ≥ item gaps). Cramped or floating groupings are the violation.
+3. **One container** — `.sa-container` (single content `max-width` + responsive gutters 16→24→32px), NOT per-page `max-w-3xl/4xl/6xl/...` drift. Always `max-width`, never fixed `width` (WCAG 1.4.10 Reflow).
+4. **Reading measure ≤ 66ch** for long-form copy (`.sa-prose`, `max-width: 66ch`) — classic 50–75ch optimum; **WCAG hard cap 80ch**; mobile 30–50ch. Long-form pages (mission/about/method) are the ones most at risk.
+5. **Consistent section rhythm** — section-to-section vertical spacing is a token (`--sa-section-y`, responsive clamp), not eyeballed per page. Inconsistent section rhythm is the #1 "unpolished" signal.
+6. **Accessibility floor (hard, never waived)** — WCAG **1.4.10 Reflow** (reflow to 320px-equiv, no 2-axis scroll; `max-width` + flex/grid + `overflow-wrap: break-word`, never `overflow:hidden` clipping zoom) + **1.4.12 Text Spacing** (layout survives user line-height 1.5 / paragraph 2× / letter 0.12× / word 0.16× → no fixed heights on text containers; size in rem/em) + ≥44px kid targets + body line-height ≥ 1.5.
+7. **The scale is a guide, not a straitjacket** — a deliberate off-scale value that reads better is fine; document it. The scale removes *arbitrary* decisions, not *deliberate* ones.
+8. **Verify by looking** (the mandatory gate) — any layout/spacing change is screenshot-DoD'd (R-WEB-CLONE-SCREENSHOT-DOD) at desktop+mobile, dark+light.
+
+### Rollout
+- The shared system (`--space-*` + `.sa-container` + `.sa-prose` + `.sa-section` + `--sa-section-y`) is added to `global.css` as **non-breaking additions** (nothing consumes them until migrated → zero regression risk). V250.
+- **New pages MUST use it from day one.** Existing pages **migrate opportunistically, in small screenshot-verified batches** — NOT a blind 26-page rewrite (a bad blanket container change regresses intentional wide grids like `/apps` filters + `/cast` gallery). The per-page migration is tracked (work-queue V250).
+
+### When it applies
+Authoring any new site page (use `.sa-container`/`.sa-prose`/`.sa-section` + the scale from the start); any layout/spacing edit (through the tokens, screenshot-verified); reviewing a site PR (a new ad-hoc `max-w-*` + hand-rolled spacing instead of the shared system is a defect; an un-verified visual change is a defect).
+
+### Cross-references
+- `Docs/RESEARCH_SITE_LAYOUT_SPACING_BEST_PRACTICES_2026-07-15.md` (evidence) · `Docs/AUDIT_SITE_LAYOUT_SPACING_2026-07-15.md` (audit + per-page migration tracklist) · `src/styles/global.css` (the shared system) · `src/layouts/BaseLayout.astro`
+- § R-WEB-CLONE-SCREENSHOT-DOD (the mandatory visual gate) · § R-SITE-DARK-MODE-WHOLE-SITE (the sibling site-quality rule) · § Liquid Glass policy (ADR-014) · work-queue V250
+
+## A device-specific feature is SKIPPED, never a reason to skip the whole app (R-WEB-CLONE-DEVICE-FEATURE-SKIP; 2026-07-12)
+
+**Requiring device-specific functionality is NOT a clone-eligibility blocker. If a feature needs a capability the browser cannot deliver on-device — AR/RealityKit/ARKit, Vision, CoreMotion/gyroscope, camera/mic capture, real-time haptics, Game Center, MultipeerConnectivity, SpriteKit *physics*, on-device FoundationModels — that ONE feature is skipped for the web clone (⛔ waived · platform-only, OR 💡 iOS-ENHANCE if it delivers novel LEARNING); the REST of the app MUST still be ported to the web.** Codified per founder-direct 2026-07-12 (*"loosen the blocker check: if a feature requires device-specific functionality, then that feature can be skipped for the web clone. the rest of the app should be ported to web"*).
+
+### What this changes — the "hard-blocker count" is a FEATURE filter, not an APP gate
+
+The census method in `AUDIT_WEB_CLONE_NEXT_RANKING*` historically used a **hard-blocker grep** (`import RealityKit|ARKit|Vision|CoreMotion|AVAudioEngine`, `SKPhysicsBody`, `MultipeerConnectivity`) and **deferred whole apps** when the count was high (e.g. cubesensei hard-blk=29 → "deferred / not-yet-portable"). **That whole-app-defer is now wrong.** A high hard-blocker count means "this app has *several* device-specific features to waive," NOT "this app can't be cloned." Almost every portfolio app has a **portable learning core** — the 16×25 (or richer) MC kit banks + the deterministic mechanics + the theme + the DN narrative — and that core MUST be ported even when the flashiest native feature can't come along.
+
+- **The blocker grep now answers "which features do I waive?"**, per-feature, during the Phase-2 deep-read + the parity ledger — NOT "do I clone this app?" at selection time.
+- **Selection eligibility** is now: does the app have a **built, portable learning core** (real Swift + kits OR a deterministic bespoke mechanic)? If yes → it is a clone candidate. The device-specific features are handled by the waiver taxonomy, exactly like any other parity gap.
+- **The waiver is still documented, never silent** — each skipped device feature is a ⛔ row (platform-only affordance) OR a 💡 iOS-ENHANCE advisory (if it's a *novel learning* surface the web genuinely can't deliver, per `R-WEB-CLONE-BACKPORT-MINING`), each with a one-line rationale in the parity ledger / RESEARCH candidate list. A skipped device feature is compliant; an *undocumented* skip is a defect. "It was more work" is still never a waiver — that's a 🟡 gap.
+- **SpriteKit alone is still not even a waiver trigger** — decorative SpriteKit arenas re-render as SVG/DOM (the learning surface ports); only genuine *physics* (`SKPhysicsBody`) or the other device capabilities above are candidates to skip.
+
+### The newly-eligible tail (this rule unlocks)
+
+Apps previously parked in the ranking's *"Deferred / not-yet-portable"* bucket for a high hard-blocker count — **cubesensei · labsmith · curiosityquest · quillspell · wildlens · levelforge · escapeforge** — are now **clone-eligible**: port their learning core + deterministic mechanics, waive the device-specific feature(s). Each still needs a Phase-2 deep-read to (a) confirm a portable learning core exists and (b) enumerate which features get the ⛔/💡 treatment. They join the candidate pool as a BATCH6 tier.
+
+### When this rule applies
+- **Clone selection** — never defer an app *solely* because of a hard-blocker count; assess the portable learning core instead.
+- **Phase-2 deep-read + parity ledger** — classify each device-specific feature as ⛔ (platform-only) or 💡 (iOS-ENHANCE novel learning); port everything else.
+- **Reviewing a clone PR / ranking doc** — a whole-app "deferred: not portable" verdict that is justified *only* by a blocker count (not by "no portable learning core") is now a defect.
+
+### Cross-references
+- § R-WEB-CLONE-PARITY (the waiver taxonomy this rule feeds) · § R-WEB-CLONE-BACKPORT-MINING (the 💡 iOS-ENHANCE class for device-specific *novel learning*) · § R-WEB-CLONE-PARITY-DOD (the ship gate)
+- `Docs/AUDIT_WEB_CLONE_NEXT_RANKING_BATCH4_2026-07-11.md` § "Census method" + § "Deferred / not-yet-portable" (updated to reflect this loosening)
+- `Docs/WEB_CLONE_PICKUP_RUNBOOK.md` § 0 (SELECT) — the selection step this rule governs
+
 ## Web-app clones must keep feature parity with their iOS app (R-WEB-CLONE-PARITY; 2026-07-08)
 
 **A browser learning-app clone of a portfolio iOS app (the `/play/<app>/*` route tree — FractionForge is the first, `/play/fractionforge`) MUST maintain feature parity with that app's LEARNING-RELEVANT features, UNLESS a specific delta is EXPLICITLY WAIVED with a documented rationale in the app's parity ledger.** Parity is the default; every gap is either closed or explicitly justified — never silently dropped. Codified per user-direct 2026-07-08 (*"codify the requirement that fractionforge iOS app and web page need to have feature parity unless explicitly allowed not to"*).
@@ -57,11 +303,11 @@ If the change is small (palette tweak, copy edit, new page from existing pattern
 Parity is measured on **learning-relevant + pedagogy-load-bearing** surfaces, NOT pixel-identical UI:
 
 - **IN scope (must reach parity or be waived):** the curricular manipulatives / scene modes, the question/kit content, the scaffolding discipline (articulate-before-hint / PolyaScaffold), the DN-S cast + narrative surfacing, co-op / pass-and-play modes, the engagement loop (streak / weekly challenge / boss-encounter / mastery gating), progress + mastery tracking, accessibility, and the anti-shame + narrative-placement disciplines (`R-NARRATIVE-BETWEEN-NOT-DURING` / `R-GUARD-THE-RATIO`).
-- **OUT of scope (never a parity obligation):** native-only affordances (SpriteKit particle polish, haptics, Live Activities, Widgets, App Intents/Siri, Game Center), platform chrome, and exact visual styling. A web-native equivalent of a native affordance satisfies parity (e.g. SVG manipulative ≈ SpriteKit manipulative; a linked site chapter reader ≈ an in-app reader).
+- **OUT of scope (never a parity obligation):** native-only affordances (SpriteKit particle polish, haptics, Live Activities, Widgets, App Intents/Siri, Game Center), platform chrome, and **pixel-identical** layout/styling. A web-native equivalent of a native affordance satisfies parity (e.g. SVG manipulative ≈ SpriteKit manipulative; a linked site chapter reader ≈ an in-app reader). **Note:** the app's *visual identity + interaction character* (palette, typographic register, IA, feedback/motion patterns) is a SEPARATE, IN-scope obligation governed by **`R-WEB-CLONE-UX-PARITY`** below — "not pixel-identical" is not "not visually faithful."
 
 ### The parity ledger (required artifact)
 
-Each web-clone app maintains a parity ledger — `spark-anvil-hub/Docs/PARITY_<APP>_WEB_VS_IOS.md` — enumerating every in-scope iOS feature → web status, one of:
+Each web-clone app maintains a parity ledger — `spark-anvil-hub/Docs/web/<app>/PARITY_WEB_VS_IOS.md` (per ADR-033; legacy flat `Docs/PARITY_<APP>_WEB_VS_IOS.md` for pre-2026-07-10 clones) — enumerating every in-scope iOS feature → web status, one of:
 
 | Status | Meaning |
 |---|---|
@@ -104,11 +350,410 @@ The `R-CAST-EXPANSION-INTEGRATION` "authored ≠ integrated" discipline (`.claud
 
 ### Cross-references
 
-- `Docs/PARITY_FRACTIONFORGE_WEB_VS_IOS.md` — the first/reference parity ledger
-- `Docs/PLAN_FRACTIONFORGE_WEB_CLONE_2026-07-08.md` + `Docs/RESEARCH_FRACTIONFORGE_WEB_CLONE_2026-07-08.md` — the web-clone design
+- `Docs/web/fractionforge/PARITY_WEB_VS_IOS.md` — the first/reference parity ledger
+- `Docs/web/fractionforge/PLAN_WEB_CLONE.md` + `Docs/web/fractionforge/RESEARCH.md` — the web-clone design
 - `Docs/AUDIT_FRACTIONFORGE_PORTFOLIO_LIFT_2026-07-08.md` — the iOS feature inventory the ledger measures against
 - `.claude/rules/distributed-narrative.md` § R-CAST-EXPANSION-INTEGRATION — sibling "authored ≠ integrated" discipline
 - § "Web-app clone" scope above (hub owns the web; `/play/*` is a learning app distinct from the marketing site)
+
+## Web-clone UI/UX parity — the clone must carry its iOS app's visual + interaction character (R-WEB-CLONE-UX-PARITY; 2026-07-10)
+
+**A `/play/<app>` web clone MUST reproduce its iOS app's UI/UX *character* — visual identity + interaction design — to a reasonable degree, UNLESS a specific delta is EXPLICITLY WAIVED with a documented rationale in the clone's UI/UX parity ledger.** This is the visual/interaction sibling of `R-WEB-CLONE-PARITY` (which governs *learning-feature* parity). Codified per user-direct 2026-07-10 (*"do full audit of fractionforge and grammarforge ios app ui/ux and create ui/ux parity for their web clones with reasonable exceptions. codify the ui/ux parity requirements with reasonable exceptions"*).
+
+`R-WEB-CLONE-PARITY` says the clone must have the same *features*; this rule says it must *look and feel like the same app*. Both are default-parity-with-documented-exceptions; neither is pixel-matching.
+
+### What UI/UX parity covers (IN scope)
+
+Measured on the app's **identity + interaction character**, NOT pixel geometry:
+
+- **Visual identity** — the app's signature **accent/primary palette** (from its iOS theme file, e.g. `<App>Theme.swift` — the authoritative source, NOT the descriptive hero-color registry), **semantic colors** (correct-green / incorrect-red / hint-amber), **typographic register** (weight/scale/rounded-vs-serif feel), and **corner-radius + surface** language. **Accent-source precedence when there is NO `*Theme.swift`** (2026-07-15, focusforge): many apps ship no theme file and use the system `AccentColor` asset (often empty/default). Then the authoritative accent identity is the app's **`apps.generated.ts` `heroColor`** (the live site data), NOT the `Docs/REGISTRY_APP_HERO_COLORS.md` entry — that registry frequently carries a speculative/"TBD-verify" descriptor that contradicts the shipped heroColor (focusforge: registry said "Focus-purple TBD" while heroColor + the DN retrofit said `#81C784` SEL green → the green is authoritative). Precedence: `*Theme.swift` → `apps.generated.ts heroColor` → (only if both absent) the hero-color registry as a last-resort hint to confirm with the founder.
+- **Information architecture + navigation** — the home/landing IA, the way modes/mechanics/kits are presented (tile grid vs list), and the home → practice → results flow.
+- **Interaction + feedback** — selection states, correct/incorrect treatment (color + the *kind* of motion), hint reveal, explanation surfacing, and the results/celebration moment (stars / XP tally / level).
+- **Gamification chrome** — the score/XP/level/streak HUD *presence* and shape.
+- **States + a11y** — empty/loading/error treatment; reduced-motion, ARIA/VoiceOver-equivalent labels, WCAG-AA contrast (a11y is a HARD obligation, never waived for cost).
+
+### What counts as a REASONABLE exception (the waiver taxonomy)
+
+A UI/UX delta may be recorded **⛔ waived** (or **🔄 adapted** when a web-native equivalent stands in) only for a concrete, documented reason:
+
+1. **Platform-only affordance** — haptics, SpriteKit particle polish, Live Activities, Widgets, native nav chrome, the avatar studio. A web-native equivalent (CSS transition ≈ UIKit spring; a color-flash ≈ haptic; an SVG scene ≈ a SpriteKit scene) is **🔄 adapted**, not a gap.
+2. **Site-chrome cohesion (the canonical example)** — the clone lives inside `spark-and-anvil.com`, whose brand register is the **chunky-cartoon studio identity** + hybrid Liquid-Glass accent (ADR-014 / § R-SITE-CHROME). Retaining that shared **material substrate** (bold outline + hard drop-shadow cards from `play.css`) instead of pixel-matching the iOS app's flat-glass surface is a legitimate **🔄 adaptation** — the clone adopts the app's *accent palette + semantic colors + IA + interaction patterns* on top of the studio substrate. Per-app *identity* is IN scope; the *substrate* is a documented adaptation.
+3. **Web-platform norm** — a native pattern whose web-idiomatic form differs (e.g. a native menu-picker → a `<select>`; a tab bar → top nav) is 🔄 adapted.
+4. **On-device / COPPA** — anything needing accounts/server/off-device data (parent dashboards behind auth, cross-device sync) — auto-waivable, strongest waiver.
+5. **Diminishing-returns, DOCUMENTED** — a high-effort, low-learning-value surface (e.g. a full progress-dashboard with heatmaps/trend-charts, a 16-mode adventure hub) may be scoped down with a one-line rationale + a 🟡 follow-up if worth revisiting. **"It was more work" ALONE is NOT a waiver** — that's a 🟡 gap (a tracked item). Diminishing-returns means *effort ≫ learner/identity value*, stated explicitly.
+6. **Founder-direct** — the user approves a specific delta.
+
+### The UI/UX parity ledger (required artifact)
+
+Each clone's `PARITY_WEB_VS_IOS.md` gains a **`## UI/UX parity`** section (a sibling to the feature table), enumerating each UI/UX surface (visual identity · IA/nav · each screen · HUD · feedback/motion · states · a11y) → status: ✅ **parity** · 🔄 **adapted** (web-native/substrate equivalent — note it) · 🟡 **gap** (open work item) · ⛔ **waived** (rationale). Same discipline as the feature ledger: a 🟡 is a defect, a ⛔/🔄 needs a rationale. Measured against the app's iOS UI/UX inventory — captured in `Docs/web/<app>/AUDIT_UX_PARITY_<date>.md` (the audit this ledger scores against; parallels how the feature ledger measures against the `## iOS feature inventory`).
+
+### Symmetric backport (inherits R-CLONE-BIDIRECTIONAL-BACKPORT)
+
+UI/UX parity is symmetric like feature parity: a *learning-relevant* interaction the web clone introduces that the iOS app lacks (e.g. a keyboard-first speed mode) must be backported (iOS handoff) or waived. Pure web-substrate styling (the chunky-cartoon cards) is NOT a backportable feature — it's a 🔄 adaptation, never an iOS-backport gap.
+
+### When this rule applies
+
+- Authoring or extending any `/play/<app>` clone → theme it to the app's palette + semantic colors + IA from day one; fill the `## UI/UX parity` ledger section.
+- Auditing a clone → enumerate the UI/UX ledger; every 🟡 is a work item, every ⛔/🔄 needs a rationale.
+- The two-guide sync (`R-WEB-CLONE-GUIDE-SYNC`) + the feature ledger (`R-WEB-CLONE-PARITY`) + this UI/UX ledger update together when a clone's look/feel changes.
+
+### Cross-references
+- `Docs/web/fractionforge/PARITY_WEB_VS_IOS.md` + `Docs/web/grammarforge/PARITY_WEB_VS_IOS.md` — the `## UI/UX parity` ledger sections
+- `Docs/web/fractionforge/AUDIT_UX_PARITY_2026-07-10.md` + `Docs/web/grammarforge/AUDIT_UX_PARITY_2026-07-10.md` — the iOS UI/UX inventories this rule measures against
+- § R-WEB-CLONE-PARITY (feature sibling) · § R-CLONE-BIDIRECTIONAL-BACKPORT (symmetric backport) · § R-SITE-CHROME + ADR-014 (the studio substrate the site-cohesion exception rests on)
+- `src/styles/play.css` — the shared `/play` stylesheet; per-app themes are `.pc-theme-<app>` scopes that override the palette variables (the implementation seam for accent parity)
+
+## The question→answer→feedback flow is the shared PROMINENT surface — feedback is the climax, not a muted footnote (R-WEB-CLONE-QA-PROMINENCE; 2026-07-13)
+
+**The question→answer→feedback flow is, after the manipulative itself, the MOST prominent element of every clone — and it is rendered by TWO shared shells (`src/lib/play/_shared/mcRound.ts` for the 16×25 MC kits + `customRound.ts` for bespoke mechanics), so its design is portfolio-canonical, not per-clone.** Codified per founder-direct 2026-07-13 (*"the question then answer flow for all web clones … should be the most prominent besides the actual manipulatives themselves … more functional, intuitive and engaging and especially prominent."*), implemented in site PR #527 on the evidence in `Docs/RESEARCH_WEB_CLONE_QA_FLOW_PROMINENCE_2026-07-13.md`.
+
+The shared, canonical treatment (do NOT regress it, and reuse it — never hand-roll a per-clone Q&A surface):
+- **Feedback is the dominant post-answer element** — a full-width `.pc-q-feedback` panel (bold outline + hard shadow + per-app `-bg` tint) carrying an **icon + verdict WORD + the explanation at body scale**. Elaborated feedback is the biggest learning lever (Hattie & Timperley / Shute); it was previously buried in muted `.ff-meta`. `customRound` keeps its write-`textContent` `ctx.feedback` contract (`:empty` hides until written; `complete(scored)` color-codes).
+- **Verdict never by color alone** (WCAG 1.4.1): ✓/✗ icon + word + semantic color; **dark text on the `-bg` tint keeps AA** (color rides border + icon), so a low-contrast green/red is never text.
+- **Big labeled choice cards** (`.pc-q-choice`, ≥48px, A/B/C key chip that is `aria-hidden` so the accessible name stays the option text) and a **goal-gradient progress bar** (`.pc-q-progress`). **The answer surface must carry the SAME weight as the question card** — a bespoke manipulative's answer options (e.g. EquationQuest's `.eq-move`) are upgraded to answer-cards (≥52px, bold, an accent left-edge, a hover lift), never left as plain footnote buttons that the question card out-muscles.
+- **State/math readouts are prominent + `tabular-nums`** — a manipulative's equation/state readout (e.g. `2x + 3 = 11`, `So far: x − 3`) is a focal element (large, bold, tabular numerals), not small serif text lost beside the stage.
+- **The question is a prominent accent "question card"** (`.pc-q-stem`, V180) — big bold type on the studio card substrate (bold outline + hard shadow) with a per-app `--pc-select` **accent left-bar**, as visually weighty as the answer surface. This is load-bearing: when V179 first shipped, the plain-text stem was out-muscled by the bordered feedback/choices ("not prominent at all" — founder). The hierarchy reads accent **question card → choices → semantic feedback panel** (the question's left-bar is accent-colored; the feedback's is green/red). Keep the ≤~62ch reading column.
+- **Anti-shame** — neutral wrong-answer copy, private, the round always advances; bespoke reveal uses a neutral tint, never a harsh red.
+- **Prominence via clarity, NOT decoration** — no ambient/during-solve motion (the seductive-detail trap; honors R-NARRATIVE-BETWEEN-NOT-DURING + R-GUARD-THE-RATIO); reduced-motion fallbacks; `aria-live` feedback + focus-to-Continue.
+
+The shared `.pc-q-*` classes live in the base `play.css` (not a per-app block). A clone gets this for free by rendering through the shared shells; the `_shared` Vitest contract + the Playwright round-play/interaction/keyboard/control-names/a11y gates (R-WEB-CLONE-TEST) keep it green. When editing either shell, keep the public API (`McRoundOpts`/`CustomRoundOpts`/`RoundCtx`) identical — ~200 call sites depend on it.
+
+**▶ Playbook:** the prescriptive treat-vs-no-op decision tree + copy-paste CSS recipes + per-manipulative-type reference treatments live in **`Docs/GUIDE_WEB_CLONE_PROMINENCE_BEST_PRACTICES.md`** (distilled from the 2026-07 sweep). Use it when building/reviewing any practice surface.
+
+## The manipulative is a prominent CARD/STAGE — same studio treatment as the Q&A cards, quiet background (R-WEB-CLONE-MANIPULATIVE-PROMINENCE; 2026-07-13)
+
+**The interactive MANIPULATIVE (the hands-on surface — fraction bar, ray-trace bench, cipher wheel, spinner, grid…) is, together with the Q&A flow, the most prominent element of a clone, and it wears the SAME studio card treatment as the `.pc-q-*` question/answer cards** — the shared `.ff-stage` class (bold outline + hard drop-shadow + whitespace isolation + centering). Codified per founder-direct 2026-07-13 (*"make all the manipulatives prominent too"* + *"should the manipulatives have the card treatment like the question and answer cards too?"* → **yes**), on the evidence in `Docs/RESEARCH_WEB_CLONE_MANIPULATIVE_PROMINENCE_2026-07-13.md`; foundation shipped site PR #531 (fractionforge pilot).
+
+- **The card frame is a STRUCTURAL signifier, not decoration** (research directive 2) — it says "this is the work surface," so it's on-thesis, and it makes the screen read as a coherent hierarchy: **question card → manipulative stage-card → feedback card.**
+- **The seductive-detail guardrail (directive 5, load-bearing):** the CARD/CONTAINER gets the outline+shadow, but the manipulative's **background stays quiet** — flat fill, **never a `background-image`**, no ambient/idle animation on the stage; saturated accent lives on the manipulable **OBJECTS**, not the surface; no mascots/particles on the active stage (narrative stays at session boundaries — R-NARRATIVE-BETWEEN-NOT-DURING + R-GUARD-THE-RATIO). Prominence comes from **size + isolation + instant responsiveness**, never spectacle.
+- **Shared primitives** (base `play.css`, adopt per-clone): `.ff-stage` (the card — carries an **accent top-edge** in the app's `--pc-select` so the practice stack reads as a color-coded hierarchy [accent question card → accent-topped stage → semantic feedback] instead of three identical beige boxes; colour rides the frame, the surface stays quiet), `.ff-stage--dominant` (opt-in viewport-share — a blanket `min-height` distorts small manipulatives, so it's per-clone), `.ff-draggable` (grab-cursor + grabbing shadow-lift affordance — directive 3), `--ff-snap-duration` + `.ff-valid-drop`/`.ff-invalid-drop` (non-color + color constraint cues — directives 4/7), all reduced-motion-safe.
+- **Rollout:** unlike the Q&A flow (one shared shell), there is **no single shared manipulative surface** — most manipulatives sit in bespoke per-clone wrappers, so a clone adopts prominence by wrapping its manipulative in `.ff-stage` (+ `--dominant` where it helps). Per-clone rollout across the ~50 non-fractionforge clones is tracked continuation (work-queue V181; the portfolio-wide sweep pass completed V221, `Docs/AUDIT_WEB_CLONE_PROMINENCE_SWEEP_2026-07-14.md`). A11y (keyboard-adjust, single-pointer drag alternative per WCAG 2.5.7, ≥44px handles, `aria-valuetext`, non-color cues) is a hard obligation per adopting clone.
+- **▶ Playbook:** the treat-vs-no-op decision tree (the sweep's key finding: shared-shell clones are already prominent; only genuine *floaters* need treatment) + copy-paste CSS recipes (accent-topped stage / accent question-card / tabular readouts) + per-manipulative-type reference treatments live in **`Docs/GUIDE_WEB_CLONE_PROMINENCE_BEST_PRACTICES.md`**.
+
+## Prefer Predict-Observe-Explain (predict-before-reveal) when a clone re-renders a deterministic sim/mechanic (R-WEB-CLONE-POE; 2026-07-14)
+
+**When a `/play/<app>` clone re-renders a DETERMINISTIC, model-predictable simulation or mechanic (a phase cycle, an energy-flow graph, a truth table, a physics/parameter model, a rule the learner can reason toward), the DEFAULT framing is a scored Predict-Observe-Explain (POE) loop — the learner commits a prediction BEFORE the outcome is revealed, then reconciles the reveal — NOT a free-play "tap-and-watch" arena.** POE is one of the best-evidenced moves in science-education research (meta-analysis of 35 studies: Hedges' **g ≈ 0.98** on science achievement), and the cognitive engine is **errorful generation + prediction error** (committing a prediction — even a wrong one — then getting feedback encodes the answer better than watching), not "the sim is fun." Free-play iOS SpriteKit sims (and apps like Tinybop) leave this on the table, which is why a POE re-render is the portfolio's reference **web-pioneered → iOS-backport** feature. Full evidence base + design spec + worked examples: **`Docs/RESEARCH_PREDICT_OBSERVE_EXPLAIN_MECHANIC_2026-07-14.md`**. First consumer: `/play/curiosityquest` (Water Cycle predict-the-phase · Food Web predict-the-cascade · Logic Lab predict-then-run).
+
+### The POE surface contract (on-device / COPPA-safe)
+1. **Commit a prediction before any reveal** — the outcome is hidden until the learner chooses/constructs an answer.
+2. **A real, unconstrained choice** — plausible distractors (map to common misconceptions where possible), NOT a near-give-away. **Load-bearing boundary condition:** the generation benefit *disappears* when the guess is over-constrained (Grimaldi & Karpicke 2012) — never auto-fill or pre-narrow the prediction to a coin-flip.
+3. **First-try scoring + articulate-before-hint** — credit the first try; a hint appears only AFTER a first miss (never up front), preserving the generation effect (joins `R-FORGEPEDAGOGY-SCAFFOLDING`).
+4. **An explicit "Explain" reconcile on the reveal** — feedback names *why* (the rule/mechanism), not just ✓/✗ (rides the shared prominent feedback panel, `R-WEB-CLONE-QA-PROMINENCE`).
+5. **Anti-shame** — a wrong prediction is the point (errorful generation / hypercorrection); neutral copy, round always advances, never a harsh red.
+6. **Deterministic + engine-derived answers** — computed from the model (never hardcoded) so a Vitest invariant asserts the bank matches the engine (`R-WEB-CLONE-TEST`).
+7. **Quiet stage** — NO decoration/animation/narrative on the predict→reveal path (the seductive-details caution: a 2025 meta-analysis finds narrative/decoration on the critical path *hurts* learning, **g = −0.16**, via extraneous cognitive load). Honors `R-NARRATIVE-BETWEEN-NOT-DURING` + `R-GUARD-THE-RATIO` + `R-WEB-CLONE-MANIPULATIVE-PROMINENCE` (quiet background).
+
+### Honest yield — POE is NOT universal
+POE fits **predictable-from-a-model** surfaces with a real misconception space. It is NOT for vocabulary recall, aesthetic-choice creative tools, or random-outcome games — forcing a "prediction" there is decoration, and the honest classification is a plain MC round (`_shared/mcRound`) or a different mechanic, not a mislabeled POE lab. Apply POE where the phenomenon is model-predictable; elsewhere, don't. A clone that ports a deterministic sim as free-play *without considering* a POE framing is a review flag (was it a deliberate, documented choice, or an un-earned "strict port"?) — the same "earned, not assumed" bar as `R-WEB-CLONE-BACKPORT-MINING`.
+
+### When this rule applies
+- Authoring a clone with a deterministic sim/mechanic surface → default to POE; a genuine POE feature the iOS app lacks is a ✅ FILE candidate (web-pioneered → iOS backport, `R-CLONE-BIDIRECTIONAL-BACKPORT`).
+- Reviewing a clone PR → a free-play re-render of a predictable sim with no prediction step is a flag (POE was the higher-value option); verify it was a documented choice.
+
+### Cross-references
+- `Docs/RESEARCH_PREDICT_OBSERVE_EXPLAIN_MECHANIC_2026-07-14.md` (the evidence base + design spec) · `Docs/web/curiosityquest/{RESEARCH,PARITY_WEB_VS_IOS,FEATURE_PLAN}.md` (the first consumer)
+- § R-WEB-CLONE-QA-PROMINENCE (the Explain panel) · § R-WEB-CLONE-MANIPULATIVE-PROMINENCE (quiet stage) · § R-WEB-CLONE-BACKPORT-MINING (POE as a FILE candidate) · § R-WEB-CLONE-TEST (engine-derived bank invariant)
+- `.claude/rules/forgekit.md` § R-FORGEPEDAGOGY-SCAFFOLDING (articulate-before-hint / productive failure — the sibling pedagogy) · `.claude/rules/distributed-narrative.md` § "Counter-evidence + design-principle layer" (the seductive-details caution) + § R-NARRATIVE-BETWEEN-NOT-DURING + § R-GUARD-THE-RATIO
+
+## Every clone declares a GRADE BAND + LEVEL, shown on /play and sorted within its cluster (R-WEB-CLONE-GRADE-LEVEL; 2026-07-13)
+
+**Every `/play/<app>` clone MUST declare a grade band + a level in its per-app registry entry (`src/data/play/<app>/clone.meta.ts`), the `/play` index MUST render a grade-band + level chip on each clone card, and clones MUST be sorted within each subject/cluster section by grade band then level (youngest/easiest first).** Codified per founder-direct 2026-07-13 (*"add grade band and level for each web clone on the /play page and sort the web clones by level grade bands for each subject/cluster"* + *"codify the grade band and level rule for all future web clone builds"*). Standing requirement for **every** clone — current (backfill) AND all future builds.
+
+### Required `clone.meta.ts` fields (extend `PlayClone` in `src/data/play/clone-types.ts`)
+- **`gradeBand: string`** — the human display label for the app's CORE/target grade band, e.g. `"Gr 4–6"`, `"Gr 7–8"`. Shown as a chip on the clone card.
+- **`gradeMin: number`** — the numeric lowest grade in the CORE band (K = 0), the primary **sort key**. For an ages-only band, map age→grade (`grade ≈ age − 5`).
+- **`level: number`** — a 1-based within-SUBJECT **difficulty ordinal** (1 foundational … 5 advanced) reflecting the app's position in its subject's learning sequence (the tie-breaker + the "level" chip).
+
+**The band + level are CURATED from the app's CURRICULAR IDENTITY — NOT a min-max span of the kit labels (V186 audit correction, founder-direct 2026-07-13).** The kit `gradeBand`s legitimately scaffold intro→capstone (e.g. functionforge kit 1 "input/output machines" `gr4-5` … kit 8 "function analysis" `gr7-8`), so the **min-max span is uninformative** — the V183 backfill's span rule made 48/58 clones read "Gr 4–8", and its modal-band level made most read "Level 3". Worse, **subject-sequence position is curricular knowledge absent from the kit data**: the kits can't distinguish fractionforge (fractions, elementary — Gr 4–6 / L1) from functionforge (functions, algebra — Gr 7–8 / L4) because both *span* 4-8 with mode 6-7. So:
+- **Derive the CORE band from the app's curricular topic** (CCSS / typical US sequence), using the kit **mode** (not min-max) + the app's identity as the cross-check — never the raw min-max span. Show a tight core range (e.g. "Gr 4–6"), not the full scaffolded span.
+- **Assign `level` by the app's position in its SUBJECT sequence** (Math: number-sense/fractions = 1 → ratio/probability = 2 → early-algebra/geometry = 3 → functions/proof = 4 → competition-enrichment = 5). Enrichment apps (alcumusforge, mathcircle) get a HIGH level even at a modest gradeMin.
+- A bespoke-mechanic-only clone with no kits sets the fields from its design target audience + subject sequence.
+- The canonical curated values live in the per-app `clone.meta.ts` (disjoint files) + the audit `Docs/AUDIT_WEB_CLONE_GRADE_LEVEL_2026-07-13.md`. Founder is the authority on positioning — a flagged app is a one-line `clone.meta.ts` edit.
+
+### Sort + surface
+- **Sort** within each subject/cluster group on the `/play` index by **`(gradeMin` asc, `level` asc, `name` asc)`** — a deterministic comparator (no `Math.random`/`Date`).
+- **Surface** a grade-band chip + a level chip on each clone card (readable register per § R-SITE-CHROME — "Gr 4–5", not "gradeMin:4").
+
+### Gate — TWO layers (build-time + PR-CI), joins the dark-clone backstop
+1. **Build-time (prebuild):** `scripts/check-play-clone-registry.mjs` fails the build if any clone's `clone.meta.ts` lacks `gradeBand`/`gradeMin`/`level` — same class as a missing theme (R-WEB-CLONE-NO-DARK-SURFACE). The Playwright `/play-index` spec asserts the chip renders + the per-cluster sort order holds.
+2. **PR-CI (Vitest):** `src/data/play/clone-registry.test.ts` globs `PLAY_CLONES` and asserts every clone has the string identity fields + a valid `gradeBand` + numeric `gradeMin`(0..12)/`level`(1..5). **This layer is load-bearing:** the prebuild gate runs ONLY on the Cloudflare BUILD, NOT in PR CI — so a clone missing the fields passes its PR's Vitest+Playwright and only RED-BUILDS after merge (the roboforge incident, 2026-07-13: a parallel-session clone merged green, then the deploy went red — the "merged ≠ deployed" trap). The Vitest spec moves the check into a REQUIRED PR check so a missing/invalid field fails the PR, not the deploy. **General lesson: when a build-time (prebuild) registry/gate is added, add its PR-CI (Vitest) sibling too** — a prebuild-only gate is invisible to PR CI.
+
+### When this rule applies
+- **Authoring any new clone** → set `gradeBand`/`gradeMin`/`level` in `clone.meta.ts` from day one (from the kit metadata / design audience); it's part of the registry row, so the merge-hygiene per-app-file model (R-WEB-CLONE-MERGE-HYGIENE) keeps it collision-free.
+- **Reviewing a clone PR** → a `clone.meta.ts` missing the fields, or a `/play` card without the chip, is a defect (build-gated).
+- **Backfill: SHIPPED (V183, site PR #533) + CURATED (V186, site PR #540).** All 58 clone.meta.ts carry `gradeBand`/`gradeMin`/`level`; `/play` renders the grade + level chips + sorts each cluster by `(gradeMin, level, name)`; `check-play-clone-registry.mjs` fails the build on a missing field; `play-index.spec.ts` asserts the chips + per-cluster order. **V183's min-max-span/modal derivation was replaced by the curated curricular values (see the § above + `Docs/AUDIT_WEB_CLONE_GRADE_LEVEL_2026-07-13.md`)** after the founder audit (fractionforge L3→L1, functionforge "Gr 4–8"→"Gr 7–8"). New clones set the CURATED fields from day one (build-gated).
+
+### Cross-references
+- `src/data/play/clone-types.ts` (`PlayClone`) + `src/data/play/<app>/clone.meta.ts` (per-app registry) · `src/pages/play/index.astro` (the grouped index) · `scripts/check-play-clone-registry.mjs` (the gate) · `tests/e2e/play-index.spec.ts`
+- § R-WEB-CLONE-MERGE-HYGIENE (the glob-derived per-app registry these fields live in) · § R-WEB-CLONE-NO-DARK-SURFACE (the sibling build-gate this joins) · § R-SITE-CHROME (chip register) · work-queue V183 (implementation)
+
+## The hub agent CLASSIFIES a clone's /play cluster by curricular judgment — free-text keyword matching is a fallback, not the source of truth (R-WEB-CLONE-CLUSTER-MAP; 2026-07-14)
+
+**A `/play` clone's subject-cluster grouping (the section it renders under on the `/play` index) is a CURRICULAR CLASSIFICATION the hub agent makes IN-SESSION — recorded explicitly, not left to fragile free-text keyword matching.** The `/play` index groups clones into a fixed pedagogical cluster set (Math · English & Language Arts · Science · Logic & Puzzles · Social Studies · SEL · Create). Codified per founder-direct 2026-07-14 (*"a couple of english language arts web clones are grouped in the Create cluster … do full audit and fix all the groupings and codify"* + *"should we codify a rule saying that the hub agent must use in-session Opus to classify the web clone for grouping?"* → yes).
+
+### Why (the same fragility as grade bands)
+The clones' `subject` is free-text (30+ spellings), so the index maps subject→cluster with `clusterOf()` (`src/lib/play/clusters.ts`) by keyword. Keyword matching is **inherently brittle to substring collisions**: the 2026-07-14 bug had `clusterOf` checking the broad **Create** branch (`s.includes('art')`) *before* ELA — and **"language arts" contains "art"** — so every "English / Language Arts" clone (figureforge/grammarforge/jestforge/mythforge/readquest) was silently grouped under Create; "Media Literacy" (truthquest, critical-evaluation) likewise fell into Create via `s.includes('media')`. This is the SAME lesson as R-WEB-CLONE-GRADE-LEVEL: a free-text→derivation heuristic mis-classifies, and the durable fix is **explicit curated classification by the agent's judgment** + a test that pins it.
+
+### The mechanism (curate-record-test, not re-run-an-LLM-each-build)
+"In-session classification" means: **when building/reviewing a clone, the hub agent DECIDES its cluster by curricular judgment** (what subject does this app actually teach?) and VERIFIES it lands there on `/play` (screenshot / the test) — it does NOT trust the keyword function blindly. Recorded two ways:
+1. **`clusterOf()` is the tested keyword fallback** — hardened (ELA + Logic branches run BEFORE the broad Create branch; added coding/robotics/cipher + `media literacy`→Logic keywords) and **pinned by `src/lib/play/clusters.test.ts`** (Vitest, a required PR check): representative subject→cluster cases incl. the "language arts"→ELA + "Media Literacy"→Logic bugs, plus **every shipped clone must cluster (never `'More'`)** and **no English/ELA clone may land in Create**.
+2. **`clone.meta.ts` optional `cluster` override** — the agent's RECORDED classification. Set it explicitly whenever the free-text subject would mis-route under `clusterOf()` (or is ambiguous); it overrides the keyword fallback. Validated by the test to be a real `CLUSTER_ORDER` value. Most clean-subject clones need no override (the tested fallback suffices); the override is the escape hatch that removes keyword-guessing for the ambiguous tail.
+
+### When this rule applies
+- **Authoring a new clone** → classify its cluster by curricular judgment; if `clusterOf(subject)` wouldn't place it correctly, set an explicit `cluster` in `clone.meta.ts` (and/or add a `clusters.test.ts` case for the new subject spelling). Do NOT ship trusting the keyword match unverified.
+- **Reviewing a clone PR / auditing /play** → verify each clone's section is curricularly correct (a screenshot of the index, per R-WEB-CLONE-SCREENSHOT-DOD); a mis-grouped clone is a defect. Adding a Create-branch keyword that is a substring of another cluster's subjects (like `art` ⊂ `language arts`) requires re-checking the branch ORDER.
+- **Changing `clusterOf` keywords/order** → keep ELA + Logic before the broad Create branch; add/adjust `clusters.test.ts` cases.
+
+### Cross-references
+- `src/lib/play/clusters.ts` (`clusterOf` + `CLUSTER_ORDER`/`CLUSTER_META`, extracted from index.astro so it's unit-testable) · `src/lib/play/clusters.test.ts` (the pin) · `src/data/play/clone-types.ts` (`cluster?` override) · `src/pages/play/index.astro` (`clusterFor` = override ?? fallback)
+- § R-WEB-CLONE-GRADE-LEVEL (the sibling curate-don't-derive rule for the same `/play` cards) · § R-WEB-CLONE-SCREENSHOT-DOD (verify the grouping by looking) · § R-AUTHOR-MODEL-CHOICE (`.claude/rules/distributed-narrative.md` — in-session-Opus-judgment-over-scripted precedent) · site PR #548 · work-queue V191
+
+## The deep-research step MUST yield an explicit backport-candidate list — mined CROSS-PLATFORM, "strict port" is earned, never assumed (R-WEB-CLONE-BACKPORT-MINING; 2026-07-11)
+
+**The Phase-2 deep research (`WEB_CLONE_PICKUP_RUNBOOK` § 3.2b) is the designated "well for novel features," and its source landscape is CROSS-PLATFORM — web + iOS + Android + physical/board-game/research — NOT web-only. Every clone's `RESEARCH.md` MUST carry a `## Domain landscape` survey (of the best-in-class in the domain across ALL those surfaces) ending in an explicit, evidence-based `## Backport candidates` list — the best learning-relevant ideas OUR apps (iOS AND web) LACK — and classify EACH one. A conclusion of "strict port → no backport" is VALID ONLY after that list exists and every candidate is classified; it must be EARNED by the mining, NEVER asserted by default.** Codified per user-direct 2026-07-11 (*"the deep web research step should have provided a lot of novel ideas for iOS backport, correct?"* → *"codify this requirement"*; then *"why are we doing deep web research for web-based novel features only? why not including novel features and ideas from ios and android apps too?"* → *"make sure to backfill and also codify it as a rule too"*), after the V95/V97/V98 clones (claimcraft/jestforge/witquest) each defaulted to "strict port" and skipped producing the candidate list — using the research only for positioning, not for its load-bearing backport-discovery purpose — AND after the mining was found to be artificially scoped to the *browser* landscape only.
+
+### The source landscape is CROSS-PLATFORM, not web-only (broadened 2026-07-11)
+
+The mining was originally framed as "deep **web** research" because the step lives inside the *web-clone* build (you're building a browser surface, so you looked at browser competitors). **That scope was an accident of location, not a principle, and it is now broadened.** The well for novel learning-design ideas is the WHOLE domain across every surface:
+
+- **web** tools/sites in the domain (the original scope);
+- **iOS** best-in-class apps (App Store editorial / education charts) — frequently *ahead* of browser tools on learning design;
+- **Android** best-in-class apps (Play Store education / Google Kids Space);
+- **physical / board-game / research** exemplars (the portfolio already treats Storytime Chess + Backgammon as first-class design exemplars — being web-only was inconsistent with our own practice).
+
+The candidate **test is unchanged** — a candidate must be (1) absent from OUR app(s), (2) learning-relevant, (3) on-device + COPPA-feasible. Only the SOURCE breadth changed. Consequently a candidate can flow to **BOTH** surfaces: a novel idea our iOS app lacks is a web build-candidate *and* an iOS backport; a novel idea our web clone lacks is a web build-candidate. Do not privilege browser-native gimmicks over pedagogy — the point of widening the aperture is to surface the strongest *learning* ideas wherever they live.
+
+### Why this rule exists
+
+The runbook already says the novel-feature list *"must be evidence-based (from this research), not guessed … It's what earns the clone its Phase-5 backport value."* But that instruction was being satisfied *narratively* (a "here's how we're differentiated" paragraph) rather than *mechanically* (a classified candidate list that feeds `R-CLONE-BIDIRECTIONAL-BACKPORT`). This rule makes the list a **required, inspectable artifact** so the web→iOS backport direction actually gets fed, and so "strict port" can't silently swallow a real net-new idea the research surfaced. It is the **discovery mechanism** that supplies candidates to `R-CLONE-BIDIRECTIONAL-BACKPORT` (which governs the *obligation* once a candidate is a real feature).
+
+### The candidate test + classification (each item in `## Backport candidates`)
+
+A domain-landscape feature — from **any** surface (web / iOS / Android / physical) — is a **live backport candidate** only if it is ALL of: **(1) absent from OUR app(s)** (checked against the deep-read `## iOS feature inventory` — and, for a web-only idea, against the web clone — don't claim absence without checking), **(2) learning-relevant** (pedagogy-load-bearing, per `R-WEB-CLONE-PARITY` § in-scope), AND **(3) on-device / COPPA-feasible** (no server, accounts, or off-device data). Classify every surfaced idea as exactly one of:
+
+| Class | Meaning | Action |
+|---|---|---|
+| **FILE** ✅ candidate | passes all 3 tests | file `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md` + add a 🟡 iOS-backport row to the parity ledger — **whether or not it's built on the web yet** (a strong candidate is worth surfacing to the iOS session even before the web ships it). If the web clone ships it, the 🟡 row + handoff are already mandatory per `R-CLONE-BIDIRECTIONAL-BACKPORT`. |
+| 💡 **iOS-ENHANCE** | learning-relevant + iOS-appropriate but **web-INFEASIBLE** (needs an iOS-only capability — AR/RealityKit, CoreMotion, Vision, camera/mic, haptics-as-pedagogy, Live Activities — to deliver the LEARNING, not just polish), AND absent from the iOS app | **advisory, NON-obligation** — add it to the per-app **`<app>-app/Docs/HANDOFF_FROM_HUB_<APP>_IOS_ENHANCEMENT_IDEAS.md`** (a single consolidated advisory doc per app; feature + why-it-needs-iOS + proposed iOS surface). **NO 🟡 parity-ledger row** — the feature exists on NEITHER surface, so it is NOT a symmetric-backport gap; it is an *opportunity*, and the iOS session triages/decides (it may decline). This is the iOS-direction mirror of build-by-default and is deliberately kept OUT of `R-CLONE-BIDIRECTIONAL-BACKPORT` (which governs parity gaps) so "handoff filed = obligation started" stays reserved for real obligations. |
+| ⛔ **waived** | fails (2) or (3), OR the iOS app already has it, OR it's a platform-only DECORATION (haptic buzz / particle polish / a nav chrome affordance — carries no distinct LEARNING) | list it with a one-line rationale — the canonical waiver reasons are **already-in-iOS**, **on-device/COPPA-infeasible** (accounts / collaboration / cloud sync / server AI-gen — e.g. Kialo's collaborative trees, Witscript's cloud generator), or **platform-only decoration**. A waived candidate is COMPLIANT; the point is it's *documented*, not silently dropped. |
+| 🔄 **adaptation** | a web-native rendering of something iOS already does | not a backport (e.g. the claimcraft committed-fallacy hard-gate; jestforge structure-only scoring). |
+
+**⛔ platform-only vs 💡 iOS-ENHANCE — the distinction (codified 2026-07-11, founder-direct):** a platform-only *affordance* that is mere **decoration** (haptics-as-feedback, SpriteKit particle polish, a nav-chrome flourish) stays **⛔ waived**. But a platform-only capability that would deliver a **genuine novel LEARNING experience the iOS app lacks** (e.g. an AR angle/area manipulative, a CoreMotion tilt-balance for equations, a Vision hand-drawing/geometry-construction check, a haptic rhythm/meter trainer) is a **💡 iOS-ENHANCE** — surfaced to the iOS session as an advisory opportunity, never silently dropped as "platform-only." The web can't build it (that's why it's not FILE), but the iOS app can, and the cross-platform research already found it — so it flows one-way to iOS. Honest-yield applies here too: for mature apps the iOS-ENHANCE yield is usually small; a zero-yield app files no advisory doc.
+
+**Honest-yield clause:** for *mature* source apps (the high-ranked clone candidates are mature by construction), the FILE yield is often small and the list may be mostly ⛔ — **that is an acceptable outcome, but the list must still be produced and every item classified.** A short, mostly-waived, well-reasoned list is compliant; an absent list is a defect. Never pad the list with guessed or weak candidates to inflate the yield (the runbook's "evidence-based, not guessed" bar).
+
+### Where the artifacts live
+
+- **`RESEARCH.md` → `## Backport candidates`** — the classified list (this rule's required artifact), directly under the sourced `## Domain landscape` (legacy clones' `## Web landscape` heading is accepted; new clones use `## Domain landscape`). Note each candidate's SOURCE platform (web / iOS / Android / physical) so the cross-platform breadth is inspectable.
+- **`FEATURE_PLAN.md`** — the FILE candidates become tracked items with an `iOS-backport:` line each; the ⛔/🔄 ones are noted.
+- **`PARITY_WEB_VS_IOS.md`** — each FILE candidate that the web clone SHIPS is a 🟡 iOS-backport row (per `R-CLONE-BIDIRECTIONAL-BACKPORT`); a FILE candidate not-yet-built on the web is still surfaced via the handoff but need not be a ledger row until built.
+- **`<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md`** — the filed handoff for each FILE candidate (feature + web reference impl if built + proposed iOS surface). Filing the handoff is the START of the obligation, not its completion.
+- **`<app>-app/Docs/HANDOFF_FROM_HUB_<APP>_IOS_ENHANCEMENT_IDEAS.md`** — ONE consolidated **advisory** doc per app holding all its 💡 iOS-ENHANCE ideas (web-infeasible, iOS-appropriate novel learning). Explicitly labelled non-obligation; **no 🟡 ledger row**; the iOS session triages. Omit the doc for an app with zero qualifying ideas.
+
+### Build the FILE candidates on the web — the clone PIONEERS, then backports (founder-direct 2026-07-11)
+
+**The default for a genuine ✅ FILE candidate is to BUILD it into the web clone, not merely file the handoff.** Per founder-direct 2026-07-11 (*"implement all the backfilled features in the web clones too"*), the `/play` clone is not just a mirror of iOS — it is a place to **pioneer web-native learning features that then flow back to iOS**. So the full loop for a FILE candidate is: **mine → classify → file the iOS handoff → BUILD it on the web → open a 🟡 iOS-backport row in `PARITY_WEB_VS_IOS.md` (Axis 1) → update the two guides in the same change-set (R-WEB-CLONE-GUIDE-SYNC).** Once built on the web, the 🟡 row is MANDATORY (a web-shipped, iOS-absent, learning-relevant feature is exactly R-CLONE-BIDIRECTIONAL-BACKPORT's trigger); the row + filed handoff are the *compliant* open state (not a defect), and it closes only when the iOS session ships it back (or replies with a documented waiver, e.g. "already covered by <surface>").
+
+This UPGRADES the earlier "parity-first, web-only features open debt so defer them (Track B)" default: a genuine FILE candidate is now **build-by-default**, because building it is what earns the program its cross-surface leadership (the web validates the feature; iOS inherits a proven reference impl). Reference impl: `/play/claimcraft` shipped **learner-set per-link evidence strength** + **argument-map → essay export** (site PR #395), backported via `claimcraft-app/Docs/HANDOFF_FROM_HUB_ARGUMENT_{LINK_STRENGTH,MAP_ESSAY_EXPORT}_WEB_BACKPORT.md` (PR #52) — the first two web-pioneered→iOS backports of the program.
+
+Build-scope discipline still applies: build a FILE candidate only when it's genuinely learning-relevant + on-device-feasible (the candidate test); ⛔-waived items (accounts/collab/cloud/platform-only/already-in-iOS) are NOT built. A mostly-⛔ / zero-FILE clone builds nothing extra and ships as a strict port — that remains a valid, earned outcome.
+
+### Every Track-B FILE item MUST be built by the hub web-clone agent — "booking" needs a VALID reason (R-WEB-CLONE-TRACK-B-BUILD-DEFAULT; 2026-07-12)
+
+**Every Track-B (web-pioneered FILE) item in a clone's `FEATURE_PLAN.md` MUST be BUILT on the web by the hub web-clone agent, in the same wave that classifies it — UNLESS there is a specific, documented, VALID reason not to. "It was more work," "data-heavy," "overlaps another surface," or a bare "honest-yield deferral" is NOT a valid reason.** This CLOSES the de-facto escape hatch where a genuine ✅ FILE candidate got parked as a `BOOKED` Track-B line and never built. It is the hardening of the § "Build the FILE candidates on the web" default above: build-by-default was the *posture*; this is the *obligation*. Codified per founder-direct 2026-07-12 (*"all track-b items in web clone feature plans should be implemented by web clone hub agents unless there's a valid reason not to"* + *"audit all shipped web clones for these track-b items and build them too"*).
+
+#### Why it exists
+
+A Track-B item is, BY CONSTRUCTION, a candidate that already passed the 3-test (absent-from-iOS ∧ learning-relevant ∧ on-device/COPPA-feasible) — so it is buildable by definition. Parking a passed candidate as `BOOKED` for effort/yield reasons produced clones that *claimed* a rich backport posture in `RESEARCH.md` while shipping a thin surface, and left the web→iOS backport pipeline starved (a booked item files no handoff, opens no 🟡 row, validates nothing). The value of the program is the *built* pioneering feature; an unbuilt Track-B line delivers none of it.
+
+#### The valid-reason taxonomy (the ONLY grounds to not build a Track-B item)
+
+A Track-B item may remain unbuilt ONLY when one of these is recorded inline in `FEATURE_PLAN.md` (one line, specific):
+
+1. **COPPA / AI-evaluator-infeasible** — the feature genuinely needs a server, accounts, off-device data, or an AI evaluator to deliver its LEARNING (e.g. open free-write graded by a model). *If it's infeasible it was misclassified — reclassify it ⛔-waived, not BOOKED.*
+2. **Asset-gated** — it needs NEW asset generation the clone program doesn't have yet (e.g. per-region SVG map outlines, bespoke illustrations). Record the exact asset blocker + what would unblock it. *This is the one legitimate "not yet" — but the default is still to build the parts that don't need the asset.*
+3. **Platform-only** — needs an iOS-only capability (AR/Vision/CoreMotion/camera/mic/haptics-as-pedagogy). *Then it's ⛔ or 💡 iOS-ENHANCE, not Track-B.*
+4. **Genuinely-infeasible content-authoring scale** — building it correctly requires hand-authoring content at a scale that is itself a separate, sized wave (NOT "a bit more content"). Record the item count + why it's a distinct wave, and file it as a tracked follow-up, not a silent book.
+5. **Founder-direct** — the founder explicitly defers a specific item.
+
+Anything outside this list — including "overlaps the free-text Workshop," "the MC surface roughly covers it," "diminishing returns" — means either (a) it's really a 🔄 adaptation (already covered → reclassify, it was never a FILE) or (b) it must be BUILT. When in doubt, build it.
+
+#### The retroactive backfill (one-time + standing)
+
+The obligation is retroactive: **audit EVERY shipped clone in `REGISTRY_WEB_CLONES.txt` for Track-B items that are booked/not-yet-built, and BUILD them** (or reclassify to a valid-reason bucket above). This runs as part of / alongside the § Portfolio audit sweep below; record it in `Docs/AUDIT_WEB_CLONE_TRACK_B_BUILD_BACKFILL_<date>.md`. Going forward, a clone is not DoD-complete (§ R-WEB-CLONE-PARITY-DOD) while it carries an un-built Track-B item without a valid-reason line.
+
+#### When this rule applies
+
+- Authoring/extending any `/play/<app>` clone → every FILE candidate you classify into Track B, you BUILD in the same wave (or attach a valid-reason line).
+- Reviewing a clone PR → a `FEATURE_PLAN.md` with a `BOOKED`/deferred Track-B item lacking a valid-reason line is a defect (same weight as a missing parity axis).
+- Resuming the clone program → run the retroactive backfill across all shipped clones.
+
+#### Cross-references
+- § "Build the FILE candidates on the web" (the build-by-default posture this hardens) · § R-WEB-CLONE-BACKPORT-MINING (the parent mining rule + candidate test) · § R-WEB-CLONE-PARITY-DOD (the ship gate this feeds) · § R-CLONE-BIDIRECTIONAL-BACKPORT (the 🟡-row obligation each built item opens)
+- `Docs/AUDIT_WEB_CLONE_TRACK_B_BUILD_BACKFILL_<date>.md` — the retroactive backfill record
+
+### Portfolio audit sweep — backfill + verify EVERY shipped clone (the standing conformance check)
+
+The mining+build loop is retroactive to all existing clones, and a periodic sweep keeps them conformant. For **each** row in `REGISTRY_WEB_CLONES.txt`, verify: (1) `RESEARCH.md` has a classified `## Backport candidates` list; (2) it also appears in `FEATURE_PLAN.md` (Track B); (3) every ✅ FILE candidate has a filed `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md`; (4) every FILE candidate BUILT on the web has a 🟡 row in `PARITY_WEB_VS_IOS.md`; (5) "strict port / 0-FILE" is traceable to a produced-and-classified list. The audit-sweep quick check:
+
+```bash
+for app in $(grep -vE '^\s*#|^\s*$' Docs/REGISTRY_WEB_CLONES.txt | grep shipped | cut -d'|' -f1 | tr -d ' '); do
+  grep -qi 'backport' "Docs/web/$app/RESEARCH.md" && echo "$app: list ✓" || echo "$app: MISSING candidate list"
+  ls ../$app-app/Docs/HANDOFF_FROM_HUB_*WEB_BACKPORT*.md 2>/dev/null | wc -l | xargs echo "  $app filed handoffs:"
+done
+```
+
+Record the sweep in `Docs/AUDIT_WEB_CLONE_BACKPORT_MINING_<date>.md`. **Reference sweep (2026-07-11, V99):** all 8 shipped clones conformant — fractionforge (3 handoffs, built) + readquest (1, built) + claimcraft (2, built PR #395) = 6 web-pioneered backports filed; grammarforge/proofquest/chanceforge/jestforge/witquest = mined + classified + 0 genuine FILE (all ⛔ already-in-iOS / accounts-cloud-COPPA / platform-only or 🔄 web-native), earned strict-port.
+
+**Cross-platform backfill sweep (2026-07-11, V109):** after the source-scope broadening above, all shipped clones were re-mined against the iOS + Android + physical landscape (not just web) and each `## Backport candidates` list was refreshed with source-tagged candidates. Recorded in `Docs/AUDIT_WEB_CLONE_BACKPORT_MINING_CROSSPLATFORM_2026-07-11.md`; any genuine FILE candidate surfaced by the widened aperture got a filed `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md` + a 🟡 ledger row.
+
+**💡 iOS-ENHANCE backfill sweep (2026-07-11, V118):** after the 💡 iOS-ENHANCE class was codified, every shipped clone's `## Backport candidates` list was re-triaged to pull the web-infeasible-but-iOS-appropriate **novel LEARNING** ideas out of the ⛔ bucket (distinct from ⛔ platform-only *decoration*) and file them as advisory `<app>-app/Docs/HANDOFF_FROM_HUB_<APP>_IOS_ENHANCEMENT_IDEAS.md` docs (non-obligation, no 🟡 row). Recorded in `Docs/AUDIT_WEB_CLONE_IOS_ENHANCE_BACKFILL_2026-07-11.md`. When authoring a NEW clone's `## Backport candidates`, classify iOS-only novel-learning ideas as 💡 iOS-ENHANCE from the start (don't dump them in ⛔).
+
+### When this rule applies
+
+- Authoring or extending any `/play/<app>` clone → produce/refresh the `## Backport candidates` list as part of Phase 2 (RESEARCH), before declaring the parity posture; **build the FILE candidates** (default) + open their 🟡 rows.
+- The `R-WEB-CLONE-PARITY-DOD` ship gate → a clone is NOT done until its `RESEARCH.md` carries a classified `## Backport candidates` list (in addition to the two parity-ledger axes). "Strict port" in the ledger must be traceable to a produced-and-classified list.
+- Reviewing a clone PR → if `RESEARCH.md` has a `## Domain landscape` (or legacy `## Web landscape`) but no `## Backport candidates`, that's a defect (same weight as a missing parity axis); if the landscape surveys only browser tools and no iOS/Android/physical exemplars, that's an incomplete mining (the source scope is cross-platform).
+- Periodically (or when resuming the clone program) → run the § Portfolio audit sweep across all shipped clones.
+
+### Cross-references
+- `Docs/WEB_CLONE_PICKUP_RUNBOOK.md` § 3.2b (the deep-web-research step this rule makes load-bearing) + § 8 (the DoD gate it joins)
+- § R-CLONE-BIDIRECTIONAL-BACKPORT (the obligation this rule's FILE candidates feed) · § R-WEB-CLONE-PARITY / § R-WEB-CLONE-PARITY-DOD (the parity axes it sits beside)
+- `Docs/web/{claimcraft,jestforge,witquest}/RESEARCH.md` — the first clones whose `## Backport candidates` lists were added retroactively under this rule (V99)
+
+## Missing question kits are AUTHORED by in-session Opus to match the portfolio — never skipped, never Gemini-gen (R-WEB-CLONE-KITS-OPUS-AUTHOR; 2026-07-14)
+
+**When a clone's source app has NO question-kit banks (a composition-only app, a docs-only app with unwritten kits, or any app lacking the portfolio-standard 16×25 MC set), the kits are AUTHORED FRESH by the in-session Opus model (the running Claude Code session) to match the other portfolio apps — a full 16 kits × 25 = 400 MC items — NOT skipped, NOT waived as "bespoke-only," and NOT generated by Gemini.** Codified per founder-direct 2026-07-14 (*"you build the question kits and ship them too"* + *"ship the question kits to the ios app repo too"* + *"codify the rule that if question kits are missing, use the in-session Opus to author them to match other portfolio apps"*). This **supersedes** the earlier "a composition-only app is an all-bespoke clone with no MC Concepts surface (⛔-waived, HaikuQuest precedent)" posture — the portfolio standard is that **every** clone has a Concepts MC surface, and a missing bank is an *authoring task*, not a waiver.
+
+### Why in-session Opus (not Gemini, not skip)
+- **Match the portfolio.** Every kit-bearing clone ships 16×25=400 CCSS-tagged MC items on the portfolio kit schema (`kitId/number/name/topic/gradeBand/track/questions[{id,prompt,correctAnswer,distractors[3],bloomLevel,subtopic,standard,hints[2],explanation}]`). A missing bank is filled to that same standard — same count, same schema, same scaffolded gr4→gr8 arc, same anti-shame register.
+- **In-session Opus, $0 marginal.** Kit content is authored by the running session (the Claude Code subscription absorbs it), exactly like `R-COVERAGE-OPUS-AUTHORING` (chapters) + `R-AUTHOR-MODEL-CHOICE` (in-session Opus > API for quality-critical authoring). **Do NOT** reach for Gemini or any paid gen — MC items are hand-authorable and quality/correctness is paramount (a wrong answer is the exact defect the semantic + structural kit gates exist to catch).
+- **Deterministic porter.** The authored content lives in a `scripts/port_<app>_kits_to_web.py` porter (the same script name the PORT clones use), holding the items in Python data + emitting the JSON with deterministic `uuid5` ids. Re-runnable/idempotent — the "authored, not ported" kits stay regenerable + reviewable in one place.
+
+### Ship to BOTH surfaces (web + iOS)
+Because the authored curriculum did not exist on either surface, it is a **web-pioneered → iOS backport** (`R-CLONE-BIDIRECTIONAL-BACKPORT`). The porter emits to BOTH:
+- **Web:** `public/play/<app>/kits/<kitId>.json` + `src/data/play/<app>/kits-index.ts` → the Concepts surface (`kits.ts` loader + `session.ts` `runKit` → `_shared/mcRound` + a `play.astro` `?kit=` launcher + the landing kit list).
+- **iOS:** `<app>-app/Resources/Questions/<app>/<kitId>.json` (the portfolio iOS kit schema — top `id/name/description/gradeBand/topic/questions/standardsFramework:"CCSS"`, per-q adds `gradeBand/topic/version`) — an **allowed content-pipeline write** (`portfolio.md` § allowed `Resources/<assets>/` writes) — PLUS a `<app>-app/Docs/HANDOFF_FROM_HUB_QUESTION_KITS.md` for the app's own session to wire the Concepts surface (hub never writes the Swift). A 🟡 iOS-backport ledger row tracks it until the app ships the surface.
+
+### Gates (unchanged — the authored bank rides the existing kit gates)
+The shared `_shared/kits.test.ts` STRUCTURAL gate globs `public/play/<app>/kits/*.json` (non-empty prompt+correct, correct ∈ options once, options unique, valid bloom, unique ids) — it validates the authored bank automatically. Add a clone-specific Vitest asserting **16 kits × 25 = 400** via the `kits-index`. Screenshot-DoD covers the Concepts landing list + a live round. CCSS `standard` tags + per-item `explanation` + `hints[2]` are required (portfolio parity).
+
+### When this rule applies
+- **Authoring any clone whose source app lacks kit banks** (composition-only like lyricforge/haikuquest; docs-only with unwritten kits) → author the 16×25 with in-session Opus, ship to web + iOS, file the iOS handoff. **A clone shipped with NO Concepts surface because "the app had no kits" is now a defect**, not an earned waiver (reference: lyricforge shipped bespoke-only first, then had its 400-item Concepts surface authored + backfilled the same day per founder-direct).
+- **Reviewing a clone PR** → a composition/docs-only clone with no Concepts MC surface + no authored kit bank is a gap unless founder-waived.
+- Retroactive: HaikuQuest (the sibling that set the now-superseded "no MC kits" precedent) is a candidate for the same kit-authoring backfill.
+
+### Cross-references
+- `scripts/port_lyricforge_kits_to_web.py` — reference impl (authored 16×25, emits web + iOS) · `Docs/web/lyricforge/{RESEARCH,FEATURE_PLAN,PARITY_WEB_VS_IOS}.md`
+- `.claude/rules/distributed-narrative.md` § R-COVERAGE-OPUS-AUTHORING + § R-AUTHOR-MODEL-CHOICE (the in-session-Opus-authoring precedents this mirrors) · § R-WEB-CLONE-TEST (`_shared/kits.test.ts` structural gate) · § R-CLONE-BIDIRECTIONAL-BACKPORT (the web→iOS backport obligation) · `portfolio.md` § "Asset generation ownership" (question kits are an allowed `Resources/` content-pipeline write)
+
+## Younger-cluster (ages 5-8) apps are EXEMPT from the 16×25 MC-kit obligation — activity-based formats, not multiple-choice banks (R-YOUNGER-CLUSTER-NO-MC-KITS; 2026-07-14)
+
+**The portfolio-standard 16 kits × 25 = 400 CCSS-tagged, Bloom-leveled, TEXT multiple-choice bank MUST NOT be authored for younger-cluster (ages 5-8 / K-2) apps. It is the documented, research-backed ⛔ EXCEPTION to `R-WEB-CLONE-KITS-OPUS-AUTHOR`** — a younger-cluster app with no `kit_*.json` is NOT a coverage gap, and authoring one would ship a developmentally-inappropriate, low-validity surface. Younger-cluster apps use **audio-first, low-text, manipulative/tap/drag** activity formats instead. Codified per founder-direct 2026-07-14 (*"should the younger cluster app repos have the question kits? … codify the research-backed evidence"*), full evidence in `Docs/RESEARCH_YOUNGER_CLUSTER_QUESTION_KITS_2026-07-14.md`.
+
+### Why (four converging lines)
+1. **Internal portfolio norm (decisive):** 0 of 6 ages-5-8 apps (bugscamp · countingpals · huggyhabits · melodymice · taletrail · tinyletters) have EVER carried an MC kit — a deliberate, universal design; each app's `CLAUDE.md` states it is *"NOT the portfolio 9-14 core."* The tween core carries kits ~universally (133/158 repos). The split is intentional.
+2. **NAEYC / Developmentally Appropriate Practice:** for ages 5-8, DAP favors **observation-based, authentic, culturally-responsive** assessment over standardized multiple-choice; test-item cultural bias is a first-order DAP concern for this band.
+3. **Leading early-childhood apps** (Khan Academy Kids, Todo Math — both built for pre-readers with Stanford/Harvard/XPRIZE credentials) use **audio-first instruction + visual manipulatives + tap/drag**, never a text MC bank — because the users cannot yet read independently.
+4. **Reading-load / decoding confound + floor effects:** a 25-item TEXT MC bank measures decoding, not the target skill, for pre/emergent readers ("learning to read," not "reading to learn") — a low-validity instrument with documented false-positive / floor-effect threats.
+
+### The rule
+- **Do NOT author 16×25 MC kits for any ages-5-8 app** (current: the 6 above; and every future younger-cluster SPAWN). A missing MC bank in this band is ⛔-by-design, recorded as such in the kit-coverage audit — never a 🟡 gap.
+- **Their web clones** port the **activity/manipulative** surfaces (subitizing, tap-count, drag-add, letter-trace, sound-match, sort/observe), NOT a Concepts-MC surface. Reference: the countingpals clone (procedural `earlyMath` engine + `_shared/customRound`, zero MC). A younger-cluster clone shipped WITHOUT a Concepts-MC surface is compliant, not a defect (the inverse of R-WEB-CLONE-KITS-OPUS-AUTHOR's tween default).
+- **The boundary is the AGE BAND, not the cluster.** A TWEEN (9-14) SEL / composition / board-game app IS obligated (SEL apps mindforge/safetyforge/wellnessforge/saffronlab all carry 32-36 kits; the LyricForge composition precedent authored 400). Only the ages-5-8 band is exempt. If an app straddles bands, classify by its CORE target audience (per `clone.meta.ts` `gradeMin` / the app's `CLAUDE.md`).
+
+### When it applies
+- Authoring/reviewing a younger-cluster app's kits or web clone → do NOT author MC kits; do NOT flag their absence as a gap; port activity formats.
+- Any kit-coverage audit (like `Docs/AUDIT_QUESTION_KIT_COVERAGE_2026-07-14.md`) → younger-cluster apps go in the ⛔ bucket with this rule as the rationale, alongside the ⛔ non-standard-content-model apps (aggregator / problem-library / estimation-prompt apps).
+
+### Cross-references
+- `Docs/RESEARCH_YOUNGER_CLUSTER_QUESTION_KITS_2026-07-14.md` (the evidence base) · `Docs/AUDIT_QUESTION_KIT_COVERAGE_2026-07-14.md` (the V222 audit that applies it)
+- § R-WEB-CLONE-KITS-OPUS-AUTHOR (the tween-core rule this is the exception to) · § R-WEB-CLONE-GRADE-LEVEL (the grade-band declaration that identifies younger-cluster clones) · § R-WEB-CLONE-DEVICE-FEATURE-SKIP (sibling "port the appropriate subset" discipline) · `.claude/rules/distributed-narrative.md` § R-YOUNGER-CLUSTER-CAST-SIZE + `Docs/RESEARCH_YOUNGER_CLUSTER_CAST_SIZE_2026-07-14.md` (the sibling younger-cluster codification — small hero-anchored cast, V224)
+
+## No feature may ship dark — every clone route + novel feature must be wired + visible (R-WEB-CLONE-NO-DARK-SURFACE; 2026-07-11)
+
+**A `/play/<app>` clone is NOT done until EVERY route AND every novel/web-pioneered feature it ships is REACHABLE + VISIBLE to a user — linked from the landing (or from another linked, reachable surface) — and the clone has its `src/data/play/clones.ts` registry row. A surface that exists in the code but no user can navigate to is *shipped-but-dark* and is a defect.** This is the web-clone analogue of the portfolio **Asset Consumer Audit** (`.claude/rules/portfolio.md` § "registered ≠ wired") and the DN **authored ≠ integrated** discipline (`R-CAST-EXPANSION-INTEGRATION`): building the feature is the START of the obligation, wiring it into the user's navigable path is the completion. Codified per user-direct 2026-07-11 (*"how do we make sure all the features including novel features are wired and visible to the users and not remaining dark? do full audit and backfill wiring if needed. codify these too"*).
+
+### Why it matters most for NOVEL features
+
+The web-pioneered FILE features (`R-WEB-CLONE-BACKPORT-MINING`) are the whole point of the program — they're what earns the clone its cross-surface leadership + iOS backport value. A pioneered feature that ships behind a route no page links to is *invisible*: the user never plays it, the backport is never validated, and the parity ledger's "web-shipped" claim is false. So the anti-dark-surface gate is strictest exactly where the value is highest. **A novel feature must be surfaced as a headline card on the landing** (not buried) — reachable AND prominent.
+
+### The three wiring checks (the gate)
+
+`scripts/audit_web_clone_surface_wiring.py` makes dark surfaces build-time-visible. For each clone it verifies:
+
+1. **Route reachability** — every `src/pages/play/<app>/*.astro` route (except the `index` landing) is linked (`href="/play/<app>/<route>"`) from at least one of the clone's own pages. A route no page links to is DARK.
+2. **Registry row** — the clone has a row in `src/data/play/clones.ts` (that's what surfaces it on the `/play` index + the homepage; without it the whole clone is dark from the site's entry points). **Build-gated** by `check-play-clone-registry.mjs` (prebuild) — see § "The clones.ts row is build-gated" below.
+3. **Bespoke-feature surfacing** — every app-local `run*`-exporting lib module (a distinct mechanic, not `progress`/`kits`/`session`/`devices` plumbing) is imported by some route under the clone. A mechanic with no page that runs it is dark.
+
+```bash
+python3 scripts/audit_web_clone_surface_wiring.py --site-root <site-or-worktree> [--app <slug>] [--ci-mode]
+```
+
+Run it in the build worktree before shipping every clone (`--app <slug>`), and portfolio-wide as a periodic backstop (no `--app`). It complements — does not replace — the postbuild `check-site-internal-links.py --unit play` (that catches BROKEN links; this catches ABSENT links — a route with no inbound reference at all, which a link checker can't see). **Reference sweep (2026-07-11):** all 12 shipped clones 🟢 wired (zero dark routes / features; every clone in the registry) — recorded in `Docs/AUDIT_WEB_CLONE_SURFACE_WIRING_2026-07-11.md`.
+
+### This joins the two-axis DoD gate
+
+`R-WEB-CLONE-PARITY-DOD` gates on the two parity ledgers; this rule adds a third ship condition: **zero dark surfaces**. A clone with a filled parity ledger but a bespoke mechanic no page links to is still not done. The three together: (a) feature parity, (b) UI/UX parity, (c) every surface wired + visible.
+
+### The clones.ts row is build-gated + "merged ≠ live" (harmonyforge incident, 2026-07-12)
+
+The `/play` index (`src/pages/play/index.astro`) renders **only** the clones in `PLAY_CLONES` (`src/data/play/clones.ts`) — so a clone whose route dir exists but whose `clones.ts` row is absent is **silently dark from the site's main entry point**. Two failure modes, both now gated:
+
+1. **Row-drop / merge-race (within-repo)** — `clones.ts` is a shared, union-merged append hotspot (§ R-WEB-CLONE-MERGE-HYGIENE); a botched conflict resolution can drop a clone's row while its route dir survives, shipping a dark clone with **zero build signal**. **Gated:** `spark-anvil-site/scripts/check-play-clone-registry.mjs` runs in `prebuild` + `prebuild:play` and **fails the build**, naming the app, if any `/play/<app>/index.astro` lacks a `clone.meta.ts` (or the row's `.pc-theme-<app>` accent block is missing from **`play.css`** → renders un-themed on the index, which imports only `play.css`; per Fix 4 the gate checks `play.css` ONLY, not per-app CSS). Bypass: `SKIP_PLAY_CLONE_REGISTRY_CHECK=1` (never to ship a real dark clone).
+
+2. **merged ≠ live / merged ≠ deployed (the actual harmonyforge root cause)** — harmonyforge's row + route + `.pc-theme-harmonyforge` block ALL landed together in one commit (site PR #448) and never diverged, so the on-main code was always complete. It was still "silently dark on /play" because it had been marked **SHIPPED in the hub registry/work-queue (V137) before the change was LIVE on the deployed /play index** — the play deploy-unit hadn't rebuilt yet (build-watch-paths / the Cloudflare build-queue lag, § R-SITE-BUILD-SPLIT invariant 6 + `RUNBOOK_CLOUDFLARE_BUILD_QUEUE_FIX`). **Discipline:** do NOT flip a clone to `shipped` in `REGISTRY_WEB_CLONES.txt` (or claim it done) until you have **verified it renders on the DEPLOYED `/play` page**, not merely that the PR merged — the same "verify PR merged ≠ verify live" gap the workflow's SHIPPED rule warns about, one layer out (merge → deploy). A clone is *live-dark* until the play unit rebuilds; a merged PR is necessary but not sufficient. **How to live-verify (the `-L`/trailing-slash discipline):** the site canonicalizes to trailing-slash URLs, so a bare `/play/<app>` returns a **steady-state `307` to `/play/<app>/` even when fully deployed** — a no-`-L` curl on the non-slash route ALWAYS shows `307`, and reading that as "not deployed yet" is a false negative (cost a wasted deploy-wait, 2026-07-13 scienceforge #40). Verify with a browser UA (the CDN 403s bare UAs) **AND follow redirects**: `curl -sL -w '%{http_code}' -A "<browser-UA>" https://spark-and-anvil.com/play/<app>/designer` must be **200**, and `curl -sL … /play/ | grep -c '<app>'` must be > 0. The real not-yet-deployed signals are a *followed*-redirect **404** or the `/play/` index not listing the clone; the fastest positive tell is a kit-JSON (`/play/<app>/kits/<kitId>.json`) returning **200**. Full recipe: `Docs/WEB_CLONE_PICKUP_RUNBOOK.md` § 7a.
+
+### When this rule applies
+
+- Authoring or extending any `/play/<app>` clone → run the audit for that app before shipping; every route linked from the landing, every novel feature a headline card, the clones.ts row added.
+- Reviewing a clone PR → a new `.astro` route or `run*` lib with no inbound link is a defect (same weight as a missing parity axis).
+- Periodically / when resuming the clone program → run the portfolio-wide sweep; every 🔴 is a backfill-wiring work item, recorded in `Docs/AUDIT_WEB_CLONE_SURFACE_WIRING_<date>.md`.
+
+### Cross-references
+- `scripts/audit_web_clone_surface_wiring.py` — the gate · `Docs/AUDIT_WEB_CLONE_SURFACE_WIRING_2026-07-11.md` — the reference sweep
+- `.claude/rules/portfolio.md` § "Asset Consumer Audit" (registered ≠ wired — the parent pattern) · `.claude/rules/distributed-narrative.md` § R-CAST-EXPANSION-INTEGRATION (authored ≠ integrated — sibling)
+- § R-WEB-CLONE-PARITY-DOD (the ship gate this joins) · § R-WEB-CLONE-BACKPORT-MINING (the novel features this rule ensures are visible)
+- `spark-anvil-site/scripts/check-play-clone-registry.mjs` — the prebuild gate for the clones.ts row + theme (the harmonyforge dark backstop) · `spark-anvil-site/scripts/check-site-internal-links.py` — the complementary broken-link checker (this rule catches ABSENT links, that one catches BROKEN links)
+- `Docs/AUDIT_WEB_CLONE_DARK_SURFACE_HARMONYFORGE_2026-07-12.md` — the harmonyforge incident audit + portfolio sweep (0 dark) · `.claude/rules/workflow.md` § "Verify PR Merged" (the merged≠live discipline this extends to merged≠deployed)
+
+## Every clone must tightly integrate the DN narrative assets — mascot, cast portraits, storybooks, audio dramas, DIR/FEDC reflection (R-WEB-CLONE-NARRATIVE-INTEGRATION; 2026-07-11)
+
+**Every `/play/<app>` clone landing MUST surface the portfolio's Distributed-Narrative assets — the app MASCOT, the CAST PORTRAITS, a link from each cast member to their illustrated T1/T2 multi-beat STORYBOOK + AUDIO DRAMA, and a between-practice DIR/FEDC affect-recognition REFLECTION — not a bare cast name-list.** A clone that ports the learning kits but leaves the mascot, portraits, storybooks, and audio dramas dark is only half-built: the DN thesis is *"the cast IS the curriculum"* (Naul+Liu empathetic-characters + distributed-narrative axes), so the characters + their stories are load-bearing motivation, not decoration. Codified per user-direct 2026-07-11 (*"why the mascot illustrations, cast characters portraits, t1/t2 multi-beat storybooks with illustrations, audio dramas are not tightly integrated with the web clones? … and dir/fedc reflections too … fix for all shipped web clones and codify as a rule"*).
+
+### Why they were dark (the gap this closes)
+
+The clones were scoped as self-contained *learning-parity* surfaces: port kits → `_shared/` MC engine + build the bespoke mechanic + theme. The cast was surfaced only as a text name-list (`cast.map(m => m.name).join(' · ')`). Meanwhile the mascots (`/apps/<app>/mascot.webp`), cast portraits (`/cast/<app>/<slug>.webp`), T1/T2 illustrated storybooks (`/cast/<app>/<slug>[/advanced]`), and audio dramas (hosted on those `/cast` pages) all already exist — the clones just never referenced them. It was a scoping gap, not a technical blocker.
+
+### The two required pieces
+
+1. **`<PlayNarrative app="<slug>" />`** on the landing (`src/components/play/PlayNarrative.astro`, the reference impl) — renders the app **mascot** + a rail of **cast portraits**, each linking to its **`/cast/<app>/<slug>`** page (which hosts the T1/T2 storybook + audio drama — three asset types integrated by linking to the page that already serves them). Guarded by `hasChapter(app, name)` (R-CAST-ROUTE-COVERAGE) so only chaptered members are linked; renders nothing for a chapterless cast. Replaces the bare name-list.
+2. **DIR/FEDC reflection on the results screen** — `_shared/reflect.ts` `reflectionCard()`, rendered by both `_shared/mcRound.ts` + `_shared/customRound.ts` results by default (opt-out `reflection: false`). A gentle, on-device, non-clinical affect-recognition prompt — companion reflection OUTSIDE the loop (Naul+Liu P4), operationalizing R-DIR-FEDC-CHAPTER at the clone surface.
+
+### Placement discipline (inherits R-NARRATIVE-BETWEEN-NOT-DURING)
+
+The narrative sits at **session boundaries** — the mascot + cast rail on the **landing**, the reflection on the **results** screen — NEVER overlaid on the active practice loop. A cast portrait mid-question would be a seductive detail; on the landing/results it's between-practice motivation. This is the same rule the DN methodology enforces for cameos.
+
+### Cross-unit routing (why it just works)
+
+Mascots (`/apps/*`) are served by the **play** unit (kept in its trimmed `public/`). Cast portraits + storybooks + audio (`/cast/*`) are served by the **core** unit via the host-agnostic path dispatcher — the existing cross-unit link mechanism (the play-unit `check-site-internal-links.py --unit play` *excuses* `/cast` + `/apps` cross-unit refs). So `<img src="/cast/…webp">` + `<a href="/cast/…">` on a play page resolve at runtime with zero extra config.
+
+### Enforcement (joins the DoD gate)
+
+`scripts/audit_web_clone_surface_wiring.py` checks each landing renders `<PlayNarrative>` (a clone whose landing lacks it is flagged **NO NARRATIVE INTEGRATION** — same weight as a dark route). This joins R-WEB-CLONE-NO-DARK-SURFACE + the two parity axes as a ship condition. **Reference backfill (2026-07-11):** all 12 shipped clones integrated (mascot + portraits + storybook/audio links + auto DIR/FEDC reflection); recorded in `Docs/AUDIT_WEB_CLONE_SURFACE_WIRING_2026-07-11.md`.
+
+### When this rule applies
+
+- Authoring any new `/play/<app>` clone → add `<PlayNarrative app>` to the landing from day one; the DIR/FEDC reflection is automatic via `_shared`.
+- Reviewing a clone PR → a landing with a bare cast name-list (no `<PlayNarrative>`) is a defect.
+- A clone whose app later gains cast portraits / chapters / audio → the component picks them up automatically (it reads `apps.generated.ts` + `hasChapter`), so no per-clone edit is needed when the DN assets land.
+
+### Cross-references
+
+- `src/components/play/PlayNarrative.astro` (reference impl) · `src/lib/play/_shared/reflect.ts` (DIR/FEDC reflection) · `scripts/audit_web_clone_surface_wiring.py` (the enforcement)
+- § R-WEB-CLONE-NO-DARK-SURFACE (sibling — this rule ensures the *narrative* surface isn't dark) · § R-CAST-PORTRAIT-SLUG / § R-CAST-ROUTE-COVERAGE (the portrait/route guards it relies on)
+- `.claude/rules/distributed-narrative.md` § R-NARRATIVE-BETWEEN-NOT-DURING (placement) · § R-DIR-FEDC-CHAPTER (the reflection discipline) · § DN methodology "the cast IS the curriculum"
+- `Docs/ADR-032_SITE_MULTI_PROJECT_SPLIT.md` (the cross-unit dispatcher that makes `/cast` + `/apps` resolve from a play page)
 
 ## Web-clone user + developer guides must track the code (R-WEB-CLONE-GUIDE-SYNC; 2026-07-08)
 
@@ -118,8 +763,8 @@ The `R-CAST-EXPANSION-INTEGRATION` "authored ≠ integrated" discipline (`.claud
 
 | Guide | Path | Audience | Register |
 |---|---|---|---|
-| **User guide** | `spark-anvil-hub/Docs/GUIDE_<APP>_WEB_USER.md` | Parents / educators / kids (ages 9-14 readable) | Warm, non-jargon (per § R-SITE-CHROME register discipline — no engineering terms, file paths, ticket numbers) |
-| **Developer guide** | `spark-anvil-hub/Docs/GUIDE_<APP>_WEB_DEVELOPER.md` | The next maintainer session | Architecture + data flow + file map + load-bearing rules + extension recipes + gotchas + test/verify plan |
+| **User guide** | `spark-anvil-hub/Docs/web/<app>/GUIDE_USER.md` (ADR-033) | Parents / educators / kids (ages 9-14 readable) | Warm, non-jargon (per § R-SITE-CHROME register discipline — no engineering terms, file paths, ticket numbers) |
+| **Developer guide** | `spark-anvil-hub/Docs/web/<app>/GUIDE_DEVELOPER.md` (ADR-033) | The next maintainer session | Architecture + data flow + file map + load-bearing rules + extension recipes + gotchas + test/verify plan |
 
 ### The sync obligation (what "track the code" means)
 
@@ -138,7 +783,7 @@ Trivial changes (a copy typo, a CSS tweak that doesn't change behavior) don't re
 
 ### Cross-references
 
-- `Docs/GUIDE_FRACTIONFORGE_WEB_USER.md` + `Docs/GUIDE_FRACTIONFORGE_WEB_DEVELOPER.md` — the first/reference web-clone guides
+- `Docs/web/fractionforge/GUIDE_USER.md` + `Docs/web/fractionforge/GUIDE_DEVELOPER.md` — the first/reference web-clone guides
 - `Docs/GUIDE_CAST_PAGE_USER.md` + `Docs/GUIDE_CAST_PAGE_DEVELOPER.md` — the two-guide precedent this rule generalizes
 - § R-WEB-CLONE-PARITY (above) — sibling web-clone completeness rule
 - § R-SITE-CHROME (in `.claude/rules/distributed-narrative.md`) — the register discipline the USER guide follows
@@ -288,6 +933,222 @@ When the normalizer's quoting rules change, **update BOTH copies in the same cha
 
 **Companion sync rule for hub-side workflow**: when authoring a new chapter or rewriting an existing one, do NOT pre-quote the source MD's YAML — leave the unquoted convention. The prebuild normalizer is responsible for quoting the sync-target copy. This preserves authoring ergonomics on the hub side while keeping the site build resilient.
 
+### R-PREBUILD-PLAY-NORMALIZE — the trimmed play build's prebuild MUST normalize too (2026-07-10)
+
+**Every build variant that runs `astro build` — including the route-trimmed `build:play` (ADR-032 Phase 2) — MUST run `normalize-chapter-frontmatter.py` (+ `check-chapter-frontmatter-duplicates.py`) in its prebuild.** `astro build` parses the **ENTIRE `chapters` content collection** at build time **regardless of which routes it generates**, so even a build that emits only the ~8 `/play/**` routes still parses all ~1,776 chapters and trips js-yaml on any unquoted-authoring-convention chapter (the exact `incomplete explicit mapping pair` failure above).
+
+**Reference incident (2026-07-10):** the V62 `prebuild:play` deliberately *dropped* the normalizer + chapter gates on the premise that `build:play` should "never write `src/content/chapters/` → safe alongside a chapter-content session." **That premise is unachievable** — the content collection is always parsed, so the normalizer must run. A parallel content session pushed an unquoted `role:` field (`aiforge/edge-feed-advanced.md`) and the `spark-anvil-play` Cloudflare build failed while core stayed green (core's `prebuild` normalizes). Fixed by re-adding the two parse-critical scripts to `prebuild:play` (spark-anvil-site PR #377). `prebuild:play` still legitimately drops the *quality* gates that don't affect parseability (methodology stripper, multibeat-snapshot + cast-portrait coverage checks, `lint-ios-caps.sh`) — the play unit renders no chapters, so their coverage is irrelevant to it.
+
+**The corrected safety model:** the normalizer *does* write `src/content/chapters/` during `build:play`, so the real concurrency guarantee is NOT "never writes chapters" — it is **"run `build:play` only in an isolated `git worktree` or on Cloudflare's fresh-clone build, never the shared clone."** That discipline was already mandatory anyway, because `build-play.mjs` mutates `src/pages/` (page relocate) + `public/` (Phase 2.5 public relocate) during the build. On a fresh clone / throwaway worktree the normalizer's chapter writes are ephemeral and harmless; committing the regenerated chapters/manifests is forbidden (pathspec-scope every commit).
+
+**Rule:** never strip `normalize-chapter-frontmatter.py` (or the dup-key check) from ANY `astro build` prebuild chain — `prebuild`, `prebuild:play`, and any future per-unit prebuild — for the same reason § "CRITICAL: Normalizer auto-runs" gives for the core prebuild. Companion to that rule; both guard the same js-yaml regression class, now across every build unit.
+
+## The site is a multi-UNIT build split — one Astro repo, many deploy units behind a path-routing dispatcher (R-SITE-BUILD-SPLIT; 2026-07-10)
+
+**The `spark-anvil-site` repo is ONE Astro project that builds into MULTIPLE independent Cloudflare deploy units, fronted by a single host-agnostic dispatcher Worker that routes purely by URL path.** This is the load-bearing architecture behind the `/play` clones, the `.org`/`.com` dual-serve, and the (planned) per-cluster + cast/chapters carve-outs. It is codified here — not only in `ADR-032` — because every session loads the rules file, and a decision doc "decays in visibility" (workflow.md § Audit-to-canonical-propagation). ADR-032 is the full decision + rationale; THIS is the standing convention.
+
+### The model
+
+- **One repo, many units.** The same repo builds different route subsets via different `build:<unit>` scripts. Today: **core** (`npm run build` — everything except the trimmed subset) + **play** (`npm run build:play` — only `/play/**`, ADR-032 Phase 2 route-trim + Phase 2.5 public-trim). Planned: **cast/chapters** (the 1,776-route + media carve-out, `AUDIT_SITE_ROUTE_CENSUS_2026-07-10.md`) + **per-cluster play units** (ADR-033 §4, `spark-anvil-math`/`-ela`/…).
+- **The dispatcher routes by PATH and is HOST-AGNOSTIC.** `spark-anvil-dispatcher` (a Worker) maps `/play/*` → the play unit, everything else → core. Host-agnostic ⇒ `.com` and `.org` serve identically the moment a domain is attached (R-SITE-DOMAINS). It passes the FULL path through (so `/play/_astro/*` reaches the play unit).
+- **A `build:<unit>` script = page-relocate + public-trim + (if it emits `/play`) the asset-prefix fix.** Reference impls: `build-play.mjs` (relocates non-unit pages out of `src/pages/` during build, finally-trap restores) + `play-public-relocate.mjs` (stashes media dirs the unit doesn't serve; play `dist` 1.4 GB → 33 MB) + `astro.config.mjs` `build.assetsPrefix:'/play'` gated on `PLAY_BUILD=1` (so hashed `/_astro/<hash>` resolve within the unit, not against core's divergent hashes — the P0 fix).
+
+### The load-bearing invariants (do NOT violate)
+
+1. **Every `build:<unit>` prebuild MUST run the parse-critical chapter gates** (normalizer + dup-key check) even if the unit renders no chapters — `astro build` parses the whole `chapters` collection regardless of route subset (R-PREBUILD-PLAY-NORMALIZE is the companion rule; it is the #1 way a split unit's build breaks).
+2. **Run any `build:<unit>` ONLY in an isolated `git worktree` or on Cloudflare's fresh clone — never the shared dirty clone.** The build MUTATES `src/pages/` (page-relocate), `public/` (public-trim), and `src/content/chapters/` (normalizer). Commit **pathspec-scoped** to the unit's intended files; the regenerated chapters/manifests are build artifacts and must never be committed (`git checkout -- src/content/ src/data/` before staging).
+3. **Only `_astro` needs the asset-prefix fix** (hashed + per-build-divergent). Stable-named public assets (`/fonts`,`/apps`,`/brand`,favicon) present in core are fine to resolve via the dispatcher's core route.
+4. **`git push` to the site send-pack STALLS** — push via the gh Git Data API (deletions via `sha:null`); this is orthogonal to the split but always applies to site pushes.
+5. **Rollback is a build-command flip.** A unit reverts to serving the full site by flipping its Cloudflare build command back to `npm run build` — all split code is inert under a full build (no code revert needed).
+6. **Every deploy unit MUST have its Cloudflare Build-watch-paths scoped to its own inputs** — a push must only rebuild the units it actually affects. Because all units share ONE repo + ONE branch, a push with NO path scoping triggers a build on EVERY unit, and a high-frequency content wave then saturates the shared build queue (2026-07-10 incident: 132 one-commit-per-app content pushes × 2 units ≈ ~100-deep queue that stalled a `/play` deploy for ~40 min). **The play unit (renders no chapters) MUST NOT build on chapter-only pushes** — set its **Settings → Build → Build watch paths** Includes to the `/play`-relevant globs (`src/{pages,lib,data}/play/*`, `public/play/*`, `src/styles/play.css`, **`src/styles/play/*`**, `src/components/play/*`, the `build-play`/`*-relocate` scripts, `astro.config.mjs`, `package.json`); leave the CORE unit broad (it renders `/cast` chapter pages). **⚠ `src/styles/play/*` is REQUIRED since the 2026-07-12 R-WEB-CLONE-MERGE-HYGIENE split** moved every clone's bespoke CSS into `src/styles/play/<app>.css` — the literal `src/styles/play.css` Include does NOT match that new dir, so a per-app-CSS-only push would be **silently skipped** without it. **Glob semantics:** Cloudflare watch-path `*` matches across `/` (evidenced by clones' nested `src/{lib,data}/play/<app>/…` already triggering builds), so `src/data/play/*` already covers the glob-derived per-app registry (`src/data/play/<app>/clone.meta.ts` + `clone-types.ts`) — only the NEW `src/styles/play/` dir needed a new line. This is **account-managed** (Cloudflare dashboard per unit — hub can't set it), so it's a required step whenever a unit is created/flipped **OR a new watched input directory is introduced** (like the per-app CSS dir).
+
+   **⚠ STANDING DISCIPLINE — re-verify the Include list on ANY change to the core files/dirs the play unit builds from.** The Include list is a hand-maintained mirror of the play unit's build-input surface; it does NOT auto-update, and a build input NOT covered by a glob is **silently skipped** (no build, no signal — the change never deploys). So whenever a PR **adds, moves, renames, or introduces a new directory for** a play-unit build input — a new top-level shared file (a new `src/styles/play.css`-sibling, a new shared config, a relocated script), a NEW directory the build reads (the per-app CSS `src/styles/play/` dir was exactly this — site PR #479 moved bespoke CSS there and the literal `src/styles/play.css` Include did not match it), or a new `build:<unit>`/prebuild input — you MUST (a) check whether the documented Include globs (the runbook block below) still cover every build input, (b) if not, update the runbook's Include list in the same PR, and (c) **flag the account-side Cloudflare Include change to the founder in the PR body** (hub can't set it; a merged-but-unwatched input is the "merged ≠ deployed" trap one layer out). The runbook's Include block is the **source-of-truth the founder syncs to the Cloudflare dashboard** — keep it accurate. Reference incident: the per-app CSS dir (2026-07-12) — caught here, not in production, precisely because this was checked. Pairs with **`R-BATCH-DISTRIBUTION-PUSH`** (workflow.md — batch a content wave into ONE squash-merge push, not one-per-app; also dodges the watch-paths bypass that fires at 20+ commits / 3000+ files). Exact globs + drain-the-queue + branch-control steps: **`Docs/RUNBOOK_CLOUDFLARE_BUILD_QUEUE_FIX_2026-07-10.md`** (deep-web-researched, cited); root cause: `Docs/AUDIT_CLOUDFLARE_BUILD_QUEUE_SATURATION_2026-07-10.md`.
+
+### Adding a new build unit (the recipe — mirrors ADR-032 Phase 1/2)
+
+1. Author a `build:<unit>` script pair (page-relocate + public-trim) modeled on `build-play.mjs` + `play-public-relocate.mjs`; keep the parse-critical prebuild.
+2. Verify in an isolated worktree: `build:<unit>` exit 0 · expected route count · unit `_astro` assets present · internal-link check `--unit <unit>` OK.
+3. **Account-coordinated (user-managed):** create the Cloudflare build unit + add the dispatcher path route (`/<prefix>/*` → the new unit) + **set the unit's Build-watch-paths to its own inputs** (invariant 6 — so the new unit doesn't build on every unrelated push). This asymmetry (code hub-side, Worker/route/watch-paths account-side) is why unit splits are staged, not auto-cycled.
+
+### When this rule applies
+
+- Any change to how the site builds/deploys; adding a `/play/<app>` clone's deploy granularity; the cast/chapters carve-out (V69); per-cluster units (ADR-033 §4); the `.org` dual-serve.
+- Reviewing a site PR that touches `build-*.mjs`, `*-relocate.mjs`, `astro.config.mjs` `assetsPrefix`, or `package.json` `build:*`/`prebuild:*` scripts.
+
+### Cross-references
+
+- `Docs/ADR-032_SITE_MULTI_PROJECT_SPLIT.md` — the full decision + phases (Phase 1 dispatcher · Phase 2 route-trim · Phase 2.5 public-trim · P0 asset-prefix)
+- `Docs/RUNBOOK_SITE_SPLIT_PHASE_2_CLOUDFLARE_2026-07-09.md` — the build-command flip + rollback runbook
+- `Docs/RUNBOOK_CLOUDFLARE_BUILD_QUEUE_FIX_2026-07-10.md` — per-unit Build-watch-paths + drain-the-queue + branch-control steps (invariant 6) · `Docs/AUDIT_CLOUDFLARE_BUILD_QUEUE_SATURATION_2026-07-10.md` — the queue-saturation root cause · `.claude/rules/workflow.md` § R-BATCH-DISTRIBUTION-PUSH
+- `Docs/AUDIT_SITE_ROUTE_CENSUS_2026-07-10.md` — the next carve-out (cast/chapters, by data)
+- `Docs/ADR-033_WEB_CLONE_ARTIFACT_ORGANIZATION.md` §4 — per-cluster deploy units
+- § R-PREBUILD-PLAY-NORMALIZE (companion invariant) · § R-SITE-DOMAINS (host-agnostic dual-serve) · § R-SITE-BUILD-QUIET-PRERENDER · § R-SITE-BUILD-DISK-BUDGET
+- `Docs/web/fractionforge/DEPLOYMENT_RUNBOOK.md` — the per-clone deployment runbook that instantiates this
+
+## `build:play` is not a full verification — a core-only lib's syntax error slips past it (R-SITE-CORE-PARSE-GATE; 2026-07-11)
+
+**Verifying a change with `npm run build:play` does NOT prove the CORE build is green — the play unit relocates the `/cast` + chapter routes out of `src/pages/`, so any module imported ONLY by those core routes (e.g. `src/lib/image-url.ts`, `audio-url.ts`, chapter/cast components) is never bundled by `build:play` and its syntax errors go uncaught until the Cloudflare CORE build fails.** Any change that touches a **core-only** lib/component MUST be parse-verified against the core build (a `tsc --noEmit`, a full `npm run build`, or at minimum an `esbuild` transform of the changed file), not just `build:play`. Codified per user-direct 2026-07-11 after a P0: `image-url.ts` broke the core Cloudflare build (`Unexpected "*"`) while every `build:play` verification (mine + the parallel clone agents') stayed green.
+
+### The specific trap that caused it — `*/` inside a `/* */` block comment
+
+**Never place a `*/` sequence inside a `/* … */` (or JSDoc `/** … */`) block comment — it terminates the comment early.** The most common way this sneaks in is an embedded **glob or regex**: `` `public/chapters/**/*.webp` `` contains `**/` whose `*/` closed the JSDoc block, and esbuild then parsed the trailing `*.webp …` as code → `Unexpected "*"`, core build fails in ~5s. Guard:
+- In a block comment, reword any glob/regex so no `*/` appears — e.g. write "public/chapters, then any subdir, then any `.webp`", or split the stars (`* /` is still unsafe; avoid the sequence entirely), or use `//` line comments (which have no early-terminator).
+- The regression class is *any* `*/`-bearing token in a block comment: globs (`**/*.ext`), regex literals (`/foo.*/`), file lists. Prefer `//` line comments for anything containing `*` next to `/`.
+
+### The fast parse gate (run on any core-lib change)
+
+```bash
+# parse-check a changed TS file without a full build (catches the comment-terminator + syntax class):
+node -e "require('esbuild').transformSync(require('fs').readFileSync('src/lib/<file>.ts','utf8'),{loader:'ts'}); console.log('PARSE OK')"
+# or verify the whole core build when a core-only module changed:
+npm run build            # (not just build:play)
+```
+
+### When this rule applies
+- Any edit to `src/lib/*` or a component imported only by `/cast`/chapter/core routes → parse-verify against core, not just `build:play`.
+- Authoring/reviewing ANY `.ts`/`.astro`/`.mjs` with a block comment that embeds a glob, regex, or path with `*` — scan for a stray `*/`.
+
+### Cross-references
+- § R-SITE-BUILD-SPLIT (why `build:play` bundles only the play routes) · § R-PREBUILD-PLAY-NORMALIZE (the sibling "a build variant still parses X" invariant)
+- spark-anvil-site PR #401 (the P0 fix) · `src/lib/image-url.ts` (the reference incident) · `src/lib/audio-url.ts` / `pdf-url.ts` (sibling core-only libs that carry the same risk)
+
+## The shared `play.css` tail-append is a merge-collision hotspot — parse-gate it at prebuild (R-PLAY-CSS-PARSE-GATE; 2026-07-12)
+
+**`src/styles/play.css` is a SHARED, tail-appended surface — every `/play/<app>` clone build appends its `.pc-theme-<app>` block to the end under R-PARALLEL-WEB-CLONE-BUILD single-flight — and concurrent clone merges routinely collide on that tail. A botched tail-append conflict resolution that DROPS a closing `}` red-builds the Cloudflare `build:play` with `[postcss] play.css:<EOF>:1: Unclosed block` — a P0 that surfaces ~1.6s deep in vite (after the whole prebuild) with the error line reported at EOF (useless for localizing).** The gate `scripts/check-play-css-parse.mjs` (postcss parse + a brace-balance localizer) is wired into BOTH `prebuild` and `prebuild:play` so this class fails LOUDLY at prebuild with the real unclosed-block line, not deep in the build. Codified per founder-direct 2026-07-12 (*"fix and codify"*) after the V121 P0.
+
+### The failure class + why the gate is needed
+
+The handoff/runbook already warns: on a `play.css` merge-race, "resolve the tail-append conflict (delete the 3 marker lines to keep BOTH blocks concatenated)." When that resolution instead drops a `}` — most often a `@media (prefers-reduced-motion: reduce)` block's closer, because it's the LAST line of a clone's append and the easiest to lose to a conflict hunk — every subsequent block nests inside it and postcss hits EOF still open. **Reference incident (V121, site PR #429):** the FossilForge×ProofQuest tail-append collision dropped the FossilForge reduced-motion block's `}` (play.css:1721); `build:play` went red. `check-core-lib-parse.mjs` (the sibling TS gate) never looks at CSS, so nothing caught it pre-deploy.
+
+### The gate (two layers, mirrors check-core-lib-parse.mjs)
+
+1. **postcss.parse** of every `src/styles/*.css` — catches the whole CSS syntax-error class (present during any real build; postcss is a build dep).
+2. **Brace-balance localizer** (dependency-free — runs even in a bare worktree with no `node_modules`) — reports open/close counts, final depth, and *the last line at depth 0* (the unclosed block opens just after it), turning postcss's EOF line into an actionable location.
+
+Emergency bypass: `SKIP_PLAY_CSS_CHECK=1` (never to ship a real unclosed block — only if the gate itself misfires).
+
+### When this rule applies
+- Authoring/extending any `/play/<app>` clone (every clone appends to `play.css`) — the gate runs automatically in prebuild.
+- **Resolving a `play.css` tail-append merge conflict** (the trigger) — after `git rebase --continue`, run `node scripts/check-play-css-parse.mjs` before pushing; a dropped/extra brace fails it immediately.
+- Reviewing any PR that touches `src/styles/play.css`.
+
+### Cross-references
+- `scripts/check-play-css-parse.mjs` — the gate · spark-anvil-site PR #429 (the V121 P0 fix + gate)
+- § R-SITE-CORE-PARSE-GATE (the sibling TS parse gate this mirrors) · § R-PARALLEL-WEB-CLONE-BUILD (the single-flight `play.css` tail-append discipline whose merge-races cause this) · § R-SITE-BUILD-SPLIT invariant on the `play.css` conflict resolution
+
+## Kill the parallel-fleet merge-races structurally — union-merge the append-only shared surfaces + per-app CSS files (R-WEB-CLONE-MERGE-HYGIENE; 2026-07-12)
+
+**The parallel web-clone fleet's push/merge conflicts come almost entirely from a handful of APPEND-ONLY shared files that every clone touches at the same spot (the tail / the closing bracket). Three structural changes remove the conflicts at the source instead of resolving them by hand every time.** Codified per founder-direct 2026-07-12 (*"there are a lot of push/merge conflicts with all the parallel hub agents. what can we do about it?"*). The reactive discipline (rebase-then-resolve, keep-both, renumber-on-conflict — R-PARALLEL-WEB-CLONE-BUILD / R-PARALLEL-HUB-AGENTS) stays as the fallback, but these make it rarely needed.
+
+### The conflict hotspots (measured across the V105–V135 clone waves)
+
+| Shared file | repo | why it collides | fix |
+|---|---|---|---|
+| `src/styles/play.css` | site | ~~every clone tail-appends its `.pc-theme-<app>` + `.<ns>-*` block~~ → now ONLY the tiny `.pc-theme-<app>` accent block appends here; all `.<ns>-*` bespoke is per-app | **per-app CSS file DONE** (site PR #479) + union-merge on the residual theme-block append |
+| `src/data/play/clones.ts` | site | ~~every clone appends one row before `];`~~ → **glob-derived DONE** (site PR #481): each clone owns `src/data/play/<app>/clone.meta.ts`; `clones.ts` assembles via `import.meta.glob`. **Zero shared-file edit to register a clone.** |
+| `Docs/REGISTRY_WEB_CLONES.txt` | hub | every clone appends one row + a Count | **union-merge** (now) |
+| `.claude/CLAIMS.md` | hub | every session appends a claim line | **union-merge** (now) |
+| work-queue `V<N>` | hub | monotonic counter → semantic number collision | **renumber-on-conflict** stays (union is unsafe — see below) |
+
+### Fix 1 — `merge=union` on the pure append-only files (shipped 2026-07-12; the immediate win)
+
+git's built-in **`union` merge driver** resolves an append-race by keeping **BOTH** sides' added lines with **NO conflict markers** — the automatic equivalent of the "keep both" resolution, and it **never drops a closing `}`** (the R-PLAY-CSS-PARSE-GATE breakage class was born from hand-resolving `play.css`). Wired via `.gitattributes` in **both** repos:
+
+- **site `.gitattributes`:** `src/styles/play.css merge=union` **only** — `src/data/play/clones.ts` is now **GLOB-DERIVED** (site PR #481; each clone owns `src/data/play/<app>/clone.meta.ts`), so it no longer receives per-clone appends and its union-merge was **dropped** (see the Deferred/DONE section below + the `.gitattributes` NOTE).
+- **hub `.gitattributes`:** `Docs/REGISTRY_WEB_CLONES.txt merge=union` · `.claude/CLAIMS.md merge=union`
+
+**Safe ONLY because these are genuinely append-only** — each clone adds its own DISJOINT block/row and never edits another clone's block. If you ever edit an *existing* clone's block, union can keep both versions (a semantic dup) — so the rule "touch only your own `.pc-theme-<app>` scope / your own row" (R-PARALLEL-WEB-CLONE-BUILD) is what keeps union sound. The `build:play` + `check-play-css-parse.mjs` + `check-site-internal-links.py` gates backstop any bad auto-merge (a union that produced invalid CSS/TS fails the build loudly, exactly as a hand-merge would).
+
+### Fix 2 — every clone's BESPOKE CSS lives in a PER-APP file (MANDATORY; the legacy backfill is DONE 2026-07-12)
+
+A `/play/<app>` clone MUST put its `.<ns>-*` mechanic/bespoke classes in its **own** file `src/styles/play/<app>.css` and import it from its own pages (`import '~/styles/play/<app>.css'`, alongside the shared `import '~/styles/play.css'` base) — **NEVER** append a bespoke block to the shared `play.css` tail. Per-app files are disjoint by construction (ADR-033 namespacing) → **zero cross-clone CSS collision**, and the css-parse-gate's brace-drop class disappears. This is now a hard rule, not a "SHOULD" — a clone PR that appends a `.<ns>-*` block to `play.css` is a defect.
+
+**The one thing that STILL lives in `play.css`: the small `.pc-theme-<app> { --accent-vars }` block.** The `/play` index gallery (`src/pages/play/index.astro`) themes every clone card with `pc-theme-<app>`, so it needs all 39+ theme blocks; and a theme block is single-brace + disjoint (no `@media`) = **not** the collision-heavy / brace-drop part. So a new clone appends ONLY its ~9-line theme var block to `play.css` (union-merged, low-risk) and puts everything else in `src/styles/play/<app>.css`.
+
+**Legacy backfill — DONE (site PR #479, 2026-07-12, founder-directed quiet-window run).** All 39 legacy per-app bespoke blocks were split out of `play.css` (2847 → 802 lines) into `src/styles/play/<app>.css`, with the per-app import added to all 246 `/play` pages. `play.css` now holds only the shared base (`.ff-*`/`.pc-*` primitives, HUD/card/button, cast strip, avatar, results, adventures, the shared DIR/FEDC reflection card + SEL crisis footer) + the 39 `.pc-theme-<app>` accent-var blocks. Method (reusable for any future shared-CSS split): attribute rules by **banner-delimited section, NOT namespace prefix** (`gf-` is shared by geometryforge+grammarforge, `cf-` by chanceforge+cipherforge — prefix attribution is unsafe); anything ambiguous stays in the base (conservative); then **prove safety with a per-page CSS class-coverage fingerprint before/after** (`/tmp/css_coverage.py` pattern: for each built page, the set of rendered classes that resolve in its loaded CSS must be unchanged — it caught the one real regression, the index losing its theme blocks). The `check-play-css-parse.mjs` gate now parse-gates every `src/styles/play/*.css` too.
+
+### Fix 3 — keep per-clone WORK-QUEUE entries tiny + renumber-on-conflict (union is UNSAFE here)
+
+The work-queue `V<N>` is a monotonic counter, so two sessions grabbing the same N is a *semantic* collision union-merge cannot fix (it would keep two `## V134` headers). So: (a) **keep renumber-on-conflict** (pull-first, max+1, renumber your own on a clash — it's a ~30-second fix), and (b) **keep each clone's work-queue entry to a few lines** (a pointer to the authoritative `Docs/web/<app>/` doc-set), NOT a 15-line block — less text = lower collision odds + faster resolution. The full ship record lives in `Docs/web/<app>/`, which is disjoint per clone.
+
+### Deferred (durable end-state — do in a fleet-drain quiet window, not live)
+
+**BOTH big deferred refactors are now DONE (2026-07-12, founder-directed quiet-window runs):**
+- **`play.css` per-app-block split** — site PR #479 (+ #480 ambiguous-CSS cleanup). See Fix 2.
+- **glob-derived `clones.ts`** — site PR #481. Each clone owns `src/data/play/<app>/clone.meta.ts`; `clones.ts` assembles them via `import.meta.glob` (sorted subject-then-name, deterministic). Registering a clone is now a pure add-a-file-in-your-own-subtree op — **zero shared-array edit**. `check-play-clone-registry.mjs` was repointed at the per-app meta files (route dir with no meta = dark), and `.gitattributes` dropped the now-obsolete `clones.ts` union-merge. This ALSO fixed a live dark-clone bug it surfaced (wildlens + cubesensei had collapsed into one object literal via a botched union-merge → JS last-key-wins dropped wildlens from `PLAY_CLONES` = dark on `/play`; the per-app-file model makes that collapse class structurally impossible). **Follow-up (2026-07-12, escapeforge lane):** the hub `scripts/audit_web_clone_surface_wiring.py` registry check was ALSO stale — it still grepped the central `clones.ts` for `slug:` rows (empty post-#481), so it false-flagged **every** glob-derived clone as `🔴 DARK — MISSING clones.ts registry row`. Repointed to check for `src/data/play/<app>/clone.meta.ts` (with the legacy central-row grep kept as a fallback). Any script that decided "is this clone registered?" by reading `clones.ts` must be repointed the same way.
+
+**The ONLY residual shared-file touch per new clone is the tiny `.pc-theme-<app>` accent block appended to `play.css`** (single-brace, disjoint, union-merged — see Fix 2; the index gallery needs all themes). Everything else — bespoke CSS, registry row, pages, lib, data, docs — is disjoint per clone by construction. A fully-zero-shared-touch end-state (glob-aggregate the theme blocks too, so `play.css` gets no per-clone append) is possible but low-value: the theme-block append is union-merge-safe + brace-drop-immune, so it stays a deliberate, documented residual rather than more machinery.
+
+### Fix 4 — audit-surfaced residual hardening (2026-07-14 shared-surface audit)
+
+The 2026-07-14 full shared-surface audit (`Docs/AUDIT_WEB_CLONE_SHARED_SURFACE_CONFLICTS_2026-07-14.md`, run against `origin/main` with **4 clone lanes building concurrently** — V196–199) confirmed the Fix-1/2/3 model holds (63 clones; `clones.ts` glob-derived with zero appends; 104 disjoint per-app bank specs; registry + CLAIMS union-merged) and surfaced **three residual defects the model created or left open**. All three are now codified:
+
+1. **The `.pc-theme-<app>` accent block MUST live in `play.css`, NEVER only in the per-app `src/styles/play/<app>.css`** — and the registry gate must enforce *that specific location*. Root cause: evading the last shared append (Fix 2 says bespoke CSS goes per-app) tempts an author to also drop the *theme* block into the per-app file. But the `/play` **index gallery (`src/pages/play/index.astro`) imports ONLY `play.css`** — never per-app CSS — so a theme block that lives only in the per-app file renders the clone's index card **un-themed** (default accent). **The gate was blind to this:** `check-play-clone-registry.mjs` built its theme corpus from `play.css` **+ every per-app CSS**, so a per-app-only theme block passed. **Fix:** the gate's theme-presence check now reads **`play.css` ONLY** (bespoke `.<ns>-*` classes may still live per-app; the `.pc-theme-<app>` *accent block* may not). Reference defect: **quillspell** shipped its theme block in `quillspell.css` only → un-themed index card, gate green (fixed in the same change that tightened the gate). This is why Fix 2's "ONLY the small theme block may go in `play.css`" is a *must*, not a *may*.
+
+2. **`Docs/REGISTRY_WEB_CLONES.txt` `# Count:` footer + `planned` rows are UNION-UNSAFE — the count is advisory, `grep -c '| shipped |'` is authoritative.** union-merge keeps BOTH sides' lines with no dedup or arithmetic, so (a) a monotonic `# Count: N` line written by two lanes yields two/again-stale count lines, and (b) a `planned` row for a clone that later ships as a `shipped` row leaves a **stale duplicate** (4 such stale `planned` rows — escapeforge/alcumusforge/haikuquest/machineforge — were purged 2026-07-14). **Discipline:** never trust or hand-bump the `# Count:` line; the authoritative shipped tally is `grep -c '| shipped |' Docs/REGISTRY_WEB_CLONES.txt`. A clone that had a `planned` row MUST have it removed (not left) when its `shipped` row lands — a lane's own row edit, not a shared rewrite. A periodic dedup sweep (`cut -d'|' -f1 | sort | uniq -d`) is part of registry hygiene. **Do NOT add new monotonic counters / totals to any union-merged file** — a counter is the one thing union merge structurally cannot reconcile (same class as the work-queue `V<N>`, Fix 3).
+
+3. **The work-queue `V<N>` remains the DOMINANT hard-conflict surface — and it is unavoidable under union merge (it's a counter).** The audit found 4 lanes concurrently claiming V196/197/198/199, coordinated only by the manual "pull-first `max+1`; renumber-on-conflict" discipline (Fix 3) + `.claude/CLAIMS.md` announcements. This works but is the highest-friction residual. The durable escalation (tracked, not yet built) is to **make the per-clone work-queue entry a glob-derived per-lane FILE** — the same move that killed the `clones.ts` append (Fix 1→per-app `clone.meta.ts`): each lane writes `Docs/work-queue/V<slug>.md` in its own name and an index assembles them, so no two lanes ever pick the same monotonic integer. Until then, `V<N>` clashes are expected and resolved by renumber-keep-both.
+
+### When this rule applies
+- Authoring any new `/play/<app>` clone → **Fix 2 is mandatory**: all bespoke `.<ns>-*` CSS in `src/styles/play/<app>.css` (imported from the clone's pages); the `.pc-theme-<app>` accent block **MUST** go in `play.css` (Fix 4 — the index imports only `play.css`), never only per-app; rely on Fix 1 for the registry/clones.ts + theme-block appends.
+- Reviewing a clone PR → a `.<ns>-*` bespoke block appended to `play.css` (instead of a per-app file) is a defect; so is a `.pc-theme-<app>` block that lives ONLY in the per-app CSS (Fix 4 — un-themed index card, gate-blind).
+- Any parallel hub session hitting an append-race on the four union-merged files → the rebase now auto-resolves; just verify the gates (`build:play` / css-parse / internal-links) pass.
+- A work-queue `V<N>` clash → renumber-on-conflict (Fix 3), keep-both.
+
+### Cross-references
+- `spark-anvil-site/.gitattributes` + `spark-anvil-hub/.gitattributes` — the union-merge wiring
+- § R-PARALLEL-WEB-CLONE-BUILD (the disjoint-namespace + single-flight discipline this makes cheaper) · § R-PLAY-CSS-PARSE-GATE (the backstop for a bad `play.css` auto-merge) · `.claude/rules/workflow.md` § R-PARALLEL-HUB-AGENTS (the portfolio-wide parent) · § R-SITE-BUILD-SPLIT
+- `Docs/PLAN_PARALLEL_WEB_CLONE_DEVELOPMENT_2026-07-10.md` — the full contention table (the deferred glob-derivation belongs here as the next escalation)
+
+## All hub-side `spark-anvil-site` work happens in a throwaway `git worktree` off `origin/main` — never the shared clone (R-SITE-WORKTREE; 2026-07-13)
+
+**Any hub session touching `spark-anvil-site` — building a clone, authoring tests, verifying a build, a docs/rule edit that must compile against the site — MUST work in a fresh `git worktree` checked out from `origin/main`, NOT in the shared `/Volumes/.../spark-anvil-site` working clone.** Codified per founder-direct 2026-07-13 (*"codify the site worktree approach"*) after the shared clone was found 8 commits behind with untracked parallel-session build dirs (a mid-build `heatforge`, a stray `waveforge` lib) that **aborted `git pull --ff-only`** — the exact stale/dirty-shared-clone trap this rule removes.
+
+### Why the shared clone is unsafe for hub work
+
+The one on-disk `spark-anvil-site` clone is a shared resource: parallel clone-build sessions leave untracked/mid-build dirs in it, the Playwright/`astro dev` **prebuild normalizer mutates `src/content/chapters/**` on every run** (a build artifact that must never be committed — R-SITE-BUILD-SPLIT invariant 2), and its `main` pointer drifts behind `origin`. Working there means fighting `pull` aborts, accidentally staging another session's files (a whole-index commit sweeps them in — R-PARALLEL-HUB-AGENTS discipline 6), and committing normalizer noise. A worktree off `origin/main` is clean by construction and disjoint from all of that.
+
+### The canonical recipe
+
+```bash
+cd /Volumes/Data/Portfolios/spark-anvil-portfolio/spark-anvil-site
+git fetch origin main
+WT=/tmp/wt-<purpose>            # e.g. /tmp/wt-clone-tests, /tmp/wt-<app>
+git worktree prune && git worktree add "$WT" origin/main
+ln -s "$(pwd)/node_modules" "$WT/node_modules"   # reuse deps (Playwright browsers are global at ~/Library/Caches/ms-playwright)
+cd "$WT"
+# …author test-files / clone source / verify build here…
+```
+
+Load-bearing discipline inside the worktree:
+- **Commit pathspec-scoped, never `git add -A`** — the normalizer will have dirtied `src/content/chapters/**` + `src/data/**`; `git checkout -- src/content/ src/data/` to discard those build artifacts before staging, and stage only your intended files (R-SITE-BUILD-SPLIT invariant 2 + R-PARALLEL-HUB-AGENTS discipline 6).
+- **Stale-deps fix is `npm install <pkg>@<range> --no-save`** (never bare `npm install` — lockfile churn), per R-WEB-CLONE-BUILD-STALE-DEPS below.
+- **One PR per wave, rebased onto `origin/main`** between merges — disjoint per-app / test-only files → clean rebase (a stacked branch's already-merged commits drop automatically).
+- **Remove the worktree when done:** `git worktree remove "$WT"` (or `git worktree prune` after deleting `/tmp/wt-*`). An unchanged worktree is auto-cleanable; never leave it as a second dirty clone.
+- **Push works from the worktree** (`git push -u origin <branch>`); the memory note about `git push` stalling applies to bulk history rewrites, not ordinary branch pushes.
+
+### When it applies
+- Every hub-side site task: clone builds (R-PARALLEL-WEB-CLONE-BUILD already mandates a per-app worktree — this generalizes it to ALL site work), test-authoring waves, `build:play`/`build` verification, any edit that must compile against the site.
+- The `Agent`/subagent equivalent: a delegated site task gets its OWN worktree (never shares one).
+
+### Cross-references
+- § R-SITE-BUILD-SPLIT invariant 2 (run any `build:<unit>` only in an isolated worktree; the build mutates `src/pages/` + `public/` + `src/content/chapters/`) · § R-PARALLEL-WEB-CLONE-BUILD (per-app worktree for clone builds) · `.claude/rules/workflow.md` § R-PARALLEL-HUB-AGENTS (discipline 6 pathspec-commit; stale-clone recovery)
+
+## Parallel clone-building — one agent per app, disjoint by construction (R-PARALLEL-WEB-CLONE-BUILD; 2026-07-10)
+
+**Multiple hub agents MAY build multiple `/play/<app>` clones in parallel — a specialization of `R-PARALLEL-HUB-AGENTS` (workflow.md) enabled by ADR-033 per-app namespacing.** Because every clone lives in its own disjoint `src/{pages,lib,data}/play/<app>/` + `public/play/<app>/` + `Docs/web/<app>/` subtree, two agents building different apps touch **zero common files** in the normal path — which designs out the dominant parallel-agent failure mode (shared-hotspot merge conflicts).
+
+> **The single-entry pickup runbook:** an agent (parallel or solo) starting the next clone should read **`Docs/WEB_CLONE_PICKUP_RUNBOOK.md`** — it sequences this rule + the ranking + the 5-phase spawn + the shared-surface single-flight list + the R-WEB-CLONE-PARITY-DOD ship gate + the ship/backport steps + the gotchas (incl. the subagent-scope discipline) into one checklist so nothing is skipped and two agents don't collide.
+
+The discipline:
+
+- **One agent per app, one `git worktree` each** off `origin/main` (R-SITE-BUILD-SPLIT); symlink `node_modules`; no dependency changes in parallel sessions (lockfile churn).
+- **R-WEB-CLONE-BUILD-STALE-DEPS — a stale symlinked `node_modules` red-fails `build:play` on ANOTHER clone's dep, not yours.** The build worktree symlinks the MAIN clone's `node_modules`; if a *parallel* session's clone added a new npm dependency after that main clone was last installed, `build:play` fails with **`[vite] Rollup failed to resolve import "<pkg>" from "src/lib/play/<other-app>/*.ts"`** for a package that IS in `package.json` + `package-lock.json` (so Cloudflare `npm ci` builds fine) but is absent from the shared `node_modules`. It is NOT your bug and NOT a broken `main` — it's a stale install. Fix: **`npm install <pkg>@<range-from-package.json> --no-save`** (materializes the declared dep WITHOUT touching the lockfile — verify `git status package.json package-lock.json` stays clean), then re-run `build:play`. Never run bare `npm install` / edit deps in a parallel worktree (lockfile churn — violates the discipline above); `--no-save` only fills the gap. Reference: the 2026-07-12 quillspell Track-B build failed on `cubesensei/net.ts` importing `cubing/twisty` (declared in the lockfile, uninstalled in the stale shared `node_modules`); `npm install cubing@^0.63.3 --no-save` unblocked it. Full runbook step: `WEB_CLONE_PICKUP_RUNBOOK.md` § 2 (Environment).
+- **Claim the app** in `.claude/CLAIMS.md` before starting (R-PARALLEL-HUB-AGENTS territory claiming); pull the next unclaimed app from `AUDIT_WEB_CLONE_NEXT_RANKING`.
+- **Single-flight ONLY the enumerated shared surfaces** — `src/lib/play/_shared/`, `astro.config.mjs`, `package.json build:*`, `src/components/play/`, `REGISTRY_WEB_CLONES.txt`, the work-queue numbers, and the Gemini key (only if a clone gens new assets — clones normally PORT, so this is the exception). Everything else is disjoint and parallelizes freely.
+- **Push via the gh Git Data API** (base=main tree-merge → disjoint pushes merge cleanly); **merge PRs sequentially**, update-branch-then-retry on a merge-race (never `--admin` past a real conflict).
+- **Scale:** ~4–8 parallel clone-agents (review-bound); a `staging/web-clones-<batch>` branch for large batches; per-cluster build units + Turborepo `affected`/remote-cache as the CI escalation (ADR-033 §4). Full contention table + per-agent workflow + external-research mapping: **`Docs/PLAN_PARALLEL_WEB_CLONE_DEVELOPMENT_2026-07-10.md`**.
+
 ### Reusable components (3 shipped; reused across #1 / #3 / #4 per ADR-022)
 
 - `<ChapterIllustration app="..." char="..." variant="opener|spot|thumbnail" />` — consumes `public/chapters/<app>/chapter_<char>_<variant>.webp`
@@ -361,6 +1222,8 @@ The target split:
 
 **Ownership split:** account-level (R2 bucket, custom domain, Pages env vars) is user-managed; the upload + `git rm` + helper wiring is hub-side. Beat-`.webp` migration (V18 P1 § Tier 2) is a separate, higher-complexity effort — do NOT bundle it with the audio/PDF `git rm`.
 
+**Beat-`.webp` Tier-2 migration — code-prep LANDED, history rewrite GATED (V100, 2026-07-11).** The env-gated CDN-resolution code shipped (**site PR #396**): `src/lib/image-url.ts` (`cdnifyImagePath`, sibling to `audio-url.ts`) + CDN-aware `build-multibeat-chapter-manifest.mjs` + CDN-aware `check-multibeat-snapshot-coverage.py` + the 5 `/chapters/` beat-image emission sites. It is **INERT until `PUBLIC_IMAGE_CDN_URL` is set** on the Cloudflare build units (env unset → byte-identical local behavior), so it changes nothing in prod until the coordinated finale. The finale (upload 5,645 beat `.webp` → R2 via `scripts/upload_beat_images_to_r2.py`, `git rm` from `public/chapters/`, path-scoped `filter-repo 'public/chapters/*/*.webp'` → `.git` 647 → ~50–90 MiB) is a **founder-gated, account-coordinated** operation — full method in **`Docs/RUNBOOK_SITE_BEAT_WEBP_R2_MIGRATION_2026-07-11.md`**. **Scope-preserve (load-bearing):** the purge is `public/chapters/**/*.webp` ONLY — cast portraits (`public/cast/**`; R-CAST-PORTRAIT-SLUG needs them local), book covers (`public/books/covers/**`), `public/brand/**`, and `public/pilot/**` STAY local and must never be swept (same class of mistake the V96 companion-pack scope-correction avoided). The hub byte-backup (R-R2-SYSTEM-OF-RECORD) for images is a documented founder decision in the runbook (recommend the layer-2 off-site rclone mirror over +589 MiB hub bloat). Complements § R-SITE-BLOBLESS-CLONE (the always-safe interim).
+
 ### R-SITE-BUILD-DISK-BUDGET — watch the number every content wave
 
 - Before a large content wave, check `du -sh spark-anvil-site/public` and `du -sh public/*`. Treat **`public/` > ~4 GB** as the danger zone until the R2 `git rm` completes; **> ~5 GB** risks ENOSPC on Cloudflare.
@@ -373,6 +1236,58 @@ The target split:
 - `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "V28 P0 — Cloudflare Pages build FAIL: ENOSPC" — the incident + full fix plan
 - § R-SITE-BUILD-QUIET-PRERENDER (above) — sibling build-behavior note (the same `public/`-copy phase that overflows here is the one that looks "hung")
 - `.claude/rules/spark-anvil-website.md` "Tech stack" / "Hub does NOT own" — R2 bucket + DNS are user-managed; hub owns the code-side migration
+
+## Slimming `spark-anvil-site` git history — large-push + purge-during-active-content discipline (R-SITE-HISTORY-PURGE; 2026-07-11)
+
+**When rewriting `spark-anvil-site` history to reclaim git bloat (committed regenerable media — see ADR-034), two things are load-bearing and were learned the hard way in the V89 purge (which took the repo 9.13 → 2.84 GiB).** This rule is the standing distillation; ADR-034 + `RUNBOOK_SITE_GIT_HISTORY_PURGE_2026-07-10.md` are the full method, `PLAN_SITE_REPO_FURTHER_REDUCTION_2026-07-11.md` is the remaining-levers roadmap.
+
+### 1. A single multi-GB push FAILS — use incremental-to-staging (the send-pack note, corrected)
+
+The `.git` is large, so a rewritten-history force-push is a multi-GB pack. **A single such push fails GitHub with `HTTP 500` / `send-pack: unexpected disconnect`**, and neither fix people reach for is sufficient: `http.postBuffer=3G` + `http.version=HTTP/1.1` alone still 500s, and the standing "push site changes via the gh Git Data API" note (CLAUDE.md § R-SITE-BUILD-SPLIT invariant 4) **cannot push a bulk history rewrite** (the Data API is per-object). SSH transport is unavailable (no keys registered). **The working method is incremental-to-staging:**
+
+- Push the rewritten history's objects to a **staging branch** in ~300-commit slices (`git push -f origin ${sha}:refs/heads/_purge_staging`, oldest→newest) — each slice is a small pack that clears the size limit. This leaves `main` untouched, so **no premature Cloudflare builds** fire.
+- Then move `main` ONCE to the tip (`git push -f origin ${tip}:refs/heads/main`) — zero new objects (all already uploaded via staging) → instant, no 500, and exactly **one** production build triggers.
+- Push the rewritten feature branches (small deltas now), delete `_purge_staging`.
+- **zsh gotcha:** always brace the refspec — `${sha}:refs/heads/...`, never `$sha:refs/...` (bare `$sha:r` triggers zsh's `:r` history-modifier and eats the `:r`, faking a "src refspec does not match" failure).
+- **⚠ BRANCH PROTECTION blocks the `main` force-push (2026-07-12).** `main` now carries a branch-protection rule (required status checks `Vitest (bank invariants + shell)` + `Playwright (a11y + SEL-safety smoke)`; `enforce_admins: false`; **`allow_force_pushes: false`**) — see § R-WEB-CLONE-TEST. The `allow_force_pushes: false` setting **rejects the final `git push -f …:refs/heads/main` move** that ends a purge. So a purge session MUST **temporarily lift protection**, do the `main` move, then **restore it** — an admin, account-scoped step: `gh api -X DELETE repos/nathant99/spark-anvil-site/branches/main/protection` before the move, then re-`PUT` the same protection JSON after (keep a copy of the read-back: `gh api repos/nathant99/spark-anvil-site/branches/main/protection`). The staging-branch slices are unaffected (they push to `_purge_staging`, not `main`); only the single `main` tip-move needs the window.
+
+### 2. A history purge push needs the content cascade ACTUALLY STOPPED (not just idle)
+
+A rewrite force-push based on `main==BASE` **clobbers any commit pushed after BASE**. When a content wave (e.g., a V61-style per-app cascade, or any `sync_content_to_site.sh` batch) is running, `main` advances mid-operation and the push either aborts (if guarded) or destroys in-flight commits (if not). In V89 the cascade **broke the coordinated freeze 3×** — a time-based quiescence check (origin stable for N minutes) **cannot distinguish "paused" from "done"**, because the cascade has pauses longer than any practical check window. Therefore:
+
+- **Require the cascade session to be genuinely halted** (paused/killed + confirmed), OR wait until it has fully completed — not merely "quiet right now."
+- **Always keep a pre-push guard** — re-check `origin/main == BASE` immediately before the `main` move; abort if it moved (origin is never left half-rewritten — git updates refs only after the full pack lands).
+- **Run purge + push in foreground-sized stages, not one long background job** — long background jobs die on harness/connectivity hiccups mid-run (a V89 one-shot got killed after the `.m4a` pass). Stage: mirror → rewrite → guard → staged push, each a discrete step resumable from the last.
+- **Take the STEP 0 backup mirror first** (see `BACKUP_SITE_PRE_PURGE_MIRROR_*`) — the only rollback for a rewrite.
+- **After the push, the user re-triggers Cloudflare** (SHAs changed → cached commit gone → likely Git disconnect+reconnect) per `RUNBOOK_SITE_PURGE_CLOUDFLARE_RECONNECT_2026-07-10.md`.
+
+### When this rule applies
+- Any future `spark-anvil-site` history rewrite (the queued `.pdf` purge / Lever 1; a future beat-`.webp` migration / Lever 2; any re-purge maintenance window once media re-accretes).
+- It is `spark-anvil-site`-specific (that repo's size + Cloudflare-Git coupling + active content cascades are what make it load-bearing). The prevention half — *don't commit regenerable media; route it to R2/CDN* — is the durable fix (R-SITE-MEDIA-R2 + R-SITE-BUILD-DISK-BUDGET).
+
+### Cross-references
+- `Docs/ADR-034_SITE_GIT_HISTORY_MEDIA_PURGE.md` (EXECUTED) + `Docs/RUNBOOK_SITE_GIT_HISTORY_PURGE_2026-07-10.md` + `Docs/RUNBOOK_SITE_PURGE_CLOUDFLARE_RECONNECT_2026-07-10.md`
+- `Docs/PLAN_SITE_REPO_FURTHER_REDUCTION_2026-07-11.md` — remaining levers (PDF purge next) + this discipline restated
+- `Docs/CONTEXT_HANDOFF_2026-07-11_SITE_PURGE_EXECUTED.md` — the V89 session record (incl. the harness-specific gotchas that stay out of this rule)
+- § R-SITE-MEDIA-R2 / § R-SITE-BUILD-DISK-BUDGET (the prevention half) · CLAUDE.md § R-SITE-BUILD-SPLIT invariant 4 (the send-pack note this corrects)
+
+## Blobless clones are the standing default for `spark-anvil-site` — no history rewrite required (R-SITE-BLOBLESS-CLONE; 2026-07-11)
+
+**Every consumer that clones `spark-anvil-site` — local dev, a CI runner, a throwaway build worktree, a subagent — SHOULD clone it blobless: `git clone --filter=blob:none <url>`.** This is ADR-034 Track A promoted from "decided" to a standing default because it is the single **best bang-for-zero-risk** repo-size lever: it cuts fresh-clone transfer to ~the commit+tree objects (file *contents* are fetched lazily, on demand, only for the blobs you actually touch), it changes **no SHA**, it rewrites **no history**, and it is completely orthogonal to any purge — so it delivers most of the clone-time win **now**, and keeps delivering it as beat `.webp` re-accretes between purge windows.
+
+- **Why it matters here specifically:** post-V96 the `.git` is ~647 MiB and **93% of that is beat `.webp` blobs** most consumers never read (they build `/play` or edit `/cast` prose, not repaint chapter art). A blobless clone skips downloading those ~602 MiB up front and pulls only the blobs a given task opens.
+- **The commands:**
+  - Full-history, contents-on-demand (recommended default): `git clone --filter=blob:none https://github.com/nathant99/spark-anvil-site.git`
+  - Even lighter for a one-shot build/worktree that only needs the tip: add `--depth 1` (shallow + blobless). A shallow clone can't run `filter-repo` or deep `git log`, so use it only for build/verify, not for history work.
+  - Existing full clone → convert in place: `git config remote.origin.promisor true && git config remote.origin.partialclonefilter blob:none` (future fetches go partial; already-downloaded blobs stay).
+- **Caveats:** operations that must walk every blob (a history rewrite / `filter-repo`, a full `git grep` over all revisions, an offline archive) need the blobs — clone full (or `git fetch` the missing blobs on demand, which partial clone does automatically when online). A blobless clone is a *consumer/build* convenience, never the substrate for a purge session.
+- **Account-level (user-managed):** the Cloudflare Workers Builds clone is set on the Cloudflare side; requesting shallow/blobless there is a per-unit account setting, not hub-settable. Local dev + hub build-worktrees adopt it today with zero coordination.
+- **Relationship to the purge levers:** blobless is *not* a substitute for Lever 2 (the beat-`.webp`→R2 migration + history rewrite), which is the only thing that shrinks **origin** itself — but it is the correct, immediate, always-safe complement, and it is what makes a large `.git` tolerable in the window before (and between) purges.
+
+### Cross-references
+- `Docs/ADR-034_SITE_GIT_HISTORY_MEDIA_PURGE.md` § "Track A" — the decision this codifies
+- `Docs/PLAN_SITE_REPO_FURTHER_REDUCTION_2026-07-11.md` § "Lever 3 — PREVENTION" — where blobless is listed as the zero-risk lever
+- § R-SITE-HISTORY-PURGE (above) — the destructive lever blobless complements · § R-SITE-MEDIA-R2 (the prevention half)
 
 ## Distribute ≠ upload: audio must reach R2 in the same wave (R-R2-AUDIO-UPLOAD-COMPLETENESS; 2026-07-03)
 
@@ -458,6 +1373,8 @@ The source text (chapter MD / drama script) being committed makes the audio *rec
 
 **The `git rm` in R-SITE-MEDIA-R2 stays** — this rule does NOT reverse it. `public/` (the Cloudflare-built tree) stays `.m4a`-free for build-disk; the backup lives in the **hub** repo (`Resources/R2AudioBackup/`), which Cloudflare never clones or copies into `dist/`. The two rules are orthogonal: R-SITE-MEDIA-R2 governs the *site* tree; R-R2-SYSTEM-OF-RECORD governs *durability* via the *hub* tree.
 
+> **FOUNDER DECISION (2026-07-13): layer-1 (hub-git) FULL closure is DECLINED — no git bloat. The removable-drive layer-2 mirror is the accepted off-R2 backup "for now."** Per founder-direct (*"i don't want git bloat. back up on the removable drive for now"*), the ~962-file / ~1.7 GB layer-1 gap is **NOT** to be closed by committing the `.m4a` into hub git. Instead, the **layer-2 byte-mirror on the removable external USB drive `/Volumes/Data` (`/Volumes/Data/Backups/r2/spark-anvil-books`, 1788 `.m4a` / 3.6 GB)** is the sanctioned off-R2 backup. It is a 2nd copy of R2's cloud master (protects against R2 bucket deletion/corruption); it is NOT drive-failure-independent from the project (both live on `/Volumes/Data`), which is the accepted "for now" posture. **Keep it current:** re-run `scripts/mirror_r2_audio_layer2.py` after every audio-bearing wave, and byte-verify with `scripts/verify_r2_backup_byte_integrity.py --backup-dir /Volumes/Data/Backups/r2/spark-anvil-books` (0 stale / 0 missing = good). The layer-1 `Resources/R2AudioBackup/` set (826 `.m4a`) STAYS as-is — do NOT bulk-commit the remainder. The truly-off-machine end-state (rclone → 2nd R2 / B2 / NAS + the `com.spark-anvil.r2-backup` launchd agent) remains the future upgrade when the founder provisions a destination remote; the removable-drive mirror is the interim.
+
 ### The discipline going forward
 
 1. **Every audio-bearing wave that uploads new `.m4a` to R2 MUST also add the byte-copy to `Resources/R2AudioBackup/`** — in the same wave, exactly as R-R2-AUDIO-UPLOAD-COMPLETENESS requires the R2 upload itself. The two rules chain: distribute → upload-to-R2 (R-R2-AUDIO-UPLOAD-COMPLETENESS) → byte-backup-to-hub (this rule).
@@ -469,8 +1386,10 @@ The source text (chapter MD / drama script) being committed makes the audio *rec
 
 - `Docs/AUDIT_ASSET_BACKUP_COVERAGE_2026-07-06.md` — the audit that surfaced the 744 + ranked the recs this rule codifies
 - `scripts/backup_r2_audio_to_hub.py` — hub byte-backup (layer 1)
-- `scripts/sync_r2_to_backup.sh` — whole-bucket off-site sync recipe (layer 2; user runs)
-- `scripts/audit_asset_backup_coverage.py` — the `--ci-mode` backstop detector
+- `scripts/sync_r2_to_backup.sh` — whole-bucket off-site sync recipe (layer 2; user runs, rclone → off-machine destination)
+- `scripts/mirror_r2_audio_layer2.py` — headless boto3 layer-2 byte-mirror (**no new creds**; idempotent skip-if-size-match; the local-mirror interim before the off-machine rclone destination is stood up — run after any audio wave)
+- `scripts/verify_r2_backup_byte_integrity.py` — **byte-level** (ContentLength) R2-vs-backup verifier that catches the **STALE-TAKE** class the basename-level auditor misses (a same-key regenerated take: backup holds the old `.m4a`, R2 holds the new; proven in the 2026-07-13 W3 close-out — 40 stale + 17 missing that `audit_asset_backup_coverage.py` reported as 0). Runs against either layer (`--backup-dir`); `--ci-mode` exits non-zero on any stale/missing.
+- `scripts/audit_asset_backup_coverage.py` — the `--ci-mode` backstop detector (basename/key-presence level; pair with `verify_r2_backup_byte_integrity.py` for byte-integrity)
 - § R-SITE-MEDIA-R2 — the `git rm`-from-`public/` rule this one is orthogonal to (site tree vs hub tree)
 - § R-R2-AUDIO-UPLOAD-COMPLETENESS — the upload-to-R2 half; this rule adds the backup-off-R2 half
 - `.claude/rules/spark-anvil-website.md` "Tech stack" / "Hub does NOT own" — R2 bucket + off-site-sync destination + DNS are user-managed (R2 has no native versioning to configure)
@@ -663,11 +1582,22 @@ for (const entry of FLAGSHIP_POOL) {
 
 **Reproducing a day-dependent route failure**: a clean-room build is the only reliable repro — `rm -rf dist && npm run build` on the actual failing day, then `grep -rl 'cast/<app>/<char>"' dist/`. The day-of-year is `new Date()`-derived, so the failing entry rotates daily; if the static checks all pass but Cloudflare keeps failing, suspect a `new Date()`/`Math.random()`-seeded picker over a curated or member-derived list.
 
+### There is NO bare `/cast/<app>` route — only `/cast`, `/cast/<app>/<char>`, `/cast/<app>/<char>/advanced` (2026-07-11 SEL-pair P0)
+
+**Never link to a bare `/cast/<app>` (app slug, no `/<char>`).** It resolves in NO deploy unit — the ONLY cast routes are the **aggregate `/cast`** (`src/pages/cast.astro`) and the per-character **`/cast/<app>/<char>`** (+ `/advanced`) generated by `cast/[app]/[char].astro`. There is no `cast/[app]/index.astro`. A "meet the cast / read the stories" link on a clone landing/about page MUST target **`/cast`** (the aggregate, what `PlayNarrative`'s footer uses) or a specific guarded `/cast/<app>/<char>` — never `/cast/<app>`.
+
+**The incident (P0, site PR #410):** the mindforge + coregrealm clone `about.astro` pages hardcoded `<a href="/cast/mindforge">` / `/cast/coregrealm` → 2 broken links → red **core** Cloudflare build. It slipped every fleet agent's `build:play` because `--unit play` excused *all* non-`/play` paths as "cross-unit," so the bad link only failed the ~12–20 min core build.
+
+**The gate was tightened (site PR #411):** `check-site-internal-links.py` `is_invalid_cast_shape()` now **never excuses** a bare `/cast/<app>` in ANY unit — so the fast `build:play` (which every clone agent runs) fails on it immediately, not just the slow core build. Do NOT re-broaden the play-unit cross-unit excuse to cover bare `/cast/<app>`.
+
+**Deferred re-enablement (the "come back later" TODO):** because there is no app-index cast route today, the SEL clones' about pages fall back to the aggregate `/cast`. If an app-level `/cast/<app>` index route is ever built (or a chapterless clone's app gains authored chapters), the app-scoped links can be re-enabled. That revisit is tracked in **`Docs/TODO_WEB_CLONE_CAST_LINK_REENABLE.md`** (greppable: `grep -rn 'href="/cast"' src/pages/play/*/about.astro`). `PlayNarrative` already auto-enables per-char links when chapters land (it reads `apps.generated.ts` + `hasChapter`), so no per-clone edit is needed there when the DN assets arrive.
+
 ### Cross-references
 
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "V23 P0 — Cloudflare build FAIL: broken /cast/mathcircle/circle route"
+- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "V23 P0 — Cloudflare build FAIL: broken /cast/mathcircle/circle route" + § "V114 — SEL-pair bare /cast/<app> P0 + link-checker tightening"
+- `Docs/TODO_WEB_CLONE_CAST_LINK_REENABLE.md` — the deferred app-scoped-cast-link re-enablement tracker
 - `spark-anvil-site/src/lib/castSlug.ts` — `chapterSlugFor` / `hasChapter` / `slugChar`
-- `spark-anvil-site/scripts/check-site-internal-links.py` — the postbuild enforcement gate
+- `spark-anvil-site/scripts/check-site-internal-links.py` — the postbuild enforcement gate (now with `is_invalid_cast_shape`)
 - `.claude/rules/spark-anvil-website.md` § R-CAST-PORTRAIT-SLUG — sister rule (portrait-file coverage; same "member without asset" failure family)
 
 ## Multi-beat chapter snapshot convention (R-MULTIBEAT-SNAPSHOT; 2026-06-10)
@@ -1347,19 +2277,44 @@ done
 - memory `cast-expansion-program.md` + `[[spark-anvil-gen-pipeline]]` — where this gotcha lived pre-codification
 - `Docs/CONTEXT_HANDOFF_2026-06-30_V28_SEL_WAVE1_ENOSPC_FIX_SCIENCE_WAVE2.md` § "Key gotchas carried forward" — V28 statement of the same discipline
 
+## Long single-flight gen pipelines are DRIVEN with foreground sleep-waits — never background-and-stop (R-GEN-FOREGROUND-DRIVE; 2026-07-14)
+
+**When the founder has said "do not stop until fully done" (or otherwise authorized an autonomous multi-app run), a long single-flight gen pipeline — the coverage program, a cast-expansion wave, any pipeline whose steps serialize on the shared Gemini key (R-GEMINI-KEY-SERIAL) — MUST be driven by the agent with FOREGROUND `sleep`-poll waits between the key-serialized steps, NOT by launching a background gen and ENDING the turn to await a task-notification.** Codified per founder-direct 2026-07-14 (*"resume and do not stop. use sleep if needed"* → *"again: resume and do not stop. use sleep instead"* → *"codify this rule in repo"*), after a session repeatedly backgrounded each ~15-min pilot / ~35-min T2 gen and ended its turn, forcing the founder to type "resume" once per step — which defeats the auto-cycle and stalls a weeks-long program on human keystrokes.
+
+### Why background-and-stop is the wrong pattern here
+Backgrounding a gen with `run_in_background: true` and then producing a final message ENDS the agent turn; the harness only re-invokes the agent when the `<task-notification>` fires. That is correct for a *single* long job the user is waiting on — but for a **pipeline of dozens of serialized gens** it means the agent halts after every step until the user manually resumes. The single-flight key already forbids running two gens at once, so there is no parallelism to gain from backgrounding; the only effect is inserting a human-in-the-loop stop between every step. The founder's "do not stop" directive is explicit that the agent should self-drive to completion.
+
+### The pattern (drive, don't stop)
+- **Launch the gen** (background is fine, OR foreground if it fits the tool timeout), then **BLOCK on it with bounded foreground `sleep` polls** — e.g. `sleep 110; <check proc + artifact>` repeated (keep each `sleep` under the ~120 s Bash auto-background threshold so the wait itself stays foreground), or a single `while pgrep -f <gen> …; do sleep 30; done` guarded by a max-iterations cap. When the gen finishes, **immediately proceed to the next step in the SAME turn** — distribute → T2 → portrait → PRs → next app — without yielding to the user.
+- **Only end the turn** when: the whole authorized run is complete, a hard blocker needs a founder decision, a gate fails in a way that needs judgment, or the founder-set token/scope budget is exhausted. A step merely "taking ~35 min" is NOT a reason to stop.
+- **Keep the single-flight discipline** (R-GEMINI-KEY-SERIAL): one gen at a time; overlap only NON-key work (in-session Opus prose pre-authoring, R2/boto3 uploads + layer-2 mirror, git/PR ops, worktree setup) with a running gen. The foreground sleep-wait is exactly where that non-key work goes.
+- **Bounded, not infinite:** every wait loop has a max-iteration cap so a genuinely-stalled gen (the 503 class) surfaces instead of hanging the agent forever; on cap-hit, inspect + retry (audio-only `--no-illustrations` regen for a mid-audio stall; re-run the one failed T2 slug) rather than stopping.
+
+### When this rule applies
+- Any autonomous multi-app coverage / cast-expansion / regen run the founder has said to drive to completion.
+- Reviewing an agent session that backgrounded a gen and stopped mid-run without a blocker → that's a violation of this rule (it should have sleep-driven the next step).
+
+### Cross-references
+- § R-GEMINI-KEY-SERIAL (above) — the single-flight constraint that makes backgrounding pointless here (no parallelism to gain) · § R-GEMINI-MODEL-ALIAS
+- `.claude/rules/workflow.md` § "Auto-Cycle Default" — the branch→commit→PR→merge→verify auto-cycle this keeps moving without per-step confirmation · § "Stagger Background Agents" (bg-agent staggering — orthogonal: that's about multiple SUBAGENTS, this is about not halting a single-flight pipeline)
+- `.claude/rules/distributed-narrative.md` § R-COVERAGE-OPUS-AUTHORING — the coverage program that is this rule's canonical consumer · memory [[chapter-coverage-program]]
+
 ## Prefer `-latest` model aliases in pipeline scripts (R-GEMINI-MODEL-ALIAS; 2026-07-09)
 
 **Every Gemini-backed pipeline script MUST reference a rotation-proof `-latest` model alias (or the current preview family) — NEVER a pinned mid-generation version ID like `gemini-2.5-flash` that a family rotation can silently 404 out from under a running batch.** Codified after the V60 incident (2026-07-09): mid-V45 the **entire `gemini-2.5` `generateContent` family was retired** — `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.0-flash`, `gemini-2.5-flash-image-preview` all began returning **`404 NOT_FOUND`** — while ~1300 in-flight text-leak audit images errored and every pipeline script hardcoding a 2.5 ID broke at once. (Wrinkle: the retired IDs still appear in `models.list()` with lagging metadata, so a list check is NOT sufficient to confirm a model is live — you must probe `generateContent`.)
 
-### The alias map (verified live 2026-07-09)
+### The alias map (image row re-verified live 2026-07-13; text/TTS rows 2026-07-09)
 
 | Use | Prefer | NOT (retired/404) |
 |---|---|---|
 | Flash text / judge / classifier | `gemini-flash-latest` | `gemini-2.5-flash`, `gemini-2.0-flash` |
 | Pro text / authoring / rephrase | `gemini-pro-latest` | `gemini-2.5-pro` |
-| Flash image gen | `gemini-3.1-flash-image-preview` | `gemini-2.5-flash-image(-preview)` |
-| Pro image gen | `gemini-3-pro-image-preview` | — |
+| Flash image gen (Nano Banana 2) | `gemini-3.1-flash-image` | `gemini-3.1-flash-image-preview` (**shut down 2026-06-25**), `gemini-2.5-flash-image(-preview)` |
+| Pro image gen (Nano Banana Pro) | `gemini-3-pro-image` | `gemini-3-pro-image-preview` (**shut down 2026-06-25**) |
+| Lite image gen (bulk / low-latency) | `gemini-3.1-flash-lite-image` | — (not for multi-reference / sequential edits) |
 | **TTS** (separate lifecycle — see below) | keep `gemini-2.5-flash-preview-tts` **for now** | — |
+
+> **⚠ Image models have NO `-latest` alias — they pin to a versioned GA ID, so they DO rotate out.** On 2026-05-28 Google promoted the Nano Banana image models to GA under **un-suffixed** IDs (`gemini-3-pro-image`, `gemini-3.1-flash-image`, `gemini-3.1-flash-lite-image`) and **shut the `-preview` variants down on 2026-06-25** (Vertex/Enterprise gave a 2026-07-17 grace). The 2026-07-09 alias-map row pinned the now-dead `-preview` IDs, so every hub image-gen script (`gen_cast_portraits` / `gen_book_covers` / `gen_app_badges` / `gen_app_icons` / `gen_app_illustrations` / `gen_app_texture_atlases` / `pilot_interleaved_ensemble_chapter` / the pilots) was re-pinned to the GA IDs on 2026-07-13 (this row). The separate **Imagen 4** family (`imagen-4.0-*`) shuts down 2026-08-17 — unrelated to Nano Banana; the hub does not use Imagen. Because image IDs carry no `-latest`, re-check this row every horizon refresh + probe `generateContent` before any large gen wave.
 
 ### TTS is a SEPARATE lifecycle — do not blanket-migrate it
 

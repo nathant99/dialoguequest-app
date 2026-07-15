@@ -343,6 +343,75 @@ Each axis scored 0-3 or 0-5 per the per-axis scale (see `DECISION_APP_RANKING_CO
 
 **When to use this formula**: founder asks "which apps should we build next?" or routine quarterly portfolio-sequencing refresh. Single ranking doc per refresh date; do NOT fragment into V1/V2 alternates (Round 106 surfaced V2 as a subagent-generated alternate; V1 is canonical per the DECISION doc).
 
+## New App Concept Fit-Assessment Methodology (R-NEW-APP-CONCEPT-FIT; 2026-07-15)
+
+**When the founder proposes a NEW app concept (or a batch of them) — "does X fit the portfolio?" — assess it with this method, NOT the ranking formula above (that ranks EXISTING concepts for build order; this decides whether a NEW concept belongs at all).** Codified after the 2026-07-15 games/word-games batch (`Docs/RESEARCH_NEW_APP_CONCEPTS_GAMES_WORDS_FIT_2026-07-15.md`, work-queue V246), where the founder had to correct a naive "it's already listed in an academy app → done" reading — proving the load-bearing distinction below is not obvious.
+
+### The load-bearing distinction — presence in a breadth academy ≠ waiver (the two-layer pattern)
+
+**A subject/game appearing inside a cross-topic *breadth academy* app does NOT foreclose a dedicated *full-depth* app on the same subject.** The portfolio deliberately runs a two-layer pattern, and both layers legitimately coexist:
+
+| Layer | What it is | Example |
+|---|---|---|
+| **Breadth / academy** | Teaches a *few transferable strategies/lessons* across many topics; NOT a deep full experience of any one | **StrategyForge** (a few strategy lessons across chess·Go·checkers·backgammon·mancala·Connect-4); **CardForge** (card-game genre) |
+| **Dedicated full-depth (often DN)** | ONE subject/game rendered to full depth, usually via distributed-narrative character-embodied primitives | **GambitTales** (full chess); **DealTales** (full bridge) |
+
+**The precedent is explicit: chess lives in BOTH StrategyForge (a few lessons) AND GambitTales (a full-depth DN app); bridge in both a card context AND DealTales.** So "an academy app already teaches X" is NOT a fit-waiver for a dedicated X app — the real bar is **standalone depth + differentiation from the academy's shallow treatment**, not mere presence. (Getting this wrong under-counts genuine gaps.)
+
+### The method (per proposed concept)
+
+1. **Adjacent-app census** — grep the registry + read the `CLAUDE.md` identity line of every plausibly-overlapping app; map the *actual* overlap surface. Distinguish academy-shallow coverage from dedicated-deep coverage (the distinction above).
+2. **Standalone-depth vs bundle vs mode test** — is the concept deep enough to sustain a full ~16-kit DN app for the target age, or is it a **single thin mechanic**? A single-mechanic concept (e.g. Connect-4, Mastermind alone) is thin as its own app → **bundle** it into a family app (e.g. a Connection/Territory-games app, a Deduction app) or ship it as a **mode** inside an existing app, rather than a standalone title. Say so explicitly; "it's a classic" is not depth.
+3. **Curricular-value grounding** — back the pedagogy claim with evidence (focused web research), portfolio-style; note honest caveats (population/transfer limits). No padding.
+4. **DN swap-test applicability** — can the concept decompose into character-embodied primitives whose *defining act IS the rule* (R-DN-PARITY)? A concept that can't (a bare abstract mechanic) is a bundling/mode signal, not a DN-app signal.
+5. **Cross-cutting gates** — pillar/cluster placement, name-registry availability, trauma-gate check, `/play` web-clone + iOS-backport potential.
+6. **Founder-gate the disposition** — adding a title is a **founder-level portfolio-shape decision** (the portfolio has a standing app-count ceiling). The assessment produces a *recommendation*; the founder greenlights. Record the analysis at `Docs/RESEARCH_NEW_APP_CONCEPTS_*_<date>.md` + a work-queue entry; on approval, the next phase is a per-app concept/spawn doc + the ranking assessment above.
+
+**Verdict vocabulary:** 🟢 build-worthy gap · 🟡 conditional (bundle or mode) · 🔴 do-not-build-standalone. A founder MAY approve past a 🟡/🔴 (as on 2026-07-15) — then the hedge becomes a per-app *shape* decision (standalone vs bundle vs mode), not a ship gate.
+
+**Reference deliverable:** `Docs/RESEARCH_NEW_APP_CONCEPTS_GAMES_WORDS_FIT_2026-07-15.md`. **Cross-refs:** § App Implementation Ranking Methodology (the sibling — build-order for approved concepts) · `.claude/rules/distributed-narrative.md` § R-DN-PARITY (the swap test) · § three DN variants (cast sizing).
+
+## The concept/spawn doc is the post-approval hub artifact — and registry-add follows repo-creation, never concept-approval (R-NEW-APP-SPAWN-DOC; 2026-07-15)
+
+**Once a founder APPROVES a new app concept (past the `R-NEW-APP-CONCEPT-FIT` gate), the next hub artifact — before any repo exists — is a per-app concept/spawn doc `Docs/CONCEPT_SPAWN_<APP>_<date>.md` that runs the standard new-app assessment. A newly-approved concept does NOT enter the canonical active registry or the portfolio count at approval time — it enters ONLY at repo-creation time.** Codified per the V247 execution (2026-07-15, ADR-038) — the founder-confirmed sequel to the fit method. R-NEW-APP-CONCEPT-FIT answers *"does this concept belong?"*; this rule is *"what you produce after it's approved, and when it becomes a real registry entry."*
+
+### The concept/spawn doc (the required post-approval artifact)
+
+For each approved concept, author `Docs/CONCEPT_SPAWN_<APP>_<date>.md` with the full assessment (all sections required — a doc missing one is incomplete):
+
+1. **Identity** — proposed name (mark *proposed* — naming is a founder prerogative; verify the slug is registry-clean in `REGISTRY_ACTIVE_PORTFOLIO_APPS.txt`), tagline, cluster, pillars, audience, DN variant, build-order.
+2. **Fit + gap + differentiation** — the census-backed reason it's not duplication (name the adjacent apps + how it's distinct; the two-layer breadth-academy-≠-waiver distinction from R-NEW-APP-CONCEPT-FIT applies).
+3. **Curricular evidence** — cited, with honest caveats (no padding).
+4. **Curriculum + mechanic/format structure** — the 16-kit arc + the manipulatives.
+5. **DN cast — R-DN-PARITY swap-test verified per member** — a table where each member's *defining act IS the primitive* (state the swap test explicitly) + a name-registry check (grep `REGISTRY_PORTFOLIO_CHARACTER_NAMES.md`; every name registry-clean).
+6. **6-axis composite ranking** — scored honestly (readiness axes are intrinsically low pre-repo; StrategicValue drives relative build-order); the cross-app build-order lives in the batch ADR.
+7. **`/play` web-clone twin note** — clonability + web-pioneered→iOS-backport potential + proposed cluster/grade-band.
+8. **Cross-cutting gates** — trauma-gate check · pillar mapping · name-registry reservation · the 143-ceiling note · ForgeKit reuse · **explicit division-of-labor scope line** (hub creates + scaffolds the repo + all non-Swift content [docs · CLAUDE.md · rules · kits · DN-S assets] + registry-add; the app's own CC session adds ONLY the Swift/Xcode source — `PLAYBOOK_APP_SPAWN.md` § 0).
+
+Batch close-out: a MADR (`ADR-NNN`) records the greenlight + per-app disposition + composite build-order + any fallback; cast names are reserved in `REGISTRY_PORTFOLIO_CHARACTER_NAMES.md` under a **"Scoped … (pre-dev)"** section (marked scoped, no mascot gen).
+
+### Registry timing — concept-approval ≠ registry-add (the load-bearing rule)
+
+**An approved-but-repo-less concept MUST NOT be added to `Docs/REGISTRY_ACTIVE_PORTFOLIO_APPS.txt` (the canonical registry) and MUST NOT bump the `PORTFOLIO_PATTERNS.md` "App Repos (N)" count. It enters both ONLY when its GitHub repo is created — which is founder-*triggered* but **HUB-executed** (hub creates + scaffolds the repo, `PLAYBOOK_APP_SPAWN.md` Phase 1), not deferred to the app session.** Founder-confirmed 2026-07-15 (work-queue V252; division-of-labor clarified 2026-07-15: *"hub is supposed to create all the new app repos and scaffold them"*).
+
+- **Why:** the canonical registry is the **write-target for distribution scripts** (§ "Distribution scripts MUST source from canonical portfolio registry"). Listing a repo-less app makes the "active" list + count misrepresent reality (breaks § "Verify origin state before claiming coverage"); distribution scripts guard with `[ -d "$appdir/.git" ]` so they *skip* (no crash) — but the list is still a lie. Precedent: the AoPS/ADR-026 apps entered the inventory only *after* their repos were created ("repos created 2026-06-08").
+- **Where an approved-but-repo-less concept DOES live (planning visibility, no count bump):** a **"Scoped <date>" section in `PORTFOLIO_PATTERNS.md`** (mirrors the AoPS "Scoped" treatment) + its concept/spawn doc + its cast reservations. That is full planning visibility without faking active state.
+- **The flip:** at repo-creation, add the slug to `REGISTRY_ACTIVE_PORTFOLIO_APPS.txt` (regenerate via `scripts/regenerate_portfolio_registry.py`), bump the PORTFOLIO_PATTERNS count, and flip the cast reservations from scoped→shipped — the same PR/step that scaffolds the repo. **Concept-approval = spawn-doc + Scoped section; repo-creation = registry-add + count bump.**
+
+**When this rule applies:** any founder-approved new app concept (single or batch). Reviewing a spawn round → a spawn doc missing an assessment section, a cast member failing the swap test, or a repo-less concept added to the canonical registry / counted, is a defect.
+
+**Cross-refs:** § New App Concept Fit-Assessment Methodology (R-NEW-APP-CONCEPT-FIT — the gate this follows) · § Creation Checklist (the repo-creation step where registry-add happens) · § "Distribution scripts MUST source from canonical portfolio registry" (why repo-less entries are harmful) · `Docs/ADR-038_NEW_GAMES_WORD_APPS_2026-07-15.md` + the 4 `Docs/CONCEPT_SPAWN_*_2026-07-15.md` (the reference batch) · work-queue V247 (delivery) + V252 (the registry-timing founder decision).
+
+## The single end-to-end spawn runbook is `PLAYBOOK_APP_SPAWN.md` — start there when building an approved app (R-APP-SPAWN-PLAYBOOK; 2026-07-15)
+
+**When the founder greenlights BUILDING an app (past the `R-NEW-APP-CONCEPT-FIT` gate + `R-NEW-APP-SPAWN-DOC` spawn doc), the single-entry runbook is `Docs/PLAYBOOK_APP_SPAWN.md` — the reconciled, phase-by-phase sequence from concept-approval → repo → scaffold → content → DoD, with the hub↔app-session division of labor made explicit and the deep-web-research (🔬) step flagged per phase.** Codified per founder-direct 2026-07-15 (*"we don't have a complete app spawn playbook … analyze existing app repos to create one"* + *"include the deep web research step … for any workflow step that requires it"* + *"cover the web-clone workflow too"*). It consolidates the previously-scattered `PORTFOLIO_PATTERNS.md` § Creation Checklist + § Implementation Prep Steps 1–7 + § CLAUDE.md Template v2 + § Standalone Repo Structure into one runbook and **reconciled live drift** those sections carried (18-section → the actual 5-section v2 CLAUDE.md; "25" → the actual 29 `.claude/rules/*.md`; ForgeKit pin `from: "1.0.0-rc.2"`/`.exact "1.0.0-rc.3"` — verify `forgekit/Docs/CHANGELOG.md`).
+
+- **The load-bearing frame it enforces (founder-clarified 2026-07-15):** a spawn is a two-agent relay in which **HUB does almost everything** — it **creates the repo** (`gh repo create` + clone) and **scaffolds it end-to-end** (README · `.gitignore` · `.swiftlint.yml` · `ExportOptions.plist` · `CLAUDE.md` v2 · full `.claude/rules/` · the `Docs/` set · `Resources/`), authors + distributes ALL content (16×25 kits + the full **DN-S workflow**: cast · portraits · chapters · audio dramas) + owns asset distribution to the app repo, does the registry add + count bump, and owns the `/play/<app>` web clone. **The ONLY thing hub does NOT do is write the Swift source** — the app's own CC session adds the Xcode project (`.pbxproj`/`.xcodeproj`/`.xcworkspace`) + `Package.swift` + `.swift` source + Swift tests on top of the hub scaffold. Founder-direct: *"the only thing hub doesn't do is coding the swift files"* + *"hub is supposed to create all the new app repos and scaffold them with all the docs, concept kits, CLAUDE.md file, rules, etc."* + *"hub owns the DN-S workflow and asset distribution to app repos too."* (This does NOT relax CLAUDE.md § CRITICAL — that rule only ever prohibited Swift/Xcode source, never repo-creation; the prior playbook over-read it.)
+- **Deep web research (🔬) is REQUIRED, not optional, at:** Phase 0 concept fit (adjacent census + curricular evidence + cross-platform domain landscape) · Phase 2/5 technical-design + pedagogy grounding · Phase 4 curriculum-standards mapping · Phase 6 web-clone `## Backport candidates` mining. Run the `deep-research` skill; persist a cited, adversarially-verified `Docs/RESEARCH_*.md` (`.claude/rules/workflow.md` § Save Research).
+- **The `/play/<app>` web clone is a first-class phase** (Phase 6), covering the full web-clone workflow (SELECT → RESEARCH🔬 → DESIGN → PLAN → BUILD → SHIP → BACKPORT + two-axis parity + no-dark-surface + Vitest/Playwright + light-AND-dark screenshot-DoD + hub-side DoD), pointing to the canonical `WEB_CLONE_PICKUP_RUNBOOK.md` / `WEB_CLONE_SPAWN_WORKFLOW.md`.
+
+**When it applies:** building any approved new app (start at the playbook); reviewing a spawn (a phase that skipped its 🔬 research, or left registry-add before repo-creation, or shipped a clone without its hub-side DoD, is a spawn defect). **Cross-refs:** `Docs/PLAYBOOK_APP_SPAWN.md` · § R-NEW-APP-CONCEPT-FIT (the fit gate) · § R-NEW-APP-SPAWN-DOC (the spawn doc + registry timing) · `Docs/PORTFOLIO_PATTERNS.md` § Creation Checklist / Implementation Prep (the detail it consolidates) · `Docs/WEB_CLONE_PICKUP_RUNBOOK.md` (Phase 6) · `.claude/rules/spark-anvil-website.md` § R-WEB-CLONE-* (the web-clone DoD gates).
+
 ## Color Scheme Audit Methodology (Round 133 #567; codified after R118 incomplete-sweep incident)
 
 When auditing an app's color-scheme alignment to its canonical palette (`docs/DESIGN_ART_DIRECTION.md` § Color Palette), the audit grep pattern MUST catch BOTH SwiftUI color-token forms:

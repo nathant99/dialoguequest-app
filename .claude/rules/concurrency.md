@@ -244,4 +244,16 @@ When this crash class surfaces (CuriosityQuest or any portfolio app), walk this 
 **Common false-positive recurrence pattern**: a PR fixes the first identified site but the crash recurs with the same `bt` signature. This means the actual root cause is at a DIFFERENT site (often deeper in the framework chain). PR #127 → PR #128 in CQ is the canonical example — PR #127 removed `guard let self` from AVAudioNodeTap but `[weak self]` capture + `self?` reference in a nested `DispatchQueue.main.async` STILL forced `@MainActor` inheritance. PR #128 applied the full TWO-PART rule and the crash stopped. **Read the bt AGAIN after each fix attempt**; if the framework frame is identical, you fixed the wrong site or fixed it incompletely.
 
 Reference research: `spark-anvil-hub/Docs/RESEARCH_DISPATCH_ASSERT_QUEUE_FAIL_HEISENBUG_2026-05-28.md` — full CQ diagnosis trail + symptom-vs-reality table + pre-crash log signature pattern.
+
+---
+
+## Toolchain floor — Xcode 26.5+ / Swift 6.3.x (R-TOOLCHAIN-FLOOR; 2026-07-13)
+
+Codified from `AUDIT_TECH_STACK_CURRENCY_2026-07-13.md` (§ Swift / Xcode, ACTION). The stable line moved to Swift 6.3.x; three fixes in it are directly load-bearing for the portfolio's async/await-only, strict-concurrency, resource-bearing-SPM patterns:
+
+- **Xcode 26.4.1 — async stack-allocation crash fix (correctness, not a nicety).** Fixed long-standing async crashes ("freed pointer was not the last allocation", e.g. in `swift_asyncLet_finish`) that became more frequent under the 6.2/6.3 optimizer. **An async/await-only, strict-concurrency codebase is exactly the exposure profile** — every Mac + the xcode-tools MCP host MUST be ≥ 26.4.1. This is the floor's reason for being.
+- **Swift 6.3.2 — `Bundle.module` usable off the MainActor.** Removes a known friction for resource-bearing SPM packages (ForgeKit's 58 modules, `ForgeIllustrations`/`ForgeAvatar` asset loaders). A resource accessor that previously needed MainActor hopping can now be `nonisolated`.
+- **Swift 6.3.3 (Xcode 26.6) — `nonisolated(nonsending)` isolation-transfer fix.** Relevant to the `nonisolated`-value-type conformance patterns this rule documents.
+
+**Floor:** pin the toolchain at **Xcode 26.5+ / Swift 6.3.x**; treat 26.4.1 as the hard minimum (below it, the async crash is live). **iOS 27 / Swift 6.4** shipped as WWDC26 betas → GA this fall; adoption is planned deliberately (not discovered) per **`Docs/ADR-037_IOS_27_SWIFT_6_4_ADOPTION.md`** — history says the App Store SDK floor moves to 27 in ~spring 2027, so the 143-app rebuild wave is scheduled, not absorbed under deadline pressure.
 <!-- END LABSMITH-SYNCED CONTENT -->

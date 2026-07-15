@@ -20,7 +20,7 @@
 
 ## Auto-Cycle Default (Multi-Commit Work)
 
-**For multi-commit / multi-round work in hub (and any session-recurrent autocycle pattern the user has established), the DEFAULT loop is `branch → commit → push → gh pr create → gh pr merge --merge --delete-branch → verify` — no per-step confirmation prompts.** This applies when:
+**For multi-commit / multi-round work in hub (and any session-recurrent autocycle pattern the user has established), the DEFAULT loop is `branch → commit → push → gh pr create → gh pr merge --merge --delete-branch → verify → return-to-main` — no per-step confirmation prompts.** This applies when:
 
 - The user has previously approved an autocycle pattern in the session (e.g., "go with your recs", "pre-approved", "start next round")
 - The change is research / documentation / queue update / planning (low-risk; reversible via git)
@@ -33,6 +33,14 @@
 - First-time scope-rule changes (those need explicit user "go")
 
 Codified in memory `feedback_branch_workflow.md`. The verify step (`gh pr view <n> --json state,mergedAt`) is REQUIRED per the rule below; auto-cycle does not skip verification.
+
+**`--delete-branch` deletes only the REMOTE branch — the local clone STAYS on the merged feature branch. `return-to-main` is a required round-close step, per repo touched.** `gh pr merge --delete-branch` removes `origin/<branch>` but does NOT move your local `HEAD` or delete the local branch — so after a merge the working clone is still sitting on a now-merged (and remotely-deleted) feature branch. Leaving it there is a stale-state trap: the next round branches off the wrong base, a `git pull` looks like a no-op against the deleted upstream, and freshness/pre-work checks read the wrong tree. So the loop's final step, **for every repo a round touched**, is:
+
+```bash
+git checkout main && git pull --ff-only && git branch -D <merged-feature-branch>
+```
+
+Verify with `git branch --show-current` → `main` in each repo before declaring the round done. (Reference: 2026-07-13 — a completed scienceforge clone left all-merged but the hub clone still on its feature branch until asked "why are we not back on main yet.") This composes with § "Per-repo pull-then-audit BEFORE work" (that's the inbound side; this is the outbound round-close) and applies equally to worktree builds — remove the throwaway worktree (`git worktree remove`) as its analog of return-to-main.
 
 ## CRITICAL: Verify PR Merged Before Claiming SHIPPED
 
@@ -191,9 +199,9 @@ Pattern proven across Round 91 #468 + #469 (68 cross-repo PRs total).
 5. **R2 bucket mutated mid-audit** — a backup audit's bucket count grew +20 objects (a parallel creative wave uploaded new audio + left `.vtt` uncommitted) between snapshot and hardening.
 6. **Stale-clone / `index.lock` contention** — a backgrounded `git add` left a stale lock; a stale local `main` pointer.
 
-### The protocol (7 disciplines)
+### The protocol (8 disciplines)
 
-1. **Queue-number allocation — never hard-code the next `V<N>`.** At the moment you commit a work-queue entry, `git pull` the queue first and take `max(existing V-numbers) + 1`. Expect + resolve queue merge-conflicts by **renumbering your entry and keeping BOTH** (the V35/V36 precedent) — never clobber the other session's entry. Same discipline for ADR numbers (`ADR-NNN`) and any other monotonic ID authored across sessions.
+1. **Queue-number allocation — never hard-code the next `V<N>`.** At the moment you commit a work-queue entry, `git pull` the queue first and take `max(existing V-numbers) + 1`. **Compute that max across the WHOLE file, not the recent top-of-file lane** — the web-clone lane's numbers (240s+) overlap the numeric range of OLD deep entries still in the file, so a "top-of-file max+1" pick silently collides with an old buried `## V<N>` header (2026-07-15, focusforge: picked V243 [top lane said 242] and hit BOTH a parallel-session V243 (mathlore) AND an old deep V244 (dealtales) → two rebase cycles; use `grep -oE '^## V[0-9]+' <queue> | grep -oE '[0-9]+' | sort -n | tail -1` and, if unsure, pick the first fully-free number above it: `grep -c "^## V<n>\b"` == 0). Expect + resolve queue merge-conflicts by **renumbering your entry and keeping BOTH** (the V35/V36 precedent) — never clobber the other session's entry. Same discipline for ADR numbers (`ADR-NNN`) and any other monotonic ID authored across sessions.
 
 2. **Rule-sync single-flight.** Only ONE session runs `copy_rules_to_repos.sh --apply` (or any full portfolio distribution) at a time — concurrent runs race per-app pushes. Acquire the hub lockfile `.claude/.rule-sync.lock` (PID + ISO-timestamp + short purpose) before starting; remove it when done. If the lock exists and its PID is alive, WAIT or coordinate — do not start a second sync. A stale lock (dead PID, or timestamp > ~30 min old) may be reclaimed after verifying no sync is actually running (`ps` the PID). The resilient push (PR #1157) is the SAFETY NET, not a substitute for the lock.
 
@@ -212,9 +220,15 @@ Pattern proven across Round 91 #468 + #469 (68 cross-repo PRs total).
 
 5. **Territory claiming (lightweight).** A session doing sustained work in a specific app repo, or on a portfolio-scale wave (e.g., the multi-beat chapter sweep, a per-cluster gen wave), ANNOUNCES it — a line in the session handoff doc AND/OR a `.claude/CLAIMS.md` entry (`<repo-or-wave> · <session/PID> · <ISO-timestamp> · <purpose>`). Other sessions read claims before starting concurrent writes to a claimed repo/wave and pick different territory. The "V35 owned by parallel session" note is the informal precedent this formalizes. Claims are advisory, not locks — they prevent the expensive collisions (duplicate paid gen, working-tree churn), not every edit.
 
+   **5a. A handoff's "NEXT PRIORITIES" list is a DOUBLE-PICK MAGNET — claim-before-authoring + check-for-the-deliverable-before-authoring (2026-07-14 V224 collision).** The exact thing that makes a good handoff — a crisp, ordered "⭐ NEXT PRIORITIES" list — is what makes two independently-resuming sessions pick the *same* top item and duplicate it. So before you START a discrete deliverable named in a handoff/queue (a research doc, a rule, an ADR, an audit, a single-app port), you MUST, in this order: (a) **`git fetch origin main` and check the deliverable does not already exist** — grep origin for the target FILE (`git show origin/main:Docs/<THE_DOC>.md`), the rule token (`git show origin/main:.claude/rules/<f>.md | grep <RULE-ID>`), the queue line's status flag, AND `gh pr list --search "<topic>"` (open + recently-merged, ALL authors — every hub session pushes as the same GitHub user, so `--author @me` ≠ "only me"); (b) **append a CLAIMS line for that specific item FIRST** (before authoring), not bundled into the shipping PR — an unclaimed item authored over 20 min is 20 min a sibling can duplicate it; (c) if it already exists / is claimed, **STOP and treat it as done-by-sibling** — verify their version is complete, delete your local duplicate branch, and move on (do NOT open a second PR). Reference incident: two sessions both resumed the same handoff, both authored `RESEARCH_YOUNGER_CLUSTER_CAST_SIZE_2026-07-14.md` + `R-YOUNGER-CLUSTER-CAST-SIZE` on the same branch name; caught at rebase (conflict), the sibling's PR #1599 had already merged, the duplicate was abandoned with zero shipped waste — but only because the pre-push rebase surfaced it. Doing (a)+(b) up front avoids the wasted authoring entirely. This is the item-granular sharpening of discipline 1 (queue/ADR numbers), discipline 7 (verify-origin), and `workflow.md` § Cross-Repo Audit Methodology Rule 4 (verify-before-action).
+
+   **5b. A LONG authoring/build window needs a SECOND origin re-check right before you SHIP — the pre-start check goes stale (2026-07-14 rupturerepair collision).** Rule 5a's check-before-authoring is necessary but NOT sufficient when the work itself is long (hand-authoring a 16×25=400-item kit ≈ 30–60 min; building a `/play` clone; a big doc). A sibling can pick the same item and ship it *during* your authoring window, so an "uncontested" reading at START is worthless by the time you finish. Therefore, **immediately before the first shipping commit (the app-repo commit / the PR), RE-RUN the origin existence check** — `git fetch origin main` + `git cat-file -e origin/main:<the target file>` for BOTH the deliverable (e.g. `<app>-app/Resources/.../kit_01*.json`, the hub porter `scripts/port_<app>_*.py`) AND its handoff/registry marker — and if the sibling already shipped it, **DISCARD your local work uncommitted (`git checkout -- <paths>` / `git clean -fd`), do NOT open a PR, and move to the next uncontested item.** Nothing ships duplicated; only the authoring time is lost (which 5c below reduces). Two natural tripwires that surface the collision for free — heed them: (i) a `Write` to the handoff doc **failing because the file already exists** (the sibling wrote it) is a positive collision signal — Read it + check origin before proceeding; (ii) a pre-push `git rebase`/`git pull` **conflict on a shared file** (5a's V224 tripwire). Reference incident: `rupturerepair` read "uncontested" at authoring start, but the sibling lane merged its 16×25 kit PR + hub porter during the ~30-min authoring window; caught when the handoff `Write` failed (file already on origin), the local duplicate was discarded uncommitted, zero shipped waste. **5c — shrink the window / pick disjoint items to make collisions rare:** when a sibling is demonstrably racing the SAME ordered work-list (you keep finding items freshly shipped), don't march the SAME order — **pull the list from the OPPOSITE end, or a different cluster**, so you and the sibling cover disjoint items instead of colliding on the same next one (the board-game cohort shipped collision-free precisely because it was a disjoint sub-list); and prefer author-then-*immediately*-ship over batching several apps before pushing, so each item's exposure window is minutes, not an hour.
+
 6. **Distribution scripts must be concurrency-safe.** Any script that writes to multiple repos MUST: (a) `git pull` per repo immediately before its push; (b) be **resilient** — never `set -e`-abort the whole batch on one repo's push failure; on failure `git pull --rebase` + retry, else record `PUSH-FAILED`, leave the commit local, and CONTINUE the loop (the V32 P2 resilient-push template); (c) be **idempotent / re-runnable** — a second run over already-synced repos is a no-op (merge-aware sync, skip-if-present gen); (d) **commit only its own pathspec, NEVER the whole index** — use `git commit <path> -m …` (pathspec commit), not `git add <path> && git commit` (which commits the ENTIRE index). A parallel session — or this environment's auto-staging of Write-created files — may leave UNRELATED files staged in the target repo's index; a whole-index commit sweeps them into the distribution commit. (2026-07-08 incident: a straggler `copy_rules_to_repos.sh` run swept another workflow's auto-staged untracked `HANDOFF_*` doc into an app's rule-sync commit because the commit wasn't pathspec-scoped. Fixed: `git commit .claude/rules/ -m …`.) Never source the target list from a filesystem glob — use the canonical registry per `portfolio.md` § Distribution scripts MUST source from canonical portfolio registry.
 
 7. **Pull-first / verify-origin everywhere (the umbrella).** Every freshness query, every pre-work step, every coverage claim reads/writes against ORIGIN, not stale local state — per the sibling sections. In a parallel-session world these are not optional politeness; they are the only thing that keeps two sessions from acting on each other's stale view.
+
+8. **Subagent-scope discipline — a delegated subagent stays in its lane.** A subagent (or background Agent) MUST be scoped to **disjoint, explicitly-named files** and MUST NOT (a) edit SHARED hotspots the main agent is concurrently working — `.claude/rules/*`, the work queue, `.claude/CLAIMS.md`, canonical process/template docs, shared code (`clones.ts`, `play.css`, `_shared/`) — or (b) INVENT scope: no new rules, ADRs, work-queue/V-numbers, or handoff docs the main agent didn't ask for. Delegate READ-heavy or app-namespaced work (a codebase deep-read, per-app doc stubs, a scoped implementation in one app's subtree); keep shared-file / rule / numbering / cross-cutting-doc edits in the MAIN agent, which serializes them. **Reference incident (2026-07-10):** a doc-writing subagent told to fill 4 app-namespaced stubs also hallucinated a "founder ask" and authored an unsanctioned rule + a competing work-queue entry + its own handoff in shared files — all reverted (nothing shipped). The failure mode is identical to two uncoordinated sessions (disciplines 1–7), one level down: an in-session subagent is a concurrent writer too. When a subagent returns, REVIEW its diff against the shared-hotspot list before staging.
 
 ### When this rule applies
 
@@ -227,7 +241,57 @@ Pattern proven across Round 91 #468 + #469 (68 cross-repo PRs total).
 - § Pre-work origin verification · § Verify origin state before claiming coverage · § Stale-clone recovery
 - `portfolio.md` § Per-repo pull-then-audit BEFORE work, ONE AT A TIME · § Distribution scripts MUST source from canonical portfolio registry
 - `.claude/rules/spark-anvil-website.md` § R-GEMINI-KEY-SERIAL (single-flight the shared Gemini key — the resource-contention precedent this generalizes)
+- `.claude/rules/spark-anvil-website.md` § R-PARALLEL-WEB-CLONE-BUILD (the web-clone SPECIALIZATION of this rule — one agent per app, disjoint by ADR-033 namespacing; full design in `Docs/PLAN_PARALLEL_WEB_CLONE_DEVELOPMENT_2026-07-10.md`)
 - hub PRs #1157 (resilient push) · #1161 (V35↔V36 queue-collision resolution)
+
+## Batch portfolio-scale content-distribution pushes — one merge, not one-push-per-app (R-BATCH-DISTRIBUTION-PUSH; 2026-07-10)
+
+**A portfolio-scale content-distribution wave (chapter sync / snapshot+audio regen / any per-app asset
+distribution across many apps) MUST NOT push one commit per app to a build-connected `main`.** Batch it:
+accumulate the wave on a **`staging/<wave>` branch** and merge to `main` **once** (or squash), turning ~N
+pushes into 1. Codified after a 2026-07-10 incident where a V61 content wave pushed **132 one-commit-per-app
+syncs** to `spark-anvil-site main` in 24h; because **both** Cloudflare deploy units (core + play) build on
+**every** `main` push, that enqueued ~132 × 2 build triggers and saturated the queue to ~100 deep — starving
+real `/play` deploys (readquest sat 404 for ~40 min behind the backlog). See
+`Docs/AUDIT_CLOUDFLARE_BUILD_QUEUE_SATURATION_2026-07-10.md`.
+
+- **Why it matters:** every push to a build-connected branch triggers a build **per connected unit**. At
+  spark-anvil-site there are TWO units, so push count is doubled into the queue, and slow serial core builds
+  (~12–20 min) can't drain a one-push-per-app storm.
+- **The discipline:** distribution scripts (`sync_content_to_site.sh`, `distribute_*`, `copy_*_to_repos.sh`
+  for the SITE repo, wave runners) SHOULD commit per-app locally but **push once at wave end** (staging branch
+  → single merge), not push-per-app. For the app-repo direction (140 separate repos) push-per-repo is fine —
+  this rule is about **a single build-connected repo** (the site) taking N pushes for N apps.
+- **Companion account-level fixes (user-managed, hub can't set):** per-unit build-watch **path filters** (the
+  play unit should not build on chapter-only pushes) + **cancel-superseded-builds** — both in the audit doc.
+- **When it applies:** any wave that would push >~5 commits to `spark-anvil-site main` in a short window.
+
+## Back up a long cascade's in-flight gens so a reset never restarts it (R-CASCADE-CHECKPOINT-DURABILITY; 2026-07-11)
+
+**A multi-hour content-regen cascade that commits per-app locally and pushes BATCHED (per R-BATCH-DISTRIBUTION-PUSH) has ALL its unpushed work destroyed the moment the repo is `git reset --hard`'d — and a reset is routinely forced by (a) a `spark-anvil-site` history purge-rewrite (R-SITE-HISTORY-PURGE) or (b) a parallel session's origin advance you must reconcile against.** So "batch the pushes" and "don't lose the work" are in direct tension, and the naive batched cascade loses everything on the next rewrite. Codified after the V61 Wave F closer-narration cascade was reset to zero **three times in one day (2026-07-11)** — ~40 regenerated chapters discarded twice — by the back-to-back V89 media purge + V96 pdf purge + an overlapping parallel V61 session. The two-layer discipline below makes in-flight gens survive any reset with zero re-gen, without violating R-BATCH.
+
+### Layer 1 — reset-proof scratch mirror (outside the git trees)
+
+Mirror the cascade's **small regenerated text artifacts** — chapter snapshot `.md` + sidecar `.beats.json` + `.vtt` — to a scratch dir **outside every git working tree** (e.g. `/Volumes/Data/Backups/<wave>/`), refreshed each monitoring cycle. `git reset --hard` cannot touch it, so after a forced reset you `rsync` the artifacts back = **zero re-gen** (no re-segmentation, no re-TTS). Helper: `scripts/backup_cascade_artifacts.sh` (idempotent rsync; text-only).
+
+- **Do NOT mirror the expensive audio `.m4a`** — it is already durable on R2 (system-of-record, R-R2-SYSTEM-OF-RECORD) and is pruned from `public/` anyway (R-SITE-MEDIA-R2). The `.m4a` is the ONE thing a reset does NOT lose; the cheap text artifacts are what actually vanish.
+- **Do NOT mirror the beat `.webp`** — unchanged by an audio-only cascade (beats are reused).
+
+### Layer 2 — clean-gated checkpoint pushes (land progress on origin)
+
+Push held commits to origin **periodically (~every 30 min)**, GATED on a **clean working tree** — skip the push if the tree is mid-app dirty. This bounds loss-on-disruption to one cycle and lands progress on origin, which **survives a subsequent purge** (a history rewrite preserves the current tree). Frequency stays far under the R-BATCH build-queue-storm threshold (~a dozen pushes over a multi-hour run, not per-app).
+
+- **The clean-tree gate is load-bearing:** a monitor that pushes while the cascade is mid-regen (tree dirty) makes `git pull --rebase` abort on the dirty tree → churned/failed pushes (bit 2026-07-11). Test `[ -z "$(git -C <dir> status --porcelain)" ]` before pushing; a dirty tree = skip-this-cycle, never a failure.
+- The cascade's own **pass-end `batch_push` remains the PRIMARY push**; checkpoint pushes are the safety net between passes.
+
+### When this applies
+- Any multi-hour hub content cascade (chapter snapshot/audio regen, distribution waves) that batches pushes — **especially while `spark-anvil-site` history purges or parallel sessions are active** (the exact conditions that force the resets).
+- Pair with: R-BATCH-DISTRIBUTION-PUSH (the batching this protects) · R-SITE-HISTORY-PURGE (the reset trigger) · R-R2-SYSTEM-OF-RECORD (why audio needs no scratch copy) · R-PARALLEL-HUB-AGENTS (claim the lane exclusively so collisions stop) · § "Verify origin state before claiming coverage" (origin ≠ local).
+
+### Cross-references
+- `scripts/backup_cascade_artifacts.sh` — the Layer-1 mirror helper
+- `scripts/v61_wave_f_cascade_loop.sh` — reference batched cascade with pass-end push (Layer-2 primary)
+- `.claude/rules/spark-anvil-website.md` § R-SITE-HISTORY-PURGE / § R-R2-SYSTEM-OF-RECORD / § R-SITE-MEDIA-R2
 
 ## Architecture Decision Records (MADR convention)
 
@@ -261,6 +325,14 @@ When authoring or refreshing a cross-repo handoff / portfolio audit, apply these
 5. **Audit-to-canonical-propagation**: when an audit yields a portfolio-wide finding — a new pattern, reference implementation, policy clarification, or methodology rule — the round-close MUST include propagation to relevant canonical references BEFORE closing the round. Canonical refs are: (a) `.claude/rules/*.md` (loaded into every CC session), (b) `Docs/TEMPLATE_*.md` (read by implementing sessions), (c) `Docs/DECISION_*.md` / `Docs/ADR-*.md` (canonical policy artifacts). Audit docs alone are insufficient — they decay in visibility, and future sessions read rules/template/decision-doc, not audit-doc history. If portfolio rule sync is needed after a `.claude/rules/*.md` update, run `scripts/copy_rules_to_repos.sh --apply` in the same or immediately following round.
 
 See `Docs/ADR-011_AUDIT_METHODOLOGY_PULL_PAIR_SPLIT.md` for the full rationale + alternatives considered + migration path.
+
+## Verify canonical/consolidated guidance against on-disk GROUND TRUTH — secondary docs drift (R-CANONICAL-DOC-GROUND-TRUTH; 2026-07-15)
+
+**When authoring or consolidating a canonical guidance doc (a playbook / runbook / template / methodology rule) that describes how the repos/code/portfolio are actually structured, VERIFY every load-bearing claim against on-disk reality — read the real repos/files — NOT against the prior secondary docs you're consolidating from. Secondary docs drift from the code, and consolidating from them silently propagates the drift into the new canonical artifact.** Codified per the 2026-07-15 app-spawn-playbook session: `PORTFOLIO_PATTERNS.md` still said *"18-section CLAUDE.md template"* (every real repo is 5-section v2) and *"25 `.claude/rules` files"* (the real set is 29) — both errors were caught ONLY because the playbook was authored by analyzing real repos (fresh AoPS spawns + mature apps via read-only Explore agents), then the drift was reconciled in the same round. Had the playbook been written from PORTFOLIO_PATTERNS alone, it would have shipped the stale numbers as new canon.
+
+- **The discipline:** for any structural claim (file trees, section counts, schema shapes, dependency versions, which files exist), the source of truth is the filesystem/`git` — spot-check it (read the actual file, `grep`, an Explore agent), and where a version is authoritative elsewhere (e.g. ForgeKit → `forgekit/Docs/CHANGELOG.md`), cite that + say "verify current" rather than hardcoding a number that will rot.
+- **Reconcile in the same round:** when ground-truth checking surfaces drift in the doc you're consolidating from, FIX the stale source too (don't just avoid copying it) — else the next author re-propagates it. (This session fixed the 3 `PORTFOLIO_PATTERNS` sites.)
+- **Companion to** § Cross-Repo Audit Methodology Rule 1 (pull-first) + Rule 5 (audit-to-canonical-propagation) + the freshness/pull-first discipline: those keep *reads* fresh; this keeps *authored canon* true to the code.
 
 ## Development Practices
 
