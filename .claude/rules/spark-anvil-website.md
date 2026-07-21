@@ -2,6 +2,9 @@
 
 The studio brand (Spark & Anvil) ships a company website at `spark-and-anvil.com` (planned domain) that introduces parents/educators/press/kids to the 131-app portfolio.
 
+
+> **⚡ THIS IS A CARD (V447-P4b progressive disclosure).** Each rule below keeps its heading (so `§ R-…` cross-references still resolve) + its load-bearing INVARIANT. The FULL detail — rationale, when-it-applies, cross-references, incident histories, reference-impls, examples — lives in **`Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md`** (fetch on demand; same `## ` headings). Regenerate this card: `scripts/split_rule_to_reference.py spark-anvil-website REFERENCE_SPARK_ANVIL_WEBSITE --apply`.
+
 ## Scope of hub for the website (UPDATED 2026-05-25)
 
 **Hub owns the website end-to-end.** The app-repo scope rule (hub ≠ implementation) does NOT apply to the website because the site is markup/content (Astro + Tailwind + TypeScript data files), not portfolio Swift app code. Per user 2026-05-25: "web site is not really code so it's okay" + "you own the website."
@@ -17,38 +20,107 @@ Hub owns:
 - **Site code itself**: Astro pages, Tailwind config, TypeScript data files, build scripts at `/Volumes/Data/Projects/GitHub/spark-anvil-site/`
 - **PRs against `spark-anvil-site`**: open, ship, merge from hub session
 
-Hub does NOT own:
+→ **Sub-rules** defined here (full detail in reference): (R-CLOUDFLARE-SCOPED-DEPLOY) · (R-SITE-DOMAINS).
 
-- Site deployment / DNS / hosting accounts (Cloudflare Workers — user-managed)
-- Production domain configuration (Cloudflare account-level)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-### Production domains — `.com` + `.org` both serve (R-SITE-DOMAINS; 2026-07-09)
+## The site is organized into 3 audience/purpose hubs — Play · Story · For Parents & Educators (R-SITE-3HUB-IA; 2026-07-15)
 
-**Both `spark-and-anvil.com` AND `spark-and-anvil.org` MUST resolve to the live site, serving identical content.** Codified per user-direct 2026-07-09 (*"spark-and-anvil.org should work the same as spark-and-anvil.com too"*).
+> **⚠ AMENDED 2026-07-16 (founder-direct, V275+V276 · ADR-039 update · site PR #735):** the 3 hubs stand, but two sub-decisions below are SUPERSEDED to consolidate + simplify:
+> - **Homepage is a LEAN FEATURED-TEASER SPLASH, not the full catalog** (supersedes principle 2 "`/play` catalog IS the homepage"). `/` now carries exactly three teaser sections — **featured web clones → `/play`**, **featured stories → `/story`**, **key parents/educators info → `/for-parents-educators`** — *and nothing else*. The full catalogs live on their hubs (every playable clone at the primary `/play` hub; the full library at the primary `/story` hub; the flat all-143-apps list at the **deprioritized/secondary** `/apps`, see the reaffirmation bullet below). Featured lists are **hand-curated for v1** (filtered to shipping slugs/chapters so no card breaks); a future "most-loved" aggregate (R-SITE-FEEDBACK) can drive them. The compact **orientation/trust band still gates the homepage** (Decision 2's surviving half — never a bare grid).
+> - **Nav = exactly THREE plain top-level links, NO dropdowns** (Play · Story · For Parents & Educators). Supersedes the "each hub parent is a link + hover/focus dropdown of top spokes" model — spokes now live on each hub LANDING page, not the header. Donate is not a nav CTA (footer + grownup hub).
+> - **Prioritize** web clones + stories + key grownup pages; **deprioritize (NOT delete)** everything else — **cast · books · the flat `/apps` + `/subjects` + `/cluster` catalog** drop off the nav + homepage but stay reachable via the hub landings + footer (deprioritize ≠ delete; the link-checker + surface-wiring gates stay green).
+> - **🔎 REAFFIRMED + SHARPENED 2026-07-16 (founder-direct): `/play` and `/story` are the ONLY two MAIN (primary browse) hubs; the flat `/apps` catalog is DEPRIORITIZED — a secondary surface, not a co-equal "full catalog."** The two kid content hubs are **`/play`** (the playable web-clone catalog — "what you can do right now") and **`/story`** (the illustrated-story + audio-drama library). `/apps` (the full 143-app flat list, most not yet playable) is deprioritized to a secondary/reference surface reachable from the hub landings + footer — it must NOT be presented as a primary/co-equal browse path, and its wording in this rule ("all 143 apps at `/apps`" as a "full catalog") is downgraded accordingly. (`/for-parents-educators` remains the adult side-door — a "for X" audience hub, not a kid browse hub.) Consequence for feature-wiring: a kid-facing browse feature (e.g. the Like/favorites affordance, R-SITE-FEEDBACK) MUST be present on **`/play`** (+ `/story`) — being wired only on `/apps`/`AppCard` leaves it invisible on the main hubs (the 2026-07-16 "I don't see the Save button" gap). **Deprioritize ≠ delete still holds** (orphan-check per § R-SITE-DEPRIORITIZE-REACHABILITY; `/apps` keeps ≥1 inbound link).
+> - **UNCHANGED + still load-bearing:** Decision 4 — the **prominent, independent Privacy link on every page** (global footer; also surfaced in the homepage grownup card). The hybrid-hub principle, `/story` faceting, `/play`↔`/story` integration, and SEO-N/A all stand.
 
-- **Canonical host:** `spark-and-anvil.com` — Astro `site:` in `astro.config.mjs`, so sitemap / RSS / canonical `<link>` all point at `.com`. `.org` serves the same content; its canonical tags still point to `.com` (single-canonical for SEO — avoids duplicate-content penalties).
-- **Implementation (zero code change):** the site is fronted by the `spark-anvil-dispatcher` Worker (ADR-032), which routes purely by URL **path** and is **host-agnostic** — so `.org` serves identically the moment the domain is attached. Account-level (user-managed): add `spark-and-anvil.org` (+ `www.spark-and-anvil.org`) as additional **Custom Domains** on `spark-anvil-dispatcher`.
-- **Optional (NOT required):** to force a single visible hostname, add a 301 in the dispatcher — `if (new URL(request.url).hostname.endsWith("spark-and-anvil.org")) return Response.redirect(canonicalUrl, 301)`. Default is serve-identically (no redirect), which satisfies "work the same."
-- **Ownership:** attaching the `.org` domain + DNS is account-level (user); the dispatcher code + this policy are hub-owned.
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-### Workflow
+## Deprioritizing a page off nav/homepage OBLIGATES an orphan check — and the scan MUST match data-array `href:` links, not just HTML-attribute `href="…"` (R-SITE-DEPRIORITIZE-REACHABILITY; 2026-07-16)
 
-When making site changes from hub:
+**Whenever you deprioritize a page off the nav/homepage (the R-SITE-3HUB-IA "deprioritize ≠ delete" move) OR simplify the nav, you MUST run an orphan check confirming every deprioritized page STILL has ≥1 inbound link from a hub landing (`/play`, `/story`, `/for-parents-educators`) or the global footer — because "deprioritize" silently becomes "delete-from-discovery" the moment a page's last inbound link is the thing you removed. `check-site-internal-links.py` will NOT catch this — it flags BROKEN links (href → missing route), never an ORPHAN (a real page nothing links to).** Codified per the V279 session (`Docs/AUDIT_SITE_HUB_LANDING_COMPLETENESS_2026-07-16.md`): the featured-teaser/3-link-nav consolidation (V275/V276) deprioritized pages off the nav+homepage, and a follow-up sweep found `/educators` (the working educator portal) had gone to **zero inbound links** — a real orphan fixed by adding it as a spoke on the grown-up hub landing (site PR #737), exactly per deprioritize≠delete.
 
-1. `cd ../spark-anvil-site && git pull --ff-only` (always pull first)
-2. Branch: `feature/<topic>` in the site repo
-3. Edit `src/pages/*.astro`, `src/data/*.ts`, `tailwind.config.js`, etc. directly
-4. `npm install` if needed; `npm run build` to verify
-5. `gh pr create` + `gh pr merge --merge --delete-branch` from the site repo
-6. Pair with a hub doc update if the change reflects a research/plan delta
+**The load-bearing scan gotcha (both false-orphan AND false-reachable):** an inbound-link/orphan scan MUST match BOTH link forms the site uses, or it lies in either direction:
+- `href="/route"` — a literal HTML attribute (most links).
+- `href: '/route'` / `href: "/route"` — a **data-array entry** rendered via a `.map()` (the hub landings' `spokes[]`/`groups[]`, the nav `items[]`, footer columns — a large share of IA links).
 
-### Handoff doc convention (legacy + audit trail)
+A grep for only `href="…"` mis-reported `/welcome` as orphaned in the V279 handoff when it was actually reachable from the `/for-parents-educators` landing as a single-quote `href: '/welcome'` spoke — nearly triggering the deletion of a functional, linked page (a verify-before-action near-miss). Use a scan that matches both forms (the audit's Python scanner is the reference: `href="/%s(["/#?])` OR `href:\s*['\"]/%s(['\"/#?])`), enumerate every top-level `src/pages/*.astro` route, and treat any 0-inbound route as an orphan to fix (add a hub-landing/footer link) or a founder-confirmed retire.
 
-`spark-anvil-site/Docs/HANDOFF_FROM_HUB_*.md` (canonical 2026-06-11+) or `HANDOFF_FROM_LABSMITH_*.md` (legacy) docs are NO LONGER required for site work (hub implements directly). They MAY still be authored when:
-- A major IA change deserves a durable audit-trail artifact (e.g., the Reflect-pillar 4th-modality rollout)
-- The change spans multiple sessions and the next session needs a self-contained brief
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-If the change is small (palette tweak, copy edit, new page from existing pattern), skip the handoff doc — just ship the PR.
+## Every per-clone `NEXT_WEB_CLONE` pickup doc ANCHORS to the current site IA (never hardcodes a stale route) (R-WEB-CLONE-PICKUP-DOC-IA; 2026-07-15)
+
+**Every `CONTEXT_HANDOFF_*_NEXT_WEB_CLONE_<app>.md` pickup handoff MUST carry a "Site IA anchor" that states the CURRENT site IA + defers to `WEB_CLONE_PICKUP_RUNBOOK.md` § "Site-IA context" — and MUST NOT hardcode a stale route (`/stories`, the old marketing homepage, the old flat nav). A pickup doc that references the old IA, or that omits the anchor and silently assumes pre-V257 structure, is a defect.** Codified per founder-direct 2026-07-15 (*"the existing web-clone pickup docs are now incorrect because of website reorganization … fix and codify"*), after a two-pass V265 audit: the founder's concern was the **per-clone** pickup docs (not the generic runbook, which V265 already reconciled). An exhaustive (zsh-safe) re-verify found the 18 flagged docs carry **no hardcoded stale-IA route** — they *defer* IA to the runbook (V265-corrected) + `<PlayNarrative>` (which auto-links to `/story`) — so nothing was silently stale; BUT there was **no guard** keeping the class IA-correct and **nothing made the IA-correctness explicit** to a builder picking one up. This rule closes both gaps.
+
+**The anchor (what every pickup doc carries):** the clone lives under `/play/<app>/*` (unmoved by the reorg); **homepage `/` = the 143-app catalog** (old marketing home at `/welcome`); **stories at `/story`** (`/stories` redirects); **3-hub nav** (Play · Story · For Parents & Educators + Donate); **`/play`↔`/story` auto-wired** by `<PlayNarrative>` (landing→`/story` cast pages) + `clone-lookup.ts` (cast page→"Play <app> →") — **no per-clone IA wiring needed**; full detail in the runbook's Site-IA-context section. Reference impls: the 18 apps flagged 2026-07-15 (creaturecare · dancequest · ensemblequest · fitquest · harvestforge · huggyhabits · labsmith · melodymice · rupturerepair · saffronlab · taleforge · taletrail · tempcheck · terrawatch · tinyletters · trailforge · voicetale · wellnessforge) each got the anchor inserted before their `## Why` section.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Every per-clone `NEXT_WEB_CLONE` pickup doc carries an explicit CLONE-ELIGIBILITY verdict — never auto-queue a questionable candidate as a standard clone (R-WEB-CLONE-PICKUP-DOC-ELIGIBILITY; 2026-07-15)
+
+**Every `CONTEXT_HANDOFF_*_NEXT_WEB_CLONE_<app>.md` pickup doc MUST carry an explicit "Clone eligibility (verdict)" section that classifies the app BEFORE proposing surfaces — because "next web clone" pickup docs are auto/hand-generated from a standard tween-16×25-MC template, and that template is WRONG for younger-cluster, device-first, SEL/reflection, out-of-band-age, and no-portable-core apps. A pickup doc that assumes the standard MC-clone shape for a non-standard app, or that queues a questionable candidate for build without a verdict, is a defect.** Codified per founder-direct 2026-07-15 (*"per-doc eligibility"*), the companion to R-WEB-CLONE-PICKUP-DOC-IA (same V265 lane): the IA rule keeps the docs route-correct; THIS rule keeps them from mis-scoping the app itself.
+
+**The verdict taxonomy (pick exactly one per doc; confirm in the Phase-2 deep-read):**
+- **✅ ELIGIBLE** — standard tween (9–14) 16×25-MC clone.
+- **🧒 ELIGIBLE (younger-track, ages 5–8)** — **NO MC kits** (R-YOUNGER-CLUSTER-NO-MC-KITS); port **activity formats** (tap/drag/trace/audio-first), not a Concepts-MC surface.
+- **🔄 ELIGIBLE (adapted)** — a device-first / composition / collaborative app: **port the learning core**, waive the device feature (R-WEB-CLONE-DEVICE-FEATURE-SKIP) or the networked/social mode (R-WEB-CLONE-SOCIAL-MODES), and **author kits with in-session Opus if the app has none** (R-WEB-CLONE-KITS-OPUS-AUTHOR). Device-centric apps still have a high knowledge-layer yield — don't dismiss as a thin port.
+- **🛑 ELIGIBLE (gated)** — port with a **trauma / SEL / cultural (Indigenous-TEK / food-justice / body-image)** gate active; SEL/reflection surfaces waive competitive/social modes; crisis resources where relevant.
+- **⚠ RE-ASSESS** — candidacy is genuinely questionable: **out-of-band age** (outside 9–14, e.g. an ages-16–40 app), documented **"weak web fit"**, a **portable-core-unconfirmed** sandbox, or **no solo learner-facing learning surface** (a purely dyadic/real-time instrument). **Do NOT auto-queue for build** — needs a Phase-2 deep-read or a founder candidacy call first.
+- **⛔ NOT A CLONE** — no portable learning core at all.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Provisioning an account-managed Cloudflare backend follows ONE reusable pattern (R-CLOUDFLARE-BACKEND-PROVISIONING; 2026-07-16)
+
+**Every new account-managed Cloudflare backend behind `spark-and-anvil.com` (a Worker + its storage + its route) follows the single reusable playbook in `Docs/GUIDE_CLOUDFLARE_BACKEND_PROVISIONING.md`, and each instance ships a deep-web-researched, cited per-instance RUNBOOK.** Codified per founder-direct 2026-07-16 ("codify the previous cloudflare provision work too"), generalizing the two shipped instances into one discipline. This is the *how-to-stand-up-a-backend* umbrella; `R-CLOUDFLARE-SCOPED-DEPLOY` is the *who-may-run-the-deploy* authorization rule they both obey.
+
+**The load-bearing invariants (author + review any Cloudflare-backend work against these):**
+1. **Ownership split** — hub owns the Worker/storage/client CODE (ships via a worktree branch + PR, R-SITE-BUILD-SPLIT); the founder owns the ACCOUNT (token, storage-resource creation, route/domain, build-watch, go/no-go, counsel).
+2. **Pick the store by WORKLOAD** — **coordination/realtime/atomic-per-session → Durable Objects** (one object per entity; ~500–1k req/s/object ceiling → shard); **aggregation/counts/relational → D1** (atomic single-statement UPSERT `… ON CONFLICT DO UPDATE SET count=count+1`, no read-modify-write race; native aggregate SQL + `WHERE count>=k`); **read-heavy static config → KV** (NEVER counters — eventual + 1 write/s/key → lost increments).
+3. **`wrangler whoami` confirms the CORRECT account BEFORE any account-mutating op** (R-CLOUDFLARE-SCOPED-DEPLOY) — the most load-bearing step; a wrong-account create/deploy makes un-undoable resources.
+4. **Route via a direct Worker Route** (`/api/<x>/*`, precedence over the dispatcher Custom Domain; WS rides it) — pick ONE model per path; deploy the target Worker before any service-binding caller.
+5. **Build-watch is per-unit + account-managed** — a backend Worker is a SEPARATE deploy surface (no core/play rebuild); flag any watch-path change in the PR.
+6. **Rollback = remove the route** → the site reverts with no data loss; never make a route the only path to a learning-critical feature.
+7. **Origin-locked + rate-limited (coarse key, never per-child) + no PII/accounts/identifier; counsel-gate any kid-facing backend before launch; deep-web-research foreground-sequential** (the parallel `deep-research` fan-out rate-limits — `workflow.md` § R-WEBSEARCH-FANOUT-RATELIMIT).
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## User feedback (likes) → CROSS-USER recommendations via ANONYMOUS AGGREGATES — never per-child profiles, never a dark-pattern (R-SITE-FEEDBACK; 2026-07-15)
+
+**Any user-feedback / like / favorite / recommendation / "kids also liked" / "most-loved" feature on the site MUST deliver its CROSS-USER signal (other users' feedback → other users' recs, per founder-direct) from ANONYMOUS AGGREGATE item statistics that are never tied to any individual child — NEVER from accounts, PII, a persistent per-child identifier, a raw per-user event log, or account-based collaborative filtering; and it MUST be GENTLE + non-manipulative (no engagement dark-patterns; likes never gate content).** Codified per founder-direct 2026-07-15 (*"let users provide feedback … such as liking an app/web clone/story … use those signals for recommendations and feature for new users"* + clarification *"i actually meant using users' feedback for recommendations for other users not on the same device"*). Decision: `ADR-040`; research: `RESEARCH_SITE_FEEDBACK_RECOMMENDATIONS_2026-07-15.md`; plan: `PLAN_SITE_FEEDBACK_RECOMMENDATIONS_2026-07-15.md`. **✅ COUNSEL APPROVED 2026-07-16** (the ADR-040 launch gate is CLEARED, on the strict-anonymity basis below); **the store choice is settled = D1 (atomic-UPSERT counters + k-anonymity `WHERE count>=k`), see `Docs/RUNBOOK_CLOUDFLARE_FEEDBACK_AGGREGATE_PROVISIONING_2026-07-16.md`.**
+
+**The load-bearing principles (author + review any feedback/recs surface against these):**
+1. **Cross-user signal = anonymous AGGREGATE counters only.** The collaborative benefit ("kids who liked X also liked Y", "most-loved") comes from (a) per-item **like counts** (popularity) + (b) item-item **co-occurrence counts** — the recognized privacy-friendly collaborative method (aggregate *item relationships*, never per-user profiles). Stored in an aggregate backend (a Cloudflare Worker + KV/D1/Durable-Object; account-provisioned by the founder, **hub owns the code**) as **counters only — increment-and-discard, no raw per-device/per-session event log, no identifier**.
+2. **The COPPA line (stricter than on-device — this transmits a like off-device).** An anonymous aggregate counter with no identifier tied to a user is not "personal information." Compliance requires ALL of: **no accounts · no PII · no persistent per-child identifier · no cross-site tracking · aggregate counts only (no re-identifiable event log) · a mandatory k-anonymity minimum-support threshold** (expose a co-occurrence pair / "loved" item ONLY once ≥k anonymous contributions back it, default k ≥ 20 — mitigates the documented "You might also like" aggregate-leakage attack) · **retention-minimized** (2025 COPPA amendments: counts only, no indefinite raw history) · **rate-limited + origin-locked** write endpoint · **disclosed in the privacy policy** ("we count likes anonymously to recommend popular items — we never store who liked what") · **counsel-reviewed before launch**. NO third-party like/share widgets or hosted recsys SaaS. NO account-based collaborative filtering / per-child behavioral profile (that IS COPPA collection). Optional differential-privacy noise is a stronger guarantee (defer unless cheap).
+3. **HYBRID with content-based for cold-start + diversity.** Co-occurrence is empty for a new item + below the k-threshold → fall back to a **build-time content-based similarity map** (TF-IDF + cosine over existing metadata: cluster · subject · gradeBand · primitive · modes · type → static JSON; we already ship all this → zero new data) for "More like this", and diversify (cap same-cluster repeats). New-user featuring = measured "Most-loved" once warm, with a hub-**curated "Loved by learners"** bootstrap (honest "hand-picked" label) before the aggregate clears the threshold. Cross-type recs (app↔clone↔stories) ride the existing `/play`↔`/story` mapping (V257 Phase 2).
+4. **On-device like store still exists** (localStorage, no identifier) as the device's own "Your favorites" + the source of the anonymous like *event* that fires the aggregate increment (fire-and-forget; the like still saves locally if the endpoint is unreachable). It is not the cross-user engine — the aggregate backend is.
+5. **No engagement dark-patterns (FTC §5).** The 2025 COPPA amendments dropped the explicit engagement-technique ban BUT the FTC reserved §5 authority over "practices that unfairly manipulate children's engagement" (+ state dark-pattern laws). Calm rails ("Kids also liked", "Most-loved") as gentle discovery; NO scarcity/urgency/streak/guilt copy, NO push re-engagement, NO like-driven autoplay, NO leaderboard-to-chase. Likes never gate content (everything free + open).
+6. **Accessible + dark-safe + reversible.** First-party like control: ≥44px, `aria-pressed`, keyboard + visible focus, verdict-not-by-colour-alone (icon fill + label), reduced-motion-safe, themed via `--sa-*` (R-WEB-CLONE-DARK-MODE-SUPPORT). A "Your favorites" surface (local) with a "saved only on this device" note + clear control. Placement at browse/discovery + session boundaries, never mid-practice (R-NARRATIVE-BETWEEN-NOT-DURING). Rails link only to real routes (R-WEB-CLONE-NO-DARK-SURFACE). Screenshot-DoD (dark+light, desktop+mobile) + Vitest (content rec-map invariant + aggregate-schema/k-threshold) + a11y + zero-broken-links gate on every phase. The aggregate Worker + its dispatcher route + build-watch are **account-managed** (flag in the PR).
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Room-code networked multiplayer for web clones — Durable Objects + WebSocket, NO chat, NO accounts (R-WEB-CLONE-MULTIPLAYER; 2026-07-15)
+
+> **🔴 CRITICAL — the counsel-review launch gate is CLEARED (COUNSEL APPROVED 2026-07-16, founder-direct; ADR-041). Networked room-code multiplayer is UNBLOCKED for shipping to kids.** The V261 transport (`spark-anvil-room` Worker + `Room` Durable Object) is DEPLOYED LIVE on `spark-and-anvil.{com,org}/api/room/*`, AND the "counsel-reviewed before launch" condition that every principle below refers to has been **satisfied once, portfolio-wide** — a clone surfacing the room mode does NOT need a fresh counsel review; it inherits the cleared ADR-041 gate. So Shell B (networked room mode, `_shared/roomMode.ts`) is now a **first-class, shippable** engagement mode alongside pass-and-play + adventure (R-WEB-CLONE-SOCIAL-MODES): wire it onto the ✅-MP archetypes (turn-based/board/deduction/MC-quiz-duel), each with the two-client Playwright smoke below. The safety-BY-DESIGN invariants (NO free-text chat / NO voice / pre-set emotes only / ephemeral generated names / code-gated ephemeral rooms / no accounts / no PII / origin-locked + rate-limited) remain **hard, non-waivable gates** — counsel approval was granted ON THE BASIS of those invariants, so shipping a room mode that violates any of them (e.g. adds free-text chat) FORFEITS the cleared gate and is a critical defect. What is cleared is the *launch gate*; the *design invariants* are permanent. Codified per founder-direct 2026-07-17 ("counsel has approved and it has been codified in the repo. make this critical").
+
+**A `/play/<app>` web clone's room-code networked multiplayer (iOS parity: host mints a short code → peers join by code → networked co-op/competitive play) MUST be built on Cloudflare Durable Objects + WebSocket (a DO named by the room code = the room's single authority + message fan-out + server-authoritative), with safety guaranteed BY DESIGN — NO free-text chat / NO voice (pre-set emotes only), ephemeral generated display names (no PII), code-gated ephemeral rooms (no accounts, no persistence, no retention, no discovery). NOT WebRTC, NOT a third-party realtime SaaS, NOT accounts/persistent identifiers.** Codified per founder-direct 2026-07-15 (*"our ios apps already has the room code feature to enable networked multiplayer play. i want to build that for the web clones too."*). Decision: `ADR-041`; research: `RESEARCH_WEB_CLONE_ROOM_CODE_MULTIPLAYER_2026-07-15.md`; plan: `PLAN_WEB_CLONE_ROOM_CODE_MULTIPLAYER_2026-07-15.md`. This is the web parity for the iOS ForgeKit server-room model (R-WEB-CLONE-PARITY: multiplayer is an iOS learning feature → web parity).
+
+→ **Sub-rules** defined here (full detail in reference): (R-CLONE-BIDIRECTIONAL-BACKPORT).
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Pass-and-play + multiplayer + adventure engagement modes for appropriate `/play` clones — shared shells, eligibility-by-archetype, adventure BOUNDARY-ONLY (R-WEB-CLONE-SOCIAL-MODES; 2026-07-15)
+
+**Appropriate `/play/<app>` clones carry three iOS-parity engagement modes — (1) pass-and-play same-device hotseat, (2) networked room-code multiplayer, (3) adventure/progression framing — built as SHARED `_shared/` shells and scoped by a per-clone ELIGIBILITY-BY-ARCHETYPE matrix (NOT all clones); pass-and-play is serverless + trivially COPPA-compliant, multiplayer RIDES the V261 transport (never a new one), and adventure mode is BOUNDARY-ONLY + guard-the-ratio (never a decorated critical-path mini-game). A clone that forces multiplayer onto a solo-reflection/solo-tool surface, invents a second multiplayer transport instead of riding V261, or puts adventure narrative/decoration on the active problem-solving loop is a defect — as is an eligible clone that omits a mode without a documented waiver.** Codified per founder-direct 2026-07-15 (*"i want to add pass-and-play, multi-player play and adventure modes to all web clones that are appropriate for them. do deep web research, plan, create adr and codify."*). Decision: `ADR-042`; research: `RESEARCH_WEB_CLONE_SOCIAL_ADVENTURE_MODES_2026-07-15.md`; plan: `PLAN_WEB_CLONE_SOCIAL_ADVENTURE_MODES_2026-07-15.md`. This is the **umbrella** over the three modes; the networked-multiplayer transport lives in § R-WEB-CLONE-MULTIPLAYER (ADR-041), which this consumes.
+
+**The load-bearing principles (author + review any clone engagement-mode surface against these):**
+1. **Shared shells, opt clones in.** Pass-and-play = a serverless `_shared/passAndPlay.ts` wrapping `_shared/mcRound` (quiz-duel) + native for turn-based board clones; adventure = a `_shared/adventureMap.ts` re-skin of the existing kit-index; networked MP = wrap the pass-and-play game-state logic in the V261 room. Build the shell ONCE; a clone opts in with a per-app registry flag (R-WEB-CLONE-MERGE-HYGIENE per-app-file model) — never hand-roll a bespoke per-clone version of a shared mode.
+2. **Pass-and-play = iOS `ForgePassAndPlay` parity, serverless.** Explicit **End-Turn** → auto-save state → **privacy curtain** (hide the board + "Pass to Player N → tap when ready" reveal — the direct web analog of the iOS 4-stage privacy curtain) → **seat labels are generated** (adjective+animal / "Player N", NEVER a typed real name) → per-seat first-try score race, anti-shame (private-per-turn, round always advances). No network, no accounts, no PII → ships without an account/counsel gate. **Build this FIRST.**
+3. **Networked multiplayer RIDES V261, never a new transport.** The room = the V261 Cloudflare Durable-Objects + WebSocket transport (§ R-WEB-CLONE-MULTIPLAYER / ADR-041) wrapping the pass-and-play game-state logic; safety-by-design (NO free-text chat / NO voice; pre-set emotes; ephemeral generated names; code-gated ephemeral rooms) + account-provisioning are INHERITED from V261. Do NOT design/duplicate a transport. **🔴 V261 is now LIVE + the counsel-review launch gate is CLEARED (2026-07-16, ADR-041) — so the networked mode is UNBLOCKED and shippable to kids** (see § R-WEB-CLONE-MULTIPLAYER 🔴 CRITICAL banner); wire `_shared/roomMode.ts` onto the ✅-MP archetypes with the two-client Playwright smoke, inheriting the cleared gate (no fresh review) as long as the safety-by-design invariants hold.
+4. **Adventure mode is BOUNDARY-ONLY + GUARDED (the evidence-hardest rule).** The 2024–2025 evidence is decisive: **behavioral engagement (clicking through a map) does NOT predict learning gains — only COGNITIVE engagement does**; narrative aids *behavioral* not *cognitive* outcomes; decoration on the critical path is a seductive detail (g ≈ −0.16, worst when the task is hard). So the adventure map is a **progression organizer over the clone's EXISTING kits** at session boundaries (map → pick a stop → the UNCHANGED, schematic practice loop → return), NEVER a decorated mini-game, NEVER narrative/animation on the active loop (`R-NARRATIVE-BETWEEN-NOT-DURING`), and the game-to-learning ratio is guarded (`R-GUARD-THE-RATIO`). An adventure surface that decorates the critical path or that a review can't trace to real practice is a defect.
+5. **Eligibility by mechanic ARCHETYPE, documented waivers.** MC-kit clones → all three; turn-based board/deduction → pass-and-play + MP (strongest) + optional campaign; deterministic sim/POE → adventure + optional co-op predict; solo creative tools → adventure-optional, pass-and-play/MP ⛔; solo reflection/SEL/focus → ⛔ (reflection is private+solo by pillar design — forcing multiplayer violates the pillar) or a gentle non-competitive path only. Every mode a clone omits carries a one-line ⛔ rationale (R-WEB-CLONE-DEVICE-FEATURE-SKIP style); "it was more work" is never a waiver (that's a tracked 🟡). New clones inherit their archetype's row (see the `PLAN` matrix).
+6. **Parity + symmetric backport + full DoD.** These are learning/engagement-relevant parity features (R-WEB-CLONE-PARITY): a web-pioneered mode iOS lacks → an iOS handoff; an iOS mode the web lacks → a 🟡 ledger gap (R-CLONE-BIDIRECTIONAL-BACKPORT). Each mode updates the clone's `PARITY_WEB_VS_IOS.md` ledger + passes the two-axis DoD + no-dark-surface + screenshot-DoD (dark+light, desktop+mobile) + Vitest/Playwright — plus a **two-client Playwright smoke** for networked MP and a **two-seat hotseat walk** for pass-and-play. On-device / COPPA / no third-party trackers throughout.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Web-clone parity is a two-axis Definition-of-Done gate (R-WEB-CLONE-PARITY-DOD; 2026-07-10)
 
@@ -59,33 +131,31 @@ If the change is small (palette tweak, copy edit, new page from existing pattern
 
 Both are **default-parity-with-documented-exceptions**, NOT pixel/behavior identity. The exception taxonomy is shared (platform-only affordance · site-chrome-cohesion substrate · web-platform norm · on-device/COPPA · documented diminishing-returns · founder-direct) — *"it was more work"* is never a waiver (that's a tracked 🟡). Both axes are **symmetric**: a learning-relevant feature or interaction that exists on only ONE surface must be backported to the other or waived, per `R-CLONE-BIDIRECTIONAL-BACKPORT` (hub files the iOS-direction handoff; the app session ships it back).
 
-**Codified per founder-direct 2026-07-10** (*"make sure the web clones … are at feature and ui/ux parity with iOS apps"* + *"codify the feature and ui/ux parity requirements too"*). This clause consolidates the two axis-rules below into one standing ship gate so neither can be silently skipped: it applies to **every** clone (current + future), it is verified at ship time (per the `WEB_CLONE_PATTERNS.md` ship-gate checklist + `WEB_CLONE_SPAWN_WORKFLOW.md` Phase 4), and it is re-verified whenever EITHER surface gains a learning-relevant or UI/UX-character change. **The two `PARITY_WEB_VS_IOS.md` ledger sections are the required, living artifacts** — a clone with an unfilled or stale ledger fails this gate.
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## A clone is not shipped until its HUB-SIDE artifacts land + are verified — not just the site PR (R-WEB-CLONE-HUB-SIDE-DOD; 2026-07-15)
 
 **A `/play/<app>` clone is NOT "shipped" — and MUST NOT be claimed shipped — until BOTH halves land: (1) the SITE PR (routes + lib + kits + per-app CSS + `clone.meta.ts`, merged + live-verified) AND (2) the HUB-SIDE artifacts. A clone whose site code is live but whose hub-side artifacts are absent is *site-shipped-but-hub-dark* — a Definition-of-Done violation on the same footing as a missing parity axis.** Codified per founder-direct 2026-07-15 (*"codify the hub-side DoD rule"*). The runbook § 7 already says "two PRs per clone" procedurally; this makes the hub half an explicit, enforceable ship gate — because a clone genuinely *can* merge site-only, and when it does, the hub carries no signal that the clone exists or is done.
 
-### The required hub-side artifacts (the "second PR")
+→ **Sub-rules** defined here (full detail in reference): (R-CLONE-BIDIRECTIONAL-BACKPORT).
 
-1. **`Docs/web/<app>/` doc-set** — at minimum `RESEARCH.md` (incl. the classified `## Backport candidates` list, R-WEB-CLONE-BACKPORT-MINING), `PARITY_WEB_VS_IOS.md` (the two-axis ledger — the living artifact R-WEB-CLONE-PARITY-DOD gates on), `FEATURE_PLAN.md`, `GUIDE_USER.md`, `GUIDE_DEVELOPER.md` (R-WEB-CLONE-GUIDE-SYNC). `scaffold_web_clone.py` also emits `DEPLOYMENT_RUNBOOK.md` / `PERFORMANCE_BUDGET.md` / `TESTING.md` / `DOCUMENT_CATALOG.md` — keep them.
-2. **Porter committed to hub** — `scripts/port_<app>_kits_to_web.py`. The generated `src/data/play/<app>/kits-index.ts` header credits this script by name; a **referenced-but-absent porter is a defect** (the kits-index can't be regenerated / re-verified). The porter MUST reproduce the shipped kits-index + kit JSON exactly (re-runnable / idempotent).
-3. **`REGISTRY_WEB_CLONES.txt` row** — appended and flipped to `shipped` (+ authoritative `grep -c '| shipped |'`) AFTER live-verify (R-WEB-CLONE-NO-DARK-SURFACE § merged≠deployed). A live clone with no registry row is hub-dark.
-4. **Work-queue `V<N>` entry** — the ship record (pull-first `max+1`; renumber-on-conflict).
-5. **iOS backport handoffs** — one `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md` per ✅ FILE candidate + its 🟡 ledger row (R-CLONE-BIDIRECTIONAL-BACKPORT).
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-### Why it's load-bearing (the motivating incident)
+## A spawned app's `/play` clone is a TRACKED follow-on — a `planned` registry row at clone-readiness, so it can't go silently un-built (R-WEB-CLONE-SPAWN-TRACKED; 2026-07-16)
 
-**2026-07-15 lifequest parallel collision.** A sibling hub session merged the `/play/lifequest` site clone (site PR #684) while the hub-side artifacts landed only in *follow-up* commits. During that window the clone was **site-live but hub-dark**: no `Docs/web/lifequest/` doc-set, no registry row, no work-queue entry. A second session (building the same clone in parallel per the pickup handoff) could not tell *from the hub* that the clone was already done — the hub's own "is this claimed/shipped?" signals (the registry row + the parity ledger + CLAIMS) were the missing half — and duplicated the entire build before the collision surfaced at rebase (R-PARALLEL-HUB-AGENTS 5b). The hub-side artifacts are not paperwork: **the registry row + ledger + CLAIMS release are the coordination signals** that stop parallel duplication, and the parity ledger is where R-WEB-CLONE-PARITY-DOD actually lives.
+**Every spawned portfolio app's `/play/<app>` web clone is a tracked follow-on deliverable: the instant the app reaches CLONE-READINESS it MUST get a `planned` row in `Docs/REGISTRY_WEB_CLONES.txt` (which enters it into the clone-candidate pipeline / `AUDIT_WEB_CLONE_NEXT_RANKING`), so it can never sit clone-ready-but-invisible. A clone-ready spawned app with NO registry row (planned / building / shipped) is a tracking defect.** Codified per founder-direct 2026-07-16 (*"what about web clone builds for the 4 new apps greenlit before? … codify this issue and resolution … add them to the work queue and prioritize"*).
 
-### When it applies
-- **Authoring any clone** → the site PR and the hub-side artifacts are ONE deliverable; don't mark a lane shipped (CLAIMS / work-queue / registry) until both are merged + live-verified. Flip the registry row to `shipped` only after the live-verify (§ 7a).
-- **Reviewing a clone / auditing `/play`** → a live `/play/<app>` with a missing `Docs/web/<app>/` doc-set, absent registry row, or referenced-but-absent porter is a defect (site-shipped-but-hub-dark), same weight as a missing parity axis.
-- **Resuming / picking the next clone** → read the hub signals first (registry row + `Docs/web/<app>/PARITY_WEB_VS_IOS.md` + CLAIMS). Their *absence* is what makes a half-shipped clone look un-built; their *presence* is the sibling-first "already done, pick another" signal (R-PARALLEL-HUB-AGENTS 5a/5b).
+→ **Sub-rules** defined here (full detail in reference): (R-SPAWN-KIT-ARC-SCAFFOLD).
 
-### Cross-references
-- `Docs/WEB_CLONE_PICKUP_RUNBOOK.md` § 7 (the "two PRs per clone" the gate formalizes) + § 7a (live-verify before the registry flip)
-- § R-WEB-CLONE-PARITY-DOD (the parity ledger this gate ensures actually ships) · § R-WEB-CLONE-NO-DARK-SURFACE (the site-side wired+visible sibling; this is its hub-side analog) · § R-WEB-CLONE-BACKPORT-MINING / § R-CLONE-BIDIRECTIONAL-BACKPORT (the handoff artifacts) · § R-WEB-CLONE-GUIDE-SYNC (the two guides)
-- `.claude/rules/workflow.md` § R-PARALLEL-HUB-AGENTS 5a/5b (the collision protocol whose signals are these hub-side artifacts) · § "Verify origin state before claiming coverage"
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Every active portfolio app has a web-clone row OR a documented exclusion — a standing coverage guard so no clone is silently forgotten (R-WEB-CLONE-COVERAGE-COMPLETENESS; 2026-07-20)
+
+**Every ACTIVE portfolio app (`Docs/REGISTRY_ACTIVE_PORTFOLIO_APPS.txt`) MUST have EITHER a `planned`/`building`/`shipped` row in `Docs/REGISTRY_WEB_CLONES.txt` (R-WEB-CLONE-SPAWN-TRACKED — it's in the clone pipeline) OR a machine-parseable documented coverage entry (`# EXCLUDED: <app> — <reason>` = never a standard clone, web analog documented; `# DEFERRED: <app> — <reason>` = clone-ready-when-content-lands → flips to a `planned` row). An active app with NEITHER is *silently forgotten* — a coverage defect on the same footing as a missing gen-asset guard.** `scripts/check_web_clone_coverage.py --ci-mode` is the standing guard (set-difference of the two registries; fails on any un-covered active app). This is the `/play`-clone sibling of `portfolio.md` § R-ASSET-GEN-COMPLETENESS + § R-CHAPTER-MULTIBEAT-COMPLETENESS: a **self-checking registry so a clone-eligible app can never fall through** — codified per founder-direct 2026-07-20 (*"audit … we are not missing any portfolio web-clones or not silently forgotten. codify"*), after `AUDIT_WEB_CLONE_COVERAGE_2026-07-20` found 8 active apps with no clone row (+ 1 registry-drift orphan).
+
+**The load-bearing distinction — a buried comment is NOT coverage.** The aggregator/out-of-band exclusions had been noted in a *prose comment* in the registry, which the guard can't parse and a resuming session won't find → the two newly-spawned younger-cluster apps (calmcubs/storypals) had drifted to zero coverage signal. So exclusions/deferrals MUST be the **machine-parseable `# EXCLUDED:`/`# DEFERRED: <app> —`** form (leading marker so the shipped/planned data-row parsers + distribution scripts skip them; the guard greps them explicitly). Reasons must name the **web analog** (why no clone is correct): aggregator → the `/play` index/zones · MP-platform → the shared room-MP shells · teacher-tool/accounts → COPPA-infeasible, analog = on-device `<ProgressReport>` · launcher → the site IA · out-of-band audience → outside the 3-5/6-8/9-14/15-18 clone bands · younger-activity-port → DEFERRED until activity banks land.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## The canonical UI/UX best-practices reference for every clone (R-WEB-CLONE-UI-UX-BEST-PRACTICES; 2026-07-14)
 
@@ -99,132 +169,33 @@ Both are **default-parity-with-documented-exceptions**, NOT pixel/behavior ident
 - **Register + narrative placement** (ages 9–14 warm copy; narrative only at session boundaries).
 - **Verification** — the mandatory screenshot-DoD pass (§ R-WEB-CLONE-SCREENSHOT-DOD) + the reusable prominence-treatment recipe.
 
-**When it applies:** authoring any new clone (follow the § 10 checklist from day one); reviewing a clone PR (a UI/UX change that violates the 3-card hierarchy, the quiet-stage guardrail, the accessibility floor, or ships an anti-pattern is a defect — same weight as a missing parity axis); any shared `.pc-q-*` / `.ff-stage` change (it lifts every clone — screenshot at least one adopter). Keep the guide current as the shipped patterns evolve (freshness-horizon 180d).
-
-**Cross-references:** `Docs/GUIDE_WEB_CLONE_UI_UX_BEST_PRACTICES.md` (the guide) · `Docs/WEB_CLONE_PATTERNS.md` (structure + ship gate — the companion) · every § R-WEB-CLONE-* UI/UX rule below · `Docs/RESEARCH_WEB_CLONE_QA_FLOW_PROMINENCE_2026-07-13.md` + `RESEARCH_WEB_CLONE_MANIPULATIVE_PROMINENCE_2026-07-13.md` + `RESEARCH_PREDICT_OBSERVE_EXPLAIN_MECHANIC_2026-07-14.md`.
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Web clones have an automated test suite — Vitest units + Playwright a11y/SEL smoke (R-WEB-CLONE-TEST; 2026-07-12)
 
 **Every `/play/<app>` clone is covered by an automated test suite in `spark-anvil-site`: `npm test` (Vitest — the SPM-unit analog) asserts mechanic LOGIC + hand-authored bank invariants + the shared `_shared/` round-shell contract; `npm run test:e2e` (Playwright — the XCUITest analog) drives every `/play` route headless to assert it renders + throws zero console/runtime errors + (SEL routes) exposes the crisis footer. This layer catches the "builds green, ships wrong" class the build-time gates cannot see (a bank with a wrong answer, a mechanic that throws on load).** Codified per founder-direct 2026-07-12 (*"prioritize testing"*) after implementing `Docs/PLAN_WEB_CLONE_TESTING_STRATEGY_2026-07-12.md` (site PR #483). On its first run the Playwright smoke gate found + fixed a real production crash (`/play/sleuthlab/casefiles` `RangeError` on difficulty-5 cases).
 
-### The two layers (both real, both green — **83 unit spec files + 7 e2e specs** as of 2026-07-14; expanded in site PRs #491 → the 7-wave deepening #499/#502/#503/#506/#508/#510/#514 → the all-shipped-clones deepening #515/#518/#519 → the V178 deepening #525 (**portfolio-wide MC-kit STRUCTURAL invariant gate** over all 821 banks / ~3285 checks) + #526 (**keyboard-nav + accessible-name** e2e gates) — per-mechanic bank-invariant specs for the engine-rich + bespoke clones that had none, **including the chess-engine ⇄ 119-puzzle-bank legality cross-check that caught + fixed 2 real puzzle-data defects** [4 illegal `alternativeMoves`], + the a11y-shell e2e spec. A separate in-session **SEMANTIC** kit audit (V178 workstream 3, `Docs/AUDIT_QUESTION_KITS_SEMANTIC_2026-07-13.md`) caught + fixed real WRONG-answer/mislabel defects the structural gate can't see — fractionforge + discretequest, site PR #529. **Perf refactor (site PR #591, 2026-07-14 — see § R-WEB-CLONE-TEST-PERF below):** as routes grew ~20→414 across 66 clones, the unsharded per-PR run trended toward 30–45 min. The e2e gate is now (a) **sharded** across a CI matrix, (b) **scoped** to the clones a PR touches via `PLAY_ROUTE_FILTER` (a one-clone PR runs ~48 tests, not ~2,138; shared-surface change → FULL), and (c) **tiered** — the heavy `round-play` deep-walk moved OFF the PR gate into a **full sweep** (`play-tests-full.yml`, merge-to-main + nightly). `control-names` was folded into `a11y.spec.ts` (one page load/route), so per-route specs dropped 6→5.)
+→ **Sub-rules** defined here (full detail in reference): (R-WEB-CLONE-SEL-CRISIS-FOOTER-SCOPE) · (R-WEB-CLONE-TEST-PERF).
 
-| Layer | Command | What it asserts | Analog |
-|---|---|---|---|
-| **Vitest** (`happy-dom`) | `npm test` | `_shared` engine (star bands, streak tiers, level curve, best%/XP/day-streak, first-try scoring contract) + **portfolio-wide MC-kit STRUCTURAL invariants** (`_shared/kits.test.ts`, V178 — globs all 821 `public/play/<app>/kits/*.json`: non-empty prompt+correct, correct ∈ options exactly once, options unique, bloom valid-when-present, ids unique; schema-aware over both authored shapes) + per-mechanic **bank invariants**: tessellation =360°, constellation valid star indices, dichotomous-key terminates, prob-tree branches sum to 1, sentence-combine exactly-one-best, SEL DIR-FEDC fields, sleuthlab difficulty ∈ [1,5], **affine cipher `coprime` items have exactly one option coprime to 26 + `E(x)=(ax+b) mod 26`, null-cipher extraction reproduces `hidden` from `cover`, symbol-cipher encodings don't collide under the Polybius I/J merge, discretequest `computeAnswer` ⇄ explanation cross-check + nPr/nCr/pigeonhole/gcd/isPrime, circle-of-fifths one-accidental-per-step ordering + dominant/subdominant inverse, stellar tracks reference real stages + correct fates, distance-ladder rungs ordered/overlapping + each challenge's method range contains its distance, geometry proof final step reaches its goal, equation-slip brokenIndex/why integrity** | SPM unit tests |
-| **Playwright** (Chromium vs `astro dev`) | `npm run test:e2e` (full) · `npm run test:e2e:pr` (round-play excluded) · CI: sharded + scoped, see § R-WEB-CLONE-TEST-PERF | (1) **smoke** — every `/play` route resolves + `<main id="main-content">` renders + **zero console/runtime errors**; (2) **interaction** (`tests/e2e/interaction.spec.ts`) — every route **survives a first interaction** (click the first in-`<main>` control, re-assert zero console/runtime errors — the "a click handler crashes the mechanic" class, one step past a load crash); (3) **round-play deep walk** (`tests/e2e/round-play.spec.ts`) — drives every route through **up to 8 sequential in-`<main>` button clicks** (answer → feedback → Next → results) re-asserting the island never blanks + zero errors across the WHOLE walk (the "2nd click / advance-to-results handler throws" class; flash-aware retry for timed reveals; only clicks `<button>`s so it never navigates off-route). **⚠ Tiered OFF the PR gate (PR #591)** — the wall-clock hog runs in the **full sweep** (`play-tests-full.yml`, merge-to-main + nightly), not per-PR; (4) **SEL-safety** — every SEL (mindforge/coregrealm) route exposes the always-visible crisis footer; reduced-motion honored (never scoped — `routesForApp` enumerates unfiltered); (5) **/play-index** (`play-index.spec.ts`) — the landing's grouped sections + filter; (6) **a11y shell + control names** (`tests/e2e/a11y.spec.ts`) — every route inherits the WCAG shell contract from BaseLayout: `<html lang>` set (3.1.1), non-empty `<title>` (2.4.2), exactly ONE `<main>` landmark (1.3.1), landing routes expose a hero `<h1>` (2.4.6), **AND every visible in-`<main>` `<button>` has a non-empty accessible name (aria-label/text/title/labelledby; WCAG 4.1.2 — folded from the former `control-names.spec.ts` into ONE page load/route by PR #591)**; (7) **keyboard-nav** (`tests/e2e/keyboard-nav.spec.ts`) — every route's first in-`<main>` control is programmatically focusable + Enter-activation doesn't crash the island (WCAG 2.1.1 — the keyboard sibling of (2)) | XCUITest |
-
-### The discipline (joins R-WEB-CLONE-PARITY-DOD + R-WEB-CLONE-GUIDE-SYNC)
-
-- **A new clone / new mechanic ships with tests.** Building a bespoke mechanic with a hand-authored bank → add a Vitest invariant spec next to it (export the bank; the round-shell + a11y are already covered by the shared specs + the auto-enumerated Playwright smoke). A logic change pairs with a test update, exactly like the guide-sync rule.
-- **Routes auto-cover:** `tests/e2e/routes.ts` enumerates `/play` routes from `src/pages/play/**`, so a new clone's routes are BOTH smoke-tested AND interaction-tested the moment they land — no spec edit. A new SEL clone must be added to `SEL_APPS` in `routes.ts`. **On a PR the run is SCOPED to touched clones** via `PLAY_ROUTE_FILTER` (§ R-WEB-CLONE-TEST-PERF), so a new clone's routes run on its own PR + then in the full sweep; a shared-surface change runs FULL.
-- **Bank export is the only source change units need** — mechanic banks are module-private `const`; add `export` (non-breaking; not imported by `astro build`, so `build:play` is unaffected).
-- **Dev-server caveat:** `astro dev` does NOT run the prebuild chapter normalizer, so the Playwright `webServer` command runs `normalize-chapter-frontmatter.py` first (else js-yaml crashes content parsing + breaks island render). Never remove it.
-- **Calibration gotchas** (see PLAN § 6): MC/custom rounds SHUFFLE item order (answer by reading the shown prompt, not a fixed label); `/play/<app>/play` routes are param-driven launchers (`?kit=`) that render a no-heading "pick one" fallback bare (assert the `<main>` shell, not a heading).
-- **Subresource-404/403 noise is EXCUSED, not a runtime-error failure** (`BENIGN_CONSOLE_NOISE` in `tests/e2e/routes.ts`, shared by smoke + interaction). Chromium reports a failed cross-unit/CDN chrome asset (a `/cast` or `/apps` image, a CDN font/logo) as a **bare `"Failed to load resource: the server responded with a status of 4xx/5xx"` with NO URL in the message text** — so the URL-only benign filter (`favicon|analytics|plausible|cdn\.spark-and-anvil`) can't see it, and it **false-failed every clone's smoke + interaction suite in a play-only / CDN-offline run** (e.g. a local worktree verify). The gate's job is *runtime/script errors* ("a mechanic that THROWS on load / a click handler crashes"); **asset reachability is owned by `check-site-internal-links.py`** (which already excuses cross-unit refs), so the benign filter also excuses `Failed to load resource: the server responded with a status of`. A missing PLAY-unit asset still surfaces via the mechanic's own `fetch().catch` + surface-wiring + the link checker, so no real coverage is lost. **Keep both specs importing the single `BENIGN_CONSOLE_NOISE` constant** — don't re-inline a divergent regex. (Codified 2026-07-12 during the heatforge clone build; site PR with the heatforge clone.)
-- **CI (Phase D):** `.github/workflows/play-tests.yml` runs the Vitest + Playwright suites on PRs; `.github/workflows/play-tests-full.yml` runs the exhaustive sweep on merge-to-main + nightly (§ R-WEB-CLONE-TEST-PERF). Editing `.github/workflows/` needs a `workflow`-scoped token the hub PAT lacks — same class as the Cloudflare watch-paths; a workflow-file change ships via a worktree branch + PR (as PR #591 did).
-
-### R-WEB-CLONE-TEST-PERF — the e2e gate is SHARDED + SCOPED + TIERED so per-PR cost doesn't grow with portfolio size (2026-07-14, site PR #591)
-
-**The Playwright cost = `routes × per-route-specs`, and BOTH grow with the portfolio (routes ~20→414 across 66 clones in days). An unsharded, unscoped, all-specs run trended toward 30–45 min and climbing ~linearly. Three standing levers keep the PR gate flat:**
-
-1. **Shard** — the PR e2e job is a CI matrix (`--shard=i/N`, blob reports merged by an aggregator job). The aggregator job keeps the exact required-check name **`Playwright (a11y + SEL-safety smoke)`** (+ `Vitest (bank invariants + shell)`) so branch protection stays valid — **never rename those two job names**; the matrix children (`e2e shard`) are NOT required contexts.
-2. **Scope** — a `scope` job diffs the PR: touches a shared surface (`_shared/`, `play.css`, `components/play/`, `pages/play/index.astro`, `clone-types.ts`/`clones.ts`, `layouts/`, `tests/e2e/`, `playwright.config.ts`, `astro.config.mjs`, `package*.json`, build scripts) → **FULL** run (4 shards, `PLAY_ROUTE_FILTER=""`); else → **scoped** to the touched clone slugs (single runner, `PLAY_ROUTE_FILTER=app1,app2`); neither → `__none__` (only the never-scoped SEL crisis-footer + `/play-index` specs run). `routes.ts` reads `PLAY_ROUTE_FILTER`; `routesForApp` (SEL) always enumerates unfiltered. A one-clone PR runs **~48 tests, not ~2,138**.
-3. **Tier** — the heavy `round-play` deep-walk (the wall-clock hog, `test.setTimeout(120s)` + 45s walk budget/route) is **excluded from the PR gate** (`--grep-invert "plays a round error-free"`, or `npm run test:e2e:pr`) and runs only in the **full sweep** (`play-tests-full.yml`: push-to-main + nightly cron + dispatch, 6 shards, all specs, all routes). `control-names` was folded into `a11y.spec.ts` (one page load/route).
-
-**When authoring/reviewing:** a new clone's PR auto-scopes to itself (its routes still get the full sweep post-merge). Do NOT add a monotonic/`workers`-halving hack; scale by shard count. If you add a NEW shared build/test input, extend the `SHARED_RE` in the `scope` job so a change to it triggers a FULL run. Local: `npm run test:e2e` (full) · `npm run test:e2e:pr` (round-play excluded) · `PLAY_ROUTE_FILTER=<app> npm run test:e2e:app` (one clone). Reference timing (PR #591 dogfood): full run = 4 shards × ~3.2 min ≈ ~4 min wall-clock vs. the old single ~30–45 min job; scoped one-clone ≈ ~1 min.
-
-### When this rule applies
-- Authoring/extending any `/play/<app>` clone → add/extend the mechanic's Vitest invariant spec; run `npm test` + `npm run test:e2e` before shipping (they join `build:play` + surface-wiring in the DoD).
-- Reviewing a clone PR that adds a bespoke mechanic with a hand-authored bank + no invariant spec → that's a gap (same weight as a missing parity axis).
-
-### Cross-references
-- `Docs/PLAN_WEB_CLONE_TESTING_STRATEGY_2026-07-12.md` (the adopted strategy + implementation record) · site PR #483
-- `spark-anvil-site/{vitest.config.ts,vitest.setup.ts,playwright.config.ts}` · `src/lib/play/**/*.test.ts` · `tests/e2e/*` · `.github/workflows/{play-tests.yml,play-tests-full.yml}` (the PR gate + full sweep; § R-WEB-CLONE-TEST-PERF) · site PR #591 (shard + scope + tier)
-- § R-WEB-CLONE-PARITY-DOD (the ship gate this joins) · § R-WEB-CLONE-GUIDE-SYNC (the sibling "keep it in sync with the code" discipline) · § R-WEB-CLONE-NO-DARK-SURFACE / § R-PLAY-CSS-PARSE-GATE / § R-SITE-CORE-PARSE-GATE (the build-time gates this complements)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Screenshot analysis is a MANDATORY gate for UI/UX + Definition of Done (R-WEB-CLONE-SCREENSHOT-DOD; 2026-07-13, made mandatory-per-clone 2026-07-14)
 
 **Screenshot analysis is a MANDATORY ship gate — not optional, not "when convenient." Any UI/UX-affecting change to a `/play` clone (or any site surface), AND every NEW clone at ship time, is NOT done — and NOT DoD-complete — until the surface(s) have been RENDERED, CAPTURED as a screenshot, and VISUALLY ANALYZED by the agent, at BOTH a desktop and a mobile viewport, with the analysis recorded (before/after where it's a refinement).** A clone whose registry row is flipped to `shipped` without a recorded screenshot pass is a DoD violation, exactly as if it were missing a parity axis. The automated suite (R-WEB-CLONE-TEST) asserts a surface *renders, doesn't throw, is keyboard-operable, and has accessible names* — it is BLIND to whether the surface actually *looks right*: visual hierarchy, prominence, colour use, contrast, spacing/dead-space, alignment, font sizing, clipping/overflow, and the question→manipulative→answer→feedback reading order. Only looking at the pixels catches the **"builds green + passes every test + looks wrong"** class. Codified per founder-direct 2026-07-13 (*"codify the rule that screenshots analysis are required for ui/ux testing and definition of done"*), after the prominence-program screenshots drove real fixes automated tests could never have surfaced (a muted "Solve for x", answer options weaker than the question card, an under-used app accent, a small math readout).
 
-### The required step (how)
-Render the surface headless and read the PNG back — the agent literally looks at it:
-```bash
-# In the site worktree (R-SITE-WORKTREE). A tiny throwaway Playwright spec drives the
-# route (clicking into a round for practice surfaces) + screenshots at two widths:
-#   desktop ≥1280×900  AND  mobile ~402×860  (fullPage)
-npx playwright test tests/e2e/_shot.spec.ts   # writes /tmp/shots/<name>-<desktop|mobile>.png
-```
-Then **Read each PNG and analyze it** against the checklist below; iterate CSS/markup until it holds; **re-screenshot to confirm**. Delete the throwaway `_shot*.spec.ts` before committing (never ship it). The screenshots are a verification artifact, not a committed file.
-
-> **Capture gotcha (V250/V251):** a `fullPage` screenshot of a LONG page (marketing/company pages, `/cast`, a tall practice surface) is downscaled so far when Read back that you **cannot judge spacing/contrast detail** — it's only good for gross "whole-page light-in-dark" scans. To judge layout/spacing, colour/AA, and font sizing, capture **viewport (fold) shots at native resolution** (`fullPage: false` at 1440×900 desktop / 390×844 mobile) plus a mid-scroll shot for section rhythm — those read legibly. Use both: `fullPage` for the overview, fold/native for the verdict. (Iterating against a live `astro dev` in the worktree is fastest — HMR picks up each edit, so re-screenshot is a re-run, not a rebuild.)
-
-### What the analysis MUST cover (the visual checklist)
-- **Prominence + hierarchy** — the question card, the manipulative stage, the answer surface, and the feedback panel each read at the intended weight, in the intended order (per R-WEB-CLONE-QA-PROMINENCE + R-WEB-CLONE-MANIPULATIVE-PROMINENCE). No surface out-muscles or is out-muscled by another unintentionally.
-- **Colour** — the app accent/semantic palette actually surfaces (not a monochrome beige blur); WCAG-AA contrast holds; verdict never by colour alone.
-- **Font** — sizing/weight reads at the child-typography register; math/state readouts are prominent + `tabular-nums`; nothing is too small.
-- **Layout** — no dead space that starves the manipulative; no clipping/overflow; the reading column holds; **mobile** is checked, not just desktop (the width where clipping/stacking bugs live).
-- **States** — where relevant, capture the answered/feedback/results state, not just the initial load.
-
-### MANDATORY per-clone ship gate (not just per-change)
-- **Every NEW clone MUST have a screenshot-analysis pass over EVERY surface it ships** (landing + each learning/practice surface), at desktop + mobile, BEFORE its `REGISTRY_WEB_CLONES.txt` row flips to `shipped`. This is a hard gate on the same footing as the two parity axes + no-dark-surface + the automated suite — a clone is not shippable without it. Capture at least one *interactive* state (answered/feedback/reveal) where a surface has one.
-- **The analysis MUST be recorded** — a dated line in the clone's `Docs/web/<app>/PARITY_WEB_VS_IOS.md` DoD sign-off naming the surfaces shot + the verdict (PASS, or the fixes it drove). "I looked at it" with no recorded artifact does not satisfy the gate. Reference pass: MintForge (2026-07-14) — 4 surfaces × desktop+mobile + a Lab feedback state + Budget mobile shock state, PASS.
-
-### When this rule applies
-- **A NEW clone at ship time** → the mandatory all-surface pass above (hard gate; gates the registry `shipped` flip).
-- Authoring or extending any `/play` clone with a UI/UX change; any edit to the shared `.pc-q-*` / `.ff-stage` prominence surfaces (they lift every clone — screenshot at least one adopting clone); any marketing/site surface change.
-- **Reviewing** a clone/site PR with a visual change → the PR body / parity ledger MUST reference the screenshot analysis (before/after for a refinement). A visual change with no recorded screenshot analysis is a DoD gap, same weight as a missing parity axis.
-- It IS a MANDATORY axis of the ship gate alongside: R-WEB-CLONE-PARITY-DOD (feature + UI/UX parity) + R-WEB-CLONE-NO-DARK-SURFACE (wired + visible) + R-WEB-CLONE-TEST (renders + a11y) + **this** (looks right, recorded).
-
-### Cross-references
-- § R-WEB-CLONE-TEST (the automated suite this complements — tests assert *renders*, screenshots assert *looks right*) · § R-WEB-CLONE-QA-PROMINENCE / § R-WEB-CLONE-MANIPULATIVE-PROMINENCE (the prominence intents the screenshot verifies) · § R-WEB-CLONE-UX-PARITY (the visual-character parity the screenshot measures) · § R-WEB-CLONE-PARITY-DOD (the ship gate this joins) · § R-SITE-WORKTREE (where the render happens)
-- `Docs/RESEARCH_WEB_CLONE_QA_FLOW_PROMINENCE_2026-07-13.md` + `Docs/RESEARCH_WEB_CLONE_MANIPULATIVE_PROMINENCE_2026-07-13.md` (the prominence work that screenshot analysis drove)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## UI testing + screenshot-DoD MUST cover DARK MODE, not just light (R-WEB-CLONE-DARK-MODE-TEST; 2026-07-14)
 
 **Every `/play` clone (and every site surface) MUST be verified in BOTH color schemes — `prefers-color-scheme: light` AND `prefers-color-scheme: dark` — by the automated Playwright gate AND the screenshot-DoD pass. A surface that renders + reads correctly in light but is broken in dark (unreadable text on a dark panel, AA-contrast failure, an accent/semantic colour that vanishes, an un-themed white flash) is a defect, exactly as if it failed in light.** Codified per founder-direct 2026-07-14 (*"make sure the UI testing cover dark mode as well because there are a lot of dark mode issues with the web site."*). The site themes via **media queries** (`@media (prefers-color-scheme: dark)` in `global.css` + `play.css` + per-app `.pc-theme-<app>` tokens), so dark mode is the OS/browser default for a large fraction of real users and was previously **untested + un-screenshotted**.
 
-### The two layers (both must cover dark)
-1. **Automated (Playwright) — the `chromium-dark` project.** `playwright.config.ts` carries a second project `chromium-dark` (`use: { colorScheme: 'dark' }`) scoped via `testMatch` to the **cheap contract specs** — `smoke` (every route renders + zero console/runtime errors) + `a11y` (shell contract + accessible names) — so every `/play` route + site surface is asserted to render and stay operable in dark too. It is **NOT** run over the heavy `round-play` deep-walk (R-WEB-CLONE-TEST-PERF — the dark axis rides the light gate's shards; CI runs all projects, no workflow edit). This catches the *dark render-crash / dark-only console-error* class automatically going forward. Adding the dark axis is a `playwright.config.ts` change (a shared surface → triggers a FULL scoped run).
-2. **Screenshot-DoD (visual) — dark is a required capture, analyzed by IN-SESSION Opus.** The mandatory screenshot-DoD pass (R-WEB-CLONE-SCREENSHOT-DOD) MUST capture **dark AND light** at desktop + mobile for a new clone's surfaces (and for any UI/UX change), because the automated gate is BLIND to *contrast/visibility* — only looking at the dark pixels catches "text disappears on the dark card," a washed-out accent, or an un-themed panel. The `_shot.spec.ts` recipe adds `colorScheme: 'dark'` captures (`test.use({ colorScheme: 'dark' })` or a second context). **The dark PNGs are analyzed by the IN-SESSION Opus agent — the running Claude Code session Reads each PNG and judges it** (founder-direct 2026-07-14: *"should we use in-session Opus to analyze the dark-mode screenshots as part of DoD?"* → **yes**). This is the SAME mechanism the base screenshot-DoD already uses ("the agent literally looks at it") and the same in-session-Opus-judgment precedent as R-WEB-CLONE-CLUSTER-MAP + R-AUTHOR-MODEL-CHOICE — **NOT** a paid vision API. The division of labor: the automated `chromium-dark` gate asserts *renders + operable*; in-session Opus asserts *looks right in dark*. The analysis checks the § R-WEB-CLONE-SCREENSHOT-DOD visual checklist under dark (AA contrast on the dark surface, verdict-not-by-colour still holds, no white flash, accent/semantic colours still legible) and is recorded in the clone's `PARITY_WEB_VS_IOS.md` DoD sign-off naming the dark surfaces shot + the verdict — a dark capture with no recorded in-session analysis does not satisfy the gate.
-
-### Distinct from R-WEB-CLONE-NO-DARK-SURFACE
-"Dark **surface**" (R-WEB-CLONE-NO-DARK-SURFACE) = a route/feature that exists in code but is **unwired / unreachable** (nothing to do with colour). "Dark **mode**" (this rule) = the `prefers-color-scheme: dark` *rendering*. Both use the word "dark"; they are unrelated gates — a clone must pass both.
-
-### When it applies
-- **Authoring any new clone** → its screenshot-DoD sign-off in `PARITY_WEB_VS_IOS.md` MUST name dark + light captures; the `chromium-dark` gate covers its routes automatically (auto-enumerated, like the light gate).
-- **Any UI/UX / CSS change** (`play.css`, `global.css`, a `.pc-theme-<app>` block, a shared `.pc-q-*`/`.ff-stage` surface) → screenshot-verify in dark too; a dark regression is a defect.
-- **Reviewing a clone/site PR with a visual change** → the PR must reference the dark screenshot analysis, same weight as the light one.
-
-### Cross-references
-- `spark-anvil-site/playwright.config.ts` (`chromium-dark` project) · `tests/e2e/{smoke,a11y}.spec.ts` · `src/styles/{global,play}.css` `@media (prefers-color-scheme: dark)` · ADR-014 (hybrid Liquid Glass — the glass surfaces most at risk in dark)
-- § R-WEB-CLONE-TEST (the suite this extends) · § R-WEB-CLONE-TEST-PERF (why dark is scoped to smoke+a11y, not round-play) · § R-WEB-CLONE-SCREENSHOT-DOD (the visual gate this makes dual-scheme) · § R-WEB-CLONE-NO-DARK-SURFACE (the unrelated *unwired* gate) · work-queue V235
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Dark-mode SUPPORT best practices — theme through the shared vars; never render light-in-dark (R-WEB-CLONE-DARK-MODE-SUPPORT; 2026-07-15)
 
 **Every `/play` clone MUST render correctly in `prefers-color-scheme: dark` by theming through the SHARED design-system variables — never by hardcoding light hex on its own surfaces. A clone (or a shared-surface change) that renders bright-white-in-dark, or dark-on-dark / light-on-light unreadable, is a defect on the same footing as a failed parity axis.** This is the *design/authoring* companion to `R-WEB-CLONE-DARK-MODE-TEST` (which is the *gate*): -TEST tells you dark is verified; -SUPPORT tells you how to build so it passes. Codified per founder-direct 2026-07-15 (*"codify dark mode support best practices in repo"*) after V237 found the entire `/play` layer rendered light-in-dark and fixed it with one shared block.
 
-### Why it was broken (the root cause every author must avoid)
-The `/play` design system defines its OWN neutral palette vars in `play.css` `:root` — `--ff-paper` (card surface), `--ff-warm` (inset/track/chip), `--ff-anvil` (text), `--ff-outline` (border + hard drop-shadow), `--ff-empty` (manipulable "empty" fill), and the semantic feedback tints `--pc-correct-bg` / `--pc-incorrect-bg`. These are SEPARATE from the site-wide `--sa-*` vars (which `global.css` flips for dark). For a long time the `--ff-*` / `--pc-*-bg` neutrals had **no dark variant anywhere**, so while the marketing/`/cast` pages went fully dark, every `/play` surface stayed bright-white on the dark site. The fix (V237, site PR #683) is a single `@media (prefers-color-scheme: dark)` block near the TOP of `play.css` that dark-themes those shared neutrals + tints, scoped `:root, [class*="pc-theme-"]` with `!important` so it also overrides the ~40 per-app `.pc-theme-<app>` light surface vars without editing each block.
-
-### The best practices (author + review against these)
-1. **Theme through the shared vars, never hardcode surface hex.** A clone's bespoke CSS (`src/styles/play/<app>.css`) + its manipulative markup MUST use `var(--ff-paper)` / `var(--ff-warm)` / `var(--ff-anvil)` / `var(--ff-outline)` / `var(--ff-empty)` / `var(--pc-*-bg)` for surfaces, text, borders, and feedback tints — so it inherits the shared dark flip for free. A literal `#fff` / `#faf8f5` / `#2d2d2d` background or text color on a clone surface is the defect: it won't flip and will render wrong in one scheme. (Exception: `color: #fff` ON a saturated accent fill — e.g. a button/chip whose bg is `--ff-forge`/`--pc-correct` — is fine in both schemes; and saturated MANIPULABLE OBJECT colors [the fraction rods, cipher tiles, constellation stars] are intentionally vivid on the quiet stage, per R-WEB-CLONE-MANIPULATIVE-PROMINENCE.)
-2. **The stage stays quiet + dark-adaptive; objects stay saturated.** `.ff-stage` uses `--ff-paper` (dark in dark mode) with an accent top-edge; the manipulable objects carry the saturated color. Never give a stage a `background-image` or a hardcoded light fill (both break dark + violate the seductive-detail guardrail).
-3. **Per-app `.pc-theme-<app>` blocks set ACCENT identity, not a dark theme.** Keep setting accent vars (`--pc-select`, `--ff-forge`, `--ff-slate`, `--pc-correct`, `--pc-incorrect`) per app; do NOT add a per-clone dark `@media` block — the shared `play.css` block handles neutrals for everyone. If a clone's accent is so dark it's low-contrast as a border/bar on the dark card, pick a slightly lighter accent (identity), don't re-theme surfaces.
-4. **Verdict never by colour alone, in EITHER scheme** (WCAG 1.4.1): icon + word + semantic colour; light text on the dark `-bg` tints (`#22371f` green / `#3a2222` rose) keeps AA, exactly as dark text on the light tints does in light mode.
-5. **WCAG-AA both ways.** Light text (`#ECE8E3`) on dark surfaces (`#33333a`) ≈ 11:1; verify any bespoke surface pairing holds ≥4.5:1 in BOTH schemes.
-   - **When a SHARED dark override must serve a broad accent set, COMPUTE the contrast + prefer the guaranteed-AA neutral over a hue-preserving `color-mix` (V251 lesson).** Flipping the accent-TEXT vars (`--ff-*-text`) for ~40+ clones' worth of accents, a hue-preserving `color-mix(in oklab, var(--ff-forge) N%, #ECE8E3)` **fails AA for dark accents** at every safe ratio (worst accent #1A237E deep-indigo = 3.99:1 at 50/50, still < the 4.5:1 body floor), whereas the light ink `var(--ff-anvil)` clears 11.69:1 vs the darkest surface. So the shared value is `var(--ff-anvil)`; accent HUE still shows in dark via borders/fills/left-bars (`--ff-forge`/`--ff-slate`, not flipped). **General rule:** don't eyeball a shared dark-override colour — compute the WCAG ratio for the WORST member of the set against the darkest surface it lands on; if a hue-preserving mix can't clear AA for all, use the neutral light ink (hue survives elsewhere). A quick oklab-mix + WCAG-contrast calc is a ~30-line script; run it before shipping a portfolio-wide colour override.
-6. **Verify by looking, in dark AND light** (the mandatory gate): the screenshot-DoD pass (R-WEB-CLONE-SCREENSHOT-DOD) captures dark + light at desktop + mobile, in-session-Opus-analyzed; the automated `chromium-dark` smoke+a11y (R-WEB-CLONE-DARK-MODE-TEST) asserts render + operable. A shared-substrate CSS change (`play.css`/`global.css`) MUST re-screenshot at least one adopting clone in dark (it lifts all 99).
-7. **The `*/`-in-a-block-comment trap** (bit V237): never put a glob/regex/`ff-*`-style token containing `*/` inside a `/* */` CSS comment — it closes the comment early and the css-parse gate fails. Reword (space the stars, or use the var names plainly). See § R-SITE-CORE-PARSE-GATE for the sibling TS form.
-
-### When it applies
-- Authoring/extending any `/play` clone → use the shared vars for all surfaces from day one; the shared dark block themes them automatically.
-- Reviewing a clone PR → a hardcoded light surface hex, a `background-image` stage, a per-clone dark `@media` block, or a missing dark screenshot is a defect.
-- Any change to the shared `play.css` dark block or `global.css` `--sa-*` dark block → re-screenshot an adopting clone in dark (it's portfolio-wide).
-
-### Cross-references
-- `src/styles/play.css` `@media (prefers-color-scheme: dark)` (the shared block, V237 site PR #683) · `src/styles/global.css` (`--sa-*` dark) · `Docs/GUIDE_WEB_CLONE_UI_UX_BEST_PRACTICES.md` § dark mode
-- § R-WEB-CLONE-DARK-MODE-TEST (the gate this supports) · § R-WEB-CLONE-SCREENSHOT-DOD (dual-scheme visual gate) · § R-WEB-CLONE-MANIPULATIVE-PROMINENCE (quiet stage / saturated objects) · § R-WEB-CLONE-QA-PROMINENCE (the `.pc-q-*` feedback surfaces) · § R-WEB-CLONE-MERGE-HYGIENE (why the theme block stays in `play.css` + bespoke CSS is per-app) · § R-SITE-CORE-PARSE-GATE (the `*/`-in-comment trap) · § R-WEB-CLONE-NO-DARK-SURFACE (the unrelated *unwired* gate) · work-queue V237
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Dark-mode coverage is WHOLE-SITE, not just /play — marketing/company chrome + light-only imagery (R-SITE-DARK-MODE-WHOLE-SITE; 2026-07-15)
 
@@ -232,129 +203,36 @@ The `/play` design system defines its OWN neutral palette vars in `play.css` `:r
 
 - **Theme through the shared `--sa-*` tokens** (`global.css` `:root` + its `@media (prefers-color-scheme: dark)` flip) — never hardcode a light surface hex on a company page; a new `--sa-*` token gets a dark value in the same change (the marketing-side analog of R-WEB-CLONE-DARK-MODE-SUPPORT's `--ff-*`/`play.css` discipline).
 - **Light-only RASTER imagery is the load-bearing trap** (the motivating defect): a PNG/JPG with a **baked opaque light background + no alpha** (logos, badges, illustrations) is invisible on a light surface but renders a **glaring light box on a dark surface**. `lockup.png` (Nav) + `logomark.png` (Footer) did exactly this on every page. Fix options, in order of preference: (a) a transparent-background asset with a **dark-mode variant** (light-ink) swapped via `<picture>`/`prefers-color-scheme`; (b) a **deliberate rounded brand tile/plate** (rounded corners + soft dark-mode ring/border) so the light chip reads as intentional, not accidental — the accepted dark-header pattern for light-only logos (the V251 fix, site PR #700); NEVER (c) leave a full-bleed sharp light rectangle. A CSS `dark:` background/ring on an opaque-bg image only *frames* it — it cannot make the baked background transparent, so rounding+plating is the honest interim until a real dark asset exists.
-- **The gate is the SAME two-layer gate, now over marketing routes too:** the `chromium-dark` Playwright project (R-WEB-CLONE-DARK-MODE-TEST) SHOULD enumerate the top-level marketing/company routes (not just `/play/**`) for the render-+-operable assertion; and the mandatory **dark screenshot-DoD** (R-WEB-CLONE-SCREENSHOT-DOD, in-session-Opus-analyzed) covers any company-page or shared-chrome visual change, dual-scheme at desktop+mobile.
+- **The gate is the SAME two-layer gate, now over marketing routes too:** ✅ **IMPLEMENTED (V252, site PR #711):** the `chromium-dark` Playwright project (R-WEB-CLONE-DARK-MODE-TEST) now enumerates the top-level marketing/company routes via `tests/e2e/routes.ts marketingRoutes()` (filesystem-enumerated, never-scoped) — the smoke + a11y specs run them in both the light + `chromium-dark` projects for the render-+-operable + WCAG-shell assertion (this surfaced + fixed a real WCAG 1.3.1 `/today` duplicate-`<main>` bug). The mandatory **dark screenshot-DoD** (R-WEB-CLONE-SCREENSHOT-DOD, in-session-Opus-analyzed) covers any company-page or shared-chrome visual change, dual-scheme at desktop+mobile.
 - **When it applies:** any change to Nav/Footer/BaseLayout/global.css/`--sa-*`/a company page/a shared raster asset → screenshot-verify dark + light; a light-in-dark surface, a baked-light-bg image box, or a sub-AA company-page text is a defect on the same footing as a `/play` dark defect.
 
-### Cross-references
-- `Docs/AUDIT_SITE_DARK_MODE_2026-07-15.md` (the V251 audit) · site PR #700 (Nav/Footer logo tile + `/play` accent-text) · `src/styles/global.css` `--sa-*` dark · `src/components/{Nav,Footer}.astro`
-- § R-WEB-CLONE-DARK-MODE-TEST / § R-WEB-CLONE-DARK-MODE-SUPPORT (the `/play` rules this generalizes) · § R-WEB-CLONE-SCREENSHOT-DOD (the dual-scheme visual gate) · § R-SITE-LAYOUT-SPACING (the sibling site-quality rule) · § Liquid Glass policy (the glass surfaces most at risk in dark)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Toggle visibility via the `[hidden]` attribute, backed by a global `[hidden]{display:none!important}` — a component's own `display:` silently defeats `[hidden]` → "stuck" UI (R-SITE-HIDDEN-ATTR-DISPLAY; 2026-07-20)
+
+**Any element shown/hidden at runtime by toggling the `hidden` attribute / `.hidden` property (the site's near-universal pattern — `AffectCheckIn`, `MasteryProgress`, `AgencyLoop`, the feedback rails, `ReadingAccess`, etc.) RELIES on the global base rule `[hidden] { display: none !important; }` (in BOTH `src/styles/global.css` site-wide AND `src/styles/play.css` /play base). Never rely on a component's own `display` cooperating with the UA `[hidden]{display:none}`, and never "hide" by only setting the attribute if the element also has an explicit CSS `display`.** Codified after the founder-reported fractionforge **"Before you start" (the `<AffectCheckIn>` card) stuck-after-tap** bug (site PR #1108).
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## One shared layout system — 8pt spacing scale + container + reading-measure + section rhythm (R-SITE-LAYOUT-SPACING; 2026-07-15)
 
 **Every site page lays out through ONE shared system — an 8pt spacing scale, a single content container, a 66ch reading-measure for long-form copy, and a consistent section-rhythm token — defined in `global.css`; pages MUST NOT hand-roll ad-hoc widths + spacing per page.** Codified per founder-direct 2026-07-15 (*"almost all web pages on the website have layout and spacing issues. do deep web research if needed"* + *"fix and codify"*). Evidence base: `Docs/RESEARCH_SITE_LAYOUT_SPACING_BEST_PRACTICES_2026-07-15.md`; audit: `Docs/AUDIT_SITE_LAYOUT_SPACING_2026-07-15.md`.
 
-### Why (the systemic root)
-"Almost all pages" = a MISSING SHARED SYSTEM, not N page bugs. `global.css` had `--sa-*` *colour* tokens but **no spacing scale, container, section-rhythm, or measure primitive**, and `BaseLayout` wraps content in a bare `<main><slot/></main>` — so every page hand-rolled its container width + spacing, and they drifted (measured: content max-width across `src/pages/*.astro` split six ways — `max-w-3xl` ×70, `max-w-4xl` ×54, `max-w-6xl` ×24, `max-w-2xl` ×19, `max-w-5xl` ×8, `max-w-7xl` ×1). Columns + section gaps jump page-to-page. Same structural cause + fix as the dark substrate (V237): add the shared system, theme through it.
-
-### The standard (author + review against these)
-1. **8pt spacing scale** — all padding/margin/gap from `--space-*` (4·8·12·16·24·32·48·64·96; 4pt half-step for fine cases). No arbitrary one-off values. Odd bases (5pt) forbidden (split-pixel centering).
-2. **`internal ≤ external`** (Gestalt proximity) — space *around* a group ≥ space *within* it (card outer margin ≥ inner padding; section rhythm ≥ item gaps). Cramped or floating groupings are the violation.
-3. **One container** — `.sa-container` (single content `max-width` + responsive gutters 16→24→32px), NOT per-page `max-w-3xl/4xl/6xl/...` drift. Always `max-width`, never fixed `width` (WCAG 1.4.10 Reflow).
-4. **Reading measure ≤ 66ch** for long-form copy (`.sa-prose`, `max-width: 66ch`) — classic 50–75ch optimum; **WCAG hard cap 80ch**; mobile 30–50ch. Long-form pages (mission/about/method) are the ones most at risk.
-5. **Consistent section rhythm** — section-to-section vertical spacing is a token (`--sa-section-y`, responsive clamp), not eyeballed per page. Inconsistent section rhythm is the #1 "unpolished" signal.
-6. **Accessibility floor (hard, never waived)** — WCAG **1.4.10 Reflow** (reflow to 320px-equiv, no 2-axis scroll; `max-width` + flex/grid + `overflow-wrap: break-word`, never `overflow:hidden` clipping zoom) + **1.4.12 Text Spacing** (layout survives user line-height 1.5 / paragraph 2× / letter 0.12× / word 0.16× → no fixed heights on text containers; size in rem/em) + ≥44px kid targets + body line-height ≥ 1.5.
-7. **The scale is a guide, not a straitjacket** — a deliberate off-scale value that reads better is fine; document it. The scale removes *arbitrary* decisions, not *deliberate* ones.
-8. **Verify by looking** (the mandatory gate) — any layout/spacing change is screenshot-DoD'd (R-WEB-CLONE-SCREENSHOT-DOD) at desktop+mobile, dark+light.
-
-### Rollout
-- The shared system (`--space-*` + `.sa-container` + `.sa-prose` + `.sa-section` + `--sa-section-y`) is added to `global.css` as **non-breaking additions** (nothing consumes them until migrated → zero regression risk). V250.
-- **New pages MUST use it from day one.** Existing pages **migrate opportunistically, in small screenshot-verified batches** — NOT a blind 26-page rewrite (a bad blanket container change regresses intentional wide grids like `/apps` filters + `/cast` gallery). The per-page migration is tracked (work-queue V250).
-
-### When it applies
-Authoring any new site page (use `.sa-container`/`.sa-prose`/`.sa-section` + the scale from the start); any layout/spacing edit (through the tokens, screenshot-verified); reviewing a site PR (a new ad-hoc `max-w-*` + hand-rolled spacing instead of the shared system is a defect; an un-verified visual change is a defect).
-
-### Cross-references
-- `Docs/RESEARCH_SITE_LAYOUT_SPACING_BEST_PRACTICES_2026-07-15.md` (evidence) · `Docs/AUDIT_SITE_LAYOUT_SPACING_2026-07-15.md` (audit + per-page migration tracklist) · `src/styles/global.css` (the shared system) · `src/layouts/BaseLayout.astro`
-- § R-WEB-CLONE-SCREENSHOT-DOD (the mandatory visual gate) · § R-SITE-DARK-MODE-WHOLE-SITE (the sibling site-quality rule) · § Liquid Glass policy (ADR-014) · work-queue V250
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## A device-specific feature is SKIPPED, never a reason to skip the whole app (R-WEB-CLONE-DEVICE-FEATURE-SKIP; 2026-07-12)
 
 **Requiring device-specific functionality is NOT a clone-eligibility blocker. If a feature needs a capability the browser cannot deliver on-device — AR/RealityKit/ARKit, Vision, CoreMotion/gyroscope, camera/mic capture, real-time haptics, Game Center, MultipeerConnectivity, SpriteKit *physics*, on-device FoundationModels — that ONE feature is skipped for the web clone (⛔ waived · platform-only, OR 💡 iOS-ENHANCE if it delivers novel LEARNING); the REST of the app MUST still be ported to the web.** Codified per founder-direct 2026-07-12 (*"loosen the blocker check: if a feature requires device-specific functionality, then that feature can be skipped for the web clone. the rest of the app should be ported to web"*).
 
-### What this changes — the "hard-blocker count" is a FEATURE filter, not an APP gate
-
-The census method in `AUDIT_WEB_CLONE_NEXT_RANKING*` historically used a **hard-blocker grep** (`import RealityKit|ARKit|Vision|CoreMotion|AVAudioEngine`, `SKPhysicsBody`, `MultipeerConnectivity`) and **deferred whole apps** when the count was high (e.g. cubesensei hard-blk=29 → "deferred / not-yet-portable"). **That whole-app-defer is now wrong.** A high hard-blocker count means "this app has *several* device-specific features to waive," NOT "this app can't be cloned." Almost every portfolio app has a **portable learning core** — the 16×25 (or richer) MC kit banks + the deterministic mechanics + the theme + the DN narrative — and that core MUST be ported even when the flashiest native feature can't come along.
-
-- **The blocker grep now answers "which features do I waive?"**, per-feature, during the Phase-2 deep-read + the parity ledger — NOT "do I clone this app?" at selection time.
-- **Selection eligibility** is now: does the app have a **built, portable learning core** (real Swift + kits OR a deterministic bespoke mechanic)? If yes → it is a clone candidate. The device-specific features are handled by the waiver taxonomy, exactly like any other parity gap.
-- **The waiver is still documented, never silent** — each skipped device feature is a ⛔ row (platform-only affordance) OR a 💡 iOS-ENHANCE advisory (if it's a *novel learning* surface the web genuinely can't deliver, per `R-WEB-CLONE-BACKPORT-MINING`), each with a one-line rationale in the parity ledger / RESEARCH candidate list. A skipped device feature is compliant; an *undocumented* skip is a defect. "It was more work" is still never a waiver — that's a 🟡 gap.
-- **SpriteKit alone is still not even a waiver trigger** — decorative SpriteKit arenas re-render as SVG/DOM (the learning surface ports); only genuine *physics* (`SKPhysicsBody`) or the other device capabilities above are candidates to skip.
-
-### The newly-eligible tail (this rule unlocks)
-
-Apps previously parked in the ranking's *"Deferred / not-yet-portable"* bucket for a high hard-blocker count — **cubesensei · labsmith · curiosityquest · quillspell · wildlens · levelforge · escapeforge** — are now **clone-eligible**: port their learning core + deterministic mechanics, waive the device-specific feature(s). Each still needs a Phase-2 deep-read to (a) confirm a portable learning core exists and (b) enumerate which features get the ⛔/💡 treatment. They join the candidate pool as a BATCH6 tier.
-
-### When this rule applies
-- **Clone selection** — never defer an app *solely* because of a hard-blocker count; assess the portable learning core instead.
-- **Phase-2 deep-read + parity ledger** — classify each device-specific feature as ⛔ (platform-only) or 💡 (iOS-ENHANCE novel learning); port everything else.
-- **Reviewing a clone PR / ranking doc** — a whole-app "deferred: not portable" verdict that is justified *only* by a blocker count (not by "no portable learning core") is now a defect.
-
-### Cross-references
-- § R-WEB-CLONE-PARITY (the waiver taxonomy this rule feeds) · § R-WEB-CLONE-BACKPORT-MINING (the 💡 iOS-ENHANCE class for device-specific *novel learning*) · § R-WEB-CLONE-PARITY-DOD (the ship gate)
-- `Docs/AUDIT_WEB_CLONE_NEXT_RANKING_BATCH4_2026-07-11.md` § "Census method" + § "Deferred / not-yet-portable" (updated to reflect this loosening)
-- `Docs/WEB_CLONE_PICKUP_RUNBOOK.md` § 0 (SELECT) — the selection step this rule governs
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Web-app clones must keep feature parity with their iOS app (R-WEB-CLONE-PARITY; 2026-07-08)
 
 **A browser learning-app clone of a portfolio iOS app (the `/play/<app>/*` route tree — FractionForge is the first, `/play/fractionforge`) MUST maintain feature parity with that app's LEARNING-RELEVANT features, UNLESS a specific delta is EXPLICITLY WAIVED with a documented rationale in the app's parity ledger.** Parity is the default; every gap is either closed or explicitly justified — never silently dropped. Codified per user-direct 2026-07-08 (*"codify the requirement that fractionforge iOS app and web page need to have feature parity unless explicitly allowed not to"*).
 
-### What "feature parity" covers (and what it doesn't)
+→ **Sub-rules** defined here (full detail in reference): (R-CLONE-BIDIRECTIONAL-BACKPORT).
 
-Parity is measured on **learning-relevant + pedagogy-load-bearing** surfaces, NOT pixel-identical UI:
-
-- **IN scope (must reach parity or be waived):** the curricular manipulatives / scene modes, the question/kit content, the scaffolding discipline (articulate-before-hint / PolyaScaffold), the DN-S cast + narrative surfacing, co-op / pass-and-play modes, the engagement loop (streak / weekly challenge / boss-encounter / mastery gating), progress + mastery tracking, accessibility, and the anti-shame + narrative-placement disciplines (`R-NARRATIVE-BETWEEN-NOT-DURING` / `R-GUARD-THE-RATIO`).
-- **OUT of scope (never a parity obligation):** native-only affordances (SpriteKit particle polish, haptics, Live Activities, Widgets, App Intents/Siri, Game Center), platform chrome, and **pixel-identical** layout/styling. A web-native equivalent of a native affordance satisfies parity (e.g. SVG manipulative ≈ SpriteKit manipulative; a linked site chapter reader ≈ an in-app reader). **Note:** the app's *visual identity + interaction character* (palette, typographic register, IA, feedback/motion patterns) is a SEPARATE, IN-scope obligation governed by **`R-WEB-CLONE-UX-PARITY`** below — "not pixel-identical" is not "not visually faithful."
-
-### The parity ledger (required artifact)
-
-Each web-clone app maintains a parity ledger — `spark-anvil-hub/Docs/web/<app>/PARITY_WEB_VS_IOS.md` (per ADR-033; legacy flat `Docs/PARITY_<APP>_WEB_VS_IOS.md` for pre-2026-07-10 clones) — enumerating every in-scope iOS feature → web status, one of:
-
-| Status | Meaning |
-|---|---|
-| ✅ **parity** | Present + equivalent on the web |
-| 🔄 **adapted** | Present via a web-native equivalent (note the adaptation) |
-| 🟡 **gap** | Missing on the web + NOT yet waived → open work item (must be tracked in the work queue) |
-| ⛔ **waived** | Deliberately not built on the web, WITH a one-line rationale (see below) |
-
-A 🟡 gap is a defect against this rule; a ⛔ waiver is compliant. The distinction is the documented rationale.
-
-### What counts as a valid waiver
-
-A delta may be waived (⛔) only for a concrete reason, recorded inline in the ledger. Canonical valid rationales:
-
-- **On-device / COPPA guardrail** — a feature that would require a server, accounts, or off-device data collection is auto-waivable under the site's on-device posture (e.g. classroom sharing / Google Classroom / cross-device sync / global leaderboards). This is the strongest waiver and takes precedence over parity.
-- **Platform-only affordance** — the out-of-scope list above (haptics, Widgets, Siri, Game Center, etc.).
-- **Founder-direct** — the user explicitly approves a specific delta.
-
-"It was more work" is NOT a valid waiver — that's a 🟡 gap (a tracked work item), not a ⛔ waiver.
-
-### The bidirectional-backport rule (R-CLONE-BIDIRECTIONAL-BACKPORT; strengthened 2026-07-08)
-
-**Parity is SYMMETRIC and backport is MANDATORY in BOTH directions. If EITHER surface has a learning-relevant feature the other lacks, that feature MUST be backported to the other surface — unless the delta is EXPLICITLY WAIVED with a documented rationale in the parity ledger.** Codified per user-direct 2026-07-08 (*"codify the requirement that if the web app has a feature that the ios app doesn't have, that feature has to be backported to the ios app and vice versa unless it's explicitly allowed not to."*). This UPGRADES the former soft "note it / the iOS session can *consider* back-porting" to a hard obligation identical in force to the iOS→web direction. A web-only (or iOS-only) learning-relevant feature that is neither backported nor waived is a **defect** against this rule, tracked as a 🟡 gap.
-
-The parity ledger is the single symmetric record for both directions; when EITHER surface gains a learning-relevant feature, the ledger MUST be updated **in the same cycle** and the delta **closed (backported) or explicitly waived**:
-
-- **iOS ships a new mode / mechanic / cast member / engagement feature** → ledger gains a 🟡 gap row (a web work item, closed by hub — hub owns the web) OR a ⛔ waiver. Hub implements the web backport directly.
-- **Web ships a new learning-relevant feature the iOS app lacks** → ledger gains a 🟡 gap row (an **iOS backport work item**) OR a ⛔ waiver. **Because hub NEVER writes Swift / iOS app source (the single most load-bearing repo rule), hub discharges the iOS-direction obligation by FILING A HANDOFF** — `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md` — that specifies the feature + the web reference impl + the proposed iOS surface, for the iOS app's OWN Claude Code session to implement. The gap row stays 🟡 (open) until the iOS session ships it back (a `HANDOFF_FROM_APP_*_SHIPPED` return closes the row to ✅/🔄). Hub filing the handoff is the *start* of the obligation, not its completion — "handoff filed ≠ backported," mirroring "authored ≠ integrated."
-
-Same waiver criteria as § "What counts as a valid waiver" apply in BOTH directions: on-device/COPPA guardrail · platform-only affordance · founder-direct. Platform-native equivalents are ⛔/🔄, not 🟡 (e.g. the PWA offline install is a *web-native* affordance whose iOS equivalent is the OS's native offline execution — already satisfied, so ⛔ waived, not an iOS backport gap). "It's only on one surface because that's where we built it" is NOT a waiver — that's a 🟡 gap (a tracked backport item).
-
-The `R-CAST-EXPANSION-INTEGRATION` "authored ≠ integrated" discipline (`.claude/rules/distributed-narrative.md`) is the sibling pattern one axis over: there, a new cast member opens per-axis integration debt; here, a new feature on either surface opens a cross-surface backport gap. Both are "the ship isn't done until every downstream surface is closed or explicitly waived."
-
-### When this rule applies
-
-- Authoring or extending any `/play/<app>` web clone.
-- Auditing a web clone for completeness — enumerate the ledger; every 🟡 gap is a work item, every ⛔ needs a rationale.
-- Any iOS-app round that adds a learning-relevant feature to an app that HAS a web clone — update the clone's ledger (hub-side; the iOS session need not) and close the web gap or waive it.
-- **Any web-clone round that adds a learning-relevant feature the iOS app lacks** → add a 🟡 iOS-backport gap row to the ledger in the same cycle AND file `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md` for the iOS session (or record a ⛔ waiver). The row closes only when the iOS session ships the backport (R-CLONE-BIDIRECTIONAL-BACKPORT).
-
-### Cross-references
-
-- `Docs/web/fractionforge/PARITY_WEB_VS_IOS.md` — the first/reference parity ledger
-- `Docs/web/fractionforge/PLAN_WEB_CLONE.md` + `Docs/web/fractionforge/RESEARCH.md` — the web-clone design
-- `Docs/AUDIT_FRACTIONFORGE_PORTFOLIO_LIFT_2026-07-08.md` — the iOS feature inventory the ledger measures against
-- `.claude/rules/distributed-narrative.md` § R-CAST-EXPANSION-INTEGRATION — sibling "authored ≠ integrated" discipline
-- § "Web-app clone" scope above (hub owns the web; `/play/*` is a learning app distinct from the marketing site)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Web-clone UI/UX parity — the clone must carry its iOS app's visual + interaction character (R-WEB-CLONE-UX-PARITY; 2026-07-10)
 
@@ -362,46 +240,9 @@ The `R-CAST-EXPANSION-INTEGRATION` "authored ≠ integrated" discipline (`.claud
 
 `R-WEB-CLONE-PARITY` says the clone must have the same *features*; this rule says it must *look and feel like the same app*. Both are default-parity-with-documented-exceptions; neither is pixel-matching.
 
-### What UI/UX parity covers (IN scope)
+→ **Sub-rules** defined here (full detail in reference): (R-CLONE-BIDIRECTIONAL-BACKPORT).
 
-Measured on the app's **identity + interaction character**, NOT pixel geometry:
-
-- **Visual identity** — the app's signature **accent/primary palette** (from its iOS theme file, e.g. `<App>Theme.swift` — the authoritative source, NOT the descriptive hero-color registry), **semantic colors** (correct-green / incorrect-red / hint-amber), **typographic register** (weight/scale/rounded-vs-serif feel), and **corner-radius + surface** language. **Accent-source precedence when there is NO `*Theme.swift`** (2026-07-15, focusforge): many apps ship no theme file and use the system `AccentColor` asset (often empty/default). Then the authoritative accent identity is the app's **`apps.generated.ts` `heroColor`** (the live site data), NOT the `Docs/REGISTRY_APP_HERO_COLORS.md` entry — that registry frequently carries a speculative/"TBD-verify" descriptor that contradicts the shipped heroColor (focusforge: registry said "Focus-purple TBD" while heroColor + the DN retrofit said `#81C784` SEL green → the green is authoritative). Precedence: `*Theme.swift` → `apps.generated.ts heroColor` → (only if both absent) the hero-color registry as a last-resort hint to confirm with the founder.
-- **Information architecture + navigation** — the home/landing IA, the way modes/mechanics/kits are presented (tile grid vs list), and the home → practice → results flow.
-- **Interaction + feedback** — selection states, correct/incorrect treatment (color + the *kind* of motion), hint reveal, explanation surfacing, and the results/celebration moment (stars / XP tally / level).
-- **Gamification chrome** — the score/XP/level/streak HUD *presence* and shape.
-- **States + a11y** — empty/loading/error treatment; reduced-motion, ARIA/VoiceOver-equivalent labels, WCAG-AA contrast (a11y is a HARD obligation, never waived for cost).
-
-### What counts as a REASONABLE exception (the waiver taxonomy)
-
-A UI/UX delta may be recorded **⛔ waived** (or **🔄 adapted** when a web-native equivalent stands in) only for a concrete, documented reason:
-
-1. **Platform-only affordance** — haptics, SpriteKit particle polish, Live Activities, Widgets, native nav chrome, the avatar studio. A web-native equivalent (CSS transition ≈ UIKit spring; a color-flash ≈ haptic; an SVG scene ≈ a SpriteKit scene) is **🔄 adapted**, not a gap.
-2. **Site-chrome cohesion (the canonical example)** — the clone lives inside `spark-and-anvil.com`, whose brand register is the **chunky-cartoon studio identity** + hybrid Liquid-Glass accent (ADR-014 / § R-SITE-CHROME). Retaining that shared **material substrate** (bold outline + hard drop-shadow cards from `play.css`) instead of pixel-matching the iOS app's flat-glass surface is a legitimate **🔄 adaptation** — the clone adopts the app's *accent palette + semantic colors + IA + interaction patterns* on top of the studio substrate. Per-app *identity* is IN scope; the *substrate* is a documented adaptation.
-3. **Web-platform norm** — a native pattern whose web-idiomatic form differs (e.g. a native menu-picker → a `<select>`; a tab bar → top nav) is 🔄 adapted.
-4. **On-device / COPPA** — anything needing accounts/server/off-device data (parent dashboards behind auth, cross-device sync) — auto-waivable, strongest waiver.
-5. **Diminishing-returns, DOCUMENTED** — a high-effort, low-learning-value surface (e.g. a full progress-dashboard with heatmaps/trend-charts, a 16-mode adventure hub) may be scoped down with a one-line rationale + a 🟡 follow-up if worth revisiting. **"It was more work" ALONE is NOT a waiver** — that's a 🟡 gap (a tracked item). Diminishing-returns means *effort ≫ learner/identity value*, stated explicitly.
-6. **Founder-direct** — the user approves a specific delta.
-
-### The UI/UX parity ledger (required artifact)
-
-Each clone's `PARITY_WEB_VS_IOS.md` gains a **`## UI/UX parity`** section (a sibling to the feature table), enumerating each UI/UX surface (visual identity · IA/nav · each screen · HUD · feedback/motion · states · a11y) → status: ✅ **parity** · 🔄 **adapted** (web-native/substrate equivalent — note it) · 🟡 **gap** (open work item) · ⛔ **waived** (rationale). Same discipline as the feature ledger: a 🟡 is a defect, a ⛔/🔄 needs a rationale. Measured against the app's iOS UI/UX inventory — captured in `Docs/web/<app>/AUDIT_UX_PARITY_<date>.md` (the audit this ledger scores against; parallels how the feature ledger measures against the `## iOS feature inventory`).
-
-### Symmetric backport (inherits R-CLONE-BIDIRECTIONAL-BACKPORT)
-
-UI/UX parity is symmetric like feature parity: a *learning-relevant* interaction the web clone introduces that the iOS app lacks (e.g. a keyboard-first speed mode) must be backported (iOS handoff) or waived. Pure web-substrate styling (the chunky-cartoon cards) is NOT a backportable feature — it's a 🔄 adaptation, never an iOS-backport gap.
-
-### When this rule applies
-
-- Authoring or extending any `/play/<app>` clone → theme it to the app's palette + semantic colors + IA from day one; fill the `## UI/UX parity` ledger section.
-- Auditing a clone → enumerate the UI/UX ledger; every 🟡 is a work item, every ⛔/🔄 needs a rationale.
-- The two-guide sync (`R-WEB-CLONE-GUIDE-SYNC`) + the feature ledger (`R-WEB-CLONE-PARITY`) + this UI/UX ledger update together when a clone's look/feel changes.
-
-### Cross-references
-- `Docs/web/fractionforge/PARITY_WEB_VS_IOS.md` + `Docs/web/grammarforge/PARITY_WEB_VS_IOS.md` — the `## UI/UX parity` ledger sections
-- `Docs/web/fractionforge/AUDIT_UX_PARITY_2026-07-10.md` + `Docs/web/grammarforge/AUDIT_UX_PARITY_2026-07-10.md` — the iOS UI/UX inventories this rule measures against
-- § R-WEB-CLONE-PARITY (feature sibling) · § R-CLONE-BIDIRECTIONAL-BACKPORT (symmetric backport) · § R-SITE-CHROME + ADR-014 (the studio substrate the site-cohesion exception rests on)
-- `src/styles/play.css` — the shared `/play` stylesheet; per-app themes are `.pc-theme-<app>` scopes that override the palette variables (the implementation seam for accent parity)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## The question→answer→feedback flow is the shared PROMINENT surface — feedback is the climax, not a muted footnote (R-WEB-CLONE-QA-PROMINENCE; 2026-07-13)
 
@@ -415,10 +256,9 @@ The shared, canonical treatment (do NOT regress it, and reuse it — never hand-
 - **The question is a prominent accent "question card"** (`.pc-q-stem`, V180) — big bold type on the studio card substrate (bold outline + hard shadow) with a per-app `--pc-select` **accent left-bar**, as visually weighty as the answer surface. This is load-bearing: when V179 first shipped, the plain-text stem was out-muscled by the bordered feedback/choices ("not prominent at all" — founder). The hierarchy reads accent **question card → choices → semantic feedback panel** (the question's left-bar is accent-colored; the feedback's is green/red). Keep the ≤~62ch reading column.
 - **Anti-shame** — neutral wrong-answer copy, private, the round always advances; bespoke reveal uses a neutral tint, never a harsh red.
 - **Prominence via clarity, NOT decoration** — no ambient/during-solve motion (the seductive-detail trap; honors R-NARRATIVE-BETWEEN-NOT-DURING + R-GUARD-THE-RATIO); reduced-motion fallbacks; `aria-live` feedback + focus-to-Continue.
+- **Optional self-explanation reconcile (DEPTH lever — use SPARINGLY)** — where warranted, a boundary-placed "Why?"/choose-the-reason micro-step after an answer (pick the reason from 2–3 options — no free-text/AI evaluator → COPPA-safe; the `R-WEB-CLONE-POE` Explain step generalized). Strongly evidenced (Bisra 2018 g≈0.55) BUT **selective + adaptive, never on every item** — over-prompting causes documented "metacognitive overload" (Guo 2022); surface it after a first miss or on misconception-bearing items. Distinct from the DIR/FEDC *affect* reflection (cognition ≠ affect). Folded into the manipulative/QA DEPTH axis, NOT a co-equal expansion axis — see `R-WEB-CLONE-PRACTICE-SCHEDULING` § Companion DEPTH lever.
 
-The shared `.pc-q-*` classes live in the base `play.css` (not a per-app block). A clone gets this for free by rendering through the shared shells; the `_shared` Vitest contract + the Playwright round-play/interaction/keyboard/control-names/a11y gates (R-WEB-CLONE-TEST) keep it green. When editing either shell, keep the public API (`McRoundOpts`/`CustomRoundOpts`/`RoundCtx`) identical — ~200 call sites depend on it.
-
-**▶ Playbook:** the prescriptive treat-vs-no-op decision tree + copy-paste CSS recipes + per-manipulative-type reference treatments live in **`Docs/GUIDE_WEB_CLONE_PROMINENCE_BEST_PRACTICES.md`** (distilled from the 2026-07 sweep). Use it when building/reviewing any practice surface.
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## The manipulative is a prominent CARD/STAGE — same studio treatment as the Q&A cards, quiet background (R-WEB-CLONE-MANIPULATIVE-PROMINENCE; 2026-07-13)
 
@@ -430,363 +270,182 @@ The shared `.pc-q-*` classes live in the base `play.css` (not a per-app block). 
 - **Rollout:** unlike the Q&A flow (one shared shell), there is **no single shared manipulative surface** — most manipulatives sit in bespoke per-clone wrappers, so a clone adopts prominence by wrapping its manipulative in `.ff-stage` (+ `--dominant` where it helps). Per-clone rollout across the ~50 non-fractionforge clones is tracked continuation (work-queue V181; the portfolio-wide sweep pass completed V221, `Docs/AUDIT_WEB_CLONE_PROMINENCE_SWEEP_2026-07-14.md`). A11y (keyboard-adjust, single-pointer drag alternative per WCAG 2.5.7, ≥44px handles, `aria-valuetext`, non-color cues) is a hard obligation per adopting clone.
 - **▶ Playbook:** the treat-vs-no-op decision tree (the sweep's key finding: shared-shell clones are already prominent; only genuine *floaters* need treatment) + copy-paste CSS recipes (accent-topped stage / accent question-card / tabular readouts) + per-manipulative-type reference treatments live in **`Docs/GUIDE_WEB_CLONE_PROMINENCE_BEST_PRACTICES.md`**.
 
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Every DRAG / positional / slider manipulative MUST have a single-pointer + keyboard alternative AND a ≥44px handle with a drag affordance — drag-only is a defect (R-WEB-CLONE-DRAG-TARGET; 2026-07-20)
+
+**Any manipulative a learner moves by DRAGGING — a slider knob, a draggable marker/token/handle, a drag-to-place tile, a pinch/drag surface — MUST ship ALL of: (1) a discoverable SINGLE-POINTER alternative to the drag (visible ◀▶/±/tap-to-place buttons or tap-the-track — WCAG 2.5.7 Dragging Movements); (2) KEYBOARD operability (arrow keys / Home-End on a focusable `role="slider"`, WCAG 2.1.1); AND (3) a ≥44px pointer/touch target for the handle, verified ON MOBILE where a fixed-viewBox SVG shrinks the handle below the CSS size (WCAG 2.5.8 + the portfolio kid-target standard), WITH a clear drag AFFORDANCE (raised drop-shadow "knob" + `grab`/`grabbing` cursor) so it reads as grabbable. A drag-ONLY manipulative, or one whose handle renders < ~44px on a phone, is a defect on the same footing as a missing parity axis.** Codified per founder-report 2026-07-20 (the FractionForge number line: drag was the only way to place the marker + the handle was a 26px dot, "very small on mobile"). This makes the a11y obligation that R-WEB-CLONE-MANIPULATIVE-PROMINENCE already *names* ("single-pointer drag alternative per WCAG 2.5.7, ≥44px handles") into an ENFORCEABLE, audited gate — because naming it did not stop the number line shipping drag-only + 26px.
+
+**The load-bearing gotchas (author + review against these):**
+1. **A fixed-`viewBox` SVG handle is NOT a fixed CSS size — it SHRINKS with the responsive svg, so a radius that's ≥44px on desktop is < 44px on a phone (the exact mobile-target complaint).** A `r=24` svg-unit halo measured **48px desktop but only 31px on a 402px mobile viewport** (the svg scales down). FIX = a geometry-CSS media query bumping the handle's `r` at narrow widths (`@media (max-width:640px){ .handle-hit { r: 34px; } }` → back to ~44px), OR a non-SVG DOM handle. **Always MEASURE the handle's rendered `boundingBox()` at a ~390–402px mobile viewport**, never trust the svg-unit radius.
+2. **The ≥44px target is best delivered by a transparent HIT-HALO** (a `fill:transparent; pointer-events:all` circle/rect ≥44px carrying the pointerdown/drag) BEHIND a tastefully-sized visible handle — so the touch target is big without a giant visible dot. Track the halo's position alongside the visible handle.
+3. **Tap-the-track is the most intuitive single-pointer path** for a slider/number-line: a tap/click anywhere on the track jumps the handle to the nearest valid stop and starts a drag (standard "click-to-seek"). SNAP to valid stops (the same quantizer the drag uses — e.g. `posForX`), so a tap can only land on a legal value (a divider tick), never between.
+4. **The drag AFFORDANCE is required, not optional** — a raised drop-shadow (physical "knob"), `cursor:grab`→`grabbing`, and a track `cursor:pointer` tell the learner what's draggable/tappable. Animate only GLOW/shadow, never the bounding box (R-WEB-CLONE-TEST — an animated bounding box breaks Playwright actionability).
+5. **The instruction text names every path** ("Tap the line, drag the marker, or use the ◀▶ buttons / arrow keys") so all three are discoverable.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Manipulative/representation expansion follows the CRA ladder + an Applications rung — and it generalizes to NON-math clones via Bruner's modes (R-WEB-CLONE-CRA-LADDER; 2026-07-17)
+
+**The manipulative BREADTH+DEPTH expansion axis (ADR-048 / `PLAYBOOK_WEB_CLONE_EXPANSION.md`) is ORGANIZED by the CRA ladder — Concrete → Representational → Abstract — plus a fourth APPLICATIONS / transfer rung; and it applies to BOTH math AND non-math clones (the ladder generalizes via Bruner's enactive→iconic→symbolic modes, which are domain-general).** When expanding a clone's manipulatives/representations, audit its surfaces by rung and expand to fill missing rungs — a primitive taught only ABSTRACTLY (an MC/Concepts surface) earns a Concrete + Representational surface; a primitive with only a manipulative earns an Applications/transfer surface. Codified per founder-direct 2026-07-17 (*"apply the cra model of singapore math to our expansion playbook … more concrete/manipulatives, more representational modes and more abstract modes"* + *"can we apply the cra model to non-math web clones?"* + *"add 'applications' as another axis"* + *"codify … especially the one about applying cra model to both math and non-math web-clones"*).
+
+**Evidence (sourced — `RESEARCH_WEB_CLONE_EXPANSION_2026-07-17.md` § CRA):** CRA **is** Singapore math's CPA (Concrete-Pictorial-Abstract), both grounded in **Bruner's** three modes of representation (enactive / iconic / symbolic, 1960s → Mercer & Miller 1992). The **Ebner et al. (2025)** meta-analysis (30 single-case studies, *Learning Disabilities Research & Practice*) found a **very large** overall effect; the IES **What Works Clearinghouse (2021)** rates concrete + semi-concrete representations **strong evidence**; and **virtual ≈ concrete** manipulatives (equally effective) — so the web's virtual manipulatives are legitimate CRA stand-ins. Honest-yield caveat: the strongest RCT base is MATH/quantitative; for non-math it's an **evidence-aligned ANALOGY via Bruner's domain-general modes**, applied as a representation-progression heuristic, NOT a claim of the math effect size.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
 ## Prefer Predict-Observe-Explain (predict-before-reveal) when a clone re-renders a deterministic sim/mechanic (R-WEB-CLONE-POE; 2026-07-14)
 
 **When a `/play/<app>` clone re-renders a DETERMINISTIC, model-predictable simulation or mechanic (a phase cycle, an energy-flow graph, a truth table, a physics/parameter model, a rule the learner can reason toward), the DEFAULT framing is a scored Predict-Observe-Explain (POE) loop — the learner commits a prediction BEFORE the outcome is revealed, then reconciles the reveal — NOT a free-play "tap-and-watch" arena.** POE is one of the best-evidenced moves in science-education research (meta-analysis of 35 studies: Hedges' **g ≈ 0.98** on science achievement), and the cognitive engine is **errorful generation + prediction error** (committing a prediction — even a wrong one — then getting feedback encodes the answer better than watching), not "the sim is fun." Free-play iOS SpriteKit sims (and apps like Tinybop) leave this on the table, which is why a POE re-render is the portfolio's reference **web-pioneered → iOS-backport** feature. Full evidence base + design spec + worked examples: **`Docs/RESEARCH_PREDICT_OBSERVE_EXPLAIN_MECHANIC_2026-07-14.md`**. First consumer: `/play/curiosityquest` (Water Cycle predict-the-phase · Food Web predict-the-cascade · Logic Lab predict-then-run).
 
-### The POE surface contract (on-device / COPPA-safe)
-1. **Commit a prediction before any reveal** — the outcome is hidden until the learner chooses/constructs an answer.
-2. **A real, unconstrained choice** — plausible distractors (map to common misconceptions where possible), NOT a near-give-away. **Load-bearing boundary condition:** the generation benefit *disappears* when the guess is over-constrained (Grimaldi & Karpicke 2012) — never auto-fill or pre-narrow the prediction to a coin-flip.
-3. **First-try scoring + articulate-before-hint** — credit the first try; a hint appears only AFTER a first miss (never up front), preserving the generation effect (joins `R-FORGEPEDAGOGY-SCAFFOLDING`).
-4. **An explicit "Explain" reconcile on the reveal** — feedback names *why* (the rule/mechanism), not just ✓/✗ (rides the shared prominent feedback panel, `R-WEB-CLONE-QA-PROMINENCE`).
-5. **Anti-shame** — a wrong prediction is the point (errorful generation / hypercorrection); neutral copy, round always advances, never a harsh red.
-6. **Deterministic + engine-derived answers** — computed from the model (never hardcoded) so a Vitest invariant asserts the bank matches the engine (`R-WEB-CLONE-TEST`).
-7. **Quiet stage** — NO decoration/animation/narrative on the predict→reveal path (the seductive-details caution: a 2025 meta-analysis finds narrative/decoration on the critical path *hurts* learning, **g = −0.16**, via extraneous cognitive load). Honors `R-NARRATIVE-BETWEEN-NOT-DURING` + `R-GUARD-THE-RATIO` + `R-WEB-CLONE-MANIPULATIVE-PROMINENCE` (quiet background).
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-### Honest yield — POE is NOT universal
-POE fits **predictable-from-a-model** surfaces with a real misconception space. It is NOT for vocabulary recall, aesthetic-choice creative tools, or random-outcome games — forcing a "prediction" there is decoration, and the honest classification is a plain MC round (`_shared/mcRound`) or a different mechanic, not a mislabeled POE lab. Apply POE where the phenomenon is model-predictable; elsewhere, don't. A clone that ports a deterministic sim as free-play *without considering* a POE framing is a review flag (was it a deliberate, documented choice, or an un-earned "strict port"?) — the same "earned, not assumed" bar as `R-WEB-CLONE-BACKPORT-MINING`.
+## Practice-scheduling is the 7th expansion axis — spaced retrieval + interleaving + edge-of-competence, ON-DEVICE + calm-rails (R-WEB-CLONE-PRACTICE-SCHEDULING; 2026-07-18)
 
-### When this rule applies
-- Authoring a clone with a deterministic sim/mechanic surface → default to POE; a genuine POE feature the iOS app lacks is a ✅ FILE candidate (web-pioneered → iOS backport, `R-CLONE-BIDIRECTIONAL-BACKPORT`).
-- Reviewing a clone PR → a free-play re-render of a predictable sim with no prediction step is a flag (POE was the higher-value option); verify it was a documented choice.
+**A `/play/<app>` clone's EXPANSION includes a distinct 7th axis — PRACTICE-SCHEDULING / MASTERY SEQUENCING: the cross-item, cross-session lever governing WHICH item the learner sees next + WHEN a learned item RESURFACES (spaced retrieval + interleaved "Mixed practice" + edge-of-competence next-item selection). It is ORTHOGONAL to the manipulative "assessment depth"/"bank depth" (those are within-surface + within-session); it is realized ON-DEVICE (`localStorage`, no identifier → COPPA-trivial); and it MUST be calm-rails (no due-count dread / streak-guilt / gating). A discrete-item clone (MC-kit / manipulative-POE bank) with no resurfacing/interleaving/adaptive-next is a parity gap; a solo-creative-tool / solo-reflection clone waives it with a one-line rationale.** Codified per founder-greenlight 2026-07-18 (add a full 7th expansion axis) on the evidence in `Docs/RESEARCH_WEB_CLONE_EXPANSION_ADDITIONAL_AXES_2026-07-17.md` (ADR-048 amendment). This is the sequencing sibling of `R-WEB-CLONE-POE` (a mechanic) + `R-WEB-CLONE-CRA-LADDER` (representation breadth) — the same expansion program, a different lever.
 
-### Cross-references
-- `Docs/RESEARCH_PREDICT_OBSERVE_EXPLAIN_MECHANIC_2026-07-14.md` (the evidence base + design spec) · `Docs/web/curiosityquest/{RESEARCH,PARITY_WEB_VS_IOS,FEATURE_PLAN}.md` (the first consumer)
-- § R-WEB-CLONE-QA-PROMINENCE (the Explain panel) · § R-WEB-CLONE-MANIPULATIVE-PROMINENCE (quiet stage) · § R-WEB-CLONE-BACKPORT-MINING (POE as a FILE candidate) · § R-WEB-CLONE-TEST (engine-derived bank invariant)
-- `.claude/rules/forgekit.md` § R-FORGEPEDAGOGY-SCAFFOLDING (articulate-before-hint / productive failure — the sibling pedagogy) · `.claude/rules/distributed-narrative.md` § "Counter-evidence + design-principle layer" (the seductive-details caution) + § R-NARRATIVE-BETWEEN-NOT-DURING + § R-GUARD-THE-RATIO
+**The three sub-mechanisms (build/audit against these):**
+1. **Spaced retrieval** — resurface an introduced item on an expanding due-based schedule (FSRS-lite), not only in the kit that introduced it. Spacing is one of the most robust findings in learning science (300+ studies); learners do NOT adopt it spontaneously, so the app automates it.
+2. **Interleaving** — offer a "Mixed practice" round mixing item types/kits (improves discrimination + retention) — but ONLY over *already-acquired* items, NEVER during a primitive's first teaching, and the app must curate the mix (learners are biased toward blocking).
+3. **Edge-of-competence next-item** — pick the next item near the mastery frontier (Vygotsky ZPD: extend/consolidate/stretch) — the sequencing half the iOS `ForgeMasteryEngine.NextProblemPicker` already implements.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Mastery-progression is the 8th expansion axis — intrapersonal progress + achievements + goals, ON-DEVICE + calm-rails, NO leaderboards/currency/streak-guilt (R-WEB-CLONE-MASTERY-PROGRESSION; 2026-07-18)
+
+**A `/play/<app>` clone's EXPANSION includes a distinct 8th axis — MASTERY-PROGRESSION / GOAL & ACHIEVEMENT: the clone-wide, cross-session lever that gives a persistent sense of ACCOMPLISHMENT + a reason to return — a calm progress bar (XP-from-first-try-mastery), an achievements shelf keyed to LEARNING milestones, and optional learner-set goals / personal-best ("beat YOUR best"). It is realized ON-DEVICE (`localStorage`, no identifier → COPPA-trivial), it is DEFINED by its EXCLUSION of the evidence-flagged maladaptive forms, and it MUST be mastery-oriented + intrapersonal. A discrete/gradeable clone (MC-kit · manipulative/POE bank · board/strategy) with no progress/achievement/goal layer is a parity gap; a solo-reflection/SEL clone ⛔-waives it (progress-tracking undermines the private pillar); a pure solo-creative clone ⛔/🔄 (a gentle "pieces you've made" shelf only, never scored); and a **BESPOKE-STORE / BESPOKE-ENGINE clone ⛔-waives it** — a clone whose progress lives in a bespoke store (IndexedDB / a non-`${ns}.progress.v1` key) or a bespoke adaptive/gamification system supersedes the shared card, and wiring `<MasteryProgress namespace="ns">` (which reads `${ns}.progress.v1`) would render a permanently-EMPTY card = a defect (fractionforge = bespoke IndexedDB store + richer bespoke boss/XP system; alcumusforge = bespoke adaptive mastery engine, no discrete MC-kit bank; both 2026-07-18). Documented non-build, NOT a gap — the SAME ⛔ criterion binds axis-7 (§ R-WEB-CLONE-PRACTICE-SCHEDULING), since both axes read the shared `${ns}.progress.v1` store. **Verify before waiving:** grep `progress.ts` for `makeProgress('<ns>')` + a `kits-index.ts`.** Codified per founder-greenlight 2026-07-18 (add a full 8th expansion axis, mastery-progression) on the evidence in `Docs/RESEARCH_WEB_CLONE_EXPANSION_GAMIFICATION_2026-07-18.md` (ADR-048 amendment). This is the reward+goal+recognition sibling of `R-WEB-CLONE-PRACTICE-SCHEDULING` (sequencing) — distinct because adventure is a progression *map*, practice-scheduling is the mastery *state/sequence*, and this is the *accomplishment/recognition* layer on top.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Scaffolded hint-ladder is the 9th expansion axis — articulate-before-hint · PROGRESSIVE multi-level hints · FADED worked example · misconception-targeted remediation, ON-DEVICE (R-WEB-CLONE-SCAFFOLDED-HINTS; 2026-07-18)
+
+**A `/play/<app>` clone's EXPANSION includes a distinct 9th axis — SCAFFOLDED HINT-LADDER: the in-round pedagogy lever that turns a stuck attempt into a PROGRESSIVE, FADED scaffold instead of a one-shot hint. The web round shells (`_shared/mcRound`/`customRound`) shipped one-shot elaborated feedback + a single hint; this axis adds a shared `_shared/scaffold.ts` engine that drives (i) an ARTICULATE-BEFORE-HINT gate (no hint before the first wrong attempt), (ii) PROGRESSIVE multi-level hints (one rung per wrong attempt, least→most revealing), (iii) an optional FADED WORKED EXAMPLE as the terminal rung before the answer is revealed, and (iv) optional per-wrong-option MISCONCEPTION-targeted remediation. It is realized ON-DEVICE (pure TS, no PII, no AI evaluator → COPPA-trivial) and the portfolio ALREADY owns the engine on iOS (`ForgePedagogy`: `PolyaScaffold` · `WorkedExampleProvider` · `MisconceptionDetector`).** A discrete-item archetype (MC-kit · manipulative/POE bank) whose wrong-answer path is a single hint → generic reveal is a DEPTH gap; a solo-creative-tool / solo-reflection clone with no gradeable item ⛔-waives it (one line). Codified per founder-greenlight 2026-07-18 (ForgeKit-mining wave, ADR-048 Decision 9) on `Docs/RESEARCH_WEB_CLONE_EXPANSION_FORGEKIT_MINING_2026-07-18.md`.
+
+**The evidence DEFINES the guardrails (build/audit against these — the design IS the evidence):**
+- **Articulate-before-hint** — a hint is NEVER offered before the learner's first attempt; premature + superficial hint use *consistently reduces* learning ("gaming the system" — LAK26 2026, 999 K-12 students). The engine stays LOCKED until `unlock()` (the shell calls it after the first wrong try). A give-away "Hint" button up front is a **defect**, not this axis.
+- **Progressive + FADED** — hints reveal least→most, one rung per attempt, ending in a faded worked example (fading is the strongest intra-example feature — Barbieri et al. 2023 meta; worked examples ≈ **0.48 SD** on math). Never dump the whole answer at once; never a single give-away.
+- **NO mandatory self-explanation on the worked example** — Barbieri 2023 found self-explanation prompts *negatively moderated* the worked-example effect. Self-explanation stays the SPARING, adaptive axis-6 fold-in (`R-WEB-CLONE-QA-PROMINENCE` — after a first miss / misconception item, not on every hint). Bolting a mandatory "explain" onto the worked example is a defect.
+- **Misconception remediation = a DETERMINISTIC map** (wrong-option → targeted note), NO AI evaluator (COPPA-safe, nothing transmitted) — the `MisconceptionDetector` parity. Anti-shame register; the round ALWAYS advances (reveal when the ladder is exhausted); boundary-in-round, quiet stage.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Standards-mapped parent/educator report is the 10th expansion axis — the FIRST adult-facing axis, ON-DEVICE + export-on-demand, NO accounts/server/PII (R-WEB-CLONE-PROGRESS-REPORT; 2026-07-18)
+
+**A `/play/<app>` clone's EXPANSION includes a distinct 10th axis — the FIRST ADULT-facing one — a STANDARDS-MAPPED PROGRESS REPORT: a read-only "how it's going" view for a parent/educator + an EXPORT-ON-DEMAND (CSV / print), DERIVED ON-DEVICE from the SAME `${ns}.progress.v1` store the learner-facing axes (7/8) write. It is DEFINED by COPPA-avoidance-by-construction: NO accounts, NO server, NO hosted dashboard, NO PII off-device — a private, on-device view + a user-triggered export.** Every other axis is learner-facing; a clone has no adult-facing surface, though the site has a `/for-parents-educators` hub + per-app standards mapping + grade/level chips, and iOS owns the engine (`ForgeReporting`: `parentConferenceReport` · `standardsCSV` · `strengths`/`growthAreas`/`recommendations` · `StandardProficiency`). A discrete/gradeable clone (MC-kit · manipulative/POE bank) writing the shared `makeProgress('ns')` store with no adult report is a parity gap; a solo-creative/reflection clone or a bespoke-store clone ⛔-waives it (the SAME eligibility criterion as axes 7/8 — it reads `${ns}.progress.v1`; a bespoke IndexedDB store → an empty report = a defect, so verify `makeProgress('<ns>')` + a `kits-index.ts` before wiring). Codified per founder-greenlight 2026-07-18 (ForgeKit-mining wave, ADR-048 Decision 10) on `Docs/RESEARCH_WEB_CLONE_EXPANSION_FORGEKIT_MINING_2026-07-18.md`.
+
+**Why it's a clean, defensible axis (the scoping IS the point):** family engagement → learning outcomes is well-established (ReadyRosie / ParentPowered), and a standards-mapped strand breakdown is the credible report shape; parents + educators are the buyers/gatekeepers (the site trust-sell). Building it **on-device + export-on-demand** sidesteps the entire 2025-COPPA parental-consent/retention burden (the hosted-account model we deliberately avoid) — the same on-device posture as `R-SITE-FEEDBACK` / ReadingAccess / the offline PWA. **HARD guardrails:** on-device only (nothing transmitted); export is USER-triggered (a Blob CSV download / `window.print`, never auto-upload); plain-language + a "saved only on this device" note; standards labels from the clone's own kit metadata; dark-safe (`--ff-*`/`--pc-*`). **NO** learner-shaming framing — it RECOGNIZES progress + names growth areas gently (anti-shame, same register as axis 8).
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Affect / self-regulation check-in is the 11th expansion axis — GENTLE session-start check-in + co-regulation off-ramp, ON-DEVICE, NO mood-surveillance (R-WEB-CLONE-AFFECT-CHECKIN; 2026-07-18)
+
+**A `/play/<app>` clone MAY carry a distinct 11th axis — an AFFECT / SELF-REGULATION CHECK-IN: a GENTLE, OPTIONAL, dismissible session-START check-in ("how are you arriving?") + an on-demand CALM-DOWN / co-regulation off-ramp (a short tap-through grounding + breathing sequence), placed at a session boundary. It is DEFINED by its guardrails — because the evidence is context-dependent, not universally positive.** Distinct from the results `reflect.ts` (a one-shot post-round reflection): this is the session-start affect-labeling moment + a between-practice calm-down a stuck learner can reach. iOS parity: `ForgeEmotionAware` (`AffectCalibrator`/`CoRegulationEngine`/`SensoryRamp`) + DIR/FEDC. Codified per founder-greenlight 2026-07-18 (ForgeKit-mining wave, ADR-048 Decision 11) on `Docs/RESEARCH_WEB_CLONE_EXPANSION_FORGEKIT_MINING_2026-07-18.md`.
+
+**The evidence + the HARD guardrails (a violation is a defect, on the `R-SITE-FEEDBACK` footing):** RULER Mood Meter + affect-labeling (Lieberman 2007: labeling engages PFC, dampens amygdala → incidental regulation) support a gentle check-in — BUT affect-labeling benefits are **CONTEXT-DEPENDENT**: a broader *negative* emotion vocabulary can correlate with distress (Vine 2020 / DeLap 2024). So the axis MUST be: **GENTLE + OPTIONAL** (dismissible; the round works without it) · **NON-diagnostic + NON-scored** · **NOTHING stored or transmitted about the feeling** (only an ephemeral session-only "hide" flag — NO mood log, NO trend-tracking; a mood log/score/trend is the exact surveillance to avoid) · **body-sensation register (SAMHSA-aligned)**, every arrival normalized ("all of these are fine") · **calm-rails · reduced-motion-safe · dark-safe** · boundary-placed only (`R-NARRATIVE-BETWEEN-NOT-DURING`). It is **NOT a mental-health screener**; **⛔/careful for anxiety-sensitive clusters** — a genuine affect-crisis SEL clone keeps its own 988/crisis footer (`R-WEB-CLONE-SEL-CRISIS-FOOTER-SCOPE`), and math-anxiety-flagged / younger clusters get the gentlest framing or a waiver.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Every clone's progress-store namespace MUST be globally UNIQUE — a shared ns commingles two clones' on-device stores (R-WEB-CLONE-PROGRESS-NS-UNIQUE; 2026-07-19)
+
+**Every `/play/<app>` clone's PRIMARY progress namespace — the `makeProgress('<ns>')` value, which keys the on-device store at `localStorage['<ns>.progress.v1']` and is read by `<MasteryProgress>` (axis 8), the practice-scheduling review (axis 7), and `<ProgressReport>` (axis 10) — MUST be GLOBALLY UNIQUE across the whole fleet. Two clones sharing one namespace write the SAME localStorage key, so their per-kit progress / mastery / XP / streak / report COMMINGLE — a real on-device data-corruption bug (clone A's kit results pollute clone B's mastery + report, and vice-versa). A duplicate namespace is a defect on the same footing as a dark route.** Codified after the axis-10 rollout surfaced **11 pre-existing collision groups** (e.g. `gf` shared by grammarforge/geometryforge/gridforge; `dq` by dancequest/deducequest/discretequest; `cf`/`df`/`eq`/`lf`/`pq`/`rr`/`sl`/`spl`/`tt` each by a pair) — each had been silently commingling since those clones shipped.
+
+**The gate (build-time + PR-CI, mirroring `R-WEB-CLONE-GRADE-LEVEL`'s two-layer model):** `scripts/check-play-namespace-unique.mjs` scans every clone's `progress.ts` for its primary `makeProgress('ns')` (ignoring `*-mech` secondary stores), FAILS the build on any namespace used by >1 clone, AND cross-checks that the clone's `<MasteryProgress>`/`<ProgressReport>` `namespace=` matches its `makeProgress` value (a mismatch = the surface reads the wrong store). Wired into **`prebuild` + `prebuild:play`** (the Cloudflare build) AND a **Vitest PR-CI sibling** `src/data/play/namespace-unique.test.ts` (so a collision fails the PR, not just the deploy — the load-bearing "a prebuild-only gate is invisible to PR CI" lesson from `R-WEB-CLONE-GRADE-LEVEL`).
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## Learner AGENCY is the 12th expansion axis — meaningful CHOICE (autonomy-support) + an explicit AAR loop, ON-DEVICE + calm-rails, that COMPOSES the existing axes (does not rebuild them) (R-WEB-CLONE-AGENCY; 2026-07-19)
+
+**A `/play/<app>` clone's EXPANSION includes a distinct 12th axis — LEARNER AGENCY: developing the learner's agentic capacity (Bandura's four properties via the OECD Anticipation-Action-Reflection loop) by giving them REAL, learning-RELEVANT CHOICE over what/how to learn next + threading goal→choose→predict/act→self-assess/reflect into ONE learner-directed, on-device, calm-rails loop. Its scope is DELIBERATELY NARROW + honest-yield: agency is MOSTLY ALREADY OWNED by the LIVE axes — forethought/goal-setting by axis-8 (learner-set goals), anticipation by POE, self-reactiveness by PolyaScaffold, self-reflectiveness by DIR/FEDC reflection + the self-explanation fold — so this axis adds ONLY the un-owned MEANINGFUL-CHOICE lever + the AAR orchestration, and it COMPOSES (never rebuilds) the others. A clone that ships a decorative/irrelevant "choice," a system that auto-drives the path under an agency label, or an agency surface on the active solve-path is a defect.** Codified per founder-greenlight 2026-07-19 ("everything is approved") on the evidence in `Docs/RESEARCH_WEB_CLONE_EXPANSION_AGENCY_AXIS_2026-07-19.md` (ADR-048 Decision 12). Sibling to axis-7 (§ R-WEB-CLONE-PRACTICE-SCHEDULING) + axis-8 (§ R-WEB-CLONE-MASTERY-PROGRESSION) — same on-device / calm-rails / compose-shared-shell shape.
+
+**The loop (build/audit against these — all at SESSION BOUNDARIES, never the solve path):** (a) **INTENTION** — learner sets/confirms a learning goal (reuse axis-8's learner-set goal; prefer a *learning* goal for complex material — Locke & Latham); (b) **CHOICE** — learner picks the next activity / representation (CRA rung) / difficulty / path from a REAL, learning-relevant menu (**the un-owned lever** — Schneider et al. 2018: choice causally raises retention+transfer in digital media, mediated by perceived autonomy, ONLY for learning-relevant choices); (c) **ACT** — the chosen surface runs UNCHANGED (predict-then-act where a POE surface supports it); (d) **REFLECT** — a boundary self-assessment against the learner's OWN goal (reuse DIR/FEDC reflection + the self-explanation fold; self-assessment d≈0.78 on performance), feeding the next INTENTION (loop closes — OECD AAR).
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## A board/strategy-game clone = PURE engine + Vitest-pinned + a GRADED HEURISTIC AI (not a strong solver) + engine-verified puzzle legality (R-WEB-CLONE-BOARD-GAME-ENGINE; 2026-07-16)
+
+**When a `/play/<app>` clone ships a real playable board/strategy game (chess/draughts/Connect-4/Reversi/Gomoku/Hex/Dots-&-Boxes/backgammon/…), build it as a PURE, exported engine (`legalMoves`/`applyMove`/`winner`/`chooseMove` — no DOM) with a Vitest invariant spec, mounted by a thin `run<Game>()` UI; the AI opponent is a GRADED HEURISTIC sized to be a credible kid opponent, NOT a strong/perfect solver; and any position-PUZZLE surface's stated solution is cross-checked LEGAL against that same engine by the Vitest suite.** This consolidates the pattern proven across the strategy/board clones (chess-puzzle legality precedent → CrownTales draughts + Find-the-Shot, GridForge's five games + transfer POE, V270 #3/#4) into one entry-point so the next board-game-clone author doesn't re-derive it. It does NOT replace the per-axis rules — it ties them together.
+
+- **Pure engine + Vitest (joins R-WEB-CLONE-TEST):** the rules engine is a pure module (exported for tests, DOM-free); its invariant spec asserts the mechanic (win/legal-move/capture/flip/connection/parity), not just "renders." A bespoke board game with no engine-invariant spec is a gap (same weight as a missing parity axis).
+- **Graded heuristic AI, not a solver:** match the search to the branching — negamax+alpha-beta for small trees (Connect-4, draughts), a 1-ply threat heuristic for large branching (Gomoku), positional-weight for Reversi, chain-aware sacrifice/double-cross for Dots-&-Boxes, Dijkstra connection-distance for Hex. Expose a Gentle/Steady/Sharp difficulty where the game supports depth. Credible-for-kids + snappy beats optimal; a Vitest test asserts `chooseMove ∈ legalMoves` (+ takes an immediate win / blocks an immediate loss).
+- **Engine-verified puzzle legality is NECESSARY-NOT-SUFFICIENT — the solution's CORRECTNESS (best + winning + non-naive) must be engine-verified too (R-WEB-CLONE-PUZZLE-ENGINE-VERIFIED; 2026-07-17, GambitTales).** A position-puzzle bank (e.g. CrownTales Find the Shot) is Vitest-pinned by importing the engine and asserting each `correctMove ∈ legalMoves(position)` — an illegal "solution" fails the build. **BUT legality (and even a structural "is it a fork?" check) is BLIND to whether the solution is a GOOD puzzle**, and that gap shipped a bank where **63 of 119 GambitTales tactics were defective**: the tactical piece landed on a square the enemy defended → it just **hung** (solution loses material); the "tactic" **won nothing** (the attacked piece simply escaped); or a **simpler free capture won as much** → the tactic was **naive/pointless** (the founder's exact report: "the rook can just take the bishop for free"). So a position-puzzle bank MUST additionally be Vitest-pinned by a **quiescence-aware search** (negamax over the same engine model) asserting the intended solution is a **clean, BEST, non-trivial material win (or forced mate)**: (a) not < any legal alternative by > ~40cp (not suboptimal / doesn't hang), (b) nets ≥ ~a minor over the start eval or forces mate (actually wins something), (c) no non-solution immediate capture of ≥ a minor scores as high (not replaceable by "just take the free piece"). This gate is cheap (depth-4 + quiescence over sparse positions ≈ 7s for 119 puzzles) and PROVEN meaningful (65 defects flagged on the old bank, 0 on the fixed one). Author verified banks with a **deterministic, engine-verified GENERATOR** (seeded PRNG → reproduces the shipped bank; reference: hub `scripts/gen_gambittales_puzzles.mjs`) rather than hand-constructing sparse positions (the hand-authored bank is exactly how the 53% defect rate happened — a coincidentally-guarded tactical square or a free escape is invisible without a search). Reference: `spark-anvil-site/src/lib/play/gambittales/puzzles.test.ts` (the material-correctness gate) + `Docs/AUDIT_GAMBITTALES_PUZZLE_CORRECTNESS_2026-07-17.md`.
+- **Board rendering is dark-mode-safe by construction (joins R-WEB-CLONE-DARK-MODE-SUPPORT + R-WEB-CLONE-MANIPULATIVE-PROMINENCE):** the checkerboard/grid TONE is `color-mix(in oklab, var(--pc-select) N%, var(--ff-paper))` (NOT `--ff-warm` vs `--ff-paper`, ~3% apart → washes out); discs/stones carry a saturated fill with a `var(--ff-outline)` rim so they read on BOTH light and dark boards; the stage stays quiet (no `background-image`, no ambient motion), colour rides the pieces. Verified by the mandatory dark+light screenshot-DoD (R-WEB-CLONE-SCREENSHOT-DOD).
+- **Spawn-app board clones are the maximal web-pioneer case** (R-WEB-CLONE-SPAWN-TRACKED): every game engine + the transfer/puzzle surface is web-pioneered → a filed `HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md` (related engines may share ONE consolidated handoff — GridForge's five engines rode one) + a 🟡 ledger row; a shared **turn-based board-game engine** across GambitTales/DealTales/CrownTales/GridForge is a candidate ForgeKit lift (propose via handoff; hub never writes Swift).
+- **Native two-human HOTSEAT (pass-and-play) is an ADDITIVE `{ mode?: 'ai' | 'hotseat' }` param over an EXISTING playable `run<Game>` — and its LOAD-BEARING PRECONDITION is that such a playable vs-AI game loop actually EXISTS in the clone; VERIFY that before applying the recipe, because a handoff's "board-engine clone" label is NOT proof (2026-07-18, Logic-hotseat next-pass).** The reusable recipe (default `'ai'` keeps the shipped AI path byte-identical; the `hotseat` branch drops the `turn==='you'` clickability clause + applies for the current turn + no AI call/`setTimeout`, honoring each game's special turn logic; palette-accurate PII-free "Player 1/2" seats; **a HIDDEN-information game — Mastermind/Battleship — DOES need a privacy curtain, unlike perfect-information boards which don't**; dark-safe pieces; one picker/toggle + landing link; full dark+light×desktop+mobile screenshot-DoD) applies ONLY when the clone has a real playable game loop (`applyMove`/`legalMoves`/`winner`/`chooseMove` + an AI turn) to add the param to. **Many "board" clones DON'T** — their `engine.ts` is a PURE RULES ENGINE feeding SINGLE-SOLVER puzzle surfaces (a Board Reader `studio`, a find-the-move `tactics`, an odds POE), with NO game loop and NO AI opponent. There, native hotseat is either **⛔ WAIVED (single-solver, no board to alternate over — document it)** OR a **FROM-SCRATCH new game UI = its own sized wave, NOT the additive recipe** — assess build-vs-⛔ per clone; the pass-1 MC-quiz Duel + room already cover the together/social axis regardless. Reference verify-before-action outcomes (2026-07-18): ✅ deducequest (Mastermind `scoreGuess` → real codemaker↔codebreaker hotseat + privacy curtain, site PR #892) · ⛔ strategyforge/dealtales/tableforge/sleuthlab (no playable board loop — `Docs/web/<app>/AUDIT_WEB_CLONE_EXPANSION_<app>_HOTSEAT_2026-07-18.md`) · pipquest = a from-scratch backgammon UI (pure `legalPlays`, no game loop — flagged, not the additive recipe).
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
+## A ported LEVEL/PROGRAM bank is FILTERED to provably-solvable + Vitest-pinned; a block-coding clone is a HAND-WRITTEN deterministic interpreter, never a JS eval (R-WEB-CLONE-PORTED-PUZZLE-SOLVABILITY; 2026-07-16)
+
+**When a `/play` clone ports a LEVEL / MAZE / program-execution bank from its iOS app (grid puzzles, robot-programming levels, any bank with a "is this solvable?" property), the porter MUST filter the bank to PROVABLY-SOLVABLE entries with a solver (BFS over the state space) + pin solvability with a Vitest invariant, and any excluded malformed source entry MUST be documented in the parity ledger — never shipped. AND: a block-coding / robot-command clone's execution engine is a PURE, HAND-WRITTEN deterministic interpreter (exported for Vitest), NEVER a JS `eval` / `Function()`.** This is the LEVEL/execution sibling of R-WEB-CLONE-BOARD-GAME-ENGINE's "engine-verified puzzle legality" (that rule pins a position-puzzle's `correctMove ∈ legalMoves`; this pins a whole level as *reachable* + the interpreter as *faithful + safe*). Codified from the CodeRealm build (2026-07-16), where **6 of 30 shipped iOS levels were malformed** — Bit starts walled-in / the goal is unreachable via the builder's forward+turn palette — and would have shipped as **unplayable-but-green** clones (they build, smoke-pass, and *look* fine; only a solver catches them). This is the DATA-level form of the R-WEB-CLONE-SCREENSHOT-DOD "looks-right-but-unplayable" trap: the eye can miss an unsolvable grid, a BFS cannot.
+
+**The load-bearing invariants (author + review against these):**
+1. **Solver-filter in the porter.** The porter runs a solver (BFS over `(x,y,facing)` for a maze; the appropriate reachability check for the mechanic) and emits ONLY solvable entries. A malformed source entry is *excluded + logged*, not shipped. Reference: `port_coderealm_kits_to_web.py` `_solvable()` (excluded `sm_05 sm_06 ll_04 ll_07 ll_09 cc_02`).
+2. **Vitest pins it.** A `every ported level is solvable + well-formed` invariant re-runs the solver over the shipped bank (tiles length = w·h, start in-bounds + not on a wall, goal present, BFS reaches it) — so a future re-port can't silently ship an unsolvable level. Reference: `src/lib/play/coderealm/coderealm.test.ts`.
+3. **Document the exclusion** in `PARITY_WEB_VS_IOS.md` (an ⛔ excluded-with-rationale row, not a silent drop) — the source app's own bug is disclosed, not hidden.
+4. **The interpreter is PURE + HAND-WRITTEN + never `eval`.** Port the iOS execution semantics verbatim (coords, facing/rotation table, wall/goal rules, an iteration guard mirroring the iOS `maxIterations` infinite-loop trip) into a DOM-free module returning a step trace the UI animates. On-device + deterministic + safe is the whole point; a JS `eval` of learner input is a security + determinism defect. Reference: `program.ts` (faithful port of `ProgramExecutor`+`WorldState`+`turned()`).
+5. **A hand-authored puzzle bank derived from the engine is engine-CROSS-CHECKED** (the R-WEB-CLONE-BOARD-GAME-ENGINE precedent): e.g. a Debug-It "fix the one block" bank asserts, per puzzle, that `run(buggy)` fails, `run(buggy with fix)` reaches the goal, and `correct ∈ options`. Reference: CodeRealm Debug-It bank + its Vitest cross-check.
+6. **Peel-back to real code, when the source app has it** (blocks → the actual language): port the block→source mapping (CodeRealm `CodeBlock.swiftCode` → the "Show Swift" panel) — it's a genuine UI/UX-parity feature (🔄 adapted), and fewest-blocks grading rides the ported `optimalBlockCount`.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Every clone declares a GRADE BAND + LEVEL, shown on /play and sorted within its cluster (R-WEB-CLONE-GRADE-LEVEL; 2026-07-13)
 
 **Every `/play/<app>` clone MUST declare a grade band + a level in its per-app registry entry (`src/data/play/<app>/clone.meta.ts`), the `/play` index MUST render a grade-band + level chip on each clone card, and clones MUST be sorted within each subject/cluster section by grade band then level (youngest/easiest first).** Codified per founder-direct 2026-07-13 (*"add grade band and level for each web clone on the /play page and sort the web clones by level grade bands for each subject/cluster"* + *"codify the grade band and level rule for all future web clone builds"*). Standing requirement for **every** clone — current (backfill) AND all future builds.
 
-### Required `clone.meta.ts` fields (extend `PlayClone` in `src/data/play/clone-types.ts`)
-- **`gradeBand: string`** — the human display label for the app's CORE/target grade band, e.g. `"Gr 4–6"`, `"Gr 7–8"`. Shown as a chip on the clone card.
-- **`gradeMin: number`** — the numeric lowest grade in the CORE band (K = 0), the primary **sort key**. For an ages-only band, map age→grade (`grade ≈ age − 5`).
-- **`level: number`** — a 1-based within-SUBJECT **difficulty ordinal** (1 foundational … 5 advanced) reflecting the app's position in its subject's learning sequence (the tie-breaker + the "level" chip).
-
-**The band + level are CURATED from the app's CURRICULAR IDENTITY — NOT a min-max span of the kit labels (V186 audit correction, founder-direct 2026-07-13).** The kit `gradeBand`s legitimately scaffold intro→capstone (e.g. functionforge kit 1 "input/output machines" `gr4-5` … kit 8 "function analysis" `gr7-8`), so the **min-max span is uninformative** — the V183 backfill's span rule made 48/58 clones read "Gr 4–8", and its modal-band level made most read "Level 3". Worse, **subject-sequence position is curricular knowledge absent from the kit data**: the kits can't distinguish fractionforge (fractions, elementary — Gr 4–6 / L1) from functionforge (functions, algebra — Gr 7–8 / L4) because both *span* 4-8 with mode 6-7. So:
-- **Derive the CORE band from the app's curricular topic** (CCSS / typical US sequence), using the kit **mode** (not min-max) + the app's identity as the cross-check — never the raw min-max span. Show a tight core range (e.g. "Gr 4–6"), not the full scaffolded span.
-- **Assign `level` by the app's position in its SUBJECT sequence** (Math: number-sense/fractions = 1 → ratio/probability = 2 → early-algebra/geometry = 3 → functions/proof = 4 → competition-enrichment = 5). Enrichment apps (alcumusforge, mathcircle) get a HIGH level even at a modest gradeMin.
-- A bespoke-mechanic-only clone with no kits sets the fields from its design target audience + subject sequence.
-- The canonical curated values live in the per-app `clone.meta.ts` (disjoint files) + the audit `Docs/AUDIT_WEB_CLONE_GRADE_LEVEL_2026-07-13.md`. Founder is the authority on positioning — a flagged app is a one-line `clone.meta.ts` edit.
-
-### Sort + surface
-- **Sort** within each subject/cluster group on the `/play` index by **`(gradeMin` asc, `level` asc, `name` asc)`** — a deterministic comparator (no `Math.random`/`Date`).
-- **Surface** a grade-band chip + a level chip on each clone card (readable register per § R-SITE-CHROME — "Gr 4–5", not "gradeMin:4").
-
-### Gate — TWO layers (build-time + PR-CI), joins the dark-clone backstop
-1. **Build-time (prebuild):** `scripts/check-play-clone-registry.mjs` fails the build if any clone's `clone.meta.ts` lacks `gradeBand`/`gradeMin`/`level` — same class as a missing theme (R-WEB-CLONE-NO-DARK-SURFACE). The Playwright `/play-index` spec asserts the chip renders + the per-cluster sort order holds.
-2. **PR-CI (Vitest):** `src/data/play/clone-registry.test.ts` globs `PLAY_CLONES` and asserts every clone has the string identity fields + a valid `gradeBand` + numeric `gradeMin`(0..12)/`level`(1..5). **This layer is load-bearing:** the prebuild gate runs ONLY on the Cloudflare BUILD, NOT in PR CI — so a clone missing the fields passes its PR's Vitest+Playwright and only RED-BUILDS after merge (the roboforge incident, 2026-07-13: a parallel-session clone merged green, then the deploy went red — the "merged ≠ deployed" trap). The Vitest spec moves the check into a REQUIRED PR check so a missing/invalid field fails the PR, not the deploy. **General lesson: when a build-time (prebuild) registry/gate is added, add its PR-CI (Vitest) sibling too** — a prebuild-only gate is invisible to PR CI.
-
-### When this rule applies
-- **Authoring any new clone** → set `gradeBand`/`gradeMin`/`level` in `clone.meta.ts` from day one (from the kit metadata / design audience); it's part of the registry row, so the merge-hygiene per-app-file model (R-WEB-CLONE-MERGE-HYGIENE) keeps it collision-free.
-- **Reviewing a clone PR** → a `clone.meta.ts` missing the fields, or a `/play` card without the chip, is a defect (build-gated).
-- **Backfill: SHIPPED (V183, site PR #533) + CURATED (V186, site PR #540).** All 58 clone.meta.ts carry `gradeBand`/`gradeMin`/`level`; `/play` renders the grade + level chips + sorts each cluster by `(gradeMin, level, name)`; `check-play-clone-registry.mjs` fails the build on a missing field; `play-index.spec.ts` asserts the chips + per-cluster order. **V183's min-max-span/modal derivation was replaced by the curated curricular values (see the § above + `Docs/AUDIT_WEB_CLONE_GRADE_LEVEL_2026-07-13.md`)** after the founder audit (fractionforge L3→L1, functionforge "Gr 4–8"→"Gr 7–8"). New clones set the CURATED fields from day one (build-gated).
-
-### Cross-references
-- `src/data/play/clone-types.ts` (`PlayClone`) + `src/data/play/<app>/clone.meta.ts` (per-app registry) · `src/pages/play/index.astro` (the grouped index) · `scripts/check-play-clone-registry.mjs` (the gate) · `tests/e2e/play-index.spec.ts`
-- § R-WEB-CLONE-MERGE-HYGIENE (the glob-derived per-app registry these fields live in) · § R-WEB-CLONE-NO-DARK-SURFACE (the sibling build-gate this joins) · § R-SITE-CHROME (chip register) · work-queue V183 (implementation)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## The hub agent CLASSIFIES a clone's /play cluster by curricular judgment — free-text keyword matching is a fallback, not the source of truth (R-WEB-CLONE-CLUSTER-MAP; 2026-07-14)
 
-**A `/play` clone's subject-cluster grouping (the section it renders under on the `/play` index) is a CURRICULAR CLASSIFICATION the hub agent makes IN-SESSION — recorded explicitly, not left to fragile free-text keyword matching.** The `/play` index groups clones into a fixed pedagogical cluster set (Math · English & Language Arts · Science · Logic & Puzzles · Social Studies · SEL · Create). Codified per founder-direct 2026-07-14 (*"a couple of english language arts web clones are grouped in the Create cluster … do full audit and fix all the groupings and codify"* + *"should we codify a rule saying that the hub agent must use in-session Opus to classify the web clone for grouping?"* → yes).
+**A `/play` clone's subject-cluster grouping (the section it renders under on the `/play` index) is a CURRICULAR CLASSIFICATION the hub agent makes IN-SESSION — recorded explicitly, not left to fragile free-text keyword matching.** The `/play` index groups clones into a fixed pedagogical cluster set — **9 clusters as of V288 (2026-07-17): Math · English & Language Arts · Science · Computer Science · Logic & Puzzles · Social Studies · SEL · Visual Arts & Design · Music & Performing Arts** (the V288 reorg added Computer Science [CSTA] and split the overloaded "Create" → Visual Arts & Design + Music & Performing Arts [National Core Arts]; see `RESEARCH_WEB_CLONE_SUBJECT_TAXONOMY_2026-07-16.md` + `AUDIT_WEB_CLONE_SUBJECT_REORG_2026-07-16.md`). The 2026-07-14 narrative below references the pre-V288 7-cluster set (…SEL · **Create**); the order-is-load-bearing principle it establishes is unchanged — it now applies to the new branches (see the ordering note at the end of this rule). Codified per founder-direct 2026-07-14 (*"a couple of english language arts web clones are grouped in the Create cluster … do full audit and fix all the groupings and codify"* + *"should we codify a rule saying that the hub agent must use in-session Opus to classify the web clone for grouping?"* → yes).
 
-### Why (the same fragility as grade bands)
-The clones' `subject` is free-text (30+ spellings), so the index maps subject→cluster with `clusterOf()` (`src/lib/play/clusters.ts`) by keyword. Keyword matching is **inherently brittle to substring collisions**: the 2026-07-14 bug had `clusterOf` checking the broad **Create** branch (`s.includes('art')`) *before* ELA — and **"language arts" contains "art"** — so every "English / Language Arts" clone (figureforge/grammarforge/jestforge/mythforge/readquest) was silently grouped under Create; "Media Literacy" (truthquest, critical-evaluation) likewise fell into Create via `s.includes('media')`. This is the SAME lesson as R-WEB-CLONE-GRADE-LEVEL: a free-text→derivation heuristic mis-classifies, and the durable fix is **explicit curated classification by the agent's judgment** + a test that pins it.
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-### The mechanism (curate-record-test, not re-run-an-LLM-each-build)
-"In-session classification" means: **when building/reviewing a clone, the hub agent DECIDES its cluster by curricular judgment** (what subject does this app actually teach?) and VERIFIES it lands there on `/play` (screenshot / the test) — it does NOT trust the keyword function blindly. Recorded two ways:
-1. **`clusterOf()` is the tested keyword fallback** — hardened (ELA + Logic branches run BEFORE the broad Create branch; added coding/robotics/cipher + `media literacy`→Logic keywords) and **pinned by `src/lib/play/clusters.test.ts`** (Vitest, a required PR check): representative subject→cluster cases incl. the "language arts"→ELA + "Media Literacy"→Logic bugs, plus **every shipped clone must cluster (never `'More'`)** and **no English/ELA clone may land in Create**.
-2. **`clone.meta.ts` optional `cluster` override** — the agent's RECORDED classification. Set it explicitly whenever the free-text subject would mis-route under `clusterOf()` (or is ambiguous); it overrides the keyword fallback. Validated by the test to be a real `CLUSTER_ORDER` value. Most clean-subject clones need no override (the tested fallback suffices); the override is the escape hatch that removes keyword-guessing for the ambiguous tail.
+## `/play` splits into THREE age-band zones — Ages 3–5 · 6–8 · 9–14 — before subject clusters (R-WEB-CLONE-AGE-BAND-ZONES, formerly R-WEB-CLONE-YOUNGER-CLUSTER-SPLIT; 3-band reband 2026-07-18, ADR-052)
 
-### When this rule applies
-- **Authoring a new clone** → classify its cluster by curricular judgment; if `clusterOf(subject)` wouldn't place it correctly, set an explicit `cluster` in `clone.meta.ts` (and/or add a `clusters.test.ts` case for the new subject spelling). Do NOT ship trusting the keyword match unverified.
-- **Reviewing a clone PR / auditing /play** → verify each clone's section is curricularly correct (a screenshot of the index, per R-WEB-CLONE-SCREENSHOT-DOD); a mis-grouped clone is a defect. Adding a Create-branch keyword that is a substring of another cluster's subjects (like `art` ⊂ `language arts`) requires re-checking the branch ORDER.
-- **Changing `clusterOf` keywords/order** → keep ELA + Logic before the broad Create branch; add/adjust `clusters.test.ts` cases.
+**The `/play` catalog splits by AGE BAND at the top level into THREE zones, rendered top-to-bottom — `Ages 3–5` (Pre-K/K) → `Ages 6–8` (grades 1–3, early elementary) → `Ages 9–14` (grades 4–8, the tween core; no clone exceeds grade 8) — each a labeled band with a divider. The 3–5 and 6–8 zones are subject-MINIMAL (flat, subject as a card badge); the 9–14 zone keeps its 9 subject clusters + youngest-first sort. A clone rendered in the wrong age zone — especially a grade-1–3 clone (incl. grade 3: ReadRise/TimesQuest) intermixed into the 9–14 subject clusters — is a defect.** Rebanded per founder-direct 2026-07-18 (*"rethink the age bands … 3-5 and 6-8 and 9-14 … fix it for the whole portfolio hub and website too and codify"*, ADR-052), superseding the 2-band (5–8 younger / 9–14 tween) model + the ad-hoc grade-3 bridge placement. This sits ABOVE `R-WEB-CLONE-CLUSTER-MAP` (subject grouping) — age is the FIRST split, subject the second (within 9–14).
 
-### Cross-references
-- `src/lib/play/clusters.ts` (`clusterOf` + `CLUSTER_ORDER`/`CLUSTER_META`, extracted from index.astro so it's unit-testable) · `src/lib/play/clusters.test.ts` (the pin) · `src/data/play/clone-types.ts` (`cluster?` override) · `src/pages/play/index.astro` (`clusterFor` = override ?? fallback)
-- § R-WEB-CLONE-GRADE-LEVEL (the sibling curate-don't-derive rule for the same `/play` cards) · § R-WEB-CLONE-SCREENSHOT-DOD (verify the grouping by looking) · § R-AUTHOR-MODEL-CHOICE (`.claude/rules/distributed-narrative.md` — in-session-Opus-judgment-over-scripted precedent) · site PR #548 · work-queue V191
+**Why (deep-web-researched — `Docs/RESEARCH_AGE_BAND_TAXONOMY_2026-07-18.md` + `RESEARCH_PLAY_YOUNGER_CLUSTER_SEPARATION_2026-07-16.md`):** the three-band split (3–5 / 6–8 / 9–12→14) is the canonical children's-app taxonomy AND the NAEYC early-childhood banding (Preschoolers 3–5 · Primary/Early-grades 6–8/K–3) mapped onto Piaget (preoperational 2–7 · concrete-operational 7–11 · formal-operational 11+). Early childhood runs **through age 8**, so **grade 3 (age 8) belongs in the 6–8 band**, not bridged into 9–14 — which is the fix for the grade-3-clones-are-hard-to-find incident. Children also react negatively to a catalog that mixes their band with an older one, so age is the decisive first grouping.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## The deep-research step MUST yield an explicit backport-candidate list — mined CROSS-PLATFORM, "strict port" is earned, never assumed (R-WEB-CLONE-BACKPORT-MINING; 2026-07-11)
 
 **The Phase-2 deep research (`WEB_CLONE_PICKUP_RUNBOOK` § 3.2b) is the designated "well for novel features," and its source landscape is CROSS-PLATFORM — web + iOS + Android + physical/board-game/research — NOT web-only. Every clone's `RESEARCH.md` MUST carry a `## Domain landscape` survey (of the best-in-class in the domain across ALL those surfaces) ending in an explicit, evidence-based `## Backport candidates` list — the best learning-relevant ideas OUR apps (iOS AND web) LACK — and classify EACH one. A conclusion of "strict port → no backport" is VALID ONLY after that list exists and every candidate is classified; it must be EARNED by the mining, NEVER asserted by default.** Codified per user-direct 2026-07-11 (*"the deep web research step should have provided a lot of novel ideas for iOS backport, correct?"* → *"codify this requirement"*; then *"why are we doing deep web research for web-based novel features only? why not including novel features and ideas from ios and android apps too?"* → *"make sure to backfill and also codify it as a rule too"*), after the V95/V97/V98 clones (claimcraft/jestforge/witquest) each defaulted to "strict port" and skipped producing the candidate list — using the research only for positioning, not for its load-bearing backport-discovery purpose — AND after the mining was found to be artificially scoped to the *browser* landscape only.
 
-### The source landscape is CROSS-PLATFORM, not web-only (broadened 2026-07-11)
+→ **Sub-rules** defined here (full detail in reference): (R-WEB-CLONE-TRACK-B-BUILD-DEFAULT).
 
-The mining was originally framed as "deep **web** research" because the step lives inside the *web-clone* build (you're building a browser surface, so you looked at browser competitors). **That scope was an accident of location, not a principle, and it is now broadened.** The well for novel learning-design ideas is the WHOLE domain across every surface:
-
-- **web** tools/sites in the domain (the original scope);
-- **iOS** best-in-class apps (App Store editorial / education charts) — frequently *ahead* of browser tools on learning design;
-- **Android** best-in-class apps (Play Store education / Google Kids Space);
-- **physical / board-game / research** exemplars (the portfolio already treats Storytime Chess + Backgammon as first-class design exemplars — being web-only was inconsistent with our own practice).
-
-The candidate **test is unchanged** — a candidate must be (1) absent from OUR app(s), (2) learning-relevant, (3) on-device + COPPA-feasible. Only the SOURCE breadth changed. Consequently a candidate can flow to **BOTH** surfaces: a novel idea our iOS app lacks is a web build-candidate *and* an iOS backport; a novel idea our web clone lacks is a web build-candidate. Do not privilege browser-native gimmicks over pedagogy — the point of widening the aperture is to surface the strongest *learning* ideas wherever they live.
-
-### Why this rule exists
-
-The runbook already says the novel-feature list *"must be evidence-based (from this research), not guessed … It's what earns the clone its Phase-5 backport value."* But that instruction was being satisfied *narratively* (a "here's how we're differentiated" paragraph) rather than *mechanically* (a classified candidate list that feeds `R-CLONE-BIDIRECTIONAL-BACKPORT`). This rule makes the list a **required, inspectable artifact** so the web→iOS backport direction actually gets fed, and so "strict port" can't silently swallow a real net-new idea the research surfaced. It is the **discovery mechanism** that supplies candidates to `R-CLONE-BIDIRECTIONAL-BACKPORT` (which governs the *obligation* once a candidate is a real feature).
-
-### The candidate test + classification (each item in `## Backport candidates`)
-
-A domain-landscape feature — from **any** surface (web / iOS / Android / physical) — is a **live backport candidate** only if it is ALL of: **(1) absent from OUR app(s)** (checked against the deep-read `## iOS feature inventory` — and, for a web-only idea, against the web clone — don't claim absence without checking), **(2) learning-relevant** (pedagogy-load-bearing, per `R-WEB-CLONE-PARITY` § in-scope), AND **(3) on-device / COPPA-feasible** (no server, accounts, or off-device data). Classify every surfaced idea as exactly one of:
-
-| Class | Meaning | Action |
-|---|---|---|
-| **FILE** ✅ candidate | passes all 3 tests | file `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md` + add a 🟡 iOS-backport row to the parity ledger — **whether or not it's built on the web yet** (a strong candidate is worth surfacing to the iOS session even before the web ships it). If the web clone ships it, the 🟡 row + handoff are already mandatory per `R-CLONE-BIDIRECTIONAL-BACKPORT`. |
-| 💡 **iOS-ENHANCE** | learning-relevant + iOS-appropriate but **web-INFEASIBLE** (needs an iOS-only capability — AR/RealityKit, CoreMotion, Vision, camera/mic, haptics-as-pedagogy, Live Activities — to deliver the LEARNING, not just polish), AND absent from the iOS app | **advisory, NON-obligation** — add it to the per-app **`<app>-app/Docs/HANDOFF_FROM_HUB_<APP>_IOS_ENHANCEMENT_IDEAS.md`** (a single consolidated advisory doc per app; feature + why-it-needs-iOS + proposed iOS surface). **NO 🟡 parity-ledger row** — the feature exists on NEITHER surface, so it is NOT a symmetric-backport gap; it is an *opportunity*, and the iOS session triages/decides (it may decline). This is the iOS-direction mirror of build-by-default and is deliberately kept OUT of `R-CLONE-BIDIRECTIONAL-BACKPORT` (which governs parity gaps) so "handoff filed = obligation started" stays reserved for real obligations. |
-| ⛔ **waived** | fails (2) or (3), OR the iOS app already has it, OR it's a platform-only DECORATION (haptic buzz / particle polish / a nav chrome affordance — carries no distinct LEARNING) | list it with a one-line rationale — the canonical waiver reasons are **already-in-iOS**, **on-device/COPPA-infeasible** (accounts / collaboration / cloud sync / server AI-gen — e.g. Kialo's collaborative trees, Witscript's cloud generator), or **platform-only decoration**. A waived candidate is COMPLIANT; the point is it's *documented*, not silently dropped. |
-| 🔄 **adaptation** | a web-native rendering of something iOS already does | not a backport (e.g. the claimcraft committed-fallacy hard-gate; jestforge structure-only scoring). |
-
-**⛔ platform-only vs 💡 iOS-ENHANCE — the distinction (codified 2026-07-11, founder-direct):** a platform-only *affordance* that is mere **decoration** (haptics-as-feedback, SpriteKit particle polish, a nav-chrome flourish) stays **⛔ waived**. But a platform-only capability that would deliver a **genuine novel LEARNING experience the iOS app lacks** (e.g. an AR angle/area manipulative, a CoreMotion tilt-balance for equations, a Vision hand-drawing/geometry-construction check, a haptic rhythm/meter trainer) is a **💡 iOS-ENHANCE** — surfaced to the iOS session as an advisory opportunity, never silently dropped as "platform-only." The web can't build it (that's why it's not FILE), but the iOS app can, and the cross-platform research already found it — so it flows one-way to iOS. Honest-yield applies here too: for mature apps the iOS-ENHANCE yield is usually small; a zero-yield app files no advisory doc.
-
-**Honest-yield clause:** for *mature* source apps (the high-ranked clone candidates are mature by construction), the FILE yield is often small and the list may be mostly ⛔ — **that is an acceptable outcome, but the list must still be produced and every item classified.** A short, mostly-waived, well-reasoned list is compliant; an absent list is a defect. Never pad the list with guessed or weak candidates to inflate the yield (the runbook's "evidence-based, not guessed" bar).
-
-### Where the artifacts live
-
-- **`RESEARCH.md` → `## Backport candidates`** — the classified list (this rule's required artifact), directly under the sourced `## Domain landscape` (legacy clones' `## Web landscape` heading is accepted; new clones use `## Domain landscape`). Note each candidate's SOURCE platform (web / iOS / Android / physical) so the cross-platform breadth is inspectable.
-- **`FEATURE_PLAN.md`** — the FILE candidates become tracked items with an `iOS-backport:` line each; the ⛔/🔄 ones are noted.
-- **`PARITY_WEB_VS_IOS.md`** — each FILE candidate that the web clone SHIPS is a 🟡 iOS-backport row (per `R-CLONE-BIDIRECTIONAL-BACKPORT`); a FILE candidate not-yet-built on the web is still surfaced via the handoff but need not be a ledger row until built.
-- **`<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md`** — the filed handoff for each FILE candidate (feature + web reference impl if built + proposed iOS surface). Filing the handoff is the START of the obligation, not its completion.
-- **`<app>-app/Docs/HANDOFF_FROM_HUB_<APP>_IOS_ENHANCEMENT_IDEAS.md`** — ONE consolidated **advisory** doc per app holding all its 💡 iOS-ENHANCE ideas (web-infeasible, iOS-appropriate novel learning). Explicitly labelled non-obligation; **no 🟡 ledger row**; the iOS session triages. Omit the doc for an app with zero qualifying ideas.
-
-### Build the FILE candidates on the web — the clone PIONEERS, then backports (founder-direct 2026-07-11)
-
-**The default for a genuine ✅ FILE candidate is to BUILD it into the web clone, not merely file the handoff.** Per founder-direct 2026-07-11 (*"implement all the backfilled features in the web clones too"*), the `/play` clone is not just a mirror of iOS — it is a place to **pioneer web-native learning features that then flow back to iOS**. So the full loop for a FILE candidate is: **mine → classify → file the iOS handoff → BUILD it on the web → open a 🟡 iOS-backport row in `PARITY_WEB_VS_IOS.md` (Axis 1) → update the two guides in the same change-set (R-WEB-CLONE-GUIDE-SYNC).** Once built on the web, the 🟡 row is MANDATORY (a web-shipped, iOS-absent, learning-relevant feature is exactly R-CLONE-BIDIRECTIONAL-BACKPORT's trigger); the row + filed handoff are the *compliant* open state (not a defect), and it closes only when the iOS session ships it back (or replies with a documented waiver, e.g. "already covered by <surface>").
-
-This UPGRADES the earlier "parity-first, web-only features open debt so defer them (Track B)" default: a genuine FILE candidate is now **build-by-default**, because building it is what earns the program its cross-surface leadership (the web validates the feature; iOS inherits a proven reference impl). Reference impl: `/play/claimcraft` shipped **learner-set per-link evidence strength** + **argument-map → essay export** (site PR #395), backported via `claimcraft-app/Docs/HANDOFF_FROM_HUB_ARGUMENT_{LINK_STRENGTH,MAP_ESSAY_EXPORT}_WEB_BACKPORT.md` (PR #52) — the first two web-pioneered→iOS backports of the program.
-
-Build-scope discipline still applies: build a FILE candidate only when it's genuinely learning-relevant + on-device-feasible (the candidate test); ⛔-waived items (accounts/collab/cloud/platform-only/already-in-iOS) are NOT built. A mostly-⛔ / zero-FILE clone builds nothing extra and ships as a strict port — that remains a valid, earned outcome.
-
-### Every Track-B FILE item MUST be built by the hub web-clone agent — "booking" needs a VALID reason (R-WEB-CLONE-TRACK-B-BUILD-DEFAULT; 2026-07-12)
-
-**Every Track-B (web-pioneered FILE) item in a clone's `FEATURE_PLAN.md` MUST be BUILT on the web by the hub web-clone agent, in the same wave that classifies it — UNLESS there is a specific, documented, VALID reason not to. "It was more work," "data-heavy," "overlaps another surface," or a bare "honest-yield deferral" is NOT a valid reason.** This CLOSES the de-facto escape hatch where a genuine ✅ FILE candidate got parked as a `BOOKED` Track-B line and never built. It is the hardening of the § "Build the FILE candidates on the web" default above: build-by-default was the *posture*; this is the *obligation*. Codified per founder-direct 2026-07-12 (*"all track-b items in web clone feature plans should be implemented by web clone hub agents unless there's a valid reason not to"* + *"audit all shipped web clones for these track-b items and build them too"*).
-
-#### Why it exists
-
-A Track-B item is, BY CONSTRUCTION, a candidate that already passed the 3-test (absent-from-iOS ∧ learning-relevant ∧ on-device/COPPA-feasible) — so it is buildable by definition. Parking a passed candidate as `BOOKED` for effort/yield reasons produced clones that *claimed* a rich backport posture in `RESEARCH.md` while shipping a thin surface, and left the web→iOS backport pipeline starved (a booked item files no handoff, opens no 🟡 row, validates nothing). The value of the program is the *built* pioneering feature; an unbuilt Track-B line delivers none of it.
-
-#### The valid-reason taxonomy (the ONLY grounds to not build a Track-B item)
-
-A Track-B item may remain unbuilt ONLY when one of these is recorded inline in `FEATURE_PLAN.md` (one line, specific):
-
-1. **COPPA / AI-evaluator-infeasible** — the feature genuinely needs a server, accounts, off-device data, or an AI evaluator to deliver its LEARNING (e.g. open free-write graded by a model). *If it's infeasible it was misclassified — reclassify it ⛔-waived, not BOOKED.*
-2. **Asset-gated** — it needs NEW asset generation the clone program doesn't have yet (e.g. per-region SVG map outlines, bespoke illustrations). Record the exact asset blocker + what would unblock it. *This is the one legitimate "not yet" — but the default is still to build the parts that don't need the asset.*
-3. **Platform-only** — needs an iOS-only capability (AR/Vision/CoreMotion/camera/mic/haptics-as-pedagogy). *Then it's ⛔ or 💡 iOS-ENHANCE, not Track-B.*
-4. **Genuinely-infeasible content-authoring scale** — building it correctly requires hand-authoring content at a scale that is itself a separate, sized wave (NOT "a bit more content"). Record the item count + why it's a distinct wave, and file it as a tracked follow-up, not a silent book.
-5. **Founder-direct** — the founder explicitly defers a specific item.
-
-Anything outside this list — including "overlaps the free-text Workshop," "the MC surface roughly covers it," "diminishing returns" — means either (a) it's really a 🔄 adaptation (already covered → reclassify, it was never a FILE) or (b) it must be BUILT. When in doubt, build it.
-
-#### The retroactive backfill (one-time + standing)
-
-The obligation is retroactive: **audit EVERY shipped clone in `REGISTRY_WEB_CLONES.txt` for Track-B items that are booked/not-yet-built, and BUILD them** (or reclassify to a valid-reason bucket above). This runs as part of / alongside the § Portfolio audit sweep below; record it in `Docs/AUDIT_WEB_CLONE_TRACK_B_BUILD_BACKFILL_<date>.md`. Going forward, a clone is not DoD-complete (§ R-WEB-CLONE-PARITY-DOD) while it carries an un-built Track-B item without a valid-reason line.
-
-#### When this rule applies
-
-- Authoring/extending any `/play/<app>` clone → every FILE candidate you classify into Track B, you BUILD in the same wave (or attach a valid-reason line).
-- Reviewing a clone PR → a `FEATURE_PLAN.md` with a `BOOKED`/deferred Track-B item lacking a valid-reason line is a defect (same weight as a missing parity axis).
-- Resuming the clone program → run the retroactive backfill across all shipped clones.
-
-#### Cross-references
-- § "Build the FILE candidates on the web" (the build-by-default posture this hardens) · § R-WEB-CLONE-BACKPORT-MINING (the parent mining rule + candidate test) · § R-WEB-CLONE-PARITY-DOD (the ship gate this feeds) · § R-CLONE-BIDIRECTIONAL-BACKPORT (the 🟡-row obligation each built item opens)
-- `Docs/AUDIT_WEB_CLONE_TRACK_B_BUILD_BACKFILL_<date>.md` — the retroactive backfill record
-
-### Portfolio audit sweep — backfill + verify EVERY shipped clone (the standing conformance check)
-
-The mining+build loop is retroactive to all existing clones, and a periodic sweep keeps them conformant. For **each** row in `REGISTRY_WEB_CLONES.txt`, verify: (1) `RESEARCH.md` has a classified `## Backport candidates` list; (2) it also appears in `FEATURE_PLAN.md` (Track B); (3) every ✅ FILE candidate has a filed `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md`; (4) every FILE candidate BUILT on the web has a 🟡 row in `PARITY_WEB_VS_IOS.md`; (5) "strict port / 0-FILE" is traceable to a produced-and-classified list. The audit-sweep quick check:
-
-```bash
-for app in $(grep -vE '^\s*#|^\s*$' Docs/REGISTRY_WEB_CLONES.txt | grep shipped | cut -d'|' -f1 | tr -d ' '); do
-  grep -qi 'backport' "Docs/web/$app/RESEARCH.md" && echo "$app: list ✓" || echo "$app: MISSING candidate list"
-  ls ../$app-app/Docs/HANDOFF_FROM_HUB_*WEB_BACKPORT*.md 2>/dev/null | wc -l | xargs echo "  $app filed handoffs:"
-done
-```
-
-Record the sweep in `Docs/AUDIT_WEB_CLONE_BACKPORT_MINING_<date>.md`. **Reference sweep (2026-07-11, V99):** all 8 shipped clones conformant — fractionforge (3 handoffs, built) + readquest (1, built) + claimcraft (2, built PR #395) = 6 web-pioneered backports filed; grammarforge/proofquest/chanceforge/jestforge/witquest = mined + classified + 0 genuine FILE (all ⛔ already-in-iOS / accounts-cloud-COPPA / platform-only or 🔄 web-native), earned strict-port.
-
-**Cross-platform backfill sweep (2026-07-11, V109):** after the source-scope broadening above, all shipped clones were re-mined against the iOS + Android + physical landscape (not just web) and each `## Backport candidates` list was refreshed with source-tagged candidates. Recorded in `Docs/AUDIT_WEB_CLONE_BACKPORT_MINING_CROSSPLATFORM_2026-07-11.md`; any genuine FILE candidate surfaced by the widened aperture got a filed `<app>-app/Docs/HANDOFF_FROM_HUB_<FEATURE>_WEB_BACKPORT.md` + a 🟡 ledger row.
-
-**💡 iOS-ENHANCE backfill sweep (2026-07-11, V118):** after the 💡 iOS-ENHANCE class was codified, every shipped clone's `## Backport candidates` list was re-triaged to pull the web-infeasible-but-iOS-appropriate **novel LEARNING** ideas out of the ⛔ bucket (distinct from ⛔ platform-only *decoration*) and file them as advisory `<app>-app/Docs/HANDOFF_FROM_HUB_<APP>_IOS_ENHANCEMENT_IDEAS.md` docs (non-obligation, no 🟡 row). Recorded in `Docs/AUDIT_WEB_CLONE_IOS_ENHANCE_BACKFILL_2026-07-11.md`. When authoring a NEW clone's `## Backport candidates`, classify iOS-only novel-learning ideas as 💡 iOS-ENHANCE from the start (don't dump them in ⛔).
-
-### When this rule applies
-
-- Authoring or extending any `/play/<app>` clone → produce/refresh the `## Backport candidates` list as part of Phase 2 (RESEARCH), before declaring the parity posture; **build the FILE candidates** (default) + open their 🟡 rows.
-- The `R-WEB-CLONE-PARITY-DOD` ship gate → a clone is NOT done until its `RESEARCH.md` carries a classified `## Backport candidates` list (in addition to the two parity-ledger axes). "Strict port" in the ledger must be traceable to a produced-and-classified list.
-- Reviewing a clone PR → if `RESEARCH.md` has a `## Domain landscape` (or legacy `## Web landscape`) but no `## Backport candidates`, that's a defect (same weight as a missing parity axis); if the landscape surveys only browser tools and no iOS/Android/physical exemplars, that's an incomplete mining (the source scope is cross-platform).
-- Periodically (or when resuming the clone program) → run the § Portfolio audit sweep across all shipped clones.
-
-### Cross-references
-- `Docs/WEB_CLONE_PICKUP_RUNBOOK.md` § 3.2b (the deep-web-research step this rule makes load-bearing) + § 8 (the DoD gate it joins)
-- § R-CLONE-BIDIRECTIONAL-BACKPORT (the obligation this rule's FILE candidates feed) · § R-WEB-CLONE-PARITY / § R-WEB-CLONE-PARITY-DOD (the parity axes it sits beside)
-- `Docs/web/{claimcraft,jestforge,witquest}/RESEARCH.md` — the first clones whose `## Backport candidates` lists were added retroactively under this rule (V99)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Missing question kits are AUTHORED by in-session Opus to match the portfolio — never skipped, never Gemini-gen (R-WEB-CLONE-KITS-OPUS-AUTHOR; 2026-07-14)
 
 **When a clone's source app has NO question-kit banks (a composition-only app, a docs-only app with unwritten kits, or any app lacking the portfolio-standard 16×25 MC set), the kits are AUTHORED FRESH by the in-session Opus model (the running Claude Code session) to match the other portfolio apps — a full 16 kits × 25 = 400 MC items — NOT skipped, NOT waived as "bespoke-only," and NOT generated by Gemini.** Codified per founder-direct 2026-07-14 (*"you build the question kits and ship them too"* + *"ship the question kits to the ios app repo too"* + *"codify the rule that if question kits are missing, use the in-session Opus to author them to match other portfolio apps"*). This **supersedes** the earlier "a composition-only app is an all-bespoke clone with no MC Concepts surface (⛔-waived, HaikuQuest precedent)" posture — the portfolio standard is that **every** clone has a Concepts MC surface, and a missing bank is an *authoring task*, not a waiver.
 
-### Why in-session Opus (not Gemini, not skip)
-- **Match the portfolio.** Every kit-bearing clone ships 16×25=400 CCSS-tagged MC items on the portfolio kit schema (`kitId/number/name/topic/gradeBand/track/questions[{id,prompt,correctAnswer,distractors[3],bloomLevel,subtopic,standard,hints[2],explanation}]`). A missing bank is filled to that same standard — same count, same schema, same scaffolded gr4→gr8 arc, same anti-shame register.
-- **In-session Opus, $0 marginal.** Kit content is authored by the running session (the Claude Code subscription absorbs it), exactly like `R-COVERAGE-OPUS-AUTHORING` (chapters) + `R-AUTHOR-MODEL-CHOICE` (in-session Opus > API for quality-critical authoring). **Do NOT** reach for Gemini or any paid gen — MC items are hand-authorable and quality/correctness is paramount (a wrong answer is the exact defect the semantic + structural kit gates exist to catch).
-- **Deterministic porter.** The authored content lives in a `scripts/port_<app>_kits_to_web.py` porter (the same script name the PORT clones use), holding the items in Python data + emitting the JSON with deterministic `uuid5` ids. Re-runnable/idempotent — the "authored, not ported" kits stay regenerable + reviewable in one place.
-
-### Ship to BOTH surfaces (web + iOS)
-Because the authored curriculum did not exist on either surface, it is a **web-pioneered → iOS backport** (`R-CLONE-BIDIRECTIONAL-BACKPORT`). The porter emits to BOTH:
-- **Web:** `public/play/<app>/kits/<kitId>.json` + `src/data/play/<app>/kits-index.ts` → the Concepts surface (`kits.ts` loader + `session.ts` `runKit` → `_shared/mcRound` + a `play.astro` `?kit=` launcher + the landing kit list).
-- **iOS:** `<app>-app/Resources/Questions/<app>/<kitId>.json` (the portfolio iOS kit schema — top `id/name/description/gradeBand/topic/questions/standardsFramework:"CCSS"`, per-q adds `gradeBand/topic/version`) — an **allowed content-pipeline write** (`portfolio.md` § allowed `Resources/<assets>/` writes) — PLUS a `<app>-app/Docs/HANDOFF_FROM_HUB_QUESTION_KITS.md` for the app's own session to wire the Concepts surface (hub never writes the Swift). A 🟡 iOS-backport ledger row tracks it until the app ships the surface.
-
-### Gates (unchanged — the authored bank rides the existing kit gates)
-The shared `_shared/kits.test.ts` STRUCTURAL gate globs `public/play/<app>/kits/*.json` (non-empty prompt+correct, correct ∈ options once, options unique, valid bloom, unique ids) — it validates the authored bank automatically. Add a clone-specific Vitest asserting **16 kits × 25 = 400** via the `kits-index`. Screenshot-DoD covers the Concepts landing list + a live round. CCSS `standard` tags + per-item `explanation` + `hints[2]` are required (portfolio parity).
-
-### When this rule applies
-- **Authoring any clone whose source app lacks kit banks** (composition-only like lyricforge/haikuquest; docs-only with unwritten kits) → author the 16×25 with in-session Opus, ship to web + iOS, file the iOS handoff. **A clone shipped with NO Concepts surface because "the app had no kits" is now a defect**, not an earned waiver (reference: lyricforge shipped bespoke-only first, then had its 400-item Concepts surface authored + backfilled the same day per founder-direct).
-- **Reviewing a clone PR** → a composition/docs-only clone with no Concepts MC surface + no authored kit bank is a gap unless founder-waived.
-- Retroactive: HaikuQuest (the sibling that set the now-superseded "no MC kits" precedent) is a candidate for the same kit-authoring backfill.
-
-### Cross-references
-- `scripts/port_lyricforge_kits_to_web.py` — reference impl (authored 16×25, emits web + iOS) · `Docs/web/lyricforge/{RESEARCH,FEATURE_PLAN,PARITY_WEB_VS_IOS}.md`
-- `.claude/rules/distributed-narrative.md` § R-COVERAGE-OPUS-AUTHORING + § R-AUTHOR-MODEL-CHOICE (the in-session-Opus-authoring precedents this mirrors) · § R-WEB-CLONE-TEST (`_shared/kits.test.ts` structural gate) · § R-CLONE-BIDIRECTIONAL-BACKPORT (the web→iOS backport obligation) · `portfolio.md` § "Asset generation ownership" (question kits are an allowed `Resources/` content-pipeline write)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Younger-cluster (ages 5-8) apps are EXEMPT from the 16×25 MC-kit obligation — activity-based formats, not multiple-choice banks (R-YOUNGER-CLUSTER-NO-MC-KITS; 2026-07-14)
 
 **The portfolio-standard 16 kits × 25 = 400 CCSS-tagged, Bloom-leveled, TEXT multiple-choice bank MUST NOT be authored for younger-cluster (ages 5-8 / K-2) apps. It is the documented, research-backed ⛔ EXCEPTION to `R-WEB-CLONE-KITS-OPUS-AUTHOR`** — a younger-cluster app with no `kit_*.json` is NOT a coverage gap, and authoring one would ship a developmentally-inappropriate, low-validity surface. Younger-cluster apps use **audio-first, low-text, manipulative/tap/drag** activity formats instead. Codified per founder-direct 2026-07-14 (*"should the younger cluster app repos have the question kits? … codify the research-backed evidence"*), full evidence in `Docs/RESEARCH_YOUNGER_CLUSTER_QUESTION_KITS_2026-07-14.md`.
 
-### Why (four converging lines)
-1. **Internal portfolio norm (decisive):** 0 of 6 ages-5-8 apps (bugscamp · countingpals · huggyhabits · melodymice · taletrail · tinyletters) have EVER carried an MC kit — a deliberate, universal design; each app's `CLAUDE.md` states it is *"NOT the portfolio 9-14 core."* The tween core carries kits ~universally (133/158 repos). The split is intentional.
-2. **NAEYC / Developmentally Appropriate Practice:** for ages 5-8, DAP favors **observation-based, authentic, culturally-responsive** assessment over standardized multiple-choice; test-item cultural bias is a first-order DAP concern for this band.
-3. **Leading early-childhood apps** (Khan Academy Kids, Todo Math — both built for pre-readers with Stanford/Harvard/XPRIZE credentials) use **audio-first instruction + visual manipulatives + tap/drag**, never a text MC bank — because the users cannot yet read independently.
-4. **Reading-load / decoding confound + floor effects:** a 25-item TEXT MC bank measures decoding, not the target skill, for pre/emergent readers ("learning to read," not "reading to learn") — a low-validity instrument with documented false-positive / floor-effect threats.
-
-### The rule
-- **Do NOT author 16×25 MC kits for any ages-5-8 app** (current: the 6 above; and every future younger-cluster SPAWN). A missing MC bank in this band is ⛔-by-design, recorded as such in the kit-coverage audit — never a 🟡 gap.
-- **Their web clones** port the **activity/manipulative** surfaces (subitizing, tap-count, drag-add, letter-trace, sound-match, sort/observe), NOT a Concepts-MC surface. Reference: the countingpals clone (procedural `earlyMath` engine + `_shared/customRound`, zero MC). A younger-cluster clone shipped WITHOUT a Concepts-MC surface is compliant, not a defect (the inverse of R-WEB-CLONE-KITS-OPUS-AUTHOR's tween default).
-- **The boundary is the AGE BAND, not the cluster.** A TWEEN (9-14) SEL / composition / board-game app IS obligated (SEL apps mindforge/safetyforge/wellnessforge/saffronlab all carry 32-36 kits; the LyricForge composition precedent authored 400). Only the ages-5-8 band is exempt. If an app straddles bands, classify by its CORE target audience (per `clone.meta.ts` `gradeMin` / the app's `CLAUDE.md`).
-
-### When it applies
-- Authoring/reviewing a younger-cluster app's kits or web clone → do NOT author MC kits; do NOT flag their absence as a gap; port activity formats.
-- Any kit-coverage audit (like `Docs/AUDIT_QUESTION_KIT_COVERAGE_2026-07-14.md`) → younger-cluster apps go in the ⛔ bucket with this rule as the rationale, alongside the ⛔ non-standard-content-model apps (aggregator / problem-library / estimation-prompt apps).
-
-### Cross-references
-- `Docs/RESEARCH_YOUNGER_CLUSTER_QUESTION_KITS_2026-07-14.md` (the evidence base) · `Docs/AUDIT_QUESTION_KIT_COVERAGE_2026-07-14.md` (the V222 audit that applies it)
-- § R-WEB-CLONE-KITS-OPUS-AUTHOR (the tween-core rule this is the exception to) · § R-WEB-CLONE-GRADE-LEVEL (the grade-band declaration that identifies younger-cluster clones) · § R-WEB-CLONE-DEVICE-FEATURE-SKIP (sibling "port the appropriate subset" discipline) · `.claude/rules/distributed-narrative.md` § R-YOUNGER-CLUSTER-CAST-SIZE + `Docs/RESEARCH_YOUNGER_CLUSTER_CAST_SIZE_2026-07-14.md` (the sibling younger-cluster codification — small hero-anchored cast, V224)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## No feature may ship dark — every clone route + novel feature must be wired + visible (R-WEB-CLONE-NO-DARK-SURFACE; 2026-07-11)
 
 **A `/play/<app>` clone is NOT done until EVERY route AND every novel/web-pioneered feature it ships is REACHABLE + VISIBLE to a user — linked from the landing (or from another linked, reachable surface) — and the clone has its `src/data/play/clones.ts` registry row. A surface that exists in the code but no user can navigate to is *shipped-but-dark* and is a defect.** This is the web-clone analogue of the portfolio **Asset Consumer Audit** (`.claude/rules/portfolio.md` § "registered ≠ wired") and the DN **authored ≠ integrated** discipline (`R-CAST-EXPANSION-INTEGRATION`): building the feature is the START of the obligation, wiring it into the user's navigable path is the completion. Codified per user-direct 2026-07-11 (*"how do we make sure all the features including novel features are wired and visible to the users and not remaining dark? do full audit and backfill wiring if needed. codify these too"*).
 
-### Why it matters most for NOVEL features
-
-The web-pioneered FILE features (`R-WEB-CLONE-BACKPORT-MINING`) are the whole point of the program — they're what earns the clone its cross-surface leadership + iOS backport value. A pioneered feature that ships behind a route no page links to is *invisible*: the user never plays it, the backport is never validated, and the parity ledger's "web-shipped" claim is false. So the anti-dark-surface gate is strictest exactly where the value is highest. **A novel feature must be surfaced as a headline card on the landing** (not buried) — reachable AND prominent.
-
-### The three wiring checks (the gate)
-
-`scripts/audit_web_clone_surface_wiring.py` makes dark surfaces build-time-visible. For each clone it verifies:
-
-1. **Route reachability** — every `src/pages/play/<app>/*.astro` route (except the `index` landing) is linked (`href="/play/<app>/<route>"`) from at least one of the clone's own pages. A route no page links to is DARK.
-2. **Registry row** — the clone has a row in `src/data/play/clones.ts` (that's what surfaces it on the `/play` index + the homepage; without it the whole clone is dark from the site's entry points). **Build-gated** by `check-play-clone-registry.mjs` (prebuild) — see § "The clones.ts row is build-gated" below.
-3. **Bespoke-feature surfacing** — every app-local `run*`-exporting lib module (a distinct mechanic, not `progress`/`kits`/`session`/`devices` plumbing) is imported by some route under the clone. A mechanic with no page that runs it is dark.
-
-```bash
-python3 scripts/audit_web_clone_surface_wiring.py --site-root <site-or-worktree> [--app <slug>] [--ci-mode]
-```
-
-Run it in the build worktree before shipping every clone (`--app <slug>`), and portfolio-wide as a periodic backstop (no `--app`). It complements — does not replace — the postbuild `check-site-internal-links.py --unit play` (that catches BROKEN links; this catches ABSENT links — a route with no inbound reference at all, which a link checker can't see). **Reference sweep (2026-07-11):** all 12 shipped clones 🟢 wired (zero dark routes / features; every clone in the registry) — recorded in `Docs/AUDIT_WEB_CLONE_SURFACE_WIRING_2026-07-11.md`.
-
-### This joins the two-axis DoD gate
-
-`R-WEB-CLONE-PARITY-DOD` gates on the two parity ledgers; this rule adds a third ship condition: **zero dark surfaces**. A clone with a filled parity ledger but a bespoke mechanic no page links to is still not done. The three together: (a) feature parity, (b) UI/UX parity, (c) every surface wired + visible.
-
-### The clones.ts row is build-gated + "merged ≠ live" (harmonyforge incident, 2026-07-12)
-
-The `/play` index (`src/pages/play/index.astro`) renders **only** the clones in `PLAY_CLONES` (`src/data/play/clones.ts`) — so a clone whose route dir exists but whose `clones.ts` row is absent is **silently dark from the site's main entry point**. Two failure modes, both now gated:
-
-1. **Row-drop / merge-race (within-repo)** — `clones.ts` is a shared, union-merged append hotspot (§ R-WEB-CLONE-MERGE-HYGIENE); a botched conflict resolution can drop a clone's row while its route dir survives, shipping a dark clone with **zero build signal**. **Gated:** `spark-anvil-site/scripts/check-play-clone-registry.mjs` runs in `prebuild` + `prebuild:play` and **fails the build**, naming the app, if any `/play/<app>/index.astro` lacks a `clone.meta.ts` (or the row's `.pc-theme-<app>` accent block is missing from **`play.css`** → renders un-themed on the index, which imports only `play.css`; per Fix 4 the gate checks `play.css` ONLY, not per-app CSS). Bypass: `SKIP_PLAY_CLONE_REGISTRY_CHECK=1` (never to ship a real dark clone).
-
-2. **merged ≠ live / merged ≠ deployed (the actual harmonyforge root cause)** — harmonyforge's row + route + `.pc-theme-harmonyforge` block ALL landed together in one commit (site PR #448) and never diverged, so the on-main code was always complete. It was still "silently dark on /play" because it had been marked **SHIPPED in the hub registry/work-queue (V137) before the change was LIVE on the deployed /play index** — the play deploy-unit hadn't rebuilt yet (build-watch-paths / the Cloudflare build-queue lag, § R-SITE-BUILD-SPLIT invariant 6 + `RUNBOOK_CLOUDFLARE_BUILD_QUEUE_FIX`). **Discipline:** do NOT flip a clone to `shipped` in `REGISTRY_WEB_CLONES.txt` (or claim it done) until you have **verified it renders on the DEPLOYED `/play` page**, not merely that the PR merged — the same "verify PR merged ≠ verify live" gap the workflow's SHIPPED rule warns about, one layer out (merge → deploy). A clone is *live-dark* until the play unit rebuilds; a merged PR is necessary but not sufficient. **How to live-verify (the `-L`/trailing-slash discipline):** the site canonicalizes to trailing-slash URLs, so a bare `/play/<app>` returns a **steady-state `307` to `/play/<app>/` even when fully deployed** — a no-`-L` curl on the non-slash route ALWAYS shows `307`, and reading that as "not deployed yet" is a false negative (cost a wasted deploy-wait, 2026-07-13 scienceforge #40). Verify with a browser UA (the CDN 403s bare UAs) **AND follow redirects**: `curl -sL -w '%{http_code}' -A "<browser-UA>" https://spark-and-anvil.com/play/<app>/designer` must be **200**, and `curl -sL … /play/ | grep -c '<app>'` must be > 0. The real not-yet-deployed signals are a *followed*-redirect **404** or the `/play/` index not listing the clone; the fastest positive tell is a kit-JSON (`/play/<app>/kits/<kitId>.json`) returning **200**. Full recipe: `Docs/WEB_CLONE_PICKUP_RUNBOOK.md` § 7a.
-
-### When this rule applies
-
-- Authoring or extending any `/play/<app>` clone → run the audit for that app before shipping; every route linked from the landing, every novel feature a headline card, the clones.ts row added.
-- Reviewing a clone PR → a new `.astro` route or `run*` lib with no inbound link is a defect (same weight as a missing parity axis).
-- Periodically / when resuming the clone program → run the portfolio-wide sweep; every 🔴 is a backfill-wiring work item, recorded in `Docs/AUDIT_WEB_CLONE_SURFACE_WIRING_<date>.md`.
-
-### Cross-references
-- `scripts/audit_web_clone_surface_wiring.py` — the gate · `Docs/AUDIT_WEB_CLONE_SURFACE_WIRING_2026-07-11.md` — the reference sweep
-- `.claude/rules/portfolio.md` § "Asset Consumer Audit" (registered ≠ wired — the parent pattern) · `.claude/rules/distributed-narrative.md` § R-CAST-EXPANSION-INTEGRATION (authored ≠ integrated — sibling)
-- § R-WEB-CLONE-PARITY-DOD (the ship gate this joins) · § R-WEB-CLONE-BACKPORT-MINING (the novel features this rule ensures are visible)
-- `spark-anvil-site/scripts/check-play-clone-registry.mjs` — the prebuild gate for the clones.ts row + theme (the harmonyforge dark backstop) · `spark-anvil-site/scripts/check-site-internal-links.py` — the complementary broken-link checker (this rule catches ABSENT links, that one catches BROKEN links)
-- `Docs/AUDIT_WEB_CLONE_DARK_SURFACE_HARMONYFORGE_2026-07-12.md` — the harmonyforge incident audit + portfolio sweep (0 dark) · `.claude/rules/workflow.md` § "Verify PR Merged" (the merged≠live discipline this extends to merged≠deployed)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Every clone must tightly integrate the DN narrative assets — mascot, cast portraits, storybooks, audio dramas, DIR/FEDC reflection (R-WEB-CLONE-NARRATIVE-INTEGRATION; 2026-07-11)
 
 **Every `/play/<app>` clone landing MUST surface the portfolio's Distributed-Narrative assets — the app MASCOT, the CAST PORTRAITS, a link from each cast member to their illustrated T1/T2 multi-beat STORYBOOK + AUDIO DRAMA, and a between-practice DIR/FEDC affect-recognition REFLECTION — not a bare cast name-list.** A clone that ports the learning kits but leaves the mascot, portraits, storybooks, and audio dramas dark is only half-built: the DN thesis is *"the cast IS the curriculum"* (Naul+Liu empathetic-characters + distributed-narrative axes), so the characters + their stories are load-bearing motivation, not decoration. Codified per user-direct 2026-07-11 (*"why the mascot illustrations, cast characters portraits, t1/t2 multi-beat storybooks with illustrations, audio dramas are not tightly integrated with the web clones? … and dir/fedc reflections too … fix for all shipped web clones and codify as a rule"*).
 
-### Why they were dark (the gap this closes)
+**DN-S is a BASELINE + a DEPTH FOLD, NOT a new expansion axis (2026-07-18 assessment).** Founder asked whether to add a "DN-S axis" to the expansion playbook; the audit + deep-web-research answer (`RESEARCH_WEB_CLONE_DN_S_AXIS_ASSESSMENT_2026-07-18.md`) is NO co-equal axis: the **surfacing above is the BASELINE** (this rule, auto-surfaced by `<PlayNarrative>` + enforced by the surface-wiring audit — every clone inherits it, nothing per-clone to grow), and the one genuine per-clone DEPTH gap is a **DEPTH FOLD**, not a growth axis. **Evidence is favorable but bounded:** recurring, familiar, intrinsically-integrated characters *reduce* working-memory load (they are NOT a seductive detail) — but only while **boundary-placed + integrated**; front-loaded / high-load / critical-path narrative carries the seductive-details penalty (g≈−0.16). So the DN ratchet is DEPTH (richer boundary integration), never "surface MORE narrative on screen." **The buildable DEPTH FOLD = between-practice cast CAMEOS (iOS Move B `castCameos[]` web parity):** a boundary-only (kit-preview / results) cameo surface, mastery-keyed variant, honoring `R-NARRATIVE-BETWEEN-NOT-DURING` + `R-GUARD-THE-RATIO` + `R-DN-PARITY` (swap test) — the schematic active-solve loop stays cameo-free. A web between-practice cameo iOS-parity of Move B is web-pioneered-surfacing → a `castCameos` parity note. The Phase-1(k) DN-S lens (`PLAYBOOK_WEB_CLONE_EXPANSION.md`) audits: surfacing-baseline present · between-practice cameo wired · `/play`↔`/story` bidirectional complete. (The founder MAY elevate DN-S depth to a formally-numbered axis for visibility; the build deliverable — boundary cameos — is identical either way.)
 
-The clones were scoped as self-contained *learning-parity* surfaces: port kits → `_shared/` MC engine + build the bespoke mechanic + theme. The cast was surfaced only as a text name-list (`cast.map(m => m.name).join(' · ')`). Meanwhile the mascots (`/apps/<app>/mascot.webp`), cast portraits (`/cast/<app>/<slug>.webp`), T1/T2 illustrated storybooks (`/cast/<app>/<slug>[/advanced]`), and audio dramas (hosted on those `/cast` pages) all already exist — the clones just never referenced them. It was a scoping gap, not a technical blocker.
-
-### The two required pieces
-
-1. **`<PlayNarrative app="<slug>" />`** on the landing (`src/components/play/PlayNarrative.astro`, the reference impl) — renders the app **mascot** + a rail of **cast portraits**, each linking to its **`/cast/<app>/<slug>`** page (which hosts the T1/T2 storybook + audio drama — three asset types integrated by linking to the page that already serves them). Guarded by `hasChapter(app, name)` (R-CAST-ROUTE-COVERAGE) so only chaptered members are linked; renders nothing for a chapterless cast. Replaces the bare name-list.
-2. **DIR/FEDC reflection on the results screen** — `_shared/reflect.ts` `reflectionCard()`, rendered by both `_shared/mcRound.ts` + `_shared/customRound.ts` results by default (opt-out `reflection: false`). A gentle, on-device, non-clinical affect-recognition prompt — companion reflection OUTSIDE the loop (Naul+Liu P4), operationalizing R-DIR-FEDC-CHAPTER at the clone surface.
-
-### Placement discipline (inherits R-NARRATIVE-BETWEEN-NOT-DURING)
-
-The narrative sits at **session boundaries** — the mascot + cast rail on the **landing**, the reflection on the **results** screen — NEVER overlaid on the active practice loop. A cast portrait mid-question would be a seductive detail; on the landing/results it's between-practice motivation. This is the same rule the DN methodology enforces for cameos.
-
-### Cross-unit routing (why it just works)
-
-Mascots (`/apps/*`) are served by the **play** unit (kept in its trimmed `public/`). Cast portraits + storybooks + audio (`/cast/*`) are served by the **core** unit via the host-agnostic path dispatcher — the existing cross-unit link mechanism (the play-unit `check-site-internal-links.py --unit play` *excuses* `/cast` + `/apps` cross-unit refs). So `<img src="/cast/…webp">` + `<a href="/cast/…">` on a play page resolve at runtime with zero extra config.
-
-### Enforcement (joins the DoD gate)
-
-`scripts/audit_web_clone_surface_wiring.py` checks each landing renders `<PlayNarrative>` (a clone whose landing lacks it is flagged **NO NARRATIVE INTEGRATION** — same weight as a dark route). This joins R-WEB-CLONE-NO-DARK-SURFACE + the two parity axes as a ship condition. **Reference backfill (2026-07-11):** all 12 shipped clones integrated (mascot + portraits + storybook/audio links + auto DIR/FEDC reflection); recorded in `Docs/AUDIT_WEB_CLONE_SURFACE_WIRING_2026-07-11.md`.
-
-### When this rule applies
-
-- Authoring any new `/play/<app>` clone → add `<PlayNarrative app>` to the landing from day one; the DIR/FEDC reflection is automatic via `_shared`.
-- Reviewing a clone PR → a landing with a bare cast name-list (no `<PlayNarrative>`) is a defect.
-- A clone whose app later gains cast portraits / chapters / audio → the component picks them up automatically (it reads `apps.generated.ts` + `hasChapter`), so no per-clone edit is needed when the DN assets land.
-
-### Cross-references
-
-- `src/components/play/PlayNarrative.astro` (reference impl) · `src/lib/play/_shared/reflect.ts` (DIR/FEDC reflection) · `scripts/audit_web_clone_surface_wiring.py` (the enforcement)
-- § R-WEB-CLONE-NO-DARK-SURFACE (sibling — this rule ensures the *narrative* surface isn't dark) · § R-CAST-PORTRAIT-SLUG / § R-CAST-ROUTE-COVERAGE (the portrait/route guards it relies on)
-- `.claude/rules/distributed-narrative.md` § R-NARRATIVE-BETWEEN-NOT-DURING (placement) · § R-DIR-FEDC-CHAPTER (the reflection discipline) · § DN methodology "the cast IS the curriculum"
-- `Docs/ADR-032_SITE_MULTI_PROJECT_SPLIT.md` (the cross-unit dispatcher that makes `/cast` + `/apps` resolve from a play page)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Web-clone user + developer guides must track the code (R-WEB-CLONE-GUIDE-SYNC; 2026-07-08)
 
 **Every `/play/<app>` web clone has TWO living guides that MUST be updated in the SAME change-set as any code change that affects what they document — a visitor-facing USER guide and a maintainer-facing DEVELOPER guide.** A code change that lands without the matching guide update is incomplete, exactly like a cross-repo PR that ships without verifying the merge. Codified per user-direct 2026-07-08 (*"codify the requirement that user guide and developer guide for the web clone of fractionforge be kept up-to-date with the web clone code"*). Follows the precedent set by the `/cast` page guides (`GUIDE_CAST_PAGE_USER.md` + `GUIDE_CAST_PAGE_DEVELOPER.md`).
 
-### The two guides (per web-clone app)
-
-| Guide | Path | Audience | Register |
-|---|---|---|---|
-| **User guide** | `spark-anvil-hub/Docs/web/<app>/GUIDE_USER.md` (ADR-033) | Parents / educators / kids (ages 9-14 readable) | Warm, non-jargon (per § R-SITE-CHROME register discipline — no engineering terms, file paths, ticket numbers) |
-| **Developer guide** | `spark-anvil-hub/Docs/web/<app>/GUIDE_DEVELOPER.md` (ADR-033) | The next maintainer session | Architecture + data flow + file map + load-bearing rules + extension recipes + gotchas + test/verify plan |
-
-### The sync obligation (what "track the code" means)
-
-A change is guide-affecting — and therefore MUST carry the matching guide edit in the same commit/PR — when it:
-
-- **User guide** — adds/removes/renames a mode or screen, changes how a learner does something (controls, keyboard, flow), changes what data is stored or the privacy posture, or changes any user-visible label the guide names.
-- **Developer guide** — adds/removes/renames a file or module, changes the data model or kit schema, changes the build/port pipeline, adds a manipulative mode or a new island, changes a load-bearing rule the guide cites, or introduces a gotcha the next maintainer needs.
-
-Trivial changes (a copy typo, a CSS tweak that doesn't change behavior) don't require a guide edit — the bar is "does this change what the guide asserts?", the same bar the multi-beat-snapshot / register rules use.
-
-### When this rule applies
-
-- Authoring or extending any `/play/<app>` web clone → the guide-affecting parts of the diff pair with a guide edit.
-- Reviewing a web-clone PR → check the diff against both guides; a guide-affecting change with no guide edit is a defect.
-- The parity ledger (`R-WEB-CLONE-PARITY`) and the developer guide overlap intentionally: the ledger tracks iOS↔web feature deltas; the dev guide tracks how the web code is built. Update both when a feature lands.
-
-### Cross-references
-
-- `Docs/web/fractionforge/GUIDE_USER.md` + `Docs/web/fractionforge/GUIDE_DEVELOPER.md` — the first/reference web-clone guides
-- `Docs/GUIDE_CAST_PAGE_USER.md` + `Docs/GUIDE_CAST_PAGE_DEVELOPER.md` — the two-guide precedent this rule generalizes
-- § R-WEB-CLONE-PARITY (above) — sibling web-clone completeness rule
-- § R-SITE-CHROME (in `.claude/rules/distributed-narrative.md`) — the register discipline the USER guide follows
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Asset reuse policy
 
@@ -803,6 +462,8 @@ Any other website-specific asset request requires:
 2. User approval before generation (cost discipline per `portfolio.md` § Asset generation ownership)
 3. Per-pipeline ceiling adherence (mascot ~$0.27, accessory pack ~$0.36, etc.)
 
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
 ## Brand asset locations
 
 | Asset | Path | Format | Generated |
@@ -816,6 +477,8 @@ Any other website-specific asset request requires:
 
 Logomark and lockup are both visually-audited and aesthetically aligned with the chunky-cartoon portfolio style (Toca-Boca / Animal-Crossing register: bold `#2A1F1A` outlines, Forge Orange + Spark Gold + Anvil Charcoal palette).
 
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
 ## Tech stack (locked in)
 
 - **Static site generator**: Astro 4.x (per `DECISION_FIGMA_FOR_SPARK_ANVIL_WEBSITE.md` + `PLAN_SPARK_ANVIL_WEBSITE.md`)
@@ -825,12 +488,16 @@ Logomark and lockup are both visually-audited and aesthetically aligned with the
 - **Forms**: Formspree or Netlify Forms (press contact, parent feedback)
 - **No third-party SDKs** — preserves the "no tracking, no kid data leaves the device" trust signal
 
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
 ## Design workflow (locked in)
 
 - **No Figma for v1** — code-first; Astro + Tailwind authored via Claude Code / Cursor; iterate in browser DevTools; Cloudflare Workers per-version preview deploys for review (per `DECISION_FIGMA_FOR_SPARK_ANVIL_WEBSITE.md`)
 - Brand palette doc + logo PNGs + per-app CLAUDE.md = the spec. No parallel design artifacts.
 
 Revisit if: designer joins team, marketing landing page needs novel composition, press-kit / Apple Design Award submission requires pixel-precision.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Content sourcing pattern
 
@@ -847,6 +514,8 @@ spark-anvil-site/scripts/build-apps-data.mjs reads:
 
 For 131 apps, the script generates 131 templated pages. Phase 3 of PLAN: manually populate 10 flagship apps first; Phase 4: bulk-generate the rest with skeleton + "Coming soon" tags for apps with insufficient assets.
 
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
+
 ## COPPA + trust signal requirements
 
 Per 2026 FTC COPPA amendments effective April 22 2026:
@@ -862,6 +531,8 @@ Trust signals visible above-the-fold on home + `/for-parents`:
 - "No third-party SDKs / no tracking"
 
 Per `RESEARCH_SPARK_ANVIL_WEBSITE.md`, third-party certifications (iKeepSafe COPPA, Common Sense Privacy Seal, KidSAFE) are aspirational v2+ goals — pursue once portfolio has shipping apps + revenue justifies audit fees.
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Liquid Glass policy (ADR-014, Round 149 #580, 2026-05-29)
 
@@ -886,253 +557,65 @@ The website adopts a **HYBRID** Liquid-Glass-inspired accent layer: chunky-carto
 6. Pages OFF-LIMITS to glass (always solid): `donate.astro`, `privacy.astro`, `terms.astro`, `annual-report.astro`, `for-parents.astro` body, `for-educators.astro` body, `press.astro`, `mission.astro`, `about.astro`, `board.astro`. Trust-sell + legal + long-form copy stays solid
 7. Primary CTAs (`btn-primary`) stay solid — trust + max contrast
 
-**Reversibility is HIGH** — removing the layer is a 5-line revert of `global.css` + `Nav.astro`. If field metrics surface AA failures or perf issues on school devices, revert without ceremony.
-
-**When updating the policy**: edit `Docs/ADR-014_HYBRID_LIQUID_GLASS_WEBSITE.md` + this section + open a hub PR. The site itself is the implementation source of truth for the actual utility class definitions.
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## DN-S chapter-book pages (Wave 1 SHIPPED 2026-06-02; spark-anvil-site PRs #104 + #105)
 
 The site now ships **663 illustrated chapter-book pages** at `/cast/<app>/<char>` + `/stories` aggregate index. Per `Docs/PLAN_DN_S_WEBSITE_WAVE_1_2026-06-02.md` + `Docs/ADR-022_DN_S_WEBSITE_WAVE_1_OPEN_QUESTIONS.md`. Editing rules below:
 
-### Content source-of-truth
+→ **Sub-rules** defined here (full detail in reference): (R-PREBUILD-PLAY-NORMALIZE).
 
-- **DO NOT edit `spark-anvil-site/src/content/chapters/<app>/<char>.md` directly.** They are sync targets, not source. The source-of-truth is `<app>-app/Docs/dn-s/chapters/<char>.md`.
-- To update chapter text: edit the app-repo chapter MD, then re-run `spark-anvil-hub/scripts/sync_content_to_site.sh --app <slug> --apply`.
-- The sync also distributes chapter illustrations (to `public/chapters/`) + audio M4A + VTT (to `public/audio/`).
-
-### Astro Content Layer schema
-
-- Schema lives at `src/content/config.ts` (Astro 4.16 content-collections API).
-- **Permissive schema required**: chapter front-matter conventions vary across 663 entries; twin/cohort chapters use `primitive (X):` instead of flat `primitive:`. Use `.passthrough()` + make all non-essential fields optional. Only `character` + `app` are hard requirements.
-- Astro 4.x uses `gray-matter` + `js-yaml` for front-matter parsing; **unquoted YAML values with embedded colons / markdown emphasis (`*...*`) / em-dashes fail at parse time.** `spark-anvil-hub/scripts/normalize_chapter_frontmatter.py` quotes fields known to contain these (`primitive` / `role` / `register` / `audience` / `chapter-round` / `character`) in the SYNC TARGET copies only — source repos stay untouched.
-
-### CRITICAL: Normalizer auto-runs in site `prebuild` — do NOT remove (2026-06-04 regression-pattern lift)
-
-**The normalizer is wired into `spark-anvil-site/package.json` `prebuild`** so every build (local OR Cloudflare Workers Builds) self-heals from YAML drift. **Never remove the normalizer call from the prebuild chain** — doing so re-opens the regression class below.
-
-```jsonc
-"prebuild": "bash scripts/lint-ios-caps.sh && python3 scripts/normalize-chapter-frontmatter.py && node scripts/build-cast-manifest.mjs && ..."
-```
-
-**Regression pattern** — codified after two consecutive Cloudflare-deploy failures (PR #160 fix → sync re-broke it → PR #162 final fix, 2026-06-04 evening):
-
-1. Hub sync writes fresh chapter MDs from `<app>-app/Docs/dn-s/chapters/` → `spark-anvil-site/src/content/chapters/`.
-2. Source chapters use unquoted YAML (`primitive: CAESAR SHIFT — *the simplest cipher: shift every letter by N.*` — embedded `:` after "cipher" trips js-yaml).
-3. Local Astro dev may not surface the bug if cached; Cloudflare's fresh-clone build always re-parses → fails with `incomplete explicit mapping pair; a key node is missed`.
-4. Point-in-time normalizer runs fix the symptom but the NEXT sync re-introduces the drift.
-
-**The auto-run prebuild is the only durable fix.** Running the normalizer once-per-sync is racy against any sync landing between that run and the build.
-
-**Two copies of the normalizer exist + are intentional**:
-- `spark-anvil-hub/scripts/normalize_chapter_frontmatter.py` — source of truth; canonical implementation
-- `spark-anvil-site/scripts/normalize-chapter-frontmatter.py` — in-repo mirror (path-relative; works on Cloudflare's `/opt/buildhome/repo`) so the build agent doesn't clone hub
-
-When the normalizer's quoting rules change, **update BOTH copies in the same change-set**. The site copy resolves `CHAPTERS_ROOT` from `__file__` so it works in any environment; otherwise it's byte-for-byte identical to hub's.
-
-**When in doubt — run the normalizer**: it's idempotent. Re-running on already-normalized YAML produces zero diff.
-
-**Companion sync rule for hub-side workflow**: when authoring a new chapter or rewriting an existing one, do NOT pre-quote the source MD's YAML — leave the unquoted convention. The prebuild normalizer is responsible for quoting the sync-target copy. This preserves authoring ergonomics on the hub side while keeping the site build resilient.
-
-### R-PREBUILD-PLAY-NORMALIZE — the trimmed play build's prebuild MUST normalize too (2026-07-10)
-
-**Every build variant that runs `astro build` — including the route-trimmed `build:play` (ADR-032 Phase 2) — MUST run `normalize-chapter-frontmatter.py` (+ `check-chapter-frontmatter-duplicates.py`) in its prebuild.** `astro build` parses the **ENTIRE `chapters` content collection** at build time **regardless of which routes it generates**, so even a build that emits only the ~8 `/play/**` routes still parses all ~1,776 chapters and trips js-yaml on any unquoted-authoring-convention chapter (the exact `incomplete explicit mapping pair` failure above).
-
-**Reference incident (2026-07-10):** the V62 `prebuild:play` deliberately *dropped* the normalizer + chapter gates on the premise that `build:play` should "never write `src/content/chapters/` → safe alongside a chapter-content session." **That premise is unachievable** — the content collection is always parsed, so the normalizer must run. A parallel content session pushed an unquoted `role:` field (`aiforge/edge-feed-advanced.md`) and the `spark-anvil-play` Cloudflare build failed while core stayed green (core's `prebuild` normalizes). Fixed by re-adding the two parse-critical scripts to `prebuild:play` (spark-anvil-site PR #377). `prebuild:play` still legitimately drops the *quality* gates that don't affect parseability (methodology stripper, multibeat-snapshot + cast-portrait coverage checks, `lint-ios-caps.sh`) — the play unit renders no chapters, so their coverage is irrelevant to it.
-
-**The corrected safety model:** the normalizer *does* write `src/content/chapters/` during `build:play`, so the real concurrency guarantee is NOT "never writes chapters" — it is **"run `build:play` only in an isolated `git worktree` or on Cloudflare's fresh-clone build, never the shared clone."** That discipline was already mandatory anyway, because `build-play.mjs` mutates `src/pages/` (page relocate) + `public/` (Phase 2.5 public relocate) during the build. On a fresh clone / throwaway worktree the normalizer's chapter writes are ephemeral and harmless; committing the regenerated chapters/manifests is forbidden (pathspec-scope every commit).
-
-**Rule:** never strip `normalize-chapter-frontmatter.py` (or the dup-key check) from ANY `astro build` prebuild chain — `prebuild`, `prebuild:play`, and any future per-unit prebuild — for the same reason § "CRITICAL: Normalizer auto-runs" gives for the core prebuild. Companion to that rule; both guard the same js-yaml regression class, now across every build unit.
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## The site is a multi-UNIT build split — one Astro repo, many deploy units behind a path-routing dispatcher (R-SITE-BUILD-SPLIT; 2026-07-10)
 
 **The `spark-anvil-site` repo is ONE Astro project that builds into MULTIPLE independent Cloudflare deploy units, fronted by a single host-agnostic dispatcher Worker that routes purely by URL path.** This is the load-bearing architecture behind the `/play` clones, the `.org`/`.com` dual-serve, and the (planned) per-cluster + cast/chapters carve-outs. It is codified here — not only in `ADR-032` — because every session loads the rules file, and a decision doc "decays in visibility" (workflow.md § Audit-to-canonical-propagation). ADR-032 is the full decision + rationale; THIS is the standing convention.
 
-### The model
+→ **Sub-rules** defined here (full detail in reference): (R-SITE-DOMAINS).
 
-- **One repo, many units.** The same repo builds different route subsets via different `build:<unit>` scripts. Today: **core** (`npm run build` — everything except the trimmed subset) + **play** (`npm run build:play` — only `/play/**`, ADR-032 Phase 2 route-trim + Phase 2.5 public-trim). Planned: **cast/chapters** (the 1,776-route + media carve-out, `AUDIT_SITE_ROUTE_CENSUS_2026-07-10.md`) + **per-cluster play units** (ADR-033 §4, `spark-anvil-math`/`-ela`/…).
-- **The dispatcher routes by PATH and is HOST-AGNOSTIC.** `spark-anvil-dispatcher` (a Worker) maps `/play/*` → the play unit, everything else → core. Host-agnostic ⇒ `.com` and `.org` serve identically the moment a domain is attached (R-SITE-DOMAINS). It passes the FULL path through (so `/play/_astro/*` reaches the play unit).
-- **A `build:<unit>` script = page-relocate + public-trim + (if it emits `/play`) the asset-prefix fix.** Reference impls: `build-play.mjs` (relocates non-unit pages out of `src/pages/` during build, finally-trap restores) + `play-public-relocate.mjs` (stashes media dirs the unit doesn't serve; play `dist` 1.4 GB → 33 MB) + `astro.config.mjs` `build.assetsPrefix:'/play'` gated on `PLAY_BUILD=1` (so hashed `/_astro/<hash>` resolve within the unit, not against core's divergent hashes — the P0 fix).
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-### The load-bearing invariants (do NOT violate)
+## Automate the build-time fix via native caching — NOT hand-rolled units or dashboard work (R-SITE-BUILD-AUTOMATION; 2026-07-20)
 
-1. **Every `build:<unit>` prebuild MUST run the parse-critical chapter gates** (normalizer + dup-key check) even if the unit renders no chapters — `astro build` parses the whole `chapters` collection regardless of route subset (R-PREBUILD-PLAY-NORMALIZE is the companion rule; it is the #1 way a split unit's build breaks).
-2. **Run any `build:<unit>` ONLY in an isolated `git worktree` or on Cloudflare's fresh clone — never the shared dirty clone.** The build MUTATES `src/pages/` (page-relocate), `public/` (public-trim), and `src/content/chapters/` (normalizer). Commit **pathspec-scoped** to the unit's intended files; the regenerated chapters/manifests are build artifacts and must never be committed (`git checkout -- src/content/ src/data/` before staging).
-3. **Only `_astro` needs the asset-prefix fix** (hashed + per-build-divergent). Stable-named public assets (`/fonts`,`/apps`,`/brand`,favicon) present in core are fine to resolve via the dispatcher's core route.
-4. **`git push` to the site send-pack STALLS** — push via the gh Git Data API (deletions via `sha:null`); this is orthogonal to the split but always applies to site pushes.
-5. **Rollback is a build-command flip.** A unit reverts to serving the full site by flipping its Cloudflare build command back to `npm run build` — all split code is inert under a full build (no code revert needed).
-6. **Every deploy unit MUST have its Cloudflare Build-watch-paths scoped to its own inputs** — a push must only rebuild the units it actually affects. Because all units share ONE repo + ONE branch, a push with NO path scoping triggers a build on EVERY unit, and a high-frequency content wave then saturates the shared build queue (2026-07-10 incident: 132 one-commit-per-app content pushes × 2 units ≈ ~100-deep queue that stalled a `/play` deploy for ~40 min). **The play unit (renders no chapters) MUST NOT build on chapter-only pushes** — set its **Settings → Build → Build watch paths** Includes to the `/play`-relevant globs (`src/{pages,lib,data}/play/*`, `public/play/*`, `src/styles/play.css`, **`src/styles/play/*`**, `src/components/play/*`, the `build-play`/`*-relocate` scripts, `astro.config.mjs`, `package.json`); leave the CORE unit broad (it renders `/cast` chapter pages). **⚠ `src/styles/play/*` is REQUIRED since the 2026-07-12 R-WEB-CLONE-MERGE-HYGIENE split** moved every clone's bespoke CSS into `src/styles/play/<app>.css` — the literal `src/styles/play.css` Include does NOT match that new dir, so a per-app-CSS-only push would be **silently skipped** without it. **Glob semantics:** Cloudflare watch-path `*` matches across `/` (evidenced by clones' nested `src/{lib,data}/play/<app>/…` already triggering builds), so `src/data/play/*` already covers the glob-derived per-app registry (`src/data/play/<app>/clone.meta.ts` + `clone-types.ts`) — only the NEW `src/styles/play/` dir needed a new line. This is **account-managed** (Cloudflare dashboard per unit — hub can't set it), so it's a required step whenever a unit is created/flipped **OR a new watched input directory is introduced** (like the per-app CSS dir).
+**The core-build bottleneck (prerendering ~1,981 routes, ~90% of them the 1,776 cast/chapter pages) is attacked by AUTOMATION in a fixed priority order, and the site stays SSG-first. Do NOT hand-roll another per-unit relocate script (like `build-play.mjs`) and do NOT create Cloudflare build units by dashboard clicking — both are superseded by the levers below.** Codified per founder-direct 2026-07-20 (deep-web-researched: `RESEARCH_BUILD_AUTOMATION_ASTRO5_UPGRADE_2026-07-20.md` + `RESEARCH_SSG_VS_SSR_ARCHITECTURE_2026-07-20.md`). Keep SSG (no wholesale SSR — our pages have no per-user data, so SSR only relocates the render build→first-request at added cost; `RESEARCH_SSG_VS_SSR`).
 
-   **⚠ STANDING DISCIPLINE — re-verify the Include list on ANY change to the core files/dirs the play unit builds from.** The Include list is a hand-maintained mirror of the play unit's build-input surface; it does NOT auto-update, and a build input NOT covered by a glob is **silently skipped** (no build, no signal — the change never deploys). So whenever a PR **adds, moves, renames, or introduces a new directory for** a play-unit build input — a new top-level shared file (a new `src/styles/play.css`-sibling, a new shared config, a relocated script), a NEW directory the build reads (the per-app CSS `src/styles/play/` dir was exactly this — site PR #479 moved bespoke CSS there and the literal `src/styles/play.css` Include did not match it), or a new `build:<unit>`/prebuild input — you MUST (a) check whether the documented Include globs (the runbook block below) still cover every build input, (b) if not, update the runbook's Include list in the same PR, and (c) **flag the account-side Cloudflare Include change to the founder in the PR body** (hub can't set it; a merged-but-unwatched input is the "merged ≠ deployed" trap one layer out). The runbook's Include block is the **source-of-truth the founder syncs to the Cloudflare dashboard** — keep it accurate. Reference incident: the per-app CSS dir (2026-07-12) — caught here, not in production, precisely because this was checked. Pairs with **`R-BATCH-DISTRIBUTION-PUSH`** (workflow.md — batch a content wave into ONE squash-merge push, not one-per-app; also dodges the watch-paths bypass that fires at 20+ commits / 3000+ files). Exact globs + drain-the-queue + branch-control steps: **`Docs/RUNBOOK_CLOUDFLARE_BUILD_QUEUE_FIX_2026-07-10.md`** (deep-web-researched, cited); root cause: `Docs/AUDIT_CLOUDFLARE_BUILD_QUEUE_SATURATION_2026-07-10.md`.
+**The decision tree (do in order; stop when builds are fast enough):**
+1. **Astro 5 Content-Layer incremental caching — the primary automated fix. ✅ EXECUTED 2026-07-20 (site PRs #1101 Stage A + #1102 Stage B).** The **Astro 4.16→5** upgrade shipped in two staged, worktree-proven PRs: **Stage A** (`astro ^4.16.18→^5` [5.18.2] + `@astrojs/cloudflare 11→^12` [12.6.13] + `output:"hybrid"→"static"` + `legacy.collections:true` bridge + `engines.node>=18.17.1`; `@astrojs/tailwind`/`@vite-pwa/astro` already peered ^5 — no bump) and **Stage B** (moved `src/content/config.ts` → **`src/content.config.ts`** with a `glob()` loader for the ONE `chapters` collection; `entry.render()`→`render(entry)`; dropped `legacy.collections`). **⚠ MEASURED reality — NOT the docs-site −92%:** the full local core build went ~5.5–7.5 min (Astro-4 CF baseline) → **~3 min** (Stage-B cold 199s / warm 177s; astro-build 110s→85s; content-ingest 43s→31s) = a real **~2×** win, but far short of −92% because (a) the docs-site number was **content-INGEST-only** and (b) **native per-route incremental PRERENDER is still an open Astro roadmap item** (the dominant cost — generating 3,922 HTML — is NOT cached), and (c) our prebuild normalizer + strip rewrite the chapters that are committed in RAW form (~1,880 necessary writes/build) — but this does NOT materially bust the cache (see the ⚠ correction below). Output is byte-identical (7,427 paths / 3,922 HTML, link-check OK). `getCollection` order is now non-deterministic — `story/index` already sorts explicitly, other sites iterate/filter (order-safe); **`entry.id` LOST the `.md` extension** under the glob loader (was `<app>/<char>.md`, now `<app>/<char>`) → every `.endsWith('-advanced.md')` / exact-`.md` match was fixed (`.replace('.md','')` calls are safe no-ops post-migration). The 6 chapter scripts + normalizer read raw MD via `fs` (not `astro:content`) → unaffected. **Cloudflare Workers Builds `build_caching_enabled` is ALREADY on** (both units) — it compounds. **⚠ CF-BUILD OOM (load-bearing, site #1101 build `a68cbfb0`):** Astro 5's **client (vite) build** OOM'd the Cloudflare build container — `FATAL ERROR: JavaScript heap out of memory` at the **~2 GB default V8 heap** — on the full ~3,922-route CORE build (the server build finished; the client transform blew the heap). It surfaced ONLY on CF (local Node 26 had ample RAM), so a green local build does NOT prove the CF deploy. **Fix (hub-owned, ships in the PR): `NODE_OPTIONS=--max-old-space-size=6144` on the `build` + `build:play` npm scripts** (headroom under the 8 GB container). The PLAY unit did NOT OOM (small route subset). Any future big Astro/vite bump: expect this + set the heap. **Node version is HUB-OWNED via a repo-root `.nvmrc` (`22`), NOT account-managed (site #1103→#1104):** CF Workers Builds resolves Node from a version file (`.nvmrc`/`.node-version`, checked first) → else a dashboard `NODE_VERSION` var → and **ignores `package.json` `engines`**. Because we ship a `wrangler.jsonc` (config source-of-truth), a dashboard `NODE_VERSION` can be IGNORED — so **`.nvmrc` (exact numeric, no `lts/*`) is the reliable pin**, one file for both units, shipped in a PR (no dashboard work). **⚠ The pin MUST satisfy the DEPLOY toolchain, not just Astro — `wrangler@4.x deploy` requires Node ≥ 22.0.0.** `.nvmrc=20` (site #1103) **built green then FAILED `npx wrangler deploy`** (`Wrangler requires at least Node.js v22.0.0`, CF build `13b062dc`) — a build that passes the Astro step can still fail the deploy step on too-low a Node; fixed to `22` (#1104). So pin **`22`** = ≥ wrangler 22 + Astro-6 22.12 + Astro-5 18.17.1 (CF's own default is already ≥22 — a `20` pin actively DOWNGRADED below wrangler's floor). Read the full build log (R-BUILD-FAILURE-READ-FULL-LOG-FIRST) — a "Node broke Astro" guess would have been wrong; the failure was wrangler at the deploy step. **⚠ CORRECTION (investigated 2026-07-20) — the "normalizer skip-unchanged" follow-on was a NON-ISSUE, do NOT chase it:** both `normalize-chapter-frontmatter.py` (`if not changed: return False`) and `strip-chapter-methodology-sections.py` (`if final == original: continue`) ALREADY skip writing unchanged files. The ~1,880 rewrites/build are NECESSARY (chapters are committed in RAW form by design — the app-repo sync brings raw YAML; R-PREBUILD-PLAY-NORMALIZE normalizes at build-time deliberately), not rewrite-unchanged waste. And the content cache SURVIVES those rewrites (Stage-B warm ingest 31s < cold 43s → Astro's glob loader is CONTENT-DIGEST-based, not mtime-based → deterministic normalized output ⇒ same digest ⇒ cache hit regardless of the write). **So the core-build floor is the per-route PRERENDER (~2,000 HTML, not natively incrementally cached), NOT the ingest/normalizer.** Lowering it further needs a bigger, deliberately-deferred change (SSR-tail + Workers-Cache SWR, or CI-build-sharding→single-deploy) — NOT worth it now that the CI dev-loop bottleneck is solved (Ubicloud) and ~6–8 min deploy latency is acceptable.
+2. **If build wall-clock is still too slow, ONE automated parallelism path — both dashboard-free:**
+   - **No-account, single unit:** CI matrix build-shard → `dist`-merge → one `wrangler deploy` (N GitHub-Actions jobs each build a self-partitioned route shard — Astro has NO native `--shard`, so generalize the play-relocate "keep-subset" into "keep-shard-i/N"; balance by TIME not file-count; merge-then-single-deploy). Changes the deploy model (CF-Builds-on-push → GH-Actions + `wrangler deploy`), NOT the account topology.
+   - **Automated MULTI-unit (no dashboard):** a hub `provision-build-unit.py` over the **CF Builds API** (create Worker + connect Git + set build/deploy-`--name`/watch-paths + dispatcher route — the Builds API supports this even though the Terraform provider doesn't, bug #6924) + a **parametric `build-unit.mjs <cluster>` + declarative `site-units.config.mjs`** (never a hand-coded per-unit script). Workers-for-Platforms (dispatch namespace + KV path→cluster routing) is the larger-scale end-state (paid product) — reserve for a high unit count.
+3. **Workers Cache (`stale-while-revalidate`)** for any route moved to on-demand (`prerender=false`) — makes SSR "feel static" (mind per-request billing; the Astro CF adapter wires it).
+4. **Combine `/play` back into core (drop the split)? — ✅ DECIDED: NO, KEEP THE SPLIT (founder, 2026-07-20).** Astro-5 + the 100k-file Workers limit + the R2 purges *unblocked* consolidation (a single unit now fits + builds ~3 min), so the split's SIZE/BUILD-TIME motivations dissolved — BUT its **deploy-independence** value is actively realized while the clone/cameo/DN-S fleet is the dominant activity (a clone-only change rebuilds the fast ~3-min play unit, not the ~5-8-min core; a core-build hiccup — e.g. an OOM/Node break — can't block clone deploys). Merging would slow every clone change onto the core build to buy already-tamed simplicity → net-negative now. **Keep the two-unit split + dispatcher.** REVISIT only if the fleet goes durably quiet AND the split ops-cost outweighs the fading independence value → then consolidate to ONE unit (+ CI-shard), **never MORE units** (per-cluster / Workers-for-Platforms stays rejected — WfP is multi-tenant; splitting is justified only by team-autonomy, not size — micro-frontend evidence). Full analysis: `RESEARCH_COMBINE_PLAY_CORE_UNITS_2026-07-20.md`.
 
-### Adding a new build unit (the recipe — mirrors ADR-032 Phase 1/2)
+→ **Sub-rules** defined here (full detail in reference): (R-SITE-REPOS-PRIVATE).
 
-1. Author a `build:<unit>` script pair (page-relocate + public-trim) modeled on `build-play.mjs` + `play-public-relocate.mjs`; keep the parse-critical prebuild.
-2. Verify in an isolated worktree: `build:<unit>` exit 0 · expected route count · unit `_astro` assets present · internal-link check `--unit <unit>` OK.
-3. **Account-coordinated (user-managed):** create the Cloudflare build unit + add the dispatcher path route (`/<prefix>/*` → the new unit) + **set the unit's Build-watch-paths to its own inputs** (invariant 6 — so the new unit doesn't build on every unrelated push). This asymmetry (code hub-side, Worker/route/watch-paths account-side) is why unit splits are staged, not auto-cycled.
-
-### When this rule applies
-
-- Any change to how the site builds/deploys; adding a `/play/<app>` clone's deploy granularity; the cast/chapters carve-out (V69); per-cluster units (ADR-033 §4); the `.org` dual-serve.
-- Reviewing a site PR that touches `build-*.mjs`, `*-relocate.mjs`, `astro.config.mjs` `assetsPrefix`, or `package.json` `build:*`/`prebuild:*` scripts.
-
-### Cross-references
-
-- `Docs/ADR-032_SITE_MULTI_PROJECT_SPLIT.md` — the full decision + phases (Phase 1 dispatcher · Phase 2 route-trim · Phase 2.5 public-trim · P0 asset-prefix)
-- `Docs/RUNBOOK_SITE_SPLIT_PHASE_2_CLOUDFLARE_2026-07-09.md` — the build-command flip + rollback runbook
-- `Docs/RUNBOOK_CLOUDFLARE_BUILD_QUEUE_FIX_2026-07-10.md` — per-unit Build-watch-paths + drain-the-queue + branch-control steps (invariant 6) · `Docs/AUDIT_CLOUDFLARE_BUILD_QUEUE_SATURATION_2026-07-10.md` — the queue-saturation root cause · `.claude/rules/workflow.md` § R-BATCH-DISTRIBUTION-PUSH
-- `Docs/AUDIT_SITE_ROUTE_CENSUS_2026-07-10.md` — the next carve-out (cast/chapters, by data)
-- `Docs/ADR-033_WEB_CLONE_ARTIFACT_ORGANIZATION.md` §4 — per-cluster deploy units
-- § R-PREBUILD-PLAY-NORMALIZE (companion invariant) · § R-SITE-DOMAINS (host-agnostic dual-serve) · § R-SITE-BUILD-QUIET-PRERENDER · § R-SITE-BUILD-DISK-BUDGET
-- `Docs/web/fractionforge/DEPLOYMENT_RUNBOOK.md` — the per-clone deployment runbook that instantiates this
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## `build:play` is not a full verification — a core-only lib's syntax error slips past it (R-SITE-CORE-PARSE-GATE; 2026-07-11)
 
 **Verifying a change with `npm run build:play` does NOT prove the CORE build is green — the play unit relocates the `/cast` + chapter routes out of `src/pages/`, so any module imported ONLY by those core routes (e.g. `src/lib/image-url.ts`, `audio-url.ts`, chapter/cast components) is never bundled by `build:play` and its syntax errors go uncaught until the Cloudflare CORE build fails.** Any change that touches a **core-only** lib/component MUST be parse-verified against the core build (a `tsc --noEmit`, a full `npm run build`, or at minimum an `esbuild` transform of the changed file), not just `build:play`. Codified per user-direct 2026-07-11 after a P0: `image-url.ts` broke the core Cloudflare build (`Unexpected "*"`) while every `build:play` verification (mine + the parallel clone agents') stayed green.
 
-### The specific trap that caused it — `*/` inside a `/* */` block comment
-
-**Never place a `*/` sequence inside a `/* … */` (or JSDoc `/** … */`) block comment — it terminates the comment early.** The most common way this sneaks in is an embedded **glob or regex**: `` `public/chapters/**/*.webp` `` contains `**/` whose `*/` closed the JSDoc block, and esbuild then parsed the trailing `*.webp …` as code → `Unexpected "*"`, core build fails in ~5s. Guard:
-- In a block comment, reword any glob/regex so no `*/` appears — e.g. write "public/chapters, then any subdir, then any `.webp`", or split the stars (`* /` is still unsafe; avoid the sequence entirely), or use `//` line comments (which have no early-terminator).
-- The regression class is *any* `*/`-bearing token in a block comment: globs (`**/*.ext`), regex literals (`/foo.*/`), file lists. Prefer `//` line comments for anything containing `*` next to `/`.
-
-### The fast parse gate (run on any core-lib change)
-
-```bash
-# parse-check a changed TS file without a full build (catches the comment-terminator + syntax class):
-node -e "require('esbuild').transformSync(require('fs').readFileSync('src/lib/<file>.ts','utf8'),{loader:'ts'}); console.log('PARSE OK')"
-# or verify the whole core build when a core-only module changed:
-npm run build            # (not just build:play)
-```
-
-### When this rule applies
-- Any edit to `src/lib/*` or a component imported only by `/cast`/chapter/core routes → parse-verify against core, not just `build:play`.
-- Authoring/reviewing ANY `.ts`/`.astro`/`.mjs` with a block comment that embeds a glob, regex, or path with `*` — scan for a stray `*/`.
-
-### Cross-references
-- § R-SITE-BUILD-SPLIT (why `build:play` bundles only the play routes) · § R-PREBUILD-PLAY-NORMALIZE (the sibling "a build variant still parses X" invariant)
-- spark-anvil-site PR #401 (the P0 fix) · `src/lib/image-url.ts` (the reference incident) · `src/lib/audio-url.ts` / `pdf-url.ts` (sibling core-only libs that carry the same risk)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## The shared `play.css` tail-append is a merge-collision hotspot — parse-gate it at prebuild (R-PLAY-CSS-PARSE-GATE; 2026-07-12)
 
 **`src/styles/play.css` is a SHARED, tail-appended surface — every `/play/<app>` clone build appends its `.pc-theme-<app>` block to the end under R-PARALLEL-WEB-CLONE-BUILD single-flight — and concurrent clone merges routinely collide on that tail. A botched tail-append conflict resolution that DROPS a closing `}` red-builds the Cloudflare `build:play` with `[postcss] play.css:<EOF>:1: Unclosed block` — a P0 that surfaces ~1.6s deep in vite (after the whole prebuild) with the error line reported at EOF (useless for localizing).** The gate `scripts/check-play-css-parse.mjs` (postcss parse + a brace-balance localizer) is wired into BOTH `prebuild` and `prebuild:play` so this class fails LOUDLY at prebuild with the real unclosed-block line, not deep in the build. Codified per founder-direct 2026-07-12 (*"fix and codify"*) after the V121 P0.
 
-### The failure class + why the gate is needed
-
-The handoff/runbook already warns: on a `play.css` merge-race, "resolve the tail-append conflict (delete the 3 marker lines to keep BOTH blocks concatenated)." When that resolution instead drops a `}` — most often a `@media (prefers-reduced-motion: reduce)` block's closer, because it's the LAST line of a clone's append and the easiest to lose to a conflict hunk — every subsequent block nests inside it and postcss hits EOF still open. **Reference incident (V121, site PR #429):** the FossilForge×ProofQuest tail-append collision dropped the FossilForge reduced-motion block's `}` (play.css:1721); `build:play` went red. `check-core-lib-parse.mjs` (the sibling TS gate) never looks at CSS, so nothing caught it pre-deploy.
-
-### The gate (two layers, mirrors check-core-lib-parse.mjs)
-
-1. **postcss.parse** of every `src/styles/*.css` — catches the whole CSS syntax-error class (present during any real build; postcss is a build dep).
-2. **Brace-balance localizer** (dependency-free — runs even in a bare worktree with no `node_modules`) — reports open/close counts, final depth, and *the last line at depth 0* (the unclosed block opens just after it), turning postcss's EOF line into an actionable location.
-
-Emergency bypass: `SKIP_PLAY_CSS_CHECK=1` (never to ship a real unclosed block — only if the gate itself misfires).
-
-### When this rule applies
-- Authoring/extending any `/play/<app>` clone (every clone appends to `play.css`) — the gate runs automatically in prebuild.
-- **Resolving a `play.css` tail-append merge conflict** (the trigger) — after `git rebase --continue`, run `node scripts/check-play-css-parse.mjs` before pushing; a dropped/extra brace fails it immediately.
-- Reviewing any PR that touches `src/styles/play.css`.
-
-### Cross-references
-- `scripts/check-play-css-parse.mjs` — the gate · spark-anvil-site PR #429 (the V121 P0 fix + gate)
-- § R-SITE-CORE-PARSE-GATE (the sibling TS parse gate this mirrors) · § R-PARALLEL-WEB-CLONE-BUILD (the single-flight `play.css` tail-append discipline whose merge-races cause this) · § R-SITE-BUILD-SPLIT invariant on the `play.css` conflict resolution
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Kill the parallel-fleet merge-races structurally — union-merge the append-only shared surfaces + per-app CSS files (R-WEB-CLONE-MERGE-HYGIENE; 2026-07-12)
 
 **The parallel web-clone fleet's push/merge conflicts come almost entirely from a handful of APPEND-ONLY shared files that every clone touches at the same spot (the tail / the closing bracket). Three structural changes remove the conflicts at the source instead of resolving them by hand every time.** Codified per founder-direct 2026-07-12 (*"there are a lot of push/merge conflicts with all the parallel hub agents. what can we do about it?"*). The reactive discipline (rebase-then-resolve, keep-both, renumber-on-conflict — R-PARALLEL-WEB-CLONE-BUILD / R-PARALLEL-HUB-AGENTS) stays as the fallback, but these make it rarely needed.
 
-### The conflict hotspots (measured across the V105–V135 clone waves)
-
-| Shared file | repo | why it collides | fix |
-|---|---|---|---|
-| `src/styles/play.css` | site | ~~every clone tail-appends its `.pc-theme-<app>` + `.<ns>-*` block~~ → now ONLY the tiny `.pc-theme-<app>` accent block appends here; all `.<ns>-*` bespoke is per-app | **per-app CSS file DONE** (site PR #479) + union-merge on the residual theme-block append |
-| `src/data/play/clones.ts` | site | ~~every clone appends one row before `];`~~ → **glob-derived DONE** (site PR #481): each clone owns `src/data/play/<app>/clone.meta.ts`; `clones.ts` assembles via `import.meta.glob`. **Zero shared-file edit to register a clone.** |
-| `Docs/REGISTRY_WEB_CLONES.txt` | hub | every clone appends one row + a Count | **union-merge** (now) |
-| `.claude/CLAIMS.md` | hub | every session appends a claim line | **union-merge** (now) |
-| work-queue `V<N>` | hub | monotonic counter → semantic number collision | **renumber-on-conflict** stays (union is unsafe — see below) |
-
-### Fix 1 — `merge=union` on the pure append-only files (shipped 2026-07-12; the immediate win)
-
-git's built-in **`union` merge driver** resolves an append-race by keeping **BOTH** sides' added lines with **NO conflict markers** — the automatic equivalent of the "keep both" resolution, and it **never drops a closing `}`** (the R-PLAY-CSS-PARSE-GATE breakage class was born from hand-resolving `play.css`). Wired via `.gitattributes` in **both** repos:
-
-- **site `.gitattributes`:** `src/styles/play.css merge=union` **only** — `src/data/play/clones.ts` is now **GLOB-DERIVED** (site PR #481; each clone owns `src/data/play/<app>/clone.meta.ts`), so it no longer receives per-clone appends and its union-merge was **dropped** (see the Deferred/DONE section below + the `.gitattributes` NOTE).
-- **hub `.gitattributes`:** `Docs/REGISTRY_WEB_CLONES.txt merge=union` · `.claude/CLAIMS.md merge=union`
-
-**Safe ONLY because these are genuinely append-only** — each clone adds its own DISJOINT block/row and never edits another clone's block. If you ever edit an *existing* clone's block, union can keep both versions (a semantic dup) — so the rule "touch only your own `.pc-theme-<app>` scope / your own row" (R-PARALLEL-WEB-CLONE-BUILD) is what keeps union sound. The `build:play` + `check-play-css-parse.mjs` + `check-site-internal-links.py` gates backstop any bad auto-merge (a union that produced invalid CSS/TS fails the build loudly, exactly as a hand-merge would).
-
-### Fix 2 — every clone's BESPOKE CSS lives in a PER-APP file (MANDATORY; the legacy backfill is DONE 2026-07-12)
-
-A `/play/<app>` clone MUST put its `.<ns>-*` mechanic/bespoke classes in its **own** file `src/styles/play/<app>.css` and import it from its own pages (`import '~/styles/play/<app>.css'`, alongside the shared `import '~/styles/play.css'` base) — **NEVER** append a bespoke block to the shared `play.css` tail. Per-app files are disjoint by construction (ADR-033 namespacing) → **zero cross-clone CSS collision**, and the css-parse-gate's brace-drop class disappears. This is now a hard rule, not a "SHOULD" — a clone PR that appends a `.<ns>-*` block to `play.css` is a defect.
-
-**The one thing that STILL lives in `play.css`: the small `.pc-theme-<app> { --accent-vars }` block.** The `/play` index gallery (`src/pages/play/index.astro`) themes every clone card with `pc-theme-<app>`, so it needs all 39+ theme blocks; and a theme block is single-brace + disjoint (no `@media`) = **not** the collision-heavy / brace-drop part. So a new clone appends ONLY its ~9-line theme var block to `play.css` (union-merged, low-risk) and puts everything else in `src/styles/play/<app>.css`.
-
-**Legacy backfill — DONE (site PR #479, 2026-07-12, founder-directed quiet-window run).** All 39 legacy per-app bespoke blocks were split out of `play.css` (2847 → 802 lines) into `src/styles/play/<app>.css`, with the per-app import added to all 246 `/play` pages. `play.css` now holds only the shared base (`.ff-*`/`.pc-*` primitives, HUD/card/button, cast strip, avatar, results, adventures, the shared DIR/FEDC reflection card + SEL crisis footer) + the 39 `.pc-theme-<app>` accent-var blocks. Method (reusable for any future shared-CSS split): attribute rules by **banner-delimited section, NOT namespace prefix** (`gf-` is shared by geometryforge+grammarforge, `cf-` by chanceforge+cipherforge — prefix attribution is unsafe); anything ambiguous stays in the base (conservative); then **prove safety with a per-page CSS class-coverage fingerprint before/after** (`/tmp/css_coverage.py` pattern: for each built page, the set of rendered classes that resolve in its loaded CSS must be unchanged — it caught the one real regression, the index losing its theme blocks). The `check-play-css-parse.mjs` gate now parse-gates every `src/styles/play/*.css` too.
-
-### Fix 3 — keep per-clone WORK-QUEUE entries tiny + renumber-on-conflict (union is UNSAFE here)
-
-The work-queue `V<N>` is a monotonic counter, so two sessions grabbing the same N is a *semantic* collision union-merge cannot fix (it would keep two `## V134` headers). So: (a) **keep renumber-on-conflict** (pull-first, max+1, renumber your own on a clash — it's a ~30-second fix), and (b) **keep each clone's work-queue entry to a few lines** (a pointer to the authoritative `Docs/web/<app>/` doc-set), NOT a 15-line block — less text = lower collision odds + faster resolution. The full ship record lives in `Docs/web/<app>/`, which is disjoint per clone.
-
-### Deferred (durable end-state — do in a fleet-drain quiet window, not live)
-
-**BOTH big deferred refactors are now DONE (2026-07-12, founder-directed quiet-window runs):**
-- **`play.css` per-app-block split** — site PR #479 (+ #480 ambiguous-CSS cleanup). See Fix 2.
-- **glob-derived `clones.ts`** — site PR #481. Each clone owns `src/data/play/<app>/clone.meta.ts`; `clones.ts` assembles them via `import.meta.glob` (sorted subject-then-name, deterministic). Registering a clone is now a pure add-a-file-in-your-own-subtree op — **zero shared-array edit**. `check-play-clone-registry.mjs` was repointed at the per-app meta files (route dir with no meta = dark), and `.gitattributes` dropped the now-obsolete `clones.ts` union-merge. This ALSO fixed a live dark-clone bug it surfaced (wildlens + cubesensei had collapsed into one object literal via a botched union-merge → JS last-key-wins dropped wildlens from `PLAY_CLONES` = dark on `/play`; the per-app-file model makes that collapse class structurally impossible). **Follow-up (2026-07-12, escapeforge lane):** the hub `scripts/audit_web_clone_surface_wiring.py` registry check was ALSO stale — it still grepped the central `clones.ts` for `slug:` rows (empty post-#481), so it false-flagged **every** glob-derived clone as `🔴 DARK — MISSING clones.ts registry row`. Repointed to check for `src/data/play/<app>/clone.meta.ts` (with the legacy central-row grep kept as a fallback). Any script that decided "is this clone registered?" by reading `clones.ts` must be repointed the same way.
-
-**The ONLY residual shared-file touch per new clone is the tiny `.pc-theme-<app>` accent block appended to `play.css`** (single-brace, disjoint, union-merged — see Fix 2; the index gallery needs all themes). Everything else — bespoke CSS, registry row, pages, lib, data, docs — is disjoint per clone by construction. A fully-zero-shared-touch end-state (glob-aggregate the theme blocks too, so `play.css` gets no per-clone append) is possible but low-value: the theme-block append is union-merge-safe + brace-drop-immune, so it stays a deliberate, documented residual rather than more machinery.
-
-### Fix 4 — audit-surfaced residual hardening (2026-07-14 shared-surface audit)
-
-The 2026-07-14 full shared-surface audit (`Docs/AUDIT_WEB_CLONE_SHARED_SURFACE_CONFLICTS_2026-07-14.md`, run against `origin/main` with **4 clone lanes building concurrently** — V196–199) confirmed the Fix-1/2/3 model holds (63 clones; `clones.ts` glob-derived with zero appends; 104 disjoint per-app bank specs; registry + CLAIMS union-merged) and surfaced **three residual defects the model created or left open**. All three are now codified:
-
-1. **The `.pc-theme-<app>` accent block MUST live in `play.css`, NEVER only in the per-app `src/styles/play/<app>.css`** — and the registry gate must enforce *that specific location*. Root cause: evading the last shared append (Fix 2 says bespoke CSS goes per-app) tempts an author to also drop the *theme* block into the per-app file. But the `/play` **index gallery (`src/pages/play/index.astro`) imports ONLY `play.css`** — never per-app CSS — so a theme block that lives only in the per-app file renders the clone's index card **un-themed** (default accent). **The gate was blind to this:** `check-play-clone-registry.mjs` built its theme corpus from `play.css` **+ every per-app CSS**, so a per-app-only theme block passed. **Fix:** the gate's theme-presence check now reads **`play.css` ONLY** (bespoke `.<ns>-*` classes may still live per-app; the `.pc-theme-<app>` *accent block* may not). Reference defect: **quillspell** shipped its theme block in `quillspell.css` only → un-themed index card, gate green (fixed in the same change that tightened the gate). This is why Fix 2's "ONLY the small theme block may go in `play.css`" is a *must*, not a *may*.
-
-2. **`Docs/REGISTRY_WEB_CLONES.txt` `# Count:` footer + `planned` rows are UNION-UNSAFE — the count is advisory, `grep -c '| shipped |'` is authoritative.** union-merge keeps BOTH sides' lines with no dedup or arithmetic, so (a) a monotonic `# Count: N` line written by two lanes yields two/again-stale count lines, and (b) a `planned` row for a clone that later ships as a `shipped` row leaves a **stale duplicate** (4 such stale `planned` rows — escapeforge/alcumusforge/haikuquest/machineforge — were purged 2026-07-14). **Discipline:** never trust or hand-bump the `# Count:` line; the authoritative shipped tally is `grep -c '| shipped |' Docs/REGISTRY_WEB_CLONES.txt`. A clone that had a `planned` row MUST have it removed (not left) when its `shipped` row lands — a lane's own row edit, not a shared rewrite. A periodic dedup sweep (`cut -d'|' -f1 | sort | uniq -d`) is part of registry hygiene. **Do NOT add new monotonic counters / totals to any union-merged file** — a counter is the one thing union merge structurally cannot reconcile (same class as the work-queue `V<N>`, Fix 3).
-
-3. **The work-queue `V<N>` remains the DOMINANT hard-conflict surface — and it is unavoidable under union merge (it's a counter).** The audit found 4 lanes concurrently claiming V196/197/198/199, coordinated only by the manual "pull-first `max+1`; renumber-on-conflict" discipline (Fix 3) + `.claude/CLAIMS.md` announcements. This works but is the highest-friction residual. The durable escalation (tracked, not yet built) is to **make the per-clone work-queue entry a glob-derived per-lane FILE** — the same move that killed the `clones.ts` append (Fix 1→per-app `clone.meta.ts`): each lane writes `Docs/work-queue/V<slug>.md` in its own name and an index assembles them, so no two lanes ever pick the same monotonic integer. Until then, `V<N>` clashes are expected and resolved by renumber-keep-both.
-
-### When this rule applies
-- Authoring any new `/play/<app>` clone → **Fix 2 is mandatory**: all bespoke `.<ns>-*` CSS in `src/styles/play/<app>.css` (imported from the clone's pages); the `.pc-theme-<app>` accent block **MUST** go in `play.css` (Fix 4 — the index imports only `play.css`), never only per-app; rely on Fix 1 for the registry/clones.ts + theme-block appends.
-- Reviewing a clone PR → a `.<ns>-*` bespoke block appended to `play.css` (instead of a per-app file) is a defect; so is a `.pc-theme-<app>` block that lives ONLY in the per-app CSS (Fix 4 — un-themed index card, gate-blind).
-- Any parallel hub session hitting an append-race on the four union-merged files → the rebase now auto-resolves; just verify the gates (`build:play` / css-parse / internal-links) pass.
-- A work-queue `V<N>` clash → renumber-on-conflict (Fix 3), keep-both.
-
-### Cross-references
-- `spark-anvil-site/.gitattributes` + `spark-anvil-hub/.gitattributes` — the union-merge wiring
-- § R-PARALLEL-WEB-CLONE-BUILD (the disjoint-namespace + single-flight discipline this makes cheaper) · § R-PLAY-CSS-PARSE-GATE (the backstop for a bad `play.css` auto-merge) · `.claude/rules/workflow.md` § R-PARALLEL-HUB-AGENTS (the portfolio-wide parent) · § R-SITE-BUILD-SPLIT
-- `Docs/PLAN_PARALLEL_WEB_CLONE_DEVELOPMENT_2026-07-10.md` — the full contention table (the deferred glob-derivation belongs here as the next escalation)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## All hub-side `spark-anvil-site` work happens in a throwaway `git worktree` off `origin/main` — never the shared clone (R-SITE-WORKTREE; 2026-07-13)
 
 **Any hub session touching `spark-anvil-site` — building a clone, authoring tests, verifying a build, a docs/rule edit that must compile against the site — MUST work in a fresh `git worktree` checked out from `origin/main`, NOT in the shared `/Volumes/.../spark-anvil-site` working clone.** Codified per founder-direct 2026-07-13 (*"codify the site worktree approach"*) after the shared clone was found 8 commits behind with untracked parallel-session build dirs (a mid-build `heatforge`, a stray `waveforge` lib) that **aborted `git pull --ff-only`** — the exact stale/dirty-shared-clone trap this rule removes.
 
-### Why the shared clone is unsafe for hub work
+→ **Sub-rules** defined here (full detail in reference): (R-SITE-LOCAL-BUILD-R2-ENV).
 
-The one on-disk `spark-anvil-site` clone is a shared resource: parallel clone-build sessions leave untracked/mid-build dirs in it, the Playwright/`astro dev` **prebuild normalizer mutates `src/content/chapters/**` on every run** (a build artifact that must never be committed — R-SITE-BUILD-SPLIT invariant 2), and its `main` pointer drifts behind `origin`. Working there means fighting `pull` aborts, accidentally staging another session's files (a whole-index commit sweeps them in — R-PARALLEL-HUB-AGENTS discipline 6), and committing normalizer noise. A worktree off `origin/main` is clean by construction and disjoint from all of that.
-
-### The canonical recipe
-
-```bash
-cd /Volumes/Data/Portfolios/spark-anvil-portfolio/spark-anvil-site
-git fetch origin main
-WT=/tmp/wt-<purpose>            # e.g. /tmp/wt-clone-tests, /tmp/wt-<app>
-git worktree prune && git worktree add "$WT" origin/main
-ln -s "$(pwd)/node_modules" "$WT/node_modules"   # reuse deps (Playwright browsers are global at ~/Library/Caches/ms-playwright)
-cd "$WT"
-# …author test-files / clone source / verify build here…
-```
-
-Load-bearing discipline inside the worktree:
-- **Commit pathspec-scoped, never `git add -A`** — the normalizer will have dirtied `src/content/chapters/**` + `src/data/**`; `git checkout -- src/content/ src/data/` to discard those build artifacts before staging, and stage only your intended files (R-SITE-BUILD-SPLIT invariant 2 + R-PARALLEL-HUB-AGENTS discipline 6).
-- **Stale-deps fix is `npm install <pkg>@<range> --no-save`** (never bare `npm install` — lockfile churn), per R-WEB-CLONE-BUILD-STALE-DEPS below.
-- **One PR per wave, rebased onto `origin/main`** between merges — disjoint per-app / test-only files → clean rebase (a stacked branch's already-merged commits drop automatically).
-- **Remove the worktree when done:** `git worktree remove "$WT"` (or `git worktree prune` after deleting `/tmp/wt-*`). An unchanged worktree is auto-cleanable; never leave it as a second dirty clone.
-- **Push works from the worktree** (`git push -u origin <branch>`); the memory note about `git push` stalling applies to bulk history rewrites, not ordinary branch pushes.
-
-### When it applies
-- Every hub-side site task: clone builds (R-PARALLEL-WEB-CLONE-BUILD already mandates a per-app worktree — this generalizes it to ALL site work), test-authoring waves, `build:play`/`build` verification, any edit that must compile against the site.
-- The `Agent`/subagent equivalent: a delegated site task gets its OWN worktree (never shares one).
-
-### Cross-references
-- § R-SITE-BUILD-SPLIT invariant 2 (run any `build:<unit>` only in an isolated worktree; the build mutates `src/pages/` + `public/` + `src/content/chapters/`) · § R-PARALLEL-WEB-CLONE-BUILD (per-app worktree for clone builds) · `.claude/rules/workflow.md` § R-PARALLEL-HUB-AGENTS (discipline 6 pathspec-commit; stale-clone recovery)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Parallel clone-building — one agent per app, disjoint by construction (R-PARALLEL-WEB-CLONE-BUILD; 2026-07-10)
 
@@ -1144,132 +627,62 @@ The discipline:
 
 - **One agent per app, one `git worktree` each** off `origin/main` (R-SITE-BUILD-SPLIT); symlink `node_modules`; no dependency changes in parallel sessions (lockfile churn).
 - **R-WEB-CLONE-BUILD-STALE-DEPS — a stale symlinked `node_modules` red-fails `build:play` on ANOTHER clone's dep, not yours.** The build worktree symlinks the MAIN clone's `node_modules`; if a *parallel* session's clone added a new npm dependency after that main clone was last installed, `build:play` fails with **`[vite] Rollup failed to resolve import "<pkg>" from "src/lib/play/<other-app>/*.ts"`** for a package that IS in `package.json` + `package-lock.json` (so Cloudflare `npm ci` builds fine) but is absent from the shared `node_modules`. It is NOT your bug and NOT a broken `main` — it's a stale install. Fix: **`npm install <pkg>@<range-from-package.json> --no-save`** (materializes the declared dep WITHOUT touching the lockfile — verify `git status package.json package-lock.json` stays clean), then re-run `build:play`. Never run bare `npm install` / edit deps in a parallel worktree (lockfile churn — violates the discipline above); `--no-save` only fills the gap. Reference: the 2026-07-12 quillspell Track-B build failed on `cubesensei/net.ts` importing `cubing/twisty` (declared in the lockfile, uninstalled in the stale shared `node_modules`); `npm install cubing@^0.63.3 --no-save` unblocked it. Full runbook step: `WEB_CLONE_PICKUP_RUNBOOK.md` § 2 (Environment).
+  - **Companion case — the WHOLE dev toolchain is missing (not just one parallel dep): the shared install is INCOMPLETE / prod-only (2026-07-17).** If `build:play` fails with **`astro: command not found`** (or `check-play-css-parse` reports **postcss not installed**, or a worktree `vitest` config load throws **`ERR_MODULE_NOT_FOUND: Cannot find package 'vitest'`**) and `ls node_modules/.bin/{astro,vitest}` shows them MISSING, the shared `node_modules` was installed **prod-only** (devDeps absent) — a different failure than one-parallel-dep-behind. `--no-save`-per-package is the wrong fix here. Run a **completing `npm install` (no args, no `--save`) in the MAIN clone** — with the existing `package-lock.json` present it reconciles `node_modules` to the lockfile WITHOUT changing deps (verify `git status package.json package-lock.json` stays clean afterward) — then re-symlink/re-run `build:play` + `npx vitest run …` in the worktree. This is the one time a bare `npm install` is correct (it matches the lockfile → no churn); it is NOT the parallel-dep case. Reference: the 2026-07-17 FractionForge tape-diagram build — astro/vitest/postcss all missing from the shared install; a completing `npm install` restored the full toolchain (lockfile unchanged) and unblocked build:play + Vitest + the standalone-dist screenshot-DoD.
+  - **Companion case — an `astro.config.mjs`-level dep shows a CONFIG-LOAD error, not a Rollup-resolve error (2026-07-18).** When the missing parallel dep is imported by **`astro.config.mjs` itself** (a build-config plugin, not a clone's `src/lib` — e.g. the ADR-049 PWA work added **`@vite-pwa/astro`**), `build:play` fails EARLIER, at config load, with a DIFFERENT symptom: **`[vite] Failed to load url @vite-pwa/astro (resolved id: @vite-pwa/astro) in …/astro.config.mjs`** + **`Cannot find module '@vite-pwa/astro' imported from …/astro.config.mjs`** + `[astro] Unable to load your Astro config` — NOT the `Rollup failed to resolve import` message above. Same root cause (declared in `package.json`+lockfile, absent from the stale shared `node_modules`), same fix: **`npm install <pkg>@<range-from-package.json> --no-save`** (verify `git status package.json package-lock.json` stays clean), then re-run `build:play`. Do NOT misread the config-load error as a broken `main` or a bad worktree checkout. Reference: the 2026-07-18 ELA axis-7 pass-3 rollout — the just-merged PWA work added `@vite-pwa/astro` to `astro.config.mjs`; `npm install @vite-pwa/astro@^0.5.1 --no-save` unblocked build:play (lockfile unchanged).
+  - **Companion case — a MAJOR FRAMEWORK UPGRADE on main + a stale shared `node_modules` → an ADAPTER / CONFIG-VALIDATION error, NOT module-not-found; ALL local `build:play` are broken fleet-wide until reinstall; fix = an ISOLATED worktree `npm ci` (2026-07-20, Astro 4→5).** When a big upgrade lands on `main` (e.g. Astro 4.16→5 + `@astrojs/cloudflare` 11→12 + `@vite-pwa/astro` 1→0.5, PRs #1101/#1102/#1104) it bumps `package.json`+lock, but the SHARED clone's `node_modules` is only reinstalled locally by a human — **Cloudflare `npm ci`'s fresh every deploy, so the deploy is GREEN while every LOCAL `build:play` in the fleet is broken**. The symptom is NOT the `Rollup failed to resolve import` / `command not found` of the cases above — it's a **framework/adapter behavior mismatch**: the config was rewritten for the NEW major (Astro 5's `output: "static"` = the merged-in `hybrid`) but the OLD adapter is what's installed, so config validation throws **`[@astrojs/cloudflare] output: "server" or "hybrid" is required to use this adapter`** at `astro:config:done`. Reading it as "the config is broken / `main` is bad" is the trap — the config is correct for the version on `main`; the INSTALLED version is stale. **Confirm** by comparing declared-vs-installed: `node -e "console.log(require('astro/package.json').version)"` (installed 4.x) vs `package.json` (`^5`). **Fix — do NOT `--no-save`-per-package (many transitive deps changed across a major); give the worktree its OWN isolated `node_modules`: `rm node_modules` (drops the SYMLINK only, not the shared dir) then `npm ci` in the worktree** (R-SITE-WORKTREE dep-worktree exception) — this gets the correct major WITHOUT wiping the shared `node_modules` out from under a concurrent sibling build (a bare `npm ci` in the MAIN clone also fixes it fleet-wide but disrupts any in-flight sibling build → prefer the isolated install when the fleet is active). Reference: the 2026-07-20 StoryPals prek5-clone build — shared `node_modules` was `astro 4.16.19`/`@astrojs/cloudflare 11.2.0` while `main` was `astro ^5`/`cloudflare ^12`; the adapter-static error resolved after an isolated `npm ci` (astro 5.18.2 / cloudflare 12.6.13) in the worktree.
 - **Claim the app** in `.claude/CLAIMS.md` before starting (R-PARALLEL-HUB-AGENTS territory claiming); pull the next unclaimed app from `AUDIT_WEB_CLONE_NEXT_RANKING`.
 - **Single-flight ONLY the enumerated shared surfaces** — `src/lib/play/_shared/`, `astro.config.mjs`, `package.json build:*`, `src/components/play/`, `REGISTRY_WEB_CLONES.txt`, the work-queue numbers, and the Gemini key (only if a clone gens new assets — clones normally PORT, so this is the exception). Everything else is disjoint and parallelizes freely.
 - **Push via the gh Git Data API** (base=main tree-merge → disjoint pushes merge cleanly); **merge PRs sequentially**, update-branch-then-retry on a merge-race (never `--admin` past a real conflict).
 - **Scale:** ~4–8 parallel clone-agents (review-bound); a `staging/web-clones-<batch>` branch for large batches; per-cluster build units + Turborepo `affected`/remote-cache as the CI escalation (ADR-033 §4). Full contention table + per-agent workflow + external-research mapping: **`Docs/PLAN_PARALLEL_WEB_CLONE_DEVELOPMENT_2026-07-10.md`**.
 
-### Reusable components (3 shipped; reused across #1 / #3 / #4 per ADR-022)
+→ **Sub-rules** defined here (full detail in reference): (R-SITE-BUILD-QUIET-PRERENDER).
 
-- `<ChapterIllustration app="..." char="..." variant="opener|spot|thumbnail" />` — consumes `public/chapters/<app>/chapter_<char>_<variant>.webp`
-- `<SiblingCastStrip app="..." currentChar="..." />` — persistent-sticky on desktop / header-pinned on mobile / `prefers-reduced-motion` fallback; reads `apps.generated.ts dnCast.members`
-- `<AudioDramaPlayer app="..." drama="..." characterName="..." traumaGated={...} traumaAxis={...} />` — HTML5 `<audio>` + WebVTT chapters track + inline interactive transcript with active-line highlight; vanilla JS only (no third-party SDKs; COPPA-safe); WCAG AA keyboard support
-
-### Typography
-
-- **Chapter prose: Lora serif** (locally hosted at `public/fonts/Lora-Variable.ttf`) per ADR-022 Q6.
-- Sans-serif (site default) for chrome / infobox / nav / strips / cards.
-- `chapter-body` class applies the serif + generous line-height + max-width 36rem reading column.
-
-### Trauma-safety per-page surface (per ADR-021)
-
-- 24 chapters across the portfolio are trauma-gated (PASS-CLEARED audits in `Docs/AUDIT_TRAUMA_GATED_AUDIO_*_2026-06-02.md`). Their pages auto-detect via `register` front-matter field (regex match on `trauma|SAMHSA|anti-shame|anti-colonial|cultural-respect|food-justice|sensory-regulation|body-image|crisis|overwhelm|panic`).
-- Trauma-gated pages render: content-warning between opener illustration + body; trauma-tag in infobox; trauma-rating chip in audio player; crisis-resources footer (988 / Childhelp / Crisis Text Line).
-- DO NOT remove these guardrails when editing the chapter-book template; ADR-021 enforces them as load-bearing for the trauma-axis carve-out.
-
-### Audio sibling files (per ADR-022 Q2)
-
-- App repos bundle `.caf` (iOS-native, app-bundled only).
-- Site `public/audio/<app>/` requires `.m4a` (web-distribution; universal browser support) + `.vtt` (WebVTT chapters + transcript).
-- `spark-anvil-hub/scripts/gen_dn_s_audio_drama.py --apply` now emits all three; legacy CAFs need backfill via `afconvert -f m4af -d aac -b 64000 -c 1 <input>.caf <output>.m4a` + VTT placeholder (better: re-gen).
-
-### Build performance (post Wave 1b)
-
-- 828 total site pages built in ~28s on Astro 4.16 (663 dynamic chapter routes + /stories + existing 24 site pages).
-- Static output mode preserved per existing `astro.config.mjs` lock-in; no SSR adapter added.
-- Build-time content-collection load handles 663 entries cleanly with the permissive schema.
-
-### R-SITE-BUILD-QUIET-PRERENDER — the build looks hung but isn't (2026-06-29)
-
-**The site has since grown to ~9000+ routes on the `@astrojs/cloudflare` HYBRID adapter, and a full `rm -rf dist && npm run build` now takes ~12-20 min.** The phase after the log line `building client (vite) ✓ N modules transformed` is SILENT — Astro emits no further stdout while it **generates the prerendered route HTML (~8.5 min of Rollup route-gen)** and copies the entire `public/` tree (chapters + cast + audio + books = thousands of files) into `dist/`. During this phase the PARENT node process sits at **0.0% CPU** (a child worker does the work at low, I/O-bound CPU).
-
-> **Correction (V56, 2026-07-09):** an earlier version of this note claimed most routes (cast/cluster) are **SSR, not prerendered**, living in `_worker.js` with `find dist -name '*.html'` near 0. **That is wrong.** The site is `output:"hybrid"` (prerender-by-default), every dynamic tree uses `getStaticPaths()`, and **no page sets `prerender=false`** — so essentially **everything is PRERENDERED** (verified: the live `/cast/…` page returns `cf-cache-status: HIT`, a cached static asset, not a `DYNAMIC` Worker-SSR response; `AUDIT_SITE_PRERENDER_SURFACE_2026-07-09.md`). Consequently `find dist -name '*.html'` **climbs to thousands** as the build progresses — it does NOT stay near 0. The "looks hung but isn't" guidance below is still exactly right; only the SSR-vs-prerender mechanism was mis-attributed. Use `find dist -type f | wc -l` (below), which works regardless.
-
-**DO NOT kill the build because the log is quiet, the parent shows 0% CPU, or there's no HTML yet.** All three are normal. The definitive "working vs hung" test is whether `find dist -type f | wc -l` is GROWING over ~15-20s:
-
-```bash
-a=$(find dist -type f|wc -l); sleep 15; b=$(find dist -type f|wc -l); echo "$a -> $b"
-```
-
-If it's climbing (even ~50-100 files/15s), the build is fine — wait for it. Only suspect a real hang if the file count is flat for several minutes AND no child node proc shows any CPU. **Reference incident (2026-06-29 ELA wave):** a build was killed + restarted twice on the false belief it had hung at "10 modules transformed"; each was actually prerendering/copying normally. Net waste ~20 min. Verify growth before ever killing a site build.
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Build-disk budget + R2 media hosting (R-SITE-BUILD-DISK-BUDGET + R-SITE-MEDIA-R2; 2026-06-30)
 
 **The site build has a finite disk budget, and heavy media committed into `public/` is the thing that blows it.** Codified after a 2026-06-30 Cloudflare `ENOSPC: no space left on device` build failure (during Astro `staticBuild` → `generatePath`, writing prerendered HTML). Work-queue § "V28 P0 — Cloudflare Pages build FAIL: ENOSPC".
 
-### Why it happens (the doubling)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-Cloudflare **clones the whole git repo** (media included), then Astro **copies the entire `public/` tree into `dist/`** during build, then writes prerendered HTML for the ~9000 routes. Peak build disk ≈ `repo (public/) + dist/ copy of public/ + node_modules + generated HTML`. When `public/` is multiple GB, the copy alone doubles it and the container runs out of disk.
+## Offline / installable PWA is a SITE-WIDE capability, not a per-clone axis — hybrid precache/runtime, persist, never-precache-media, room-MP-stays-online (R-SITE-OFFLINE-PWA; 2026-07-18)
 
-Measured 2026-06-30: `public/` ≈ **4.7 GB** — `public/chapters` 2.5 GB (742 chapter `.m4a` = 2.0 GB + 3716 beat `.webp` = 0.54 GB), `public/audio` 1.4 GB (audio dramas), `public/books` 0.77 GB (PDFs). **`.m4a` audio is 3.4 GB of the 4.7 GB — the dominant cost.** Every cast-expansion wave (each chapter = 5 beat WebPs + a narration `.m4a` + portrait) pushes the budget up; this is a growth cliff, not a one-off.
+**`spark-and-anvil.com` ships an offline-capable, installable PWA as ONE site-wide shell (service worker + Web App Manifest via `@vite-pwa/astro`/Workbox), NOT as an ADR-048 per-clone expansion axis — and it obeys the caching + degradation + persistence guardrails below. Offline is an ACCESS/DELIVERY baseline (equity / the homework-connectivity gap), inherited by every `/play` clone for free; it teaches nothing new, so it is a portfolio-wide capability like the `R-COGNITIVE-ACCESSIBILITY` `ReadingAccess` backbone — never an expansion lever an agent adds per clone.** Codified per founder-approval 2026-07-18 (ADR-049) on the evidence in `Docs/RESEARCH_SITE_OFFLINE_PWA_2026-07-18.md`; phased rollout in `Docs/PLAN_SITE_OFFLINE_PWA_2026-07-18.md`. **We are the CLEAN case:** prerendered-everything (`output:"hybrid"`, no `prerender=false` → CDN-cached static files; § R-SITE-BUILD-QUIET-PRERENDER) = exactly what Workbox precache wants (NOT the Cloudflare-SSR precaching pitfall), and the `/play` clones are already ~offline by construction (static kit JSON + client-side deterministic engines + no-identifier `localStorage` state).
 
-### R-SITE-MEDIA-R2 — heavy binary media belongs on R2, and the `git rm` is the load-bearing step
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-**R2 IS already provisioned** (`cdn.spark-and-anvil.com`; ADR-031 for PDFs, § V18 P1 for audio). The code-side is done: `src/lib/{audio-url,pdf-url}.ts` resolve to the CDN when `PUBLIC_AUDIO_CDN_URL` / `PUBLIC_PDF_CDN_URL` are set; `scripts/upload_{audio,pdfs}_to_r2.py` push to the bucket; the audio players consume the helpers. **The 2026-06-30 ENOSPC recurrence was NOT "we don't have R2" — it was that the local copies were never removed from `public/` (964 audio m4a + 742 chapter-narration m4a + 244 PDFs still git-tracked).**
+## Diagnose a FAILED build from its ACTUAL error line — never from inference, and never from a TRUNCATED log (R-BUILD-FAILURE-READ-FULL-LOG-FIRST; 2026-07-19)
 
-**THE LOAD-BEARING LESSON: uploading to R2 + adding env-gated URL indirection does NOTHING for build disk. Cloudflare clones the whole repo and Astro copies `public/` into `dist/` regardless of where the runtime serves from. A media R2 migration is ONLY complete when the files are `git rm`'d out of `public/`.** Leaving them gives runtime CDN serving but zero build-disk relief — exactly the trap that recurred here.
+**When a build FAILS (Cloudflare Workers Builds, CI, or local), the FIRST step is to read the COMPLETE build log and find the actual error/failure line — BEFORE forming any theory about the cause. NEVER infer a build-failure cause from indirect signals (build duration, "killed mid-output", a resource-limit guess, "it OOM'd") or from a TRUNCATED log tail. The error message is authoritative; a theory built on a partial log wastes hours and misdirects the fix (and the money).** Codified per founder 2026-07-19 (*"why you didn't check the build logs before?"* + *"codify this"*).
 
-The target split:
-- **On R2 (removed from the repo):** `.m4a` audio (chapter narration `public/chapters/**/*_chapter.m4a` + audio dramas `public/audio/`) + book `.pdf` (`public/books/`). Large, binary, never Astro-processed — serve only.
-- **Stay in-repo `public/`:** small per-page assets — beat `.webp` (image pipeline + gates depend on local presence), cast portrait `.webp` (R-CAST-PORTRAIT-SLUG CI check needs them local), `.vtt`, `.beats.json`, snapshot `.md`.
+**The load-bearing gotcha — the Cloudflare Builds API `/logs` endpoint TRUNCATES.** `GET /accounts/{acct}/builds/builds/{uuid}/logs` returns a CAPPED window (often ~2–3k lines, ending mid-*prebuild*), NOT the full log — so reading only that tail can make a **postbuild / late-stage** failure look like an **early-stage OOM/kill** (the log just stops mid-output because the API cut it, not because the process died there). To get the REAL error, do ONE of:
+1. **Reproduce locally** — `source ~/.r2-env.sh && npm run build` (R-SITE-LOCAL-BUILD-R2-ENV) and read the actual failing step + its exit. This is usually fastest + definitive.
+2. **Get the full dashboard build log** — the Cloudflare dashboard → Workers & Pages → the project → the failed build shows the COMPLETE log (its LAST lines are the real error). Ask the founder to grab it if the API is all you have.
+3. **Pull the FULL log from the Builds API by CURSOR-PAGINATING** (2026-07-20 — the API is NOT hopelessly truncated; a single page is, but the cursor pages to completion). A single `GET …/logs` returns a capped window with a `cursor` + `truncated:true`; loop `GET /accounts/{acct}/builds/builds/{uuid}/logs?per_page=200&cursor=<cursor>` until the response `cursor` is empty (last page shows `truncated:false`) — this yields the WHOLE log (this session pulled **11,478 lines over 9 pages** for a failed core build, and its last lines were the real error: `astro build … Complete!` then `postbuild check-site-internal-links.py FAIL — broken /apps/<slug>/mascot.webp`). So "the API truncates" means *one page* truncates — paginate and you get the definitive tail without needing the dashboard.
+   - **The working endpoints (read-only; token-verify the account first, R-CLOUDFLARE-SCOPED-DEPLOY):** find the project tag via `GET /accounts/{acct}/workers/scripts` (grep the id); list builds via **`GET /accounts/{acct}/builds/workers/{tag}/builds?per_page=N`** (NOT `/builds/triggers/{uuid}/builds` — that 404s); log via `GET /accounts/{acct}/builds/builds/{build_uuid}/logs`.
+   - **🔑 Read `build_outcome`, NOT `status` — `status` is `stopped` for EVERY finished build (success included).** The real signal is the separate **`build_outcome`** field: `success` (deployed) · `fail` (a step exited non-zero — read the log) · `terminated` (superseded/cancelled by a newer push mid-build — the merge-burst amplifier, benign). Judging a build by `status` alone mislabels a `stopped`+`success` as a failure. (This supersedes the older R-SITE-BUILD-SPLIT invariant-7 shorthand "status `stopped` = superseded" — `stopped` is merely *finished*; `build_outcome` says how.)
 
-**Completing / re-verifying the migration (the checklist that was skipped):**
-1. Confirm the surface is uploaded to R2 (`upload_audio_to_r2.py` / `upload_pdfs_to_r2.py` ran for it).
-2. Confirm `PUBLIC_AUDIO_CDN_URL` + `PUBLIC_PDF_CDN_URL` are set in the Cloudflare Workers env (Production **and** Preview) — else the site 404s after removal.
-3. `git rm` the local copies: `git rm -r public/audio public/books` + `git rm public/chapters/**/chapter_*_chapter.m4a public/chapters/**/chapter_*_chapter.vtt`.
-4. Grep for any unconditional local-path reference (`/audio/`, `/books/`, `_chapter.m4a`) that bypasses the URL helper — there must be none.
-5. Verify `du -sh public` dropped (audio+PDF removal → ~4.7 GB → ~0.6 GB).
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-**Ownership split:** account-level (R2 bucket, custom domain, Pages env vars) is user-managed; the upload + `git rm` + helper wiring is hub-side. Beat-`.webp` migration (V18 P1 § Tier 2) is a separate, higher-complexity effort — do NOT bundle it with the audio/PDF `git rm`.
+## A published chapter's HERO ART ships in the same wave — and an art-less chapter can NEVER break the build OR be silently forgotten (R-CHAPTER-ART-COMPLETION; 2026-07-19)
 
-**Beat-`.webp` Tier-2 migration — code-prep LANDED, history rewrite GATED (V100, 2026-07-11).** The env-gated CDN-resolution code shipped (**site PR #396**): `src/lib/image-url.ts` (`cdnifyImagePath`, sibling to `audio-url.ts`) + CDN-aware `build-multibeat-chapter-manifest.mjs` + CDN-aware `check-multibeat-snapshot-coverage.py` + the 5 `/chapters/` beat-image emission sites. It is **INERT until `PUBLIC_IMAGE_CDN_URL` is set** on the Cloudflare build units (env unset → byte-identical local behavior), so it changes nothing in prod until the coordinated finale. The finale (upload 5,645 beat `.webp` → R2 via `scripts/upload_beat_images_to_r2.py`, `git rm` from `public/chapters/`, path-scoped `filter-repo 'public/chapters/*/*.webp'` → `.git` 647 → ~50–90 MiB) is a **founder-gated, account-coordinated** operation — full method in **`Docs/RUNBOOK_SITE_BEAT_WEBP_R2_MIGRATION_2026-07-11.md`**. **Scope-preserve (load-bearing):** the purge is `public/chapters/**/*.webp` ONLY — cast portraits (`public/cast/**`; R-CAST-PORTRAIT-SLUG needs them local), book covers (`public/books/covers/**`), `public/brand/**`, and `public/pilot/**` STAY local and must never be swept (same class of mistake the V96 companion-pack scope-correction avoided). The hub byte-backup (R-R2-SYSTEM-OF-RECORD) for images is a documented founder decision in the runbook (recommend the layer-2 off-site rclone mirror over +589 MiB hub bloat). Complements § R-SITE-BLOBLESS-CLONE (the always-safe interim).
+**Publishing chapter CONTENT (a `src/content/chapters/<app>/<char>.md`, i.e. an app-repo `Docs/dn-s/chapters/` chapter synced to the site, or a DN-S/spawn integration that registers chapter MDs) OBLIGATES shipping that chapter's HERO ILLUSTRATION in the SAME wave. A chapter with content but no hero is not "done" — it is a tracked debt that MUST be drained (generate + distribute the art), never a silent gap. The build is protected so an art-less chapter can NEVER again break it, and the gap is surfaced three ways so it can NEVER be silently forgotten.** Codified per founder-direct 2026-07-19 (*"codify the workflow so that the missing illustrations gen is guaranteed to be picked up and completed"* + *"and not forgotten silently"*), after the V385 younger-3 incident (see § R-BUILD-FAILURE-READ-FULL-LOG-FIRST): a DN-S `/story` integration registered 12 chapter MDs + 12 portraits but generated NO chapter illustrations, so `ChapterIllustration`'s non-multibeat fallback emitted 12 broken `chapter_<char>_opener.webp` links → the postbuild `check-site-internal-links.py` gate failed the WHOLE core build → **every core-page deploy was blocked** (the `/story` age-band selector + all core changes stuck) until the links were fixed.
 
-### R-SITE-BUILD-DISK-BUDGET — watch the number every content wave
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-- Before a large content wave, check `du -sh spark-anvil-site/public` and `du -sh public/*`. Treat **`public/` > ~4 GB** as the danger zone until the R2 `git rm` completes; **> ~5 GB** risks ENOSPC on Cloudflare.
-- The single biggest lever is `.m4a` audio. New audio-bearing chapters are the fastest way to grow the budget.
-- **Never** re-encode or delete shipped audio to save space without user approval (destructive to a shipped surface).
-- Interim mitigations if a deploy is blocked before R2: (1) lower audio bitrate (48 kbps mono) — destructive, needs approval; (2) prune verified-orphaned dirs (`public/pilot`, `public/companion-pack`) — small; (3) pause new audio-bearing content. None substitute for R2.
+## Missing MULTI-BEAT chapters are a TRACKED backlog, never silently forgotten — a standing coverage queue + build-log signal (R-CHAPTER-MULTIBEAT-COMPLETENESS; 2026-07-20)
 
-### Cross-references
+**R-MULTIBEAT-DEFAULT makes the 5-beat chapter the forward authoring standard, and the opportunistic-upgrade discipline converts legacy single-beat chapters on-touch — but for a long time NOTHING surfaced HOW MANY chapters were still single-beat, so the conversion backlog was silently forgotten (audit 2026-07-20: 626 of 1,161 T1 chapters — only 46% multi-beat). Every published T1 chapter that is NOT yet multi-beat MUST appear in a standing, committed coverage queue that regenerates every build + logs a build-line — so the backlog (and its drain) is always visible, never silently forgotten.** Codified per founder-direct 2026-07-20 (*"audit for missing … multi-beat chapters. codify so they are [not] silently forgotten"*). This is the multi-beat-coverage sibling of § R-CHAPTER-ART-COMPLETION (hero art) — same anti-silent-forget discipline, the coverage axis.
 
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "V28 P0 — Cloudflare Pages build FAIL: ENOSPC" — the incident + full fix plan
-- § R-SITE-BUILD-QUIET-PRERENDER (above) — sibling build-behavior note (the same `public/`-copy phase that overflows here is the one that looks "hung")
-- `.claude/rules/spark-anvil-website.md` "Tech stack" / "Hub does NOT own" — R2 bucket + DNS are user-managed; hub owns the code-side migration
+**The guard (`scripts/build-chapters-pending-multibeat-manifest.mjs`, CORE prebuild):** scans every T1 content chapter + the fresh multibeat manifest (a chapter is "covered" iff it's IN `multibeat-chapters.json` — the same source-of-truth `ChapterIllustration` uses to pick beat-0-hero vs opener, so membership == what actually renders multi-beat, NOT a raw sidecar-file count) and emits the committed **`Docs/REGISTRY_CHAPTERS_PENDING_MULTIBEAT.txt`** pickup queue (its diff surfaces in every content PR as "+N / −N pending multi-beat") + a build-log line on every Cloudflare + local build. A chapter auto-drops from the queue the moment its complete 5-beat set ships. Runs right after `build-chapters-pending-art-manifest.mjs` (both read the fresh manifest).
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Slimming `spark-anvil-site` git history — large-push + purge-during-active-content discipline (R-SITE-HISTORY-PURGE; 2026-07-11)
 
 **When rewriting `spark-anvil-site` history to reclaim git bloat (committed regenerable media — see ADR-034), two things are load-bearing and were learned the hard way in the V89 purge (which took the repo 9.13 → 2.84 GiB).** This rule is the standing distillation; ADR-034 + `RUNBOOK_SITE_GIT_HISTORY_PURGE_2026-07-10.md` are the full method, `PLAN_SITE_REPO_FURTHER_REDUCTION_2026-07-11.md` is the remaining-levers roadmap.
 
-### 1. A single multi-GB push FAILS — use incremental-to-staging (the send-pack note, corrected)
-
-The `.git` is large, so a rewritten-history force-push is a multi-GB pack. **A single such push fails GitHub with `HTTP 500` / `send-pack: unexpected disconnect`**, and neither fix people reach for is sufficient: `http.postBuffer=3G` + `http.version=HTTP/1.1` alone still 500s, and the standing "push site changes via the gh Git Data API" note (CLAUDE.md § R-SITE-BUILD-SPLIT invariant 4) **cannot push a bulk history rewrite** (the Data API is per-object). SSH transport is unavailable (no keys registered). **The working method is incremental-to-staging:**
-
-- Push the rewritten history's objects to a **staging branch** in ~300-commit slices (`git push -f origin ${sha}:refs/heads/_purge_staging`, oldest→newest) — each slice is a small pack that clears the size limit. This leaves `main` untouched, so **no premature Cloudflare builds** fire.
-- Then move `main` ONCE to the tip (`git push -f origin ${tip}:refs/heads/main`) — zero new objects (all already uploaded via staging) → instant, no 500, and exactly **one** production build triggers.
-- Push the rewritten feature branches (small deltas now), delete `_purge_staging`.
-- **zsh gotcha:** always brace the refspec — `${sha}:refs/heads/...`, never `$sha:refs/...` (bare `$sha:r` triggers zsh's `:r` history-modifier and eats the `:r`, faking a "src refspec does not match" failure).
-- **⚠ BRANCH PROTECTION blocks the `main` force-push (2026-07-12).** `main` now carries a branch-protection rule (required status checks `Vitest (bank invariants + shell)` + `Playwright (a11y + SEL-safety smoke)`; `enforce_admins: false`; **`allow_force_pushes: false`**) — see § R-WEB-CLONE-TEST. The `allow_force_pushes: false` setting **rejects the final `git push -f …:refs/heads/main` move** that ends a purge. So a purge session MUST **temporarily lift protection**, do the `main` move, then **restore it** — an admin, account-scoped step: `gh api -X DELETE repos/nathant99/spark-anvil-site/branches/main/protection` before the move, then re-`PUT` the same protection JSON after (keep a copy of the read-back: `gh api repos/nathant99/spark-anvil-site/branches/main/protection`). The staging-branch slices are unaffected (they push to `_purge_staging`, not `main`); only the single `main` tip-move needs the window.
-
-### 2. A history purge push needs the content cascade ACTUALLY STOPPED (not just idle)
-
-A rewrite force-push based on `main==BASE` **clobbers any commit pushed after BASE**. When a content wave (e.g., a V61-style per-app cascade, or any `sync_content_to_site.sh` batch) is running, `main` advances mid-operation and the push either aborts (if guarded) or destroys in-flight commits (if not). In V89 the cascade **broke the coordinated freeze 3×** — a time-based quiescence check (origin stable for N minutes) **cannot distinguish "paused" from "done"**, because the cascade has pauses longer than any practical check window. Therefore:
-
-- **Require the cascade session to be genuinely halted** (paused/killed + confirmed), OR wait until it has fully completed — not merely "quiet right now."
-- **Always keep a pre-push guard** — re-check `origin/main == BASE` immediately before the `main` move; abort if it moved (origin is never left half-rewritten — git updates refs only after the full pack lands).
-- **Run purge + push in foreground-sized stages, not one long background job** — long background jobs die on harness/connectivity hiccups mid-run (a V89 one-shot got killed after the `.m4a` pass). Stage: mirror → rewrite → guard → staged push, each a discrete step resumable from the last.
-- **Take the STEP 0 backup mirror first** (see `BACKUP_SITE_PRE_PURGE_MIRROR_*`) — the only rollback for a rewrite.
-- **After the push, the user re-triggers Cloudflare** (SHAs changed → cached commit gone → likely Git disconnect+reconnect) per `RUNBOOK_SITE_PURGE_CLOUDFLARE_RECONNECT_2026-07-10.md`.
-
-### When this rule applies
-- Any future `spark-anvil-site` history rewrite (the queued `.pdf` purge / Lever 1; a future beat-`.webp` migration / Lever 2; any re-purge maintenance window once media re-accretes).
-- It is `spark-anvil-site`-specific (that repo's size + Cloudflare-Git coupling + active content cascades are what make it load-bearing). The prevention half — *don't commit regenerable media; route it to R2/CDN* — is the durable fix (R-SITE-MEDIA-R2 + R-SITE-BUILD-DISK-BUDGET).
-
-### Cross-references
-- `Docs/ADR-034_SITE_GIT_HISTORY_MEDIA_PURGE.md` (EXECUTED) + `Docs/RUNBOOK_SITE_GIT_HISTORY_PURGE_2026-07-10.md` + `Docs/RUNBOOK_SITE_PURGE_CLOUDFLARE_RECONNECT_2026-07-10.md`
-- `Docs/PLAN_SITE_REPO_FURTHER_REDUCTION_2026-07-11.md` — remaining levers (PDF purge next) + this discipline restated
-- `Docs/CONTEXT_HANDOFF_2026-07-11_SITE_PURGE_EXECUTED.md` — the V89 session record (incl. the harness-specific gotchas that stay out of this rule)
-- § R-SITE-MEDIA-R2 / § R-SITE-BUILD-DISK-BUDGET (the prevention half) · CLAUDE.md § R-SITE-BUILD-SPLIT invariant 4 (the send-pack note this corrects)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Blobless clones are the standing default for `spark-anvil-site` — no history rewrite required (R-SITE-BLOBLESS-CLONE; 2026-07-11)
 
@@ -1284,1053 +697,109 @@ A rewrite force-push based on `main==BASE` **clobbers any commit pushed after BA
 - **Account-level (user-managed):** the Cloudflare Workers Builds clone is set on the Cloudflare side; requesting shallow/blobless there is a per-unit account setting, not hub-settable. Local dev + hub build-worktrees adopt it today with zero coordination.
 - **Relationship to the purge levers:** blobless is *not* a substitute for Lever 2 (the beat-`.webp`→R2 migration + history rewrite), which is the only thing that shrinks **origin** itself — but it is the correct, immediate, always-safe complement, and it is what makes a large `.git` tolerable in the window before (and between) purges.
 
-### Cross-references
-- `Docs/ADR-034_SITE_GIT_HISTORY_MEDIA_PURGE.md` § "Track A" — the decision this codifies
-- `Docs/PLAN_SITE_REPO_FURTHER_REDUCTION_2026-07-11.md` § "Lever 3 — PREVENTION" — where blobless is listed as the zero-risk lever
-- § R-SITE-HISTORY-PURGE (above) — the destructive lever blobless complements · § R-SITE-MEDIA-R2 (the prevention half)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Distribute ≠ upload: audio must reach R2 in the same wave (R-R2-AUDIO-UPLOAD-COMPLETENESS; 2026-07-03)
 
 **The site serves EVERY chapter-narration + audio-drama `.m4a` from Cloudflare R2 (`cdn.spark-and-anvil.com`), NOT from the repo. A content wave that distributes a chapter but forgets to push its `.m4a` to R2 ships a SILENT production 404 — the audio player renders (its `.vtt` is committed) but the audio fails to load, with ZERO build-time signal.** This is the load-bearing companion to R-SITE-MEDIA-R2: that rule says "`git rm` the `.m4a` out of `public/`"; THIS rule says "…but only AFTER it is verified on R2." The two together are the complete discipline; doing the `git rm` without the upload is the exact defect this rule exists to prevent.
 
-### Why it's invisible (the trap)
-
-Nothing catches a missing-from-R2 `.m4a` at build time. The R2-aware build gates (multibeat-snapshot / audio-drama) **skip local `.m4a` entirely** when `PUBLIC_AUDIO_CDN_URL` is set (which it is, on Cloudflare Prod+Preview), precisely so they don't false-fail on the R2-migrated files. So a `.vtt`-present / `.m4a`-absent-from-R2 chapter passes every gate and deploys green — then 404s the audio in production. The only detector is an explicit R2-coverage audit.
-
-### Reference incident (2026-07-03)
-
-A CDN + R2-bucket diff found **141 chapter `.m4a` returning 404 live** — essentially every cast-expansion wave's new-member narration (Math V24 / ELA V25 / Science D-1 / SEL Wave 1) that was distributed around/after the 2026-06-30 ENOSPC `git rm` (site PR #340) but never uploaded to R2. Science Wave 2 was the only wave that had uploaded (it did so by hand). **136 were RECOVERABLE** (local source `.m4a` still in `Resources/PilotsAndExperiments/**` → re-staged into `public/` + `upload_audio_to_r2.py` + pruned); **5 were NEEDS-REGEN** (fractionforge Tier-2 `-advanced` — never generated; a separate paid-TTS gen wave). Full write-up: `Docs/AUDIT_R2_UPLOAD_COVERAGE_2026-07-03.md`.
-
-### The rule
-
-1. **Every wave that distributes narration `.m4a` MUST upload it to R2 in the SAME wave, and verify.** `distribute_cast_chapters.py` now does this by default: it uploads via `upload_audio_to_r2.py` then prunes the local `.m4a` from `public/` (keeping the small committed `.vtt`). It **fails loud** if R2 creds are absent and does NOT prune — so a wave can never again silently leave audio un-uploaded. `--no-r2` is an explicit escape hatch that prints a warning.
-2. **Creds live in `~/.r2-env.sh`** (mode 600, auto-sourced from `~/.zshrc`): `R2_ENDPOINT` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` (+ `PUBLIC_AUDIO_CDN_URL` / `PUBLIC_PDF_CDN_URL` for local build-gate parity). Bucket `spark-anvil-books`. `source ~/.r2-env.sh` before any upload; run uploads with a `python3` that has `boto3` (`python3 -m pip install --user boto3` if missing — the sandbox Xcode python 3.9 needs it installed once). NEVER commit the creds file. **Bootstrap (fresh env):** if `~/.r2-env.sh` is absent, the user drops the Cloudflare R2 API token at `~/Downloads/r2.txt` (labels `Access Key ID` / `Secret Access Key` / `Endpoint`); build the env file by parsing that (don't retype secrets) + `chmod 600`.
-3. **Verify with the auditor** after any audio-bearing wave — and periodically as a portfolio backstop: `source ~/.r2-env.sh && /usr/bin/python3 scripts/audit_r2_upload_coverage.py --verify-cdn 5`. Zero RECOVERABLE gaps = clean. It classifies MISSING into RECOVERABLE (re-upload) vs NEEDS-REGEN, prints a `--recover-list` stage+upload recipe, and `--ci-mode` exits non-zero on any recoverable gap.
-4. **`.vtt` stays in `public/` (committed); `.m4a` lives ONLY on R2.** Never commit `.m4a` under `public/chapters/` (R-SITE-MEDIA-R2). If you stage `.m4a` locally to run an upload, delete them after: `find ../spark-anvil-site/public/chapters -name '*_chapter.m4a' -delete`.
-
-### Gotchas
-
-- **CDN bot-block on non-browser UAs**: `cdn.spark-and-anvil.com` returns **403** (not 200) to `urllib`'s default user-agent — a false signal. Use `curl -I` or send a browser UA (the auditor's `--verify-cdn` does). A 403 from a bare script is almost always this, not a real permission problem.
-- **404 caching**: Cloudflare may briefly cache a prior 404; after an upload, allow a few seconds and re-HEAD before concluding it failed.
-- **App+char-aware source resolution**: chapter slugs collide across apps (`surge`, `chain`, `hush`, `sort` exist in multiple apps). When locating a local source `.m4a`, match on BOTH `<app>` dir AND `<char>` filename — a filename-only index picks the wrong app's audio.
-
-### Cross-references
-
-- `Docs/AUDIT_R2_UPLOAD_COVERAGE_2026-07-03.md` — the 141-gap incident + remediation
-- `scripts/audit_r2_upload_coverage.py` — the detector (expected-from-`.vtt` vs R2-bucket diff + local-source classification)
-- `scripts/distribute_cast_chapters.py` — now uploads-then-prunes by default (the source-side fix)
-- `scripts/upload_audio_to_r2.py` — canonical uploader
-- § R-SITE-MEDIA-R2 (above) — the `git rm` half of the discipline; this rule is the upload half
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "V29 — Full audit of the R2 audio/PDF uploads" — the queued ask this closes
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Wave-runner idempotency is `.vtt`-present, NOT `.m4a`-present (R-WAVE-RUNNER-R2-IDEMPOTENCY; 2026-07-08)
 
 **A chapter-audio wave runner's "already shipped?" skip-check MUST treat a chapter as shipped when EITHER the local site `.m4a` exists OR the committed site `.vtt` exists — NEVER a bare `[ -f "$site_m4a" ]`.** Post-`R-SITE-MEDIA-R2` the chapter-narration `.m4a` is pruned from `spark-anvil-site/public/` and lives ONLY on R2, so a local-`.m4a`-only test fails for **every** already-shipped chapter, and the runner **over-regenerates all of them** — burning paid Gemini TTS, overwriting the shipped R2 audio take, and desyncing the committed `.vtt` (line-cue timings drift against the new take). This is the idempotency companion to R-SITE-MEDIA-R2 (which does the `git rm`) and R-R2-AUDIO-UPLOAD-COMPLETENESS (which does the upload): those two rules jointly make the `.m4a` R2-only, so the `.vtt` — which STAYS committed — is the durable proxy for "this chapter shipped."
 
-### Why it's the right signal
-
-`.vtt` and `.m4a` are a matched pair emitted by the same gen (`pilot_interleaved_ensemble_chapter.py`). The `.vtt` stays in `public/chapters/<app>/` (committed) precisely because the audio player needs it locally; the `.m4a` goes to R2 only. So `.vtt`-present is a zero-cost, always-available proxy that a chapter's narration was generated + shipped. Confirmed bitten twice: V29 (T1 regens) + V40 (fractionforge T2 — the runner over-regen'd `dot`, was reverted, and the wave had to be hand-run per-sidecar to dodge the bug).
-
-### The corrected contract (both runners)
-
-`path_b_wave_runner.sh` (T1) and `path_b_tier2_audio_wave_runner.sh` (T2) share an `already_shipped <local-m4a> <committed-vtt> <cdn-m4a-url>` helper:
-
-- local `.m4a` present ⇒ shipped (skip) — pre-migration / not-yet-pruned case
-- `.vtt` present (no local `.m4a`) ⇒ shipped (skip) — the R2-migrated case (default)
-- `--verify-r2` flag ⇒ when only the `.vtt` is present, HEAD the CDN (browser UA — the CDN 403s bare UAs per R-R2-AUDIO-UPLOAD-COMPLETENESS § Gotchas) for certainty before skipping; regen if the HEAD is not 2xx
-- neither present ⇒ regen
-
-`--verify-r2` is opt-in (one HTTP HEAD per chapter). `CDN_BASE` defaults to `https://cdn.spark-and-anvil.com`, overridable via `PUBLIC_AUDIO_CDN_URL`.
-
-### When this rule applies
-
-- Any NEW or edited chapter-audio wave runner, or any script that decides "regen vs skip" for a chapter whose `.m4a` may be R2-only.
-- Do NOT re-introduce a bare `[ -f "$site_m4a" ]` skip-check anywhere in the gen pipeline.
-- A per-sidecar targeted gen (V40's recipe) is still fine for one-off single-chapter regens; this rule fixes the BATCH runners so they no longer need the targeted-gen dodge.
-
-### Cross-references
-
-- `scripts/path_b_wave_runner.sh` + `scripts/path_b_tier2_audio_wave_runner.sh` — the `already_shipped()` helper
-- § R-SITE-MEDIA-R2 (the `git rm`) + § R-R2-AUDIO-UPLOAD-COMPLETENESS (the upload) — the two rules that make the `.m4a` R2-only, which is what makes `.vtt`-present the correct proxy
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § V41 — the queued ask this closes; § V40 — the incident recipe-correction
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## R2 is the system-of-record for audio — it MUST be backed up off-R2 (R-R2-SYSTEM-OF-RECORD; 2026-07-07)
 
 **Because R-SITE-MEDIA-R2 `git rm`'d the chapter-narration + audio-drama `.m4a` out of `spark-anvil-site/public/`, Cloudflare R2 (`spark-anvil-books`) is the SYSTEM-OF-RECORD for that audio — not a rebuildable cache. R2 has no automatic backup; a bucket deletion / corruption / accidental lifecycle purge would lose the exact shipped audio take with no one-command restore. Therefore every R2-only `.m4a` MUST have a byte-identical copy committed off-R2 (GitHub).** Codified after the V32 P0 backup audit (`Docs/AUDIT_ASSET_BACKUP_COVERAGE_2026-07-06.md`) proved 0 permanent-loss orphans but surfaced 744 `.m4a` (717 chapter-narration + 27 dramas) whose only copy was on R2 — regenerable from committed text via paid Gemini TTS (~$75–150, and a DIFFERENT voice take with drifted VTT), which is a lossy fallback, **not** a backup.
 
-### Why "regenerable from committed text" is NOT a backup
-
-The source text (chapter MD / drama script) being committed makes the audio *recoverable in content* but not *in fact*: re-running TTS produces a new take with different prosody + re-timed VTT cues. The shipped `.m4a` + its committed `.vtt` are a matched pair; a re-gen breaks that pairing. So committed-text ≠ backed-up-audio. Treat R2 audio as authoritative binary that needs its own durable copy.
-
-### The two-layer backup discipline (both belong; neither alone is complete)
-
-| Layer | What | Owner | Covers |
-|---|---|---|---|
-| **1. Hub byte-backup (load-bearing)** | Commit the R2-only `.m4a` into the hub repo at `Resources/R2AudioBackup/<r2-key>` (mirrors the R2 key path so restore = re-upload at the same key). The hub is NOT Cloudflare-built, so R-SITE-MEDIA-R2's ENOSPC constraint does NOT apply here (same reason the 139 pilot `.m4a` are already committed). | **Hub** — fully executable, no account access | The R2-only `.m4a` set (byte-identical) |
-| **2. Whole-bucket off-site sync + versioned archive (belt-and-suspenders)** | `scripts/sync_r2_to_backup.sh` = `rclone sync spark-anvil-books → <store>` with `--backup-dir` (the script owns the exact flags): keeps a FRESH mirror of the source AND moves every overwritten/deleted object into a timestamped archive. So the live mirror tracks the source, no accidental source-delete removes the only copy, and every superseded version is retained — the pull-based equivalent of the object versioning R2 lacks. **RUNNING 2026-07-08** to a local archive (`/Volumes/Data/Backups/r2/spark-anvil-books`, 3,824 objects / 7.97 GiB, verified 0 diffs) on a **daily launchd schedule** (`com.spark-anvil.r2-backup`, 03:00) via `scripts/r2_backup_cron.sh`. | **Account-level, user-managed** (hub owns the *scripts*; the destination store + creds are user-managed — per "Hub does NOT own") | The WHOLE bucket incl. the 3,060 already-git-backed + 265 PDFs; protects against bucket-level deletion |
-
-> **⚠ R2 has NO native object versioning (verified 2026-07-07).** Both `PutBucketVersioning`/`GetBucketVersioning` are **unimplemented** in R2's S3 API (the 2022 `GetBucketVersioning` is a dummy stub returning S3's "not enabled" default); there is **no dashboard toggle**. Version history is instead provided **pull-side** by layer 2's `--backup-dir` archive (every overwrite/delete is preserved under a run timestamp). An in-R2 alternative, if ever wanted, is **Event Notifications → Cloudflare Queue → a consumer Worker** that copies each changed/deleted object into a backup bucket with a version-suffixed key — an optional account/Worker-side build, not required given layers 1 + 2.
-
-**The `git rm` in R-SITE-MEDIA-R2 stays** — this rule does NOT reverse it. `public/` (the Cloudflare-built tree) stays `.m4a`-free for build-disk; the backup lives in the **hub** repo (`Resources/R2AudioBackup/`), which Cloudflare never clones or copies into `dist/`. The two rules are orthogonal: R-SITE-MEDIA-R2 governs the *site* tree; R-R2-SYSTEM-OF-RECORD governs *durability* via the *hub* tree.
-
-> **FOUNDER DECISION (2026-07-13): layer-1 (hub-git) FULL closure is DECLINED — no git bloat. The removable-drive layer-2 mirror is the accepted off-R2 backup "for now."** Per founder-direct (*"i don't want git bloat. back up on the removable drive for now"*), the ~962-file / ~1.7 GB layer-1 gap is **NOT** to be closed by committing the `.m4a` into hub git. Instead, the **layer-2 byte-mirror on the removable external USB drive `/Volumes/Data` (`/Volumes/Data/Backups/r2/spark-anvil-books`, 1788 `.m4a` / 3.6 GB)** is the sanctioned off-R2 backup. It is a 2nd copy of R2's cloud master (protects against R2 bucket deletion/corruption); it is NOT drive-failure-independent from the project (both live on `/Volumes/Data`), which is the accepted "for now" posture. **Keep it current:** re-run `scripts/mirror_r2_audio_layer2.py` after every audio-bearing wave, and byte-verify with `scripts/verify_r2_backup_byte_integrity.py --backup-dir /Volumes/Data/Backups/r2/spark-anvil-books` (0 stale / 0 missing = good). The layer-1 `Resources/R2AudioBackup/` set (826 `.m4a`) STAYS as-is — do NOT bulk-commit the remainder. The truly-off-machine end-state (rclone → 2nd R2 / B2 / NAS + the `com.spark-anvil.r2-backup` launchd agent) remains the future upgrade when the founder provisions a destination remote; the removable-drive mirror is the interim.
-
-### The discipline going forward
-
-1. **Every audio-bearing wave that uploads new `.m4a` to R2 MUST also add the byte-copy to `Resources/R2AudioBackup/`** — in the same wave, exactly as R-R2-AUDIO-UPLOAD-COMPLETENESS requires the R2 upload itself. The two rules chain: distribute → upload-to-R2 (R-R2-AUDIO-UPLOAD-COMPLETENESS) → byte-backup-to-hub (this rule).
-2. **`scripts/backup_r2_audio_to_hub.py`** pulls the current R2-only `.m4a` set (idempotent: skips size-matching files already present) and refreshes `Resources/R2AudioBackup/MANIFEST.json` (key + size + md5). Run it after any audio wave, and periodically as a portfolio backstop.
-3. **`scripts/audit_asset_backup_coverage.py --ci-mode`** is the backstop detector — it now counts `Resources/R2AudioBackup/` as a committed binary source, so a newly-uploaded-but-not-yet-backed-up `.m4a` classifies 🟠 REGENERABLE-TTS (not ✅) and `--ci-mode` exits non-zero. Wire it into audio-wave round-close alongside `audit_r2_upload_coverage.py`.
-4. **Off-site sync (running):** `scripts/sync_r2_to_backup.sh` (`--backup-dir` versioned mirror) runs daily via the `com.spark-anvil.r2-backup` launchd agent (`scripts/r2_backup_cron.sh`; log `~/Library/Logs/r2-backup.log`). The current destination is a **local** archive on the same machine — for off-machine durability, point `RCLONE_DST` at a second R2 bucket / B2 / NAS (user-provisioned). The in-R2 Event-Notifications→Queue→Worker pattern remains an optional alternative.
-
-### Cross-references
-
-- `Docs/AUDIT_ASSET_BACKUP_COVERAGE_2026-07-06.md` — the audit that surfaced the 744 + ranked the recs this rule codifies
-- `scripts/backup_r2_audio_to_hub.py` — hub byte-backup (layer 1)
-- `scripts/sync_r2_to_backup.sh` — whole-bucket off-site sync recipe (layer 2; user runs, rclone → off-machine destination)
-- `scripts/mirror_r2_audio_layer2.py` — headless boto3 layer-2 byte-mirror (**no new creds**; idempotent skip-if-size-match; the local-mirror interim before the off-machine rclone destination is stood up — run after any audio wave)
-- `scripts/verify_r2_backup_byte_integrity.py` — **byte-level** (ContentLength) R2-vs-backup verifier that catches the **STALE-TAKE** class the basename-level auditor misses (a same-key regenerated take: backup holds the old `.m4a`, R2 holds the new; proven in the 2026-07-13 W3 close-out — 40 stale + 17 missing that `audit_asset_backup_coverage.py` reported as 0). Runs against either layer (`--backup-dir`); `--ci-mode` exits non-zero on any stale/missing.
-- `scripts/audit_asset_backup_coverage.py` — the `--ci-mode` backstop detector (basename/key-presence level; pair with `verify_r2_backup_byte_integrity.py` for byte-integrity)
-- § R-SITE-MEDIA-R2 — the `git rm`-from-`public/` rule this one is orthogonal to (site tree vs hub tree)
-- § R-R2-AUDIO-UPLOAD-COMPLETENESS — the upload-to-R2 half; this rule adds the backup-off-R2 half
-- `.claude/rules/spark-anvil-website.md` "Tech stack" / "Hub does NOT own" — R2 bucket + off-site-sync destination + DNS are user-managed (R2 has no native versioning to configure)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Cast portrait slug convention (R-CAST-PORTRAIT-SLUG; 2026-06-05)
 
 **The portrait file at `spark-anvil-site/public/cast/<app>/<char>.webp` MUST match the chapter MD filename slug at `src/content/chapters/<app>/<char>.md`.** Both are the same `<char>` token. This is load-bearing because chapter pages at `/cast/<app>/<char>` render `<img src="/cast/<app>/<char>.webp">` with no fallback; Astro static-build doesn't verify `<img src>` targets, so a slug mismatch ships as a silently-broken portrait link with no build-time error.
 
-### Why the rule exists (2026-06-05 user report)
-
-User-reported "a lot of cast characters with broken links for portrait images on the website" surfaced 48 of 754 chapter pages (6.4%) rendering broken `<img>` against missing files. Root cause: slug-mismatch between chapter MD filenames and portrait WebP filenames in 5 distinct patterns:
-
-| Pattern | Where | Example chapter slug → portrait slug |
-|---|---|---|
-| **A. Underscore vs dash** | adventurehub / generalstale / stonesong | `archivist_atlas.md` ↔ `archivist-atlas.webp` |
-| **B. `the-` prefix on portraits** | cardforge / dealtales | `bluffer.md` ↔ `the-bluffer.webp` |
-| **C. Role-suffix descriptor on portraits** | chanceforge / discretequest / mythforge / ratiorealm | `display.md` ↔ `display-the-picture-maker.webp` |
-| **D. App-repo `cast_<char>_<pose>` convention** | quillspell | `ember.md` ↔ `cast_ember_demonstrating.webp` |
-| **E. Accent stripping** | cipherforge | `vigenere.md` ↔ `Vigenère` name in registry → `vigen-re.webp` from naive slugify |
-
-Phase A + B remediation shipped via spark-anvil-site PR #175 (33 renames + 2 syncs; coverage 93.6% → 98.3%); Phase C gen + slug-fix shipped 2026-06-05 (registry additions + 13 portraits genned + Phase B re-run; coverage to 100%).
-
-### The canonical slug derivation
-
-```python
-def canonical_slug(name: str) -> str:
-    # NFKD-normalize to strip diacritics (Vigenère → Vigenere)
-    s = unicodedata.normalize("NFKD", name)
-    s = s.encode("ascii", "ignore").decode("ascii")
-    s = s.lower()
-    # Ampersand → "-and-"
-    s = re.sub(r"&", "-and-", s)
-    # Non-alphanumeric → "-"
-    s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
-    return s or "char"
-```
-
-This matches `slugChar` in `spark-anvil-site/src/pages/cast/[app]/[char].astro` AND the canonical implementation in `spark-anvil-hub/scripts/gen_cast_portraits.py` (fixed 2026-06-05).
-
-### Source of truth for `<char>`
-
-The chapter MD filename (Tier-1 lives at `<app>-app/Docs/dn-s/chapters/<char>.md`; Tier-2 at `spark-anvil-hub/Resources/DN-S-Tier-Upper/chapters/<app>/<char>.md`) is the canonical slug. Portrait filenames must match. The character's display name in `dnCast.members[]` MAY differ from the slug (e.g., "The Bluffer" → `bluffer.md`); when the registry-derived slug doesn't match the chapter slug, the canonical slug is the chapter filename, and the post-gen fix script (`fix_cast_portrait_slugs.py`) renames the portrait to the chapter slug.
-
-### CI check (prebuild) — defense-in-depth with the sync-time gate
-
-Two complementary gates BOTH stay in place; neither replaces the other.
-
-| Gate | Where | When it fires | Coverage class | Bypass |
-|---|---|---|---|---|
-| **Sync-time portrait gate** (V20 W1; 2026-06-26) | `spark-anvil-hub/scripts/sync_content_to_site.sh` | Per-app sync (post-content-copy / pre-commit) | **NEW gaps** — chapters being synced in this invocation | `--skip-portrait-gate` (trauma-axis carve-outs) |
-| **Cloudflare prebuild audit** (R-CAST-PORTRAIT-SLUG; 2026-06-05) | `spark-anvil-site/package.json` `prebuild` → `audit_cast_portrait_coverage.py` | Every spark-anvil-site build | **HISTORICAL gaps** — any chapter page in any app, regardless of last-sync time | `SKIP_CAST_PORTRAIT_CHECK=1 npm run build` (emergency only) |
-
-The prebuild gate makes the regression class build-time-visible — a chapter MD without a matching portrait file blocks deploy. Local dev catches the regression before commit; the Cloudflare build catches it before deploy.
-
-Per `.claude/rules/spark-anvil-website.md` § "CRITICAL: Normalizer auto-runs in site prebuild" the prebuild chain is the canonical self-healing seam. The cast portrait audit joins it.
-
-**Historical-gap class (V21 P0 2026-06-26 incident)**: when a new gate ships, it does NOT retroactively audit historical content. Pre-gate chapter MDs that have a portrait gap stay invisible to the sync gate until the app is re-synced for some other reason. The prebuild gate's enumeration-over-all-chapter-pages model catches these. Reference incident: `readquest/frame-and-plume` shipped 2026-06-24 (V12 ensemble round) without the V16-step-6.5 pair portrait gen step. Sync-time gate didn't catch it (it landed AFTER the V12 sync). Cloudflare prebuild gate caught it on the next site build. **Do NOT remove either gate** — they cover different failure modes. See `Docs/AUDIT_READQUEST_FRAME_AND_PLUME_PORTRAIT_GAP_2026-06-26.md` for the full post-mortem.
-
-### When this rule applies
-
-- **Authoring a new chapter MD**: name the file with the kebab-case slug of the character name; verify a matching `public/cast/<app>/<char>.webp` exists OR queue gen via `scripts/gen_cast_portraits.py --app <slug> --yes`.
-- **Authoring a new ensemble pair / cohort chapter** (any chapter where `pair-bonds:` is declared in front-matter OR `role: Ensemble*` is set): MUST run `gen_cast_portraits.py --app <slug> --pairs <slug>:<chapter-slug> --include-gated --yes` in the same round as chapter authoring. Per V16 step 6.5 (§ "V15 reference-impl in-session polish discipline" in `.claude/rules/distributed-narrative.md`) — V15 omitted this and 4 chapters tripped Cloudflare; V12 (2026-06-24) omitted it for `readquest/frame-and-plume` and tripped Cloudflare again 2026-06-26 (V21 P0); V21 P0 (PM) caught **23 more historical gaps at once** across V12-V21 ensemble-pair authoring rounds. The portrait belongs to the chapter slug, NOT to the individual member names.
-- **Cloudflare prebuild surfaces N>1 missing pair portraits at once** (the V21 P0 PM scenario): use the BATCH RECOVERY RECIPE:
-  ```bash
-  # 1. Get the full missing-portrait inventory
-  python3 scripts/audit_cast_portrait_coverage.py --json > /tmp/missing.json
-
-  # 2. Build comma-separated pairs argument
-  python3 -c "import json; d=json.load(open('/tmp/missing.json')); print(','.join(f\"{r['app']}:{r['char']}\" for r in d['missing']))"
-
-  # 3. Batch-gen via --all --pairs <list>
-  python3 scripts/gen_cast_portraits.py --all --pairs "<comma-list>" --include-gated --yes
-  ```
-  Cost: ~$0.045 per pair (Gemini Nano Banana Flash). For 23 pairs: ~$1.04. **The 3-step recipe is faster + cheaper than running per-app gen for each app**.
-- **Authoring a new app**: the per-app gen workflow already aligns; the `dnCast.members[]` `name` field flows through canonical slug derivation.
-- **Renaming a chapter MD**: rename the portrait file in the same PR. The prebuild CI check will block the merge if not.
-- **Adding a mentor or ensemble char** that doesn't fit `dnCast.members[]`: add it anyway (Captain Castle + The Pawn Cohort precedent — gambittales gained 2 entries 2026-06-05 to close the chapter-page broken-link surface).
-
-### Tools
-
-- `spark-anvil-hub/scripts/audit_cast_portrait_coverage.py` — enumerate (app, char) pairs; classify missing portraits by remediation path (B1 site rename / B2 app sync / C gen); `--json` machine-readable.
-- `spark-anvil-hub/scripts/fix_cast_portrait_slugs.py` — Phase B one-shot remediation (B1 site `git mv` + B2 app-repo `cp`). Dry-run by default.
-- `spark-anvil-hub/scripts/gen_cast_portraits.py` — Phase C gen pipeline; uses canonical slug derivation; idempotent (skip-if-exists).
-
-### What this rule does NOT enforce (yet)
-
-- **Per-cluster trauma-axis review on portrait gen** — Phase C portrait gen still gates on ADR-012 founder-ADR-approved AI gen for trauma-adjacent clusters; the CI check only catches "missing file", not "trauma-axis-unsafe content".
-- **Mentor / ensemble chars in dnCast.members[]**: this rule documents the precedent but doesn't enforce that every chapter MD has a matching `dnCast.members[]` entry. File a per-app handoff to add mentors/ensembles to the registry when a gap surfaces.
-- **App-repo Resources/Cast slug**: the rule applies to spark-anvil-site portraits only. App-bundle conventions per `.claude/rules/forgekit.md` § "Cast asset filename convention" (`cast_<character_slug>_<pose>.webp`) remain orthogonal.
-
-### Cross-references
-
-- `Docs/AUDIT_CAST_PORTRAIT_BROKEN_LINKS_2026-06-05.md` — Phase A + B remediation audit
-- `Docs/AUDIT_READQUEST_FRAME_AND_PLUME_PORTRAIT_GAP_2026-06-26.md` — V21 P0 morning historical-gap incident post-mortem (V12 ensemble round; sync-time gate vs Cloudflare prebuild gate defense-in-depth)
-- `Docs/AUDIT_CAST_PORTRAIT_GAPS_BATCH_2026-06-26.md` — V21 P0 PM batch-recovery audit (23 portraits across 23 apps; same pattern at scale)
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § cast portrait broken-image + V21 P0 readquest/frame-and-plume + V21 P0 PM batch
-- `.claude/rules/distributed-narrative.md` § "V15 reference-impl in-session polish discipline" step 6.5 — pair portrait gen for ensemble chapters (the discipline this rule depends on)
-- `.claude/rules/forgekit.md` § "Cast asset filename convention" (app-bundle orthogonal convention)
-- `.claude/rules/portfolio.md` § "Asset Consumer Audit" (precedent for "registered ≠ wired" / "synced ≠ rendered")
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Chapter front-matter duplicate-key gate (R-CHAPTER-YAML-DUP-KEY; 2026-06-26)
 
 **Chapter MD YAML front-matter MUST NOT have any top-level key listed twice.** js-yaml strict mode (used by Astro's `gray-matter` content-collection loader) rejects duplicate keys with `duplicated mapping key` error → Cloudflare Workers Builds prebuild fails. Closes the V21+ P0 incident class surfaced 2026-06-26 evening (depthquest/trench.md + numbersense/pivot-pia.md both shipped with `gate-allow-text: []` listed twice).
 
-### Why the V20 W1 portrait gate didn't catch this
-
-The portrait gate validates portrait-coverage; it doesn't parse YAML. The portfolio normalizer (`normalize_chapter_frontmatter.py`) quotes unquoted values that contain colons/em-dashes but doesn't detect DUPLICATE KEYS. The js-yaml parser is the only thing that does — and it fails at site-build time, not sync time, leaving Cloudflare red until a hub session intervenes.
-
-### The two-gate defense-in-depth (same pattern as R-CAST-PORTRAIT-SLUG)
-
-| Gate | Where | When it fires | Coverage class | Bypass |
-|---|---|---|---|---|
-| **Sync-time duplicate-key gate** (V21+ 2026-06-26) | `spark-anvil-hub/scripts/sync_content_to_site.sh` | Per-app sync (post-content-copy / pre-commit) | **NEW duplicates** introduced in source MDs by a current sync | (none — duplicate keys are always defects) |
-| **Cloudflare prebuild gate** (V21+ 2026-06-26) | `spark-anvil-site/package.json` `prebuild` → `check-chapter-frontmatter-duplicates.py` | Every spark-anvil-site build | **HISTORICAL duplicates** in any synced chapter, regardless of last-sync time | `SKIP_FRONTMATTER_DUP_CHECK=1 npm run build` (emergency only) |
-
-Both gates check ONLY top-level keys. Nested mapping keys (e.g., the `name:` field repeated across sibling items in `pair-bonds:`) are NOT counted as duplicates — they're legitimately repeated per the YAML spec.
-
-### When this rule applies
-
-- **Authoring a new chapter MD front-matter**: never copy-paste a line that already exists at top level. The pattern surfaced this round was `gate-allow-text: []` accidentally pasted twice when an author meant to author the entry once and `gate-allow-text-pattern:` once.
-- **Adding `gate-allow-text` to satisfy R-PATH-B-TEXT-LEAK-GATE**: if a `gate-allow-text:` line already exists in the front-matter, EXTEND it (add list items beneath) — don't add a second `gate-allow-text:` line.
-- **Running `rewrite_chapter_register.py` or any other tool that edits front-matter**: tools MUST preserve the single-occurrence invariant. If a tool needs to add a value to an existing key, it MUST extend the existing entry, not add a parallel one.
-
-### Tools
-
-- `spark-anvil-hub/scripts/check_chapter_frontmatter_duplicates.py` — portfolio-wide scanner (T1 sources + T2 sources + site-synced copies); `--ci-mode` exits non-zero on any finding
-- `spark-anvil-site/scripts/check-chapter-frontmatter-duplicates.py` — in-repo mirror that runs in Cloudflare prebuild; resolves paths relative to `__file__` so it works in any environment
-
-### Companion to R-CAST-PORTRAIT-SLUG defense-in-depth
-
-R-CAST-PORTRAIT-SLUG and R-CHAPTER-YAML-DUP-KEY use the same two-gate pattern (sync-time gate catches new defects in active workflow; Cloudflare prebuild gate catches historical defects across all chapters). The two rules are companion defenses against site-deploy failures at the chapter-content axis. Removing either gate in either rule re-opens an unbounded regression class.
-
-### Cross-references
-
-- `Docs/AUDIT_CHAPTER_YAML_DUPLICATE_KEY_2026-06-26.md` — V21+ P0 incident post-mortem + remediation
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § V21+ P0 — work-queue entry
-- `spark-anvil-hub/scripts/check_chapter_frontmatter_duplicates.py` — hub-side audit
-- `spark-anvil-site/scripts/check-chapter-frontmatter-duplicates.py` — site-side prebuild gate
-- `spark-anvil-hub/scripts/sync_content_to_site.sh` — sync-time gate (post-content-copy / pre-commit)
-- `.claude/rules/spark-anvil-website.md` § R-CAST-PORTRAIT-SLUG — sister two-gate defense-in-depth pattern
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Cast-member route-link coverage (R-CAST-ROUTE-COVERAGE; 2026-06-27)
 
 **Any component or page that renders a `/cast/<app>/<char>` LINK from a cast member MUST guard it with `hasChapter(app, member.name)` AND derive the slug with `chapterSlugFor(app, member.name)` — never `slugChar()` directly, and never an unguarded `chapterSlugFor()`.** A member with no authored chapter has no route; linking to it ships a broken internal link → `check-site-internal-links.py` FAIL → red Cloudflare deploy.
 
-### Why the rule exists (2026-06-27 incident)
-
-User-reported Cloudflare FAIL: `[route] 1 unique / 1 refs — /cast/mathcircle/circle`. Root mechanism: `chapterSlugFor(app, name)` (in `src/lib/castSlug.ts`) returns `SLUG_MAP[\`${app}/${name}\`] ?? slugChar(name)`. When a name is NOT in the slug map (e.g. an individual ensemble member "Circle" whose only route is the cohort chapter `circle-circe-echo-edie`), it **falls back to `slugChar("Circle")` = `circle`** — a slug with no route. Rendering that as a link 404s. `hasChapter(app, name)` returns true ONLY when `app/name` is a real slug-map key, so filtering members through it before linking is the fix.
-
-### The guarded pattern (all current call-sites already follow it)
-
-```astro
-{(appData?.dnCast?.members ?? [])
-  .filter((m) => hasChapter(app, m.name))      // ← REQUIRED guard
-  .map((m) => {
-    const slug = chapterSlugFor(app, m.name);  // never slugChar() for a route
-    return <a href={`/cast/${app}/${slug}`}>…</a>;
-  })}
-```
-
-Audited 2026-06-27 — **7 route-link generators, all guarded**: `SiblingCastStrip.astro`, `cast/[app]/[char].astro` (ensemble grid), `cast/[app]/[char]/advanced.astro`, `apps/[slug].astro`, `cast.astro`, `index.astro` (featured + daily carousel). The homepage recency strips key off `recency.cast` (real chapter slugs) so they link only to existing routes. Current `main` builds clean (0 broken refs); the failing build was an earlier state, fixed by these guards.
-
-### Enforcement gate
-
-`spark-anvil-site/scripts/check-site-internal-links.py` (postbuild, runs on every Cloudflare build) resolves every `href`/`src` against `dist/` and FAILS on any unresolved `/cast/...` route. This is the backstop — **never bypass it with `SKIP_SITE_INTERNAL_LINK_CHECK=1` to ship a real broken route.** When it flags a `/cast/<app>/<char>`, the cause is almost always an unguarded link-generator (add the `hasChapter` filter) or a genuinely missing chapter route (author the chapter or stop linking the member).
-
-### When authoring a new link-generator
-
-Any NEW component/page that turns `dnCast.members[]` (or `pair-bonds[]` members, or any member-name list) into `/cast/...` links MUST apply the `hasChapter` filter. Do NOT render individual ensemble/cohort members as separate links unless each has its own authored chapter route — link the cohort chapter instead.
-
-### Hardcoded curated lists bypass the guard — validate them at build time (2026-06-28)
-
-**A hand-authored list of `(app, char)` link targets — e.g. `today.astro`'s `FLAGSHIP_POOL`, or any curated "featured chapter" / "story of the day" pool — bypasses the `hasChapter()` filter entirely, because the slugs are typed by a human, not derived from `dnCast.members`.** A stale entry (a renamed chapter, a member with no individual route) ships a broken `/cast/...` link.
-
-**This failure is INTERMITTENT and that's the trap.** `today.astro` picks ONE entry by `dayOfYear % poolLength`, so a bad entry only renders — and only fails the build — on the specific day-of-year it's selected. Local builds and Cloudflare builds on every *other* day pass, so the bug looks "already fixed" when it's merely dormant. The 2026-06-28 incident: `FLAGSHIP_POOL` had `mathcircle/circle` (no route; real route is `circle-circe-echo-edie`) at index 3 and `cubesensei/look-ahead` (real: `look`) at index 7 — each failed Cloudflare ~1 day in 8, producing a recurring "`/cast/mathcircle/circle` broken again" report that three prior static audits couldn't reproduce because they ran on the wrong day.
-
-**Required pattern for any curated `(app, char)` pool**: validate the WHOLE pool against the real chapter collection at build time, so a bad entry fails LOUDLY on EVERY build (not 1-in-N days):
-
-```astro
-import { getCollection } from 'astro:content';
-const _validChapterIds = new Set(
-  (await getCollection('chapters')).map((c) => c.id.replace(/\.md$/, '')),
-);
-for (const entry of FLAGSHIP_POOL) {
-  if (!_validChapterIds.has(`${entry.app}/${entry.char}`)) {
-    throw new Error(`[<page>] curated entry has no chapter route: /cast/${entry.app}/${entry.char}`);
-  }
-}
-```
-
-**Reproducing a day-dependent route failure**: a clean-room build is the only reliable repro — `rm -rf dist && npm run build` on the actual failing day, then `grep -rl 'cast/<app>/<char>"' dist/`. The day-of-year is `new Date()`-derived, so the failing entry rotates daily; if the static checks all pass but Cloudflare keeps failing, suspect a `new Date()`/`Math.random()`-seeded picker over a curated or member-derived list.
-
-### There is NO bare `/cast/<app>` route — only `/cast`, `/cast/<app>/<char>`, `/cast/<app>/<char>/advanced` (2026-07-11 SEL-pair P0)
-
-**Never link to a bare `/cast/<app>` (app slug, no `/<char>`).** It resolves in NO deploy unit — the ONLY cast routes are the **aggregate `/cast`** (`src/pages/cast.astro`) and the per-character **`/cast/<app>/<char>`** (+ `/advanced`) generated by `cast/[app]/[char].astro`. There is no `cast/[app]/index.astro`. A "meet the cast / read the stories" link on a clone landing/about page MUST target **`/cast`** (the aggregate, what `PlayNarrative`'s footer uses) or a specific guarded `/cast/<app>/<char>` — never `/cast/<app>`.
-
-**The incident (P0, site PR #410):** the mindforge + coregrealm clone `about.astro` pages hardcoded `<a href="/cast/mindforge">` / `/cast/coregrealm` → 2 broken links → red **core** Cloudflare build. It slipped every fleet agent's `build:play` because `--unit play` excused *all* non-`/play` paths as "cross-unit," so the bad link only failed the ~12–20 min core build.
-
-**The gate was tightened (site PR #411):** `check-site-internal-links.py` `is_invalid_cast_shape()` now **never excuses** a bare `/cast/<app>` in ANY unit — so the fast `build:play` (which every clone agent runs) fails on it immediately, not just the slow core build. Do NOT re-broaden the play-unit cross-unit excuse to cover bare `/cast/<app>`.
-
-**Deferred re-enablement (the "come back later" TODO):** because there is no app-index cast route today, the SEL clones' about pages fall back to the aggregate `/cast`. If an app-level `/cast/<app>` index route is ever built (or a chapterless clone's app gains authored chapters), the app-scoped links can be re-enabled. That revisit is tracked in **`Docs/TODO_WEB_CLONE_CAST_LINK_REENABLE.md`** (greppable: `grep -rn 'href="/cast"' src/pages/play/*/about.astro`). `PlayNarrative` already auto-enables per-char links when chapters land (it reads `apps.generated.ts` + `hasChapter`), so no per-clone edit is needed there when the DN assets arrive.
-
-### Cross-references
-
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "V23 P0 — Cloudflare build FAIL: broken /cast/mathcircle/circle route" + § "V114 — SEL-pair bare /cast/<app> P0 + link-checker tightening"
-- `Docs/TODO_WEB_CLONE_CAST_LINK_REENABLE.md` — the deferred app-scoped-cast-link re-enablement tracker
-- `spark-anvil-site/src/lib/castSlug.ts` — `chapterSlugFor` / `hasChapter` / `slugChar`
-- `spark-anvil-site/scripts/check-site-internal-links.py` — the postbuild enforcement gate (now with `is_invalid_cast_shape`)
-- `.claude/rules/spark-anvil-website.md` § R-CAST-PORTRAIT-SLUG — sister rule (portrait-file coverage; same "member without asset" failure family)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Multi-beat chapter snapshot convention (R-MULTIBEAT-SNAPSHOT; 2026-06-10)
 
 **Multi-beat chapter pages read prose from a SNAPSHOT at `public/chapters/<app>/chapter_<char>.md` — NOT from `src/content/chapters/<app>/<char>.md`.** When the source-of-truth chapter MD is rewritten (e.g., Option C register cleanup, content corrections, register rewrites), **the snapshot must be regenerated alongside the per-beat sidecar + illustrations + audio**, because the sidecar's `prose-range: { from-line, to-line }` indexes against the snapshot's line numbers AND the per-beat audio narration speaks the snapshot's prose.
 
-### CRITICAL: the snapshot `.md` is a SEPARATE copy — distribute it explicitly (2026-06-27 incident)
-
-**When distributing a NEW multibeat chapter to `public/chapters/<app>/`, the snapshot `chapter_<char>.md` is a DISTINCT file that must be copied separately** — it is a byte copy of the segmented source MD (`<app>-app/Docs/dn-s/chapters/<char>.md`):
-
-```bash
-cp <app>-app/Docs/dn-s/chapters/<char>.md \
-   spark-anvil-site/public/chapters/<app>/chapter_<char>.md
-```
-
-**Do NOT rely on a `chapter_<char>_*` (underscore) glob to carry it** — that glob matches the beat/audio/vtt files (`chapter_<char>_beat_00.webp`, `chapter_<char>_chapter.m4a`, …) but **MISSES the no-underscore snapshot `chapter_<char>.md`** (and the `chapter_<char>.beats.json` sidecar). Use `chapter_<char>.*` (dot) OR copy the snapshot explicitly.
-
-**Why this is load-bearing**: `build-multibeat-chapter-manifest.mjs` requires the snapshot (+ audio + vtt + every beat image) and **SILENTLY rejects** any chapter missing one. A rejected chapter is absent from `multibeat-chapters.json`, so its page evaluates `hasMultibeat === false` and renders `<ChapterIllustration variant="opener">` → `chapter_<char>_opener.webp` which forward-authored (post 2026-06-13 no-opener) chapters never generate → 404 → red Cloudflare deploy.
-
-**Build-time backstop (gate)**: `spark-anvil-site/scripts/check-multibeat-snapshot-coverage.py` runs in `prebuild` (ahead of the manifest builder) and FAILS the build LOUDLY with the exact missing file for any sidecar whose companion set (snapshot/audio/vtt/beat0) is incomplete — turning the silent reject into an actionable error. Bypass: `SKIP_MULTIBEAT_SNAPSHOT_CHECK=1`. **Reference incident**: 2026-06-27 — 5 FractionForge V22 chapters shipped without snapshots; all 5 silently rejected → 10 broken opener refs caught by the postbuild link checker (work-queue § "V23 P0 — Cloudflare build FAIL").
-
-### Why two prose paths exist
-
-The chapter template at `src/pages/cast/[app]/[char].astro` checks the `multibeat-chapters.json` manifest (built by prebuild from `public/chapters/<app>/chapter_<char>.beats.json` presence):
-
-- **Multi-beat present** → `<InterleavedChapterAudioPlayer mode="multi-beat" />` reads beat-prose from the snapshot via the manifest's `beatProse[]` (sliced from `public/chapters/<app>/chapter_<char>.md` by `build-multibeat-chapter-manifest.mjs`)
-- **Multi-beat absent** → `<InterleavedChapterAudioPlayer mode="single-chapter" />` OR plain `<Content />` renders from `src/content/chapters/<app>/<char>.md` (Astro content collection)
-
-The snapshot was introduced to keep beat-prose-range slicing stable + decoupled from content-collection schema. But the dual paths mean a chapter can have STALE multi-beat prose while the content-collection version is current.
-
-### Required workflow when rewriting a chapter that's already in multi-beat mode
-
-For any chapter where `public/chapters/<app>/chapter_<char>_chapter.m4a` exists (i.e., Path B has shipped for it):
-
-1. **Rewrite source** via `scripts/rewrite_chapter_register.py --app <slug> --chapter <char> --tier 1 [--model gemini-2.5-pro] [--force]` — updates `<app>-app/Docs/dn-s/chapters/<char>.md`
-2. **Commit + push source app-repo PR** (cross-repo write per hub-as-research-hub Docs/ exception)
-3. **Delete stale multi-beat assets**:
-   ```bash
-   rm Resources/AutoSegmentedChapters/<app>/<char>.beats.json
-   rm <pilot-or-wave-out-dir>/<char>_receipt.json <pilot-or-wave-out-dir>/<char>_beat_*.png <pilot-or-wave-out-dir>/<char>_chapter.*
-   rm /Volumes/Data/Projects/GitHub/spark-anvil-site/public/chapters/<app>/chapter_<char>.beats.json
-   rm /Volumes/Data/Projects/GitHub/spark-anvil-site/public/chapters/<app>/chapter_<char>.md
-   rm /Volumes/Data/Projects/GitHub/spark-anvil-site/public/chapters/<app>/chapter_<char>_beat_*.png
-   rm /Volumes/Data/Projects/GitHub/spark-anvil-site/public/chapters/<app>/chapter_<char>_chapter.*
-   ```
-4. **Re-run the surgical regen** (target the single chapter; do NOT use `path_b_wave_runner.sh` which iterates ALL chapters in an app):
-   ```bash
-   /usr/bin/python3 scripts/auto_segment_chapter.py --chapter <md-path> --out Resources/AutoSegmentedChapters/<app> --app <app>
-   /usr/bin/python3 scripts/pilot_interleaved_ensemble_chapter.py --manifest Resources/AutoSegmentedChapters/<app>/<char>.beats.json --out-dir <out-dir>
-   # then cp the chapter_<char>.* family into spark-anvil-site/public/chapters/<app>/
-   ```
-5. **Sync content collection** via `scripts/sync_content_to_site.sh --apply --app <slug>` (also updates `src/content/chapters/<app>/<char>.md` + opener/spot illustrations + audio drama if any)
-6. **Commit + push spark-anvil-site** (one commit per app-batch is fine)
-
-Per-chapter regen cost: **~$0.32** (Pro opener $0.134 + 4 × Flash $0.045 + Gemini TTS ~$0.10).
-
-### Why `sync_content_to_site.sh` does NOT also update the snapshot
-
-The snapshot at `public/chapters/<app>/chapter_<char>.md` is paired with the sidecar `chapter_<char>.beats.json` whose `prose-range` indexes lines into the snapshot. If `sync_content_to_site.sh` copied the new source MD over the snapshot without re-segmenting the sidecar AND re-genning per-beat assets, the chapter would render with:
-
-- Wrong text per beat (sidecar's `from-line/to-line` point to wrong lines in the new MD)
-- Audio narration speaks OLD prose (per-beat audio was generated from the OLD snapshot)
-- Per-beat illustrations depict OLD scenes
-
-So `sync_content_to_site.sh` deliberately leaves the snapshot alone. Snapshot ownership lives with `path_b_wave_runner.sh` (or the surgical regen recipe above).
-
-### Methodology-section stop in the segmenter (2026-06-10 fix)
-
-**The auto-segmenter STOPS collecting paragraphs at the first methodology H2** (`## Voice register` / `## Arc across kits` / `## Relationships` / `## Cultural-sensitivity gate` / `## Cultural-context note` / `## Author's note` / `## Sample lines` / `## A note for grown-ups` / `## What's the big idea here?` etc.). Beats only cover the narrative body; methodology stays in the snapshot file for reference but is **never sliced into a beat**.
-
-**Why this is in the segmenter, not the snapshot**:
-
-Multi-beat pages render exclusively from beat prose. The chapter template does NOT fall back to `<Content />` on the content-collection MD when multi-beat is active. So the spark-anvil-site-side `strip-chapter-methodology-sections.py` (which processes `src/content/chapters/<app>/<char>.md`) has zero effect on multi-beat pages — its strip-output is never rendered. Methodology leaked into beats whenever the segmenter included those lines in its even-paragraph-count split.
-
-The fix lives in `spark-anvil-hub/scripts/auto_segment_chapter.py` `_METHODOLOGY_H2_PATTERNS` set + `_is_methodology_h2()` hard-stop in `collect_paragraphs()`. The strip-script's pattern set + the segmenter's pattern set MUST stay in sync — adding a new methodology H2 to one requires adding it to the other.
-
-**Companion implication for per-beat audio**: the pilot script's per-beat TTS sources prose from sidecar's `prose-range` slice of the snapshot. With the segmenter stopping at methodology, beats only contain narrative, so per-beat audio only narrates narrative. No "Voice register" / "Arc across kits" speech leaks into the audio drama.
-
-**Discovered 2026-06-10** when user-flagged the live cosmosforge/gleam page rendering "## Voice register", "## Arc across kits", "## Relationships" sections under the beats UI. Root cause: pre-fix segmenter included methodology lines in beat 4 (closer); multi-beat renderer sliced beat 4 from snapshot lines 51-100 which contained all the methodology content.
-
-**Future enhancement idea**: extend `sync_content_to_site.sh` to detect multi-beat chapters + automatically run the surgical regen. Out of scope for the current convention; for now, the human/agent operator handles regen explicitly when rewriting multi-beat chapters.
-
-### When the rule applies
-
-- Author rewriting a chapter MD for register / content / accuracy: check `ls /Volumes/Data/Projects/GitHub/spark-anvil-site/public/chapters/<app>/chapter_<char>_chapter.m4a` — if present, the chapter is multi-beat; follow the workflow above
-- Portfolio-wide Option C rewrite + Path B regen rollout: bake the regen step into the per-app wave driver (see Work Queue § Option C portfolio rewrite for the operational pattern)
-- Content corrections that don't change line structure (typo fix, single-word swap): `sync_content_to_site.sh` is sufficient — sidecar line-ranges still point to valid lines; audio is only off by one word
-
-### Verification
-
-After regen, verify:
-
-1. **Local snapshot matches source**: `diff <(head -30 <app>-app/Docs/dn-s/chapters/<char>.md) <(head -30 /Volumes/Data/Projects/GitHub/spark-anvil-site/public/chapters/<app>/chapter_<char>.md)` should show only YAML front-matter quoting differences (from the prebuild normalizer)
-2. **Receipt shows uniform cost**: `Resources/PilotsAndExperiments/<wave>/<app>/<char>_receipt.json` `total_cost_usd` should be ~$0.32
-3. **Live URL**: hard-refresh `https://spark-and-anvil.com/cast/<app>/<char>` after Cloudflare redeploys; check that opener prose + first-beat prose match the rewritten source
-
-### Cross-references
-
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "Option C portfolio rewrite — multi-beat snapshot staleness gotcha + remediation" — operational rollout plan
-- `spark-anvil-hub/scripts/sync_content_to_site.sh` — content-collection sync (does NOT touch multi-beat snapshot)
-- `spark-anvil-hub/scripts/path_b_wave_runner.sh` — multi-beat batch driver (idempotent — skip if `site_m4a` exists; delete to force regen)
-- `spark-anvil-hub/scripts/auto_segment_chapter.py` — segmenter (creates sidecar with prose-range against current MD line numbers)
-- `spark-anvil-hub/scripts/pilot_interleaved_ensemble_chapter.py` — per-beat illustration + audio gen
-- `spark-anvil-site/scripts/build-multibeat-chapter-manifest.mjs` — prebuild manifest builder (slices snapshot prose by sidecar line-ranges)
-- `spark-anvil-site/src/pages/cast/[app]/[char].astro` — chapter template (decides single-chapter vs multi-beat based on manifest)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Path B illustration prompt parity (R-PATH-B-PROMPT-PARITY; 2026-06-11)
 
 **Per-beat illustration prompts in `scripts/pilot_interleaved_ensemble_chapter.py` MUST include (a) chapter prose for the beat's `prose-range`, (b) a character-identity block from the chapter's YAML front-matter + opening passage, AND (c) a per-app `base_style` resolved via `STYLE_REGISTRY`.** The auto-segmenter sidecar's `scene` field is structural metadata, not artistic direction; never use it as the sole content cue.
 
-### Why the rule exists
-
-`Docs/AUDIT_PATH_B_WRONG_CHARACTER_2026-06-11.md` surfaced a systemic regression where Path B beat illustrations rendered the wrong character. Root cause: the pre-2026-06-11 `build_illustration_prompt()`:
-
-1. Never received chapter prose (it was extracted only for TTS)
-2. Used `auto_segment_chapter.py`'s generic `"scene": "<Char> beat N of M"` placeholder verbatim
-3. Inherited a hard-coded `GAMBITTALES_STYLE` (warm amber + cream + tan fairy-tale palette) as the unconditional default
-
-Under those constraints, Pro hallucinated a generic warm-amber Animal-Crossing bear in a fairy-tale village for ANY chapter where the character was non-conventional (paper fence, mathematical-concept embodiment, abstract entity). Apps with conventional kid/animal casts survived by coincidence; non-conventional casts shipped visibly wrong art.
-
-### The 3 load-bearing prompt blocks
-
-The 2026-06-11 v2 prompt adds three blocks before the existing `ANTI_TEXT` clause:
-
-| Block | Source | Why it's load-bearing |
-|---|---|---|
-| **CHARACTER IDENTITY (LOAD-BEARING)** | YAML front-matter (`character:` + `role:` + `primitive:`) + first beat's `prose-range` + species-defaulting clause | Locks the species + role; the species-defaulting clause ("if the chapter does NOT describe a specific non-human form, render as a HUMAN child or adult appropriate to the role + scene — NOT a generic anthropomorphic animal") prevents the badger-in-medieval-village failure mode for chapters whose prose lacks visual character description |
-| **STORY EXCERPT (this beat's prose)** | `beat_prose(beat, md_lines)` trimmed to ~220 words | Gives Pro the actual scene + action context for THIS beat; without it the model invents a fairy-tale-village backdrop regardless of chapter content |
-| **STYLE** | `STYLE_REGISTRY.get(app, _DEFAULT_STYLE)` | Per-app palette + register override. `_DEFAULT_STYLE` deliberately drops the amber/cream/tan palette and tells the model to derive palette from the CHARACTER IDENTITY + STORY EXCERPT blocks |
-
-### `STYLE_REGISTRY` ownership
-
-The `STYLE_REGISTRY` dict in `pilot_interleaved_ensemble_chapter.py` is the canonical per-app style override surface. Default behavior (when the app slug is not in the registry) is `_DEFAULT_STYLE` which prescribes ONLY the chunky-cartoon outline + cell-shading register, NOT a specific palette.
-
-Add a per-app entry only when:
-- The app has a distinctive visual register that prose alone won't trigger (e.g., `gambittales` fairy-tale fantasy palette; an `aiforge` paper-craft palette if the prose-injection alone proves insufficient)
-- 1+ chapters of the app ship visibly off-register after the v2 prompt baseline
-
-Per-app overrides should pass a Phase B-equivalent proof regen before being committed.
-
-### Companion: when chapter prose lacks species cues
-
-Some chapters describe characters by behavior + setting but NOT species (proofquest/direct-proof-dora was the canonical 2026-06-11 incident — Dora described as "step-by-step talkative kid who walked the bridge to school," no species cue). The species-defaulting clause inside `extract_character_identity()` defaults to "human child or adult" for these chapters. If a chapter SHOULD render a non-human form (paper / fence / robot / animal / object / abstract entity), make sure the chapter's opening prose explicitly states that form. Don't rely on the cast portrait as the only species signal — Pro doesn't see the portrait during gen unless we wire it as a ref-image (see Phase A+ future enhancement).
-
-### Don'ts
-
-- Don't remove the `_DEFAULT_STYLE` "Derive the specific palette + setting from the CHARACTER IDENTITY + STORY EXCERPT blocks below" instruction — it's the seam that keeps Pro on-prose
-- Don't reintroduce the hard-coded `GAMBITTALES_STYLE` as default for non-Gambittales apps; that was the original regression
-- Don't strip the species-defaulting clause from `extract_character_identity()` — it's the only signal preventing Pro from rendering "mathematician archetype" as an anthropomorphic badger
-- Don't bypass `build_illustration_prompt()` and call the gen API directly with a custom prompt unless you also pass the 3 load-bearing blocks — duplicate prompt construction is the regression class
-
-### When the rule applies
-
-- Any `path_b_wave_runner.sh` invocation — auto-applies (the runner calls `pilot_interleaved_ensemble_chapter.py`)
-- Any one-off chapter regen via `pilot_interleaved_ensemble_chapter.py --manifest <sidecar>` — auto-applies
-- Any new Path B / Path C ensemble chapter gen script (e.g., future `gen_app_illustrations.py --interleaved` portfolio rollout) — MUST adopt the same 3-block pattern. The blocks are reusable via the same helper functions (`extract_character_identity()` + `_trim_excerpt_for_prompt()` + `STYLE_REGISTRY` lookup)
-- **Cast portrait gen (`scripts/gen_cast_portraits.py`)** — applies the 3-block pattern with POSE / FRAMING substituted for STORY EXCERPT (portraits are neutral 3/4 head-and-shoulders, not beat-scene depictions). Imports `STYLE_REGISTRY` + `_DEFAULT_STYLE` + `_parse_frontmatter` + `_trim_excerpt_for_prompt` directly from `pilot_interleaved_ensemble_chapter` so the per-app palette + species-defaulting + front-matter parsing helpers are shared, not duplicated. Codified after `Docs/AUDIT_CAST_PORTRAIT_VS_BEAT_0_COHERENCE_2026-06-11.md` surfaced 100% portrait-vs-beat-0 drift across 58 multi-beat chapters. See § "Portrait companion (cast portrait gen)" below
-- **Book cover gen (`scripts/gen_book_covers.py`)** — SHIPPED 2026-06-11 (commit 3057c177; "Sister-of-Phase-A book cover refactor + 286-cover portfolio regen wave"). Applies the 3-block pattern with COMPOSITION substituted for STORY EXCERPT (covers are tier-specific layout: top 60% character + bottom 40% title typography + Spark & Anvil footer; per-tier register from `TIER_REGISTERS`). Imports `STYLE_REGISTRY` + `_DEFAULT_STYLE` + `_parse_frontmatter` + `_trim_excerpt_for_prompt` directly from `pilot_interleaved_ensemble_chapter` so the cover, the cast portrait, and beat 0 all inherit the same per-app visual register. See `Docs/AUDIT_PDF_BOOK_COVER_COHERENCE_2026-06-11.md` for the parent audit + `scripts/gen_book_covers.py::build_prompt()` for the canonical 3-block impl.
-
-### Portrait companion (cast portrait gen)
-
-The `scripts/gen_cast_portraits.py` prompt pipeline (refactored 2026-06-11) adopts the R-PATH-B-PROMPT-PARITY 3-block pattern with portrait-specific framing:
-
-| Block | Source for portraits | Differs from beat-illustration use |
-|---|---|---|
-| **CHARACTER IDENTITY (LOAD-BEARING)** | YAML front-matter (`character:` + `role:` + `primitive:`) + first 30 body lines of the chapter MD (trimmed to ~220 words) + species-defaulting clause | Beat pipeline takes prose from beat-0's `prose-range` slice; portrait pipeline takes from the chapter MD's opening passage directly (no sidecar dependency since portrait gen runs before any sidecar exists) |
-| **POSE / FRAMING** | Neutral 3/4 head-and-shoulders portrait; character fills ~65% of square 1:1 frame; transparent background; signature visual trait visible IF described in CHARACTER IDENTITY | Beat pipeline uses `build_composition_direction(beat)` for per-beat cinematic shots; portrait pipeline uses a fixed neutral pose (`_PORTRAIT_POSE_FRAMING` constant) since portraits are character-identity sidebars, not scene depictions |
-| **STYLE** | `STYLE_REGISTRY.get(app_slug, _DEFAULT_STYLE)` — same registry as the beat pipeline | Identical; shared lookup so per-app palette overrides cascade to BOTH portrait + beat 0 simultaneously |
-
-**Chapter MD lookup**: `_load_chapter_md_for_char(app_slug, char_slug)` resolves `<app>-app/Docs/dn-s/chapters/<char_slug>.md`. When the chapter MD doesn't exist (cast member present in `apps.generated.ts` but no DN-S chapter authored yet), the prompt falls back to a legacy name+role construction with STYLE_REGISTRY still applied — so per-app palette consistency holds across both paths.
-
-**Regen wave discipline**: `gen_cast_portraits.py --regen` overwrites existing portraits. The `convert_to_webp()` helper accepts `overwrite=True` when `--regen` is set; without this guard, the old WebP would persist even after a successful Flash gen + PNG write. Reference fix: 2026-06-11 portrait remediation wave (PR following this codification).
-
-**Don'ts (portrait-specific)**:
-
-- Don't hand-roll a parallel `extract_character_identity()` in the portrait script — import from the pilot module so the species-defaulting clause and front-matter parsing stay synchronized
-- Don't expand `_PORTRAIT_POSE_FRAMING` to include scene depiction — portraits are character-identity sidebars; scene context belongs to beat 0
-- Don't skip `--regen` when remediating drift; the default `--regen=False` behavior is intentional for first-emit waves but blocks remediation
-- Don't add a per-character chapter MD path override unless the character genuinely lives in a non-canonical location — the Tier-1 source-of-truth `<app>-app/Docs/dn-s/chapters/<char_slug>.md` is the rule
-
-### Cross-references
-
-- `Docs/AUDIT_PATH_B_WRONG_CHARACTER_2026-06-11.md` — root-cause audit + Phase A patch + Phase B proof regen receipts
-- `Docs/AUDIT_CAST_PORTRAIT_VS_BEAT_0_COHERENCE_2026-06-11.md` — portrait companion audit (100% drift across 58 chapters); triggered portrait-companion codification
-- `Docs/AUDIT_PDF_BOOK_COVER_COHERENCE_2026-06-11.md` — sister audit for the book cover gen pipeline; refactor pending
-- `labsmith/scripts/pilot_interleaved_ensemble_chapter.py:446` — `build_illustration_prompt()` canonical impl (beat illustrations)
-- `labsmith/scripts/gen_cast_portraits.py` — `build_prompt()` portrait impl (imports STYLE_REGISTRY + helpers from pilot module)
-- `labsmith/scripts/auto_segment_chapter.py:278` — generic `scene` placeholder upstream (treated as structural metadata, not artistic direction)
-- `Docs/SPEC_INTERLEAVED_ENSEMBLE_CHAPTER.md` — ensemble sidecar manifest schema (parent spec)
-
-### Pre-distribute text-leak gate (R-PATH-B-TEXT-LEAK-GATE; 2026-06-13)
-
-**`path_b_wave_runner.sh` MUST run `audit_image_text_leaks.py` against each newly-generated beat PNG BEFORE distributing to spark-anvil-site. If any beat verdicts LEAK, the wave runner fails-fast for that chapter — no distribution to public/chapters/ — and the operator regenerates with a tightened prompt.**
-
-#### Why the gate exists
-
-Queue #971 Phase 2 portfolio sweep (`Docs/AUDIT_IMAGE_TEXT_LEAKS_PORTFOLIO_SWEEP_2026-06-13.md`) classified 397 site beat PNGs and surfaced **62 LEAKs (15.6%)**. Without a pre-distribute gate, future Path B waves can ship new leaks. The top-3 leakers (BeatForge 11 + GambitTales 10 + BridgeForge 9 = 48% of total) demonstrate the regression class.
-
-Pre-distribute is the right seam (NOT post-distribute or runtime detection) because:
-
-1. Audit cost is sub-cent per image (~$0.001 Gemini 2.5 Flash); cumulative gate cost per chapter is ~$0.005 (5 beats × $0.001)
-2. Re-running the gen for a failed chapter is cheaper than syncing a leak + then remediating it (avoids cascade through `sync_content_to_site.sh` → site prebuild → Cloudflare deploy)
-3. The operator sees the leak verdict + detected text strings inline in the wave runner output
-
-#### Gate mechanics (`scripts/path_b_wave_runner.sh` step 2.5)
-
-```bash
-if [ "${SKIP_TEXT_LEAK_GATE:-0}" != "1" ]; then
-    for beat in beat_00..beat_04; do
-        audit_image_text_leaks.py --image $beat --json-out tmp
-        verdict=$(jq -r '.results[0].verdict' tmp)
-        if [ "$verdict" = "LEAK" ]; then
-            echo "✗ $app/$slug — text-leak gate FAIL on beat $i"
-            mark-failed; break-chapter
-        fi
-    done
-fi
-```
-
-The gate enumerates each `${slug}_beat_0N.png` produced by `pilot_interleaved_ensemble_chapter.py`, calls the audit script per-beat, and parses the per-image verdict. LEAK verdict → fail the chapter; the wave runner records `<app>/<slug>:text-leak-gate` in the FAILED_LIST and moves to the next chapter. Operator inspects the leak diagnostics + reruns the wave.
-
-#### Override
-
-Set `SKIP_TEXT_LEAK_GATE=1` to bypass. Use sparingly:
-
-- Trauma-axis carve-outs where transient text leaks are operationally acceptable
-- Diagnostic runs where the operator wants to ship + inspect the leak in-context
-- Math-app override is already handled inside `audit_image_text_leaks.py` (MULTI_DIGIT is OK for math apps; see `MATH_APPS` set) — don't reach for `SKIP_TEXT_LEAK_GATE` for math apps unless the gate misfires
-
-Default = gate enabled. Anytime a math-app beat surfaces a false-positive LEAK because of legitimate single-digit / multi-digit numerals not caught by the math-app override, FIRST extend `MATH_APPS` in the audit script; only use the env-var bypass when extension isn't appropriate.
-
-#### Companion: per-app remediation queue (R1)
-
-The 62 LEAKs surfaced in the portfolio sweep are NOT auto-remediated by adding this gate. R1 remediation per `Docs/AUDIT_IMAGE_TEXT_LEAKS_PORTFOLIO_SWEEP_2026-06-13.md` § Recommendations:
-
-1. Per-app regen for top-3 leakers (BeatForge / GambitTales / BridgeForge = 30 of 62)
-2. Per-app spot-check + selective regen for tail-15 apps (32 of 62)
-3. Verify post-regen via `audit_image_text_leaks.py --app <slug>` returning 0 LEAKs
-
-The gate prevents NEW leaks; R1 remediates EXISTING leaks. Both are required for full closure of Queue #971.
-
-#### When this rule applies
-
-- Every `path_b_wave_runner.sh` invocation — auto-applies via step 2.5 (chapter beats)
-- Every `gen_cast_portraits.py` invocation — auto-applies via `gate_single_image()` between PNG render and WebP conversion (R-PATH-B-TEXT-LEAK-GATE companion, 2026-06-15)
-- Every `gen_book_covers.py` invocation — auto-applies via `gate_single_image()` between PNG render and WebP conversion (R-PATH-B-TEXT-LEAK-GATE companion, 2026-06-15)
-- Any one-off chapter regen via direct `pilot_interleaved_ensemble_chapter.py` invocation — operator MUST manually run `audit_image_text_leaks.py --image <beat>.png` before copying to spark-anvil-site (the gate is currently wired into the wave runner only; one-off path is operator-discipline)
-- Future Path C ensemble gen (when portfolio-scale `gen_app_illustrations.py --interleaved` ships) — MUST adopt the same pre-distribute gate pattern
-
-#### Reusable gate function
-
-The per-image gate is canonicalized in `audit_image_text_leaks.py:gate_single_image()`. New gen scripts MUST import + call this function rather than re-implement the audit + verdict logic. Signature:
-
-```python
-from audit_image_text_leaks import gate_single_image
-
-passed, audit = gate_single_image(
-    image_path,                # Path to the rendered PNG
-    app_slug="myapp",          # Optional explicit override; falls back to path detection
-    client=client,             # Optional google.genai.Client; lazy-built if None
-    skip_env="SKIP_TEXT_LEAK_GATE",  # Env override knob
-)
-if not passed:
-    # quarantine, log, continue (don't crash; assets are independent)
-```
-
-The function respects `SKIP_TEXT_LEAK_GATE=1` for trauma-axis carve-outs + diagnostic runs. `passed=False` only on `verdict == "LEAK"`; CLEAN / BORDERLINE / NON_ENGLISH_FLAG / GATE_SKIPPED all pass.
-
-`app_slug_from_path()` recognizes three layouts: `chapters/<app>/`, `cast/<app>/`, and `CustomArt/<app>/`. The math-app override (multi-digit numerals OK for `MATH_APPS`) carries through.
-
-#### Gate quarantine
-
-Gate-blocked assets are moved to `labsmith/tmp/text-leak-gate-failed/<asset-kind>/<app-slug>/` (NOT distributed). Inspect, manually decide whether to regen or accept; do NOT `mv` back to the source path without re-auditing.
-
-#### INTENTIONAL_CURRICULUM_SIGNAGE — 6th-category allow-list (2026-06-16)
-
-For chapters where curricular signage (compass cardinals N/E/S/W on a compass scene; angle measures 60° / 120° on a polygon; variable letters x / y in equation visuals; cable-tension RATIOS in bridge engineering scenes; etc.) is intentional and load-bearing per the chapter's curricular surface, declare the allow-list IN the chapter MD's YAML front-matter:
-
-```yaml
----
-character: Apprentice Sides
-role: ...
-gate-allow-text:
-  - N
-  - E
-  - S
-  - W
-  - 60
-  - 120
-gate-allow-text-pattern: '^[0-9]{1,3}°?$'   # OPTIONAL regex for ranges (e.g., any angle measure)
----
-```
-
-When the audit detects text that would normally LEAK (ENGLISH_WORDS or non-math-app MULTI_DIGIT), it consults the chapter MD's front-matter. If ALL detected text matches the `gate-allow-text` list OR the `gate-allow-text-pattern` regex, the verdict downgrades from `LEAK` → `LEAK_ALLOWLISTED` (PASSING). The audit emits the allow-list match in the per-image JSON for audit-trail clarity.
-
-**Resolution mechanism**:
-
-| Image path pattern | Resolved chapter MD |
-|---|---|
-| `spark-anvil-site/public/chapters/<app>/chapter_<char>_beat_NN.png` | `<app>-app/Docs/dn-s/chapters/<char>.md` (Tier-1) |
-| `spark-anvil-site/public/chapters/<app>/chapter_<char>-advanced_beat_NN.png` | `labsmith/Resources/DN-S-Tier-Upper/chapters/<app>/<char>.md` (Tier-2) |
-
-**When to use the allow-list**:
-
-- Chapter prose explicitly references curricular signage (compass / angle measures / equation variables / ratios / scale labels / etc.)
-- Math-app chapters where multi-digit signage IS the curriculum (already handled by `MATH_APPS` set; allow-list is BELT-AND-SUSPENDERS for non-math-app math content like cable-tension RATIOS)
-- Trauma-gated chapters where SAMHSA register intentionally surfaces small affect labels in the scene
-- Op β R1 accept-residual chapters: bridgeforge/cable (cable-tension RATIOS), fractionforge/equi (equivalent-fraction labels), numbersense/splitter-sasha (digit-split visuals), quillspell/ember (spelling letters)
-- Geometryforge curricular bypasses surfaced 2026-06-16: apprentice-sides + compass-wraith (N/E/S/W cardinals), captain-construction (workshop labels), madame-polygon (angle measures + variables), axia-and-theora (background village signage)
-
-**Don'ts**:
-
-- Don't use the allow-list to bypass real defect text (typos / hallucinated brand names / wrong-character signage). The allow-list is for INTENTIONAL curricular content, not accidental leaks
-- Don't make the allow-list too permissive (e.g., `gate-allow-text-pattern: '.*'` accepts everything; defeats the gate's purpose)
-- Don't omit `gate-allow-text` when SKIP_TEXT_LEAK_GATE=1 was used as the bypass — codify the allow-list in the MD so the next audit doesn't need the env override
-
-**Companion**: when SKIP_TEXT_LEAK_GATE=1 is used to bypass the gate, the OPERATOR SHOULD also add a `gate-allow-text:` entry to the chapter MD so future re-audits don't re-flag the same intentional signage.
-
-#### What this rule does NOT cover
-
-- **`copy_cast_portraits_to_site.sh`** — the gen-side gate inside `gen_cast_portraits.py` is sufficient. Optionally extend the sync script with `--gate-on-sync=1` for belt-and-suspenders. Default off
-- **Mascot / topic / modecard / backdrop gen** — separate scripts (`gen_app_illustrations.py` variants); the gate doesn't auto-apply there yet. Pending Item 1 (Queue #971 Phase 5+ portfolio sweep)
-- **Achievement badge gen (`gen_app_badges.py`)** — rarity-tier frame treatment merges text via design; flagged but not gate-wired. Future: extend gate to recognize intentional title typography vs accidental signage leaks
-
-#### Audit script resilience flags (Item 4 — codified V9; expanded V10 2026-06-23)
-
-`scripts/audit_image_text_leaks.py` exposes three resilience knobs added after the V8 stall incident (Gemini API hung 14+ min mid-call; killed via SIGINT lost 1197/1692 images of progress with no JSON written):
-
-| Flag | Default | Behavior |
-|---|---|---|
-| `--call-timeout <seconds>` | 60 | Wraps each `client.models.generate_content()` call in `concurrent.futures.ThreadPoolExecutor.submit().result(timeout=...)`. On timeout, raises + falls into the retry path |
-| `--max-retries <N>` | 1 | Total attempts = `max_retries + 1`. On transient failure (timeout / 503 / 429), retries with backoff |
-| `--checkpoint-every <N>` | 50 | After every N completed classifications, writes partial JSON to `--json-out` so a stall doesn't lose all progress |
-| `--resume <partial.json>` | off | Skips images whose absolute path already appears in `partial.results`. Combine with `--checkpoint-every` for stall recovery |
-
-`SIGINT` (`Ctrl-C`) writes a final checkpoint before `sys.exit(130)` — partial JSON is always preserved.
-
-**When this rule applies** — every audit invocation (portfolio-wide sweep, per-app sweep, spot-check, single-image, gate-mode). The flags are optional but the defaults are tuned for portfolio-scale (1500+ images in ~30 min on Gemini 2.5 Flash classification, with stall-resilient checkpointing).
-
-**Canonical full-portfolio invocation**:
-
-```bash
-/usr/bin/python3 scripts/audit_image_text_leaks.py \
-    --site-sweep \
-    --json-out Docs/AUDIT_IMAGE_TEXT_LEAKS_FULL_<date>.json \
-    --call-timeout 60 \
-    --checkpoint-every 50
-# If a stall recurs mid-sweep:
-/usr/bin/python3 scripts/audit_image_text_leaks.py \
-    --site-sweep \
-    --json-out Docs/AUDIT_IMAGE_TEXT_LEAKS_FULL_<date>.json \
-    --resume Docs/AUDIT_IMAGE_TEXT_LEAKS_FULL_<date>.json
-```
-
-#### Wave Q CI guardrail (Item 5 — codified V9 + Round 488 audit-script discipline + V10 rule-sync 2026-06-23)
-
-`scripts/check_no_hardcoded_paths.sh` + `.github/workflows/check-no-hardcoded-paths.yml` enforce the § P1 standing directive that scripts MUST use relative paths (not `/Volumes/Data/Projects/GitHub/...` hardcodes). Runs on every PR open + push to main that touches `scripts/**.{py,sh}`.
-
-**Why**: per V8 stall incident root-cause + Round 488 `Docs/AUDIT_DOCS_ONLY_APP_RANKING_2026-06-02.md` inventory bug — scripts with hardcoded absolute paths to the (now-moved) `/Volumes/Data/Projects/GitHub/` root silently fail when the portfolio root moves. The CI guardrail prevents regression at PR time.
-
-**Self-skip mechanism**: the check script reconstructs the forbidden pattern from variables (so its own grep doesn't self-flag) AND filters out its own filename (`check_no_hardcoded_paths.sh`) from the match set. Verified: PASS on clean tree; FAIL with exit 1 on planted regression script containing the hardcoded path.
-
-**Companion rule**: `.claude/rules/portfolio.md` § "P1 — Scripts must use relative paths" is the authoritative spec; this CI guardrail is the automated enforcement. Distributed to portfolio app repos via `scripts/copy_rules_to_repos.sh --apply` (V10 round-close).
-
-#### Cross-references
-
-- `Docs/AUDIT_IMAGE_TEXT_LEAKS_PORTFOLIO_SWEEP_2026-06-13.md` — parent audit (62 LEAKs surfaced)
-- `Docs/AUDIT_TEXT_IN_IMAGE_LEAK_SCAN_2026-06-13.md` — original audit policy + category framework
-- `Docs/AUDIT_PORTRAIT_BOOK_COVER_TEXT_LEAK_GATE_WIRE_UP_2026-06-15.md` — companion gate adoption audit (this expansion)
-- `Docs/RESEARCH_OPTION_V_P3_CARRY_ITEMS_SCOPING_2026-06-15.md` § Item 2 — parent scoping for this expansion
-- `labsmith/scripts/audit_image_text_leaks.py` — audit tool + `gate_single_image()` reusable function
-- `labsmith/scripts/path_b_wave_runner.sh:96-122` — wave runner gate impl
-- `labsmith/scripts/gen_cast_portraits.py` — portrait gate wire-up
-- `labsmith/scripts/gen_book_covers.py` — book cover gate wire-up
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Pre-distribute anatomy gate (R-ANATOMY-GATE; 2026-06-29)
 
 **Every newly-generated cast artifact (chapter beat / cast portrait / book cover) MUST pass an anatomy-defect gate before distribution, the same way it must pass the text-leak gate.** Sister rule to R-PATH-B-TEXT-LEAK-GATE. Codified after a user-reported defect ("cast character has 3 hands") + the V25 portfolio anatomy sweep (`scripts/audit_image_anatomy.py --all-sweep`), which surfaced glitches the text-leak gate never looked at (e.g. `chanceforge/flipside` — two faces on one head).
 
-### What the gate blocks (and what it must NOT)
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
-`scripts/audit_image_anatomy.py:gate_single_image()` returns `passed=False` ONLY on verdict `ANATOMY_DEFECT` — a clear UNINTENTIONAL glitch: extra hand/arm/leg/head, six fingers, fused/duplicated/detached limbs, two faces on one head, impossible joints. `CLEAN` and `BORDERLINE` both PASS.
+## Every generated illustration is visually reviewed for UNINTENDED INAPPROPRIATE READINGS — anatomically-suggestive shapes + racial/cultural caricature (R-IMAGE-APPROPRIATENESS; 2026-07-18)
 
-**CRITICAL — intentional stylized/non-human anatomy is NOT a defect and must never be blocked**: octopus-tween with 8 arms, hand-less creatures (snails, birds with wings-not-arms, blobs), cartoon 4-finger hands, partly-hidden hands. The classifier prompt biases toward CLEAN when uncertain to stay low-false-positive. Smoke-tested: Eight-the-octopus (characterforge) = CLEAN ("8 arms, anatomically correct").
+**Every generated character/scene illustration on a kid-facing surface (chapter beat / opener / spot · cast portrait · book cover · mascot · any `/story`, `/cast`, `/play`, or homepage art) MUST be VISUALLY REVIEWED by the in-session agent — the agent Reads the rendered image — for UNINTENDED INAPPROPRIATE READINGS before it ships, and any image that carries one is regenerated with a tightened prompt, never shipped. This is the appropriateness sibling of R-ANATOMY-GATE + R-PATH-B-TEXT-LEAK-GATE, and — like the screenshot-DoD — it is a HUMAN/agent VISUAL judgment, because an automated classifier cannot reliably catch "this shape/feature happens to look like X."** Codified per founder-flag 2026-07-18 (the bugscamp `/story` "Wiggle" card: the under-stone garden grub — a pale, smooth, C-curled tubular form with a rounded tip — read as **anatomically suggestive (a male private part)**; regenerated + shipped as bugscamp-app #53 / site #1029).
 
-### Where it is wired (auto-applies)
-
-| Surface | Wire point | Behavior |
-|---|---|---|
-| Chapter beats (Path B wave) | `path_b_wave_runner.sh` step 2.6 | Per-beat; fail-fast → `<app>/<slug>:anatomy-gate` in FAILED_LIST; operator regens the beat with `--beat-idx N --no-audio` |
-| Cast portraits | `gen_cast_portraits.py` (after text-leak gate, before WebP) | Quarantine to `tmp/anatomy-gate-failed/cast-portraits/<app>/`; retry with `--regen` |
-| Book covers | `gen_book_covers.py` (after text-leak gate, before WebP) | Quarantine to gate-quarantine root with `_ANATOMY_FAIL` suffix |
-
-**Direct-pilot workflow** (gen via `pilot_interleaved_ensemble_chapter.py` + manual audit, not the wave runner): the operator MUST run a per-beat anatomy loop alongside the text-leak loop before distributing — `audit_image_anatomy.py --image <beat>.png` per beat; regen any `ANATOMY_DEFECT`.
-
-### Reusable gate function
-
-```python
-from audit_image_anatomy import gate_single_image as anatomy_gate
-passed, audit = anatomy_gate(png_path, client=client)  # passed=False only on ANATOMY_DEFECT
-```
-
-Respects `SKIP_ANATOMY_GATE=1` (rare; deliberately surreal scenes). **Fails OPEN on API error** (a transient classifier failure does not block a wave) — the periodic `--all-sweep` (run after big gen rounds, → `Docs/AUDIT_IMAGE_ANATOMY_*.json`) is the historical-gap backstop, exactly as the Cloudflare prebuild gate backstops the cast-portrait-slug rule.
-
-### Two-gate defense-in-depth (same pattern as R-CAST-PORTRAIT-SLUG)
-
-| Gate | When | Coverage |
-|---|---|---|
-| Gen-time `gate_single_image()` | every new artifact gen | NEW artifacts in the active gen round |
-| Periodic `--all-sweep` | after major gen rounds / on demand | HISTORICAL artifacts across the whole portfolio (~870 portraits + ~3147 beats) |
-
-Both stay; neither replaces the other. New gen scripts MUST call `anatomy_gate()` alongside the text-leak gate.
-
-### Cross-references
-
-- `scripts/audit_image_anatomy.py` — auditor + `gate_single_image()`
-- `scripts/audit_image_text_leaks.py` — sibling (text) gate this mirrors
-- `Docs/AUDIT_IMAGE_ANATOMY_FULL_2026-06-29.json` — V25 portfolio sweep results
-- `.claude/rules/spark-anvil-website.md` § R-PATH-B-TEXT-LEAK-GATE — sister rule
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Chapter hero source-of-truth (R-CHAPTER-HERO-SOURCE; 2026-06-11)
 
 **For multi-beat chapters, beat 0 IS the chapter hero. The top-of-page `chapter_<char>_opener.webp` (rendered via `<ChapterIllustration variant="opener" />`) MUST NOT also render** — doing both creates visual redundancy (two opening-scene heroes within 200px) and wastes gen budget at portfolio scale.
 
-### When the rule applies
-
-| Surface | Multi-beat chapter | Path-A-only chapter |
-|---|---|---|
-| Cast page `/cast/<app>/<char>` | beat 0 hero (via `InterleavedChapterAudioPlayer`); NO top opener WebP | top opener WebP (no beat 0 exists) |
-| Tier-2 page `/cast/<app>/<char>/advanced` | same as above (advanced variant of multi-beat sidecar) | same as above |
-| `/stories` index thumbnail | uses `chapter_<char>_opener.webp` (cached on disk; not rendered on chapter page itself) | uses `chapter_<char>_opener.webp` |
-| PDF book cover (per-app anthology) | uses `<app>-app/Resources/CustomArt/<app>/cover_book_<tier>.webp` from `gen_book_covers.py` (NOT a chapter asset; #812 premise corrected per `Docs/AUDIT_PDF_BOOK_COVER_COHERENCE_2026-06-11.md`) | same per-app cover (not a per-chapter asset) |
-
-The gate in the Astro template is `!hasMultibeat` for the top opener. `hasMultibeat` derives from `multibeat-chapters.json` (prebuild manifest indexing chapters with sidecar + beat PNGs + audio shipped).
-
-### Why this rule exists
-
-Per user-direct 2026-06-11 late ("should we even need opener illustration now that we have multi-beat illustrations?") + Option B selection of the 5-option opener-deprecation decision matrix in `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md`. Visual redundancy + gen-budget waste + storybook-format intent (text+image alternating from the START) all favored dropping the separate top-hero for multi-beat chapters.
-
-### Don'ts
-
-- Don't render `<ChapterIllustration variant="opener" />` unconditionally on a chapter page — always gate on `!hasMultibeat` (OR equivalent feature-detection if the file naming convention evolves)
-- Don't DELETE `chapter_<char>_opener.webp` from `spark-anvil-site/public/chapters/<app>/` — the file still serves `/stories` thumbnail role (per `Docs/AUDIT_PDF_BOOK_COVER_COHERENCE_2026-06-11.md` the PDF cover is `cover_book_<tier>.webp`, NOT `_opener.webp`; the `_opener.webp` only feeds the site thumbnail + Path-A-only chapter-page hero)
-- Don't render BOTH `<ChapterIllustration variant="opener" />` AND beat 0 in the same page — that's exactly the visual redundancy the rule eliminates
-- Don't bypass `.ic-beat-image-opener` styling — beat 0's hero treatment (max-width 960px + heavier shadow + 18px radius) is what makes it read as a chapter cover rather than another beat. Reducing those values reverts to "just another beat" UX
-
-### Reference impl
-
-- `spark-anvil-site/src/pages/cast/[app]/[char].astro` — gate at line 105 (`{!hasMultibeat && <ChapterIllustration ... />}`)
-- `spark-anvil-site/src/pages/cast/[app]/[char]/advanced.astro` — same gate for Tier-2 register
-- `spark-anvil-site/src/components/InterleavedChapterAudioPlayer.astro` — `.ic-beat-image-opener` hero styling (960px / 18px / 0 6px 24px)
-
-### Forward gen policy (2026-06-13) — DO NOT generate new opener WebPs
-
-Per user-direct 2026-06-13 ("we are not going with openers anymore. this should be documented in the repo folder"): the gen-side stance is STRONGER than the render-side gate above. **NEW chapter authoring does NOT emit `chapter_<char>_opener.webp` assets.** Multi-beat (5-beat canonical per `.claude/rules/distributed-narrative.md` § R-MULTIBEAT-DEFAULT) is the forward standard; beat 0 (Pro tier) IS the chapter hero on the site AND in the PDF book.
-
-| Direction | Pre-2026-06-13 | Post-2026-06-13 (this directive) |
-|---|---|---|
-| **New chapter gen** | `gen_app_illustrations.py --chapters` → Pro `_opener.webp` + Flash `_spot.webp` (~$0.18/chapter) | `auto_segment_chapter.py` + `pilot_interleaved_ensemble_chapter.py` → 5 beats (Pro beat 0 + 4 Flash; ~$0.32/chapter). NO standalone opener gen |
-| **Forward authoring path** | Single-beat allowed as default | Multi-beat 5-beat canonical (R-MULTIBEAT-DEFAULT); single-beat is a narrow carve-out |
-| **Legacy opener WebPs on disk (769 across portfolio)** | Live as chapter-page hero + `/stories` thumbnail + (some) PDF cover | STAY on disk as legacy asset; serve `/stories` thumbnail for Path-A-only chapters + chapter-page hero for the dwindling pre-2026-06-12 single-beat set. Do NOT delete |
-| **`/stories` thumbnail for multi-beat chapters** | `chapter_<char>_opener.webp` | **MIGRATION NEEDED** to beat 0 source (`chapter_<char>_beat_00.png`); work-queue item filed |
-
-### Downstream work items (filed 2026-06-13)
-
-Filed in `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "Opener illustration deprecation":
-
-1. ✅ **SHIPPED 2026-06-27 (V23)** — Migrate `/stories` + cluster thumbnail source for multi-beat chapters → beat 0. `src/components/ChapterIllustration.astro` now imports the `multibeat-chapters.json` manifest and resolves `thumbnail` + `opener` variants to `chapter_<char>_beat_00.webp` for any multibeat chapter (all 582 have `beat_00.webp`). **CRITICAL CONSTRAINT**: the resolver MUST use the static manifest import, NOT `node:fs` existence checks — `node:fs` cannot be bundled under the `@astrojs/cloudflare` hybrid adapter (cluster pages are SSR) and breaks the build. This closed a Cloudflare deploy FAIL where forward-authored multibeat chapters (no legacy `_opener.webp` on disk) 404'd the thumbnail. See work-queue § "V23 P0 — Cloudflare build FAIL: broken `chapter_<char>_opener.webp` thumbnail refs".
-2. Strip opener gen from `gen_app_illustrations.py --chapters` (~30 min)
-3. Audit non-GambitTales PDF builders for legacy opener-only fallback (~15 min)
-4. Companion deletion sweep (DEFERRED until app reaches 100% multi-beat coverage)
-
-### What this rule does NOT cover
-
-- **PDF book cover source-of-truth transition** — separate work item `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "PDF book cover coherence audit vs PDF book content" handles the PDF builder change from `_opener.webp` to `_beat_00.png`
-- **Legacy `chapter_<char>_opener.webp` deletion** — the file remains on disk for `/stories` thumbnail use + Path-A-only chapter-page hero use. Deletion is deferred until both downstream uses have migrated (work items 1 + 2 above + per-app multi-beat 100% coverage)
-- **Ensemble chapter Path B** — same rule applies (beat 0 is the hero); no special-casing needed once ensemble chapters move to Path B
-- **Edge-case forced single-beat chapters** — extremely rare (trauma-axis chapters where SAMHSA register makes 5-beat infeasible). If a chapter genuinely needs single-beat, surface to user; the chapter retains the legacy `_opener.webp` + `_spot.webp` treatment as documented carve-out
-
-### Cross-references
-
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "Should the opener illustration still exist now that multi-beat illustrations ship?" — the parent strategic question + Option B selection
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "PDF book cover coherence audit vs PDF book content" — downstream PDF-axis transition
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § "Cast portrait + opener illustration coherence audit vs prose + multi-beat illustrations" — audit scope collapses from 3 axes to 2 axes for multi-beat chapters under this rule (portrait + beat 0)
-- `.claude/rules/spark-anvil-website.md` § R-PATH-B-PROMPT-PARITY — beat 0 (Pro tier) is the reference seed for downstream Flash beats; removing the separate opener-gen step doesn't change this because beat 0 IS the opener in `pilot_interleaved_ensemble_chapter.py`'s pipeline
-- `Docs/CONTEXT_HANDOFF_2026-06-11_P0_ROUND_CLOSED.md` — predecessor round confirming all 53 chapters have beat 0 Pro-tier assets
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Content upload + manifest rebuild discipline (R-CONTENT-UPLOAD-MANIFEST-DISCIPLINE; 2026-06-19)
 
 **Every content upload to spark-anvil-site MUST result in the corresponding freshness manifest being rebuilt before/during the next Cloudflare Workers Builds deploy.** The site's `package.json` `prebuild` chain handles 5 of 6 manifests automatically via filesystem-scan or git-mtime-scan builders. The 6th manifest (`pdfs-recency.json`) lives hub-side and requires explicit re-run after every PDF render wave.
 
-### 6 manifests + rebuild discipline
-
-| Manifest | Builder | Trigger | Operator responsibility |
-|---|---|---|---|
-| `src/data/cast-recency.json` | `scripts/build-cast-recency-manifest.mjs` | site prebuild | None — auto. Reads git mtime of sidecars + reads `pdfs-recency.json` mirror |
-| `src/data/multibeat-chapters.json` | `scripts/build-multibeat-chapter-manifest.mjs` | site prebuild | None — auto. Scans `public/chapters/<app>/` for sidecar + snapshot + per-beat PNG + M4A + VTT sets |
-| `src/data/audio-drama-manifest.json` | `scripts/build-audio-drama-manifest.mjs` | site prebuild | None — auto. Scans `public/audio/<app>/*.m4a` |
-| `src/data/books-manifest.json` | `scripts/build-books-manifest.mjs` | site prebuild | None — auto. Scans `public/books/*-book.pdf` + `public/books/covers/<app>/{standard,advanced}.webp` |
-| `src/data/cast.json` + `src/data/cast-slug-map.json` | `scripts/build-cast-manifest.mjs` + `build-cast-slug-map.mjs` | site prebuild | None — auto |
-| **`src/data/pdfs-recency.json`** | hub-side `scripts/build_pdfs_recency_manifest.py` | **manual after every PDF render wave** | MANDATORY: run hub-side; copy to site; commit |
-
-### PDF-recency refresh recipe (after every PDF render wave)
-
-```bash
-# In labsmith/
-python3 scripts/build_pdfs_recency_manifest.py
-
-# Mirror to spark-anvil-site/
-cp Resources/PDFBooks/pdfs-recency.json \\
-   ../spark-anvil-site/src/data/pdfs-recency.json
-
-# Commit in spark-anvil-site/
-cd ../spark-anvil-site
-git add src/data/pdfs-recency.json
-git commit -m "PDF recency manifest refresh after <wave-name> render wave"
-git push origin <branch>
-```
-
-If the manifest isn't refreshed after a PDF render wave, the homepage "Freshly Updated PDFs" strip + the per-app PDF-weight bonuses on the recency comparator stale out — newly-rendered PDFs DON'T surface above older ones, even though they're fresher.
-
-### What NOT to do
-
-- **Do NOT skip the PDF-recency refresh after a render wave** — site prebuild can't know about hub-side `.pdf` mtimes unless the mirror is committed
-- **Do NOT auto-run `build-apps-data.mjs`** — destructive; wipes the rich 136-app schema (see ⚠️ banner at `scripts/build-apps-data.mjs:3`). Use targeted Python read+modify+write edits to `apps.generated.ts` instead
-- **Do NOT trust filesystem mtime in cast-recency** — it scans git mtime via `git log -1 --format=%aI`; untracked sidecars get `null` and are excluded from the manifest (correct behavior — only committed content surfaces)
-
-### RSS + sitemap per-entry freshness (this PR codification)
-
-`feed.xml.ts` `<entry><updated>` + `sitemap.xml.ts` `<url><lastmod>` use per-entry mtime sourced from `books-manifest.json` (book entries) + `cast-recency.json` (chapter URLs). Build-time `new Date()` is NOT acceptable for either surface — RSS subscribers + search-engine crawlers depend on these timestamps for novelty / recrawl-priority decisions.
-
-When adding new RSS entry types OR new sitemap URL classes, the per-entry mtime MUST be sourced from an existing manifest OR a fresh one MUST be added to the prebuild chain.
-
-### Cross-references
-
-- `Docs/AUDIT_HOMEPAGE_FRESHNESS_UPDATE_DISCIPLINE_2026-06-19.md` — parent audit
-- `scripts/build-cast-recency-manifest.mjs` — canonical recency builder (git-mtime based)
-- `scripts/build_pdfs_recency_manifest.py` — hub-side PDF recency builder
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Sidecar `tier` field required (R-SIDECAR-TIER-REQUIRED; 2026-06-19)
 
 **Every multi-beat sidecar manifest MUST carry a `tier` field with integer value 1 or 2.** Applies to BOTH source-of-truth sidecars in `labsmith/Resources/AutoSegmentedChapters/<app>/<char>.beats.json` AND distributed copies in `spark-anvil-site/public/chapters/<app>/chapter_<char>.beats.json`.
 
-### Why this rule exists
-
-Surfaced via Wave 4 chanceforge T2 center fix (2026-06-18). The pilot script `scripts/pilot_interleaved_ensemble_chapter.py` resolves the chapter MD path from the sidecar's `tier` field:
-
-- `tier: 1` → `<app>-app/Docs/dn-s/chapters/<char>.md` (Tier-1 source-of-truth)
-- `tier: 2` → `labsmith/Resources/DN-S-Tier-Upper/chapters/<app>/<char>.md` (Tier-2 source-of-truth)
-
-Sidecars missing the field silently default to T1 path. Failure mode: T2 chapter regen reads T1 prose → per-beat audio narrates T1 text → audio + on-page T2 prose mismatch → reader perceives the page as broken.
-
-### How to apply
-
-When `auto_segment_chapter.py` emits a new sidecar, it must include `tier: 1` (default) or `tier: 2` (if `--tier 2` flag set). The flag MUST be threaded through wave runners (`path_b_wave_runner.sh --tier 2`).
-
-When manually authoring a sidecar (rare; usually regenerated):
-
-```json
-{
-  "chapter": "<char>",
-  "app": "<app>",
-  "tier": 2,
-  "beats": [...]
-}
-```
-
-### Canonical Tier-2 sidecar location + use the full wave runner (2026-07-02)
-
-**Tier-2 sidecars live in a SEPARATE root from Tier-1, keyed by BARE slug — the `-advanced` suffix appears only in OUTPUT filenames, never in the sidecar's own path.** Codified after the 2026-06-30 FractionForge session placed `auto_segment_chapter.py --tier 2` output (which emits `<slug>-advanced.beats.json`) into the Tier-1 root, mixing the two tiers' sidecars.
-
-| Tier | Canonical sidecar path |
-|---|---|
-| Tier-1 | `Resources/AutoSegmentedChapters/<app>/<slug>.beats.json` |
-| Tier-2 | `Resources/AutoSegmentedChapters-Tier2/<app>/<slug>.beats.json` (**bare slug** — NOT `<slug>-advanced.beats.json`) |
-
-**Don't hand-assemble a Tier-2 chapter.** For an end-to-end Tier-2 ship (audio + the full 9-file site set + Tier-1 beat reuse per R-TIER-2-MULTIBEAT-REUSE), use `scripts/t2_coverage_wave_runner.sh <app>:<slug,...>` — it emits the sidecar at the correct Tier-2 root, gens audio-only, distributes m4a/vtt/sidecar/snapshot to `spark-anvil-site/public/chapters/`, mirrors the Tier-1 beats, AND (step 5b, per R-TIER-2-CONTENT-ENTRY) writes the `src/content/chapters/<app>/<slug>-advanced.md` content entry that makes the `/advanced` route build. Hand-assembly reliably misses one of these seams.
-
-### Cross-references
-
-- `Docs/AUDIT_HOMEPAGE_FRESHNESS_UPDATE_DISCIPLINE_2026-06-19.md` § "Companion finding" — surfacing audit
-- `scripts/pilot_interleaved_ensemble_chapter.py` — consumer (MD path resolution)
-- `scripts/auto_segment_chapter.py` — emitter (`--tier 2` → Tier-2 root)
-- `scripts/t2_coverage_wave_runner.sh` — canonical end-to-end Tier-2 wave runner
-- `.claude/rules/distributed-narrative.md` § "Dual-tier chapter editions" — parent dual-tier spec
-- `.claude/rules/distributed-narrative.md` § "R-TIER-2-MULTIBEAT-REUSE" — Tier-2 illustration-reuse companion rule
-- § R-TIER-2-CONTENT-ENTRY (below) — the content-entry seam the wave runner's step 5b closes
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Tier-2 `/advanced` route needs a content-collection entry (R-TIER-2-CONTENT-ENTRY; 2026-06-30)
 
 **A Tier-2 `/advanced` page ONLY builds if a `src/content/chapters/<app>/<char>-advanced.md` content-collection entry exists.** Shipping the `public/chapters/<app>/chapter_<char>-advanced.*` asset set (snapshot + sidecar + beats + audio + vtt) and getting the chapter into `multibeat-chapters.json` is **NOT sufficient** — the route `src/pages/cast/[app]/[char]/advanced.astro` builds its paths from `getCollection('chapters')` filtered to `*-advanced.md`, so with no content entry the route never generates and the page **404s** despite every asset being present.
 
-### Why this bites
-
-The two Tier-2 distribution seams write to **different trees**:
-
-| Tool | Writes | Creates the content entry? |
-|---|---|---|
-| `scripts/t2_coverage_wave_runner.sh` (full end-to-end) | `public/chapters/` (snapshot/sidecar/beats/audio/vtt) **+ `src/content/chapters/<app>/<char>-advanced.md` (step 5b, added 2026-06-30)** | ✅ now yes |
-| `scripts/path_b_tier2_audio_wave_runner.sh` (audio-only) | `public/chapters/` audio + vtt only | ❌ no — assumes sidecar/snapshot/**content entry** already exist |
-| `scripts/sync_content_to_site.sh` | both trees (`cp <tier2>.md → <char>-advanced.md`) | ✅ yes (canonical) |
-
-**Reference incident (2026-06-30):** the FractionForge expansion-5 Tier-2 wave (`liner/gather/times/tenth/rank`) distributed all `public/chapters/` assets and the multibeat manifest accepted all 5 (`accepted=728`), but the 5 `/advanced` pages 404'd on the live site — the founding-5 had `src/content/chapters/fractionforge/*-advanced.md` entries and rendered; the expansion-5 did not. Fixed by adding the 5 content entries (spark-anvil-site PR #341) + the wave-runner step 5b (this codification).
-
-### When this rule applies
-
-- Any Tier-2 wave that uses `path_b_tier2_audio_wave_runner.sh` (or hand-distributes only `public/chapters/`) MUST separately ensure the content entry exists (`cp <hub>/Resources/DN-S-Tier-Upper/chapters/<app>/<char>.md → src/content/chapters/<app>/<char>-advanced.md`), or run `sync_content_to_site.sh --app <slug>`.
-- `t2_coverage_wave_runner.sh` now does this automatically (step 5b).
-- **Verification:** after distribution, `git status src/content/chapters/<app>/` MUST show a `<char>-advanced.md` per shipped Tier-2 chapter. If it doesn't, the `/advanced` pages will 404 post-deploy.
-
-### Companion to R-MULTIBEAT-SNAPSHOT
-
-R-MULTIBEAT-SNAPSHOT ensures the `public/chapters/` snapshot + companion assets are complete (else the manifest silently rejects). R-TIER-2-CONTENT-ENTRY ensures the `src/content/` entry exists (else the route never builds). Both must hold for a Tier-2 `/advanced` page to render — the first governs the multibeat manifest, the second governs `getStaticPaths`.
-
-### Cross-references
-
-- `scripts/t2_coverage_wave_runner.sh` step 5b — the fix
-- `spark-anvil-site/src/pages/cast/[app]/[char]/advanced.astro` — `getStaticPaths()` (the consumer that enumerates `*-advanced.md`)
-- `scripts/sync_content_to_site.sh` — canonical both-trees sync
-- `.claude/rules/distributed-narrative.md` § "R-TIER-2-MULTIBEAT-REUSE" + § "Dual-tier chapter editions" — parent Tier-2 spec
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Gemini API key single-flight discipline (R-GEMINI-KEY-SERIAL; 2026-06-30)
 
 **The entire hub content-generation pipeline shares ONE Gemini API key (`~/.config/labsmith/gemini_api_key`), and that key throttles HARD under load. Run exactly ONE key-consuming operation at a time. NEVER run generation, image-gating, and portrait/cover gen concurrently — serialize them.** Codified after the throttle bit every V24–V28 cast-expansion wave (recurring "gen ONE app at a time; don't run gating concurrently with gen" gotcha in the wave handoffs + memory `cast-expansion-program.md` + `[[spark-anvil-gen-pipeline]]`).
 
-### What shares the key (all of these compete)
-
-Every one of these calls the same Gemini key — running any two concurrently saturates the rate limit and causes stalls / failed calls / degraded throughput:
-
-| Script | Key use | Notes |
-|---|---|---|
-| `pilot_interleaved_ensemble_chapter.py` | Pro beat 0 + 4× Flash beats + **Gemini 2.5 TTS narration** | ~4–5 min/chapter; **TTS is the slowest step** |
-| `path_b_wave_runner.sh` | wraps the pilot script | iterates ALL chapters in an app |
-| `gen_cast_portraits.py` | Flash image gen | + inline text-leak + anatomy gates (also key calls) |
-| `gen_book_covers.py` | Pro/Flash image gen | + inline gates |
-| `audit_image_text_leaks.py` (`gate_single_image`) | Gemini 2.5 Flash classifier | per-image; the text-leak gate |
-| `audit_image_anatomy.py` (`gate_single_image`) | Gemini 2.5 Flash classifier | per-image; the anatomy gate |
-
-### The symptom (how to recognize the throttle)
-
-- Generation slows to **~3 images/min** after a heavy run (e.g., a full anatomy `--all-sweep` immediately before a gen wave leaves the key hot).
-- Individual `generate_content()` calls **hang** (the V8 stall incident: 14+ min mid-call). The audit script's `--call-timeout` / `--max-retries` / `--checkpoint-every` / `--resume` flags (per § R-PATH-B-TEXT-LEAK-GATE Item 4) exist specifically to survive this.
-- Parallel streams don't 2× throughput — they **halve** it (or fail), because the shared limit is the bottleneck, not local CPU.
-
-### The rule (single-flight + overlap only non-Gemini work)
-
-1. **One key-op at a time.** Gen OR gate OR portraits — never two at once. This holds across background jobs too: if a `pilot`/wave gen is running in the background, do NOT start portraits/gating/cover-gen in the foreground.
-2. **One app at a time for generation.** Don't fan out gen across multiple apps' chapters concurrently.
-3. **Overlap ONLY non-Gemini work with a single background gen stream.** The productive pattern: background ONE gen loop (the long pole), and in the foreground do work that never touches the key — `distribute_cast_chapters.py` (local PIL→WebP), `add_cast_members.py` (targeted `apps.generated.ts` edit), git/`gh` app-repo PRs, doc/queue/memory edits. Portrait gen and image-gating are Gemini work → they must WAIT for the gen stream to finish.
-4. **Sequence a wave as:** (a) background the gen for the ungenned apps → (b) during gen, do all non-Gemini distribution + `apps.generated.ts` edits + app-repo PRs for already-genned apps → (c) after gen completes, run image-gating on the new beats → (d) then run ALL portraits serially → (e) then finish distribution + site/hub PRs.
-5. **Cool-down before a gen wave.** If a portfolio image sweep (`audit_image_anatomy.py --all-sweep` / `audit_image_text_leaks.py --site-sweep`) just ran, expect the key to be hot; the first gen chapter may crawl. Prefer running big sweeps AFTER a gen wave, not immediately before.
-
-### Bounded-wait pattern for background gen
-
-When a background gen stream holds the key and the remaining work is all Gemini/portrait-dependent, don't idle-poll every few seconds. Run a bounded wait loop that returns when the expected artifact count is reached OR a timeout elapses:
-
-```bash
-for i in $(seq 1 18); do
-  done=$(find <pilot-dir> -name '*_chapter.m4a' | wc -l | tr -d ' ')
-  grep -q "GEN-REST DONE" <gen.log> && { echo "complete"; break; }
-  [ "$done" -ge "$EXPECTED" ] && break
-  echo "$done/$EXPECTED"; sleep 30
-done
-```
-
-### When this rule applies
-
-- Every cast-expansion wave (the round-robin program) — the canonical consumer.
-- Any one-off chapter regen, portrait remediation batch, or book-cover regen wave.
-- Any new Gemini-backed gen script added to the pipeline — it inherits this discipline.
-
-### Cross-references
-
-- `.claude/rules/spark-anvil-website.md` § R-PATH-B-TEXT-LEAK-GATE Item 4 — audit-script resilience flags (`--call-timeout` / `--max-retries` / `--checkpoint-every` / `--resume`) that survive a mid-call stall
-- `.claude/rules/distributed-narrative.md` § R-MULTIBEAT-DEFAULT / R-DIR-FEDC-CHAPTER — the authoring + gen pipeline this throttles
-- `.claude/rules/audio-pipeline.md` — Gemini 2.5 TTS payload handling (the slowest key-op in the pilot)
-- memory `cast-expansion-program.md` + `[[spark-anvil-gen-pipeline]]` — where this gotcha lived pre-codification
-- `Docs/CONTEXT_HANDOFF_2026-06-30_V28_SEL_WAVE1_ENOSPC_FIX_SCIENCE_WAVE2.md` § "Key gotchas carried forward" — V28 statement of the same discipline
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Long single-flight gen pipelines are DRIVEN with foreground sleep-waits — never background-and-stop (R-GEN-FOREGROUND-DRIVE; 2026-07-14)
 
 **When the founder has said "do not stop until fully done" (or otherwise authorized an autonomous multi-app run), a long single-flight gen pipeline — the coverage program, a cast-expansion wave, any pipeline whose steps serialize on the shared Gemini key (R-GEMINI-KEY-SERIAL) — MUST be driven by the agent with FOREGROUND `sleep`-poll waits between the key-serialized steps, NOT by launching a background gen and ENDING the turn to await a task-notification.** Codified per founder-direct 2026-07-14 (*"resume and do not stop. use sleep if needed"* → *"again: resume and do not stop. use sleep instead"* → *"codify this rule in repo"*), after a session repeatedly backgrounded each ~15-min pilot / ~35-min T2 gen and ended its turn, forcing the founder to type "resume" once per step — which defeats the auto-cycle and stalls a weeks-long program on human keystrokes.
 
-### Why background-and-stop is the wrong pattern here
-Backgrounding a gen with `run_in_background: true` and then producing a final message ENDS the agent turn; the harness only re-invokes the agent when the `<task-notification>` fires. That is correct for a *single* long job the user is waiting on — but for a **pipeline of dozens of serialized gens** it means the agent halts after every step until the user manually resumes. The single-flight key already forbids running two gens at once, so there is no parallelism to gain from backgrounding; the only effect is inserting a human-in-the-loop stop between every step. The founder's "do not stop" directive is explicit that the agent should self-drive to completion.
-
-### The pattern (drive, don't stop)
-- **Launch the gen** (background is fine, OR foreground if it fits the tool timeout), then **BLOCK on it with bounded foreground `sleep` polls** — e.g. `sleep 110; <check proc + artifact>` repeated (keep each `sleep` under the ~120 s Bash auto-background threshold so the wait itself stays foreground), or a single `while pgrep -f <gen> …; do sleep 30; done` guarded by a max-iterations cap. When the gen finishes, **immediately proceed to the next step in the SAME turn** — distribute → T2 → portrait → PRs → next app — without yielding to the user.
-- **Only end the turn** when: the whole authorized run is complete, a hard blocker needs a founder decision, a gate fails in a way that needs judgment, or the founder-set token/scope budget is exhausted. A step merely "taking ~35 min" is NOT a reason to stop.
-- **Keep the single-flight discipline** (R-GEMINI-KEY-SERIAL): one gen at a time; overlap only NON-key work (in-session Opus prose pre-authoring, R2/boto3 uploads + layer-2 mirror, git/PR ops, worktree setup) with a running gen. The foreground sleep-wait is exactly where that non-key work goes.
-- **Bounded, not infinite:** every wait loop has a max-iteration cap so a genuinely-stalled gen (the 503 class) surfaces instead of hanging the agent forever; on cap-hit, inspect + retry (audio-only `--no-illustrations` regen for a mid-audio stall; re-run the one failed T2 slug) rather than stopping.
-
-### When this rule applies
-- Any autonomous multi-app coverage / cast-expansion / regen run the founder has said to drive to completion.
-- Reviewing an agent session that backgrounded a gen and stopped mid-run without a blocker → that's a violation of this rule (it should have sleep-driven the next step).
-
-### Cross-references
-- § R-GEMINI-KEY-SERIAL (above) — the single-flight constraint that makes backgrounding pointless here (no parallelism to gain) · § R-GEMINI-MODEL-ALIAS
-- `.claude/rules/workflow.md` § "Auto-Cycle Default" — the branch→commit→PR→merge→verify auto-cycle this keeps moving without per-step confirmation · § "Stagger Background Agents" (bg-agent staggering — orthogonal: that's about multiple SUBAGENTS, this is about not halting a single-flight pipeline)
-- `.claude/rules/distributed-narrative.md` § R-COVERAGE-OPUS-AUTHORING — the coverage program that is this rule's canonical consumer · memory [[chapter-coverage-program]]
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Prefer `-latest` model aliases in pipeline scripts (R-GEMINI-MODEL-ALIAS; 2026-07-09)
 
 **Every Gemini-backed pipeline script MUST reference a rotation-proof `-latest` model alias (or the current preview family) — NEVER a pinned mid-generation version ID like `gemini-2.5-flash` that a family rotation can silently 404 out from under a running batch.** Codified after the V60 incident (2026-07-09): mid-V45 the **entire `gemini-2.5` `generateContent` family was retired** — `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.0-flash`, `gemini-2.5-flash-image-preview` all began returning **`404 NOT_FOUND`** — while ~1300 in-flight text-leak audit images errored and every pipeline script hardcoding a 2.5 ID broke at once. (Wrinkle: the retired IDs still appear in `models.list()` with lagging metadata, so a list check is NOT sufficient to confirm a model is live — you must probe `generateContent`.)
 
-### The alias map (image row re-verified live 2026-07-13; text/TTS rows 2026-07-09)
-
-| Use | Prefer | NOT (retired/404) |
-|---|---|---|
-| Flash text / judge / classifier | `gemini-flash-latest` | `gemini-2.5-flash`, `gemini-2.0-flash` |
-| Pro text / authoring / rephrase | `gemini-pro-latest` | `gemini-2.5-pro` |
-| Flash image gen (Nano Banana 2) | `gemini-3.1-flash-image` | `gemini-3.1-flash-image-preview` (**shut down 2026-06-25**), `gemini-2.5-flash-image(-preview)` |
-| Pro image gen (Nano Banana Pro) | `gemini-3-pro-image` | `gemini-3-pro-image-preview` (**shut down 2026-06-25**) |
-| Lite image gen (bulk / low-latency) | `gemini-3.1-flash-lite-image` | — (not for multi-reference / sequential edits) |
-| **TTS** (separate lifecycle — see below) | keep `gemini-2.5-flash-preview-tts` **for now** | — |
-
-> **⚠ Image models have NO `-latest` alias — they pin to a versioned GA ID, so they DO rotate out.** On 2026-05-28 Google promoted the Nano Banana image models to GA under **un-suffixed** IDs (`gemini-3-pro-image`, `gemini-3.1-flash-image`, `gemini-3.1-flash-lite-image`) and **shut the `-preview` variants down on 2026-06-25** (Vertex/Enterprise gave a 2026-07-17 grace). The 2026-07-09 alias-map row pinned the now-dead `-preview` IDs, so every hub image-gen script (`gen_cast_portraits` / `gen_book_covers` / `gen_app_badges` / `gen_app_icons` / `gen_app_illustrations` / `gen_app_texture_atlases` / `pilot_interleaved_ensemble_chapter` / the pilots) was re-pinned to the GA IDs on 2026-07-13 (this row). The separate **Imagen 4** family (`imagen-4.0-*`) shuts down 2026-08-17 — unrelated to Nano Banana; the hub does not use Imagen. Because image IDs carry no `-latest`, re-check this row every horizon refresh + probe `generateContent` before any large gen wave.
-
-### TTS is a SEPARATE lifecycle — do not blanket-migrate it
-
-The 2.5 **TTS** models (`gemini-2.5-flash-preview-tts` / `gemini-2.5-pro-preview-tts`) are on a different deprecation lifecycle than the retired 2.5 `generateContent` models and were **re-probed 2026-07-09 as STILL LIVE** (returned audio OK). **Keep them** — changing the TTS model would drift new chapters' voices from the ~819 shipped narrations + dramas all voiced on 2.5 TTS (a founder-level re-voicing decision, not a mechanical migration). The **validated successor** for when 2.5 TTS eventually retires is `gemini-3.1-flash-tts-preview` (also probed OK 2026-07-09). There is no TTS `-latest` alias, so TTS migration is a deliberate, documented switch — not automatic.
-
-### When this rule applies
-
-- Authoring or editing ANY Gemini-backed pipeline script (audit judges, gen, gates, rewriters, TTS).
-- A batch/gate suddenly 404s mid-run on a `models/<id>` path → first suspect a family rotation; migrate the pinned ID to the `-latest` alias (or current preview), re-run with `--resume`.
-- **Verify a model is live by probing `generateContent`**, never by presence in `models.list()` (the retired 2.5 IDs still list).
-
-### Cross-references
-
-- `Docs/WORK_QUEUE_INBOUND_HANDOFFS_2026-05-20.md` § V60 — the incident + full per-script migration table.
-- § R-GEMINI-KEY-SERIAL (above) — the sibling single-flight discipline (both govern the one shared Gemini key).
-- `Docs/AUDIT_DN_S_MULTI_AXIS_FULL_2026-07-08.md` — V45, where the retirement surfaced.
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 
 ## Cross-references
 
@@ -2354,4 +823,6 @@ The 2.5 **TTS** models (`gemini-2.5-flash-preview-tts` / `gemini-2.5-pro-preview
 - `spark-anvil-hub/scripts/sync_content_to_site.sh` — chapter/audio/illustration distribution from app repos
 - `spark-anvil-hub/scripts/normalize_chapter_frontmatter.py` — YAML normalizer for synced chapter MDs (source of truth)
 - `spark-anvil-site/scripts/normalize-chapter-frontmatter.py` — in-repo mirror; auto-runs in prebuild on every site build
+
+→ **Full detail:** `Docs/REFERENCE_SPARK_ANVIL_WEBSITE.md` § (this heading).
 <!-- END LABSMITH-SYNCED CONTENT -->
