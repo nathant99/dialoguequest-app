@@ -15,6 +15,10 @@ paths:
 
 This rule supersedes any per-file rules that say "Xcode must be closed when editing X" — those still hold for human workflows, but for an agent operating in-IDE, the safe rule is **don't touch Xcode-managed files at all**.
 
+## The rule in one line (2026-07-27, founder-direct)
+
+**Do NOT author/edit Xcode-managed files (workspace `contents.xcworkspacedata`, `.xcscheme`, `.xctestplan`, `project.pbxproj`, app `Info.plist`, `.entitlements`, `xcuserdata/`, asset-catalog `Contents.json`). Instead, put all implementation in the SPM package and FILE A `Docs/HANDOFF_TO_USER_<TOPIC>.md` describing the exact Xcode-GUI steps for the user.** **Staging + committing** Xcode-managed files IS allowed (e.g. committing the Xcode-generated `.xctestplan` / a `pbxproj` the user changed via GUI) — only *writing their content from disk* is forbidden. When the whole task hinges on a GUI operation the agent can't safely perform (add a local package to the workspace, link a product to the app target, register SPM test targets, add an app-icon imageset), the deliverable is the SPM code + the handoff doc, not a half-applied project edit. The GUI-work handoff is the sibling of the human-task escape hatch below (`HANDOFF_TO_USER_<TOPIC>.md`).
+
 ## Why this matters
 
 When the agent edits a file Xcode owns, one of three things happens:
