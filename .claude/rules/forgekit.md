@@ -4,7 +4,19 @@ Shared SPM framework at `../forgekit/`. Apps import only the modules they need.
 
 ## Versioning
 
-ForgeKit uses **semantic versioning** with annotated git tags (current: **0.99.1** shipped 2026-05-26, pre-1.0). Breaking changes are expected before 1.0. **`forgekit/Docs/CHANGELOG.md` is authoritative** — hub rule/CLAUDE.md text drifts; verify CHANGELOG before quoting a specific version.
+ForgeKit uses **semantic versioning** with annotated git tags (**current CHANGELOG floor: `1.0.0-rc.3`, 2026-06-17** — the 1.0.0 release-candidate line; the older 0.99.x entries below are historical). Breaking changes are expected before 1.0. **`forgekit/Docs/CHANGELOG.md` is authoritative** — hub rule/CLAUDE.md text drifts; verify CHANGELOG before quoting a specific version. *(Headline reconciled 2026-07-28, V629 Wave-2 audit — the prior "current: 0.99.1" lagged the CHANGELOG; R-CANONICAL-DOC-GROUND-TRUTH.)*
+
+### R-FORGEKIT-PIN-CONSISTENCY — the fleet SHOULD converge to ONE coordinated pin floor; the ≤0.94 stale cohort MUST bump (2026-07-28)
+
+**The portfolio's ForgeKit `Package.swift` pins DRIFT badly.** A V629 Wave-2 census (`Docs/AUDIT_PORTFOLIO_IOS_CODE_QUALITY_2026-07-28.md`) found 81 pinned apps spanning **`0.66.0` → `1.0.0-rc.3`** with no coordinated floor: 20 on `from:"0.99.0"`, 19+1 on `0.86.0`, 24 on the `rc.3` line (11 `from:` + 11 `exact:` + rc.2/rc.1), plus a `from:` vs `exact:` STYLE split (some hard-pin while siblings float). A **~24-app stale cohort sits at ≤`0.94.0`** (0.66/0.86/0.87/0.94) and is missing every 0.95→rc.3 primitive (`ForgeServerLeaderboard`, `HubContributionConfig.togetherMode`, `CastDialog`, `CastEncounter`, `ReflectionPromptModifier`, `ForgeMasteryEngine`, `PolyaScaffold`). The policy:
+
+- **Each app SHOULD pin to a single coordinated floor** (a consistent `from: "<floor>"`), not a scattered mix — pin drift means siblings resolve different ForgeKit APIs and a shared-primitive handoff can't assume a floor.
+- **The ≤`0.94.0` stale cohort MUST bump** to at least the current stable line so the 0.95→rc.3 primitives are available — this is the drift's real, actionable cost.
+- **WHICH exact floor (the `0.99.x` stable line vs the `1.0.0-rc.x` line vs waiting for `1.0.0` final) is a ForgeKit-release-owner / founder decision**, not a unilateral hub codification — `from: "0.99.0"` resolves the latest `<1.0.0` stable and EXCLUDES the `1.0.0-rc.x` pre-releases (SPM pre-release semantics), so `0.99.0`-pinned and `rc.x`-pinned apps genuinely diverge. Verify the CHANGELOG floor before recommending a pin.
+- **Prefer `from:` over `exact:`** unless a specific app has a pinning reason (an `exact:` pin freezes the app off future compatible fixes; the mixed `from:`/`exact:` on one tag IS the drift).
+- **Hub NEVER edits an app `Package.swift`** (`portfolio.md` § R-HUB-OWNS-APP-RESOURCES never-write-source boundary) — a pin bump is authored per-app via `HANDOFF_FROM_HUB_FORGEKIT_PIN_CONSISTENCY.md`; the app's own CC session updates its manifest + runs `File > Packages > Update`.
+
+Cross-refs: `Docs/AUDIT_PORTFOLIO_IOS_CODE_QUALITY_2026-07-28.md` (census + cohort list) · `forgekit/Docs/CHANGELOG.md` (authoritative floor) · § Remote GitHub Dependency (the `from:` mechanics) · `workflow.md` § R-CANONICAL-DOC-GROUND-TRUTH.
 
 **0.99.1 — patch-only** test rewrite (`ForgeAIGeneratorTests` → `ForgeAIContentCachePublicAPITests`).
 
