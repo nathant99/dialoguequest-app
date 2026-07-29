@@ -483,6 +483,8 @@ Batch close-out: a MADR (`ADR-NNN`) records the greenlight + per-app disposition
 
 ## Color Scheme Audit Methodology (Round 133 #567; codified after R118 incomplete-sweep incident)
 
+> **The DESIGN STANDARD an audit checks against** (what "good color" IS — functional · intuitive · engaging · prominent) lives in `.claude/rules/spark-anvil-website.md` § R-WEB-CLONE-COLOR-SCHEME (evidence: `Docs/RESEARCH_COLOR_SCHEME_DESIGN_2026-07-28.md`). THIS section is the iOS audit *procedure* (how to grep an app's palette faithfully); the standard is the *bar*. A hub color audit of an app repo is READ-ONLY → findings ship as a `HANDOFF_FROM_HUB_COLOR_SCHEME_REFRESH.md` (the app's own CC session edits Swift; hub never writes it).
+
 When auditing an app's color-scheme alignment to its canonical palette (`docs/DESIGN_ART_DIRECTION.md` § Color Palette), the audit grep pattern MUST catch BOTH SwiftUI color-token forms:
 
 ```bash
