@@ -1,0 +1,92 @@
+{
+  "id": "punctuation_fixit",
+  "title": "Punctuation Fix-It",
+  "subtitle": "Tap the correctly-punctuated line. Seven quick dialogue rules.",
+  "symbolName": "quote.bubble",
+  "drills": [
+    {
+      "id": "p1",
+      "kindLabel": "Punctuate the dialogue",
+      "setup": "Maya tells Dev she is heading home. A dialogue tag follows the speech.",
+      "prompt": "Which line is punctuated correctly?",
+      "options": [
+        { "id": "p1a", "text": "“I’m going home,” Maya said.", "correct": true, "why": null },
+        { "id": "p1b", "text": "“I’m going home.” Maya said.", "correct": false, "why": "When a tag like “Maya said” follows the speech, use a comma inside the quotes — a period ends the sentence too soon." },
+        { "id": "p1c", "text": "“I’m going home” Maya said.", "correct": false, "why": "The closing punctuation goes INSIDE the quotation marks — this line has none before the tag." }
+      ],
+      "teach": "When a dialogue tag follows the speech, the comma goes inside the closing quotation mark and the tag stays lowercase: “…home,” Maya said."
+    },
+    {
+      "id": "p2",
+      "kindLabel": "Punctuate the dialogue",
+      "setup": "The speech is a question, and a tag follows it.",
+      "prompt": "Which line is punctuated correctly?",
+      "options": [
+        { "id": "p2a", "text": "“Are you sure?” he asked.", "correct": true, "why": null },
+        { "id": "p2b", "text": "“Are you sure?,” he asked.", "correct": false, "why": "A question mark already does the comma’s job — don’t stack “?,” together." },
+        { "id": "p2c", "text": "“Are you sure”? he asked.", "correct": false, "why": "The question mark belongs INSIDE the quotes — the character asked the question, not the narrator." }
+      ],
+      "teach": "A question mark (or exclamation point) replaces the comma before a tag, and it lives inside the quotation marks: “Are you sure?” he asked."
+    },
+    {
+      "id": "p3",
+      "kindLabel": "Punctuate the dialogue",
+      "setup": "The tag comes FIRST, then the speech.",
+      "prompt": "Which line is punctuated correctly?",
+      "options": [
+        { "id": "p3a", "text": "She whispered, “Don’t move.”", "correct": true, "why": null },
+        { "id": "p3b", "text": "She whispered “Don’t move.”", "correct": false, "why": "Put a comma after the tag before the speech opens." },
+        { "id": "p3c", "text": "She whispered, “don’t move.”", "correct": false, "why": "The first word of the spoken line is capitalized — it starts a new sentence of speech." }
+      ],
+      "teach": "When the tag leads, put a comma after it, then open quotes and capitalize the first spoken word: She whispered, “Don’t move.”"
+    },
+    {
+      "id": "p4",
+      "kindLabel": "Punctuate the dialogue",
+      "setup": "A tag interrupts one continuous sentence of speech.",
+      "prompt": "Which line is punctuated correctly?",
+      "options": [
+        { "id": "p4a", "text": "“I think,” she said, “we should wait.”", "correct": true, "why": null },
+        { "id": "p4b", "text": "“I think,” she said, “We should wait.”", "correct": false, "why": "The second half continues the SAME sentence, so “we” stays lowercase." },
+        { "id": "p4c", "text": "“I think.” she said. “We should wait.”", "correct": false, "why": "Periods break it into three sentences — use commas to show one sentence interrupted by the tag." }
+      ],
+      "teach": "When a tag splits ONE sentence, wrap it in commas and don’t capitalize the continuation: “I think,” she said, “we should wait.”"
+    },
+    {
+      "id": "p5",
+      "kindLabel": "Punctuate the dialogue",
+      "setup": "An ACTION beat follows the speech — it is a full action, not a speech tag.",
+      "prompt": "Which line is punctuated correctly?",
+      "options": [
+        { "id": "p5a", "text": "“I’m done.” She pushed back her chair.", "correct": true, "why": null },
+        { "id": "p5b", "text": "“I’m done,” She pushed back her chair.", "correct": false, "why": "“She pushed back her chair” isn’t a speech tag — it’s its own action sentence, so end the speech with a period and capitalize." },
+        { "id": "p5c", "text": "“I’m done,” she pushed back her chair.", "correct": false, "why": "You can’t “push a chair” a line of dialogue — this isn’t a tag like “said”, so it needs a period and a capital." }
+      ],
+      "teach": "An action beat is its own sentence, not a tag: end the speech with a period and start the action with a capital — “I’m done.” She pushed back her chair."
+    },
+    {
+      "id": "p6",
+      "kindLabel": "Punctuate the dialogue",
+      "setup": "An exclamation of speech, with a tag after it.",
+      "prompt": "Which line is punctuated correctly?",
+      "options": [
+        { "id": "p6a", "text": "“Watch out!” Cal shouted.", "correct": true, "why": null },
+        { "id": "p6b", "text": "“Watch out!,” Cal shouted.", "correct": false, "why": "Don’t stack “!,” — the exclamation point already ends the spoken part." },
+        { "id": "p6c", "text": "“Watch out”! Cal shouted.", "correct": false, "why": "The exclamation belongs inside the quotes — Cal shouted it, the narrator didn’t." }
+      ],
+      "teach": "Exclamation points work like question marks: inside the quotes, and they replace the comma before the tag — “Watch out!” Cal shouted."
+    },
+    {
+      "id": "p7",
+      "kindLabel": "Punctuate the dialogue",
+      "setup": "Two characters speak back to back.",
+      "prompt": "Which is formatted correctly for a two-person exchange?",
+      "options": [
+        { "id": "p7a", "text": "“Ready?” Dev asked. / “Almost,” Maya said. (each on a new line)", "correct": true, "why": null },
+        { "id": "p7b", "text": "“Ready?” Dev asked. “Almost,” Maya said. (both on one line)", "correct": false, "why": "Every time the speaker changes, start a NEW paragraph — otherwise the reader loses track of who’s talking." },
+        { "id": "p7c", "text": "“Ready? Almost,” they said. (both voices in one set of quotes)", "correct": false, "why": "Two speakers can’t share one set of quotation marks — split them so each voice is clear." }
+      ],
+      "teach": "New speaker, new paragraph. Give each character their own line so the reader always knows who is talking."
+    }
+  ]
+}
