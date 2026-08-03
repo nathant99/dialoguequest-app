@@ -132,4 +132,45 @@ struct CraftDrillTests {
         #expect(!m.hasRevealed)
         #expect(!m.isComplete)
     }
+
+    // MARK: - Write It in Character deck (Wave 3)
+
+    @Test("Write-in-character deck loads with all 8 items")
+    func inCharacterDeckLoads() throws {
+        let deck = try CraftDrillLoader.load(id: CraftDrillLoader.writeInCharacter)
+        #expect(deck.id == "write_in_character")
+        #expect(deck.drills.count == 8)
+    }
+
+    /// Runs the same content invariants over BOTH shipped decks — a wrong
+    /// answer / missing diagnostic in either bank fails here.
+    @Test("Both decks satisfy the content invariants", arguments: [
+        CraftDrillLoader.punctuationFixIt,
+        CraftDrillLoader.writeInCharacter,
+    ])
+    func deckInvariants(deckID: String) throws {
+        let deck = try CraftDrillLoader.load(id: deckID)
+        #expect(!deck.drills.isEmpty)
+        for drill in deck.drills {
+            #expect(drill.options.count >= 2, "\(deckID)/\(drill.id) needs ≥2 options")
+            #expect(drill.options.filter(\.correct).count == 1, "\(deckID)/\(drill.id) needs exactly one correct")
+            let ids = drill.options.map(\.id)
+            #expect(Set(ids).count == ids.count, "\(deckID)/\(drill.id) has duplicate option ids")
+            #expect(!drill.teach.trimmingCharacters(in: .whitespaces).isEmpty, "\(deckID)/\(drill.id) missing teach")
+            #expect(!drill.setup.isEmpty && !drill.prompt.isEmpty, "\(deckID)/\(drill.id) missing setup/prompt")
+            for option in drill.options where !option.correct {
+                let why = option.why?.trimmingCharacters(in: .whitespaces) ?? ""
+                #expect(!why.isEmpty, "\(deckID)/\(drill.id)/\(option.id): wrong option must explain why")
+            }
+        }
+    }
+
+    @Test("In-character answers are not all in the same position (no positional tell)")
+    func inCharacterAnswerSpread() throws {
+        let deck = try CraftDrillLoader.load(id: CraftDrillLoader.writeInCharacter)
+        let positions = deck.drills.compactMap { drill in
+            drill.options.firstIndex(where: \.correct)
+        }
+        #expect(Set(positions).count >= 2, "The correct answer should not always be in the same slot.")
+    }
 }

@@ -128,6 +128,14 @@ struct AdventureTabView: View {
                 accessibilityID: "drill.punctuation.entry",
                 deckID: CraftDrillLoader.punctuationFixIt
             )
+
+            drillCard(
+                title: "Write It in Character",
+                subtitle: "Read the character + moment. Pick the line they'd really say.",
+                symbol: "theatermasks",
+                accessibilityID: "drill.inCharacter.entry",
+                deckID: CraftDrillLoader.writeInCharacter
+            )
         }
     }
 
