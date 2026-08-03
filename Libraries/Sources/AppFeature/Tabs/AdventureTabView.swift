@@ -33,6 +33,8 @@ struct AdventureTabView: View {
     /// Which always-available craft-drill deck is presented (nil = none).
     /// Drives the ungated "Sharpen your craft" section's sheet.
     @State private var activeDrill: DrillDeckRef?
+    /// Whether the Mixed practice (spaced-retrieval refresher) sheet is up.
+    @State private var isMixedPracticePresented: Bool = false
 
     /// Identifiable wrapper so `.sheet(item:)` can present a deck by id.
     private struct DrillDeckRef: Identifiable, Hashable {
@@ -101,6 +103,9 @@ struct AdventureTabView: View {
             .sheet(item: $activeDrill) { ref in
                 CraftDrillView(deckID: ref.id)
             }
+            .sheet(isPresented: $isMixedPracticePresented) {
+                MixedPracticeView()
+            }
             .sheet(isPresented: $isCruciblePresented) {
                 VoiceCrucibleView()
             }
@@ -136,7 +141,41 @@ struct AdventureTabView: View {
                 accessibilityID: "drill.inCharacter.entry",
                 deckID: CraftDrillLoader.writeInCharacter
             )
+
+            mixedPracticeCard
         }
+    }
+
+    /// Boundary-placed spaced-retrieval refresher. Calm-rails: it resurfaces
+    /// + interleaves what you've practised — it never gates, no due-count
+    /// dread. A gentle come-back invitation.
+    private var mixedPracticeCard: some View {
+        Button {
+            isMixedPracticePresented = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "square.stack.3d.up.fill")
+                    .foregroundStyle(DialoguePalette.rust)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Mixed practice")
+                        .font(.headline)
+                        .foregroundStyle(DialoguePalette.inkBlue)
+                    Text("A quick, gentle refresher that mixes what you've practised. Ready when you are.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(DialoguePalette.rust)
+            }
+            .padding()
+            .background(DialoguePalette.cream.opacity(0.75))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("mixedPractice.entry")
+        .accessibilityHint(Text("Open a gentle mixed refresher of what you've practised."))
     }
 
     /// One tappable drill card — presents `CraftDrillView` for `deckID`.
