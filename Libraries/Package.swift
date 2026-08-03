@@ -84,6 +84,7 @@ let package = Package(
                 .product(name: "ForgeUI", package: "forgekit"),
                 .product(name: "ForgeNavigation", package: "forgekit"),
                 .product(name: "ForgeAdventure", package: "forgekit"),
+                .product(name: "ForgeAudio", package: "forgekit"),
                 .product(name: "ForgeAvatar", package: "forgekit"),
                 .product(name: "ForgeCelebration", package: "forgekit"),
                 .product(name: "ForgeGamification", package: "forgekit"),
@@ -100,6 +101,10 @@ let package = Package(
                 .process("Resources/CompanionPack"),
                 .process("Resources/Cast"),
                 .process("Resources/CustomArt"),
+                // `.copy` (NOT `.process`) preserves the AudioDramas/<slug>/
+                // subdirectory that ForgeAudio.AudioDramaPlayer.resolveBundleURL
+                // walks — `.process` would flatten it to the bundle root.
+                .copy("AudioDramas"),
             ],
             swiftSettings: defaultSwiftSettings
         ),
