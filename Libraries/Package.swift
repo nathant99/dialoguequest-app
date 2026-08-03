@@ -101,6 +101,7 @@ let package = Package(
                 .process("Resources/CompanionPack"),
                 .process("Resources/Cast"),
                 .process("Resources/CustomArt"),
+                .process("Resources/Drills"),
                 // `.copy` (NOT `.process`) preserves the AudioDramas/<slug>/
                 // subdirectory that ForgeAudio.AudioDramaPlayer.resolveBundleURL
                 // walks — `.process` would flatten it to the bundle root.

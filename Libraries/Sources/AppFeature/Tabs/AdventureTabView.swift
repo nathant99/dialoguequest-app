@@ -30,6 +30,14 @@ struct AdventureTabView: View {
     @State private var isCruciblePresented: Bool = false
     /// Whether the Performance Booth sheet is up.
     @State private var isPerformanceBoothPresented: Bool = false
+    /// Which always-available craft-drill deck is presented (nil = none).
+    /// Drives the ungated "Sharpen your craft" section's sheet.
+    @State private var activeDrill: DrillDeckRef?
+
+    /// Identifiable wrapper so `.sheet(item:)` can present a deck by id.
+    private struct DrillDeckRef: Identifiable, Hashable {
+        let id: String
+    }
 
     /// Reconstructed each render from the persisted counters so the
     /// gate evaluation always reflects current state.
@@ -68,6 +76,11 @@ struct AdventureTabView: View {
                     .foregroundStyle(DialoguePalette.rust)
                     .frame(maxWidth: .infinity)
 
+                craftDrillsSection
+
+                Divider()
+                    .padding(.vertical, 4)
+
                 Text("Word Workshop")
                     .font(.title2.weight(.semibold))
                     .foregroundStyle(DialoguePalette.inkBlue)
@@ -85,6 +98,9 @@ struct AdventureTabView: View {
             .navigationTitle("Adventure")
             .background(DialoguePalette.cream.opacity(0.6))
             .task { recordSessionIfNeeded() }
+            .sheet(item: $activeDrill) { ref in
+                CraftDrillView(deckID: ref.id)
+            }
             .sheet(isPresented: $isCruciblePresented) {
                 VoiceCrucibleView()
             }
@@ -92,6 +108,63 @@ struct AdventureTabView: View {
                 PerformanceBoothView()
             }
         }
+    }
+
+    /// Always-available (ungated) craft-polish drills. Distinct from the
+    /// session-gated Word Workshop below — these are low-stakes tap-to-select
+    /// practice, open from the first launch.
+    @ViewBuilder
+    private var craftDrillsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Sharpen your craft")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(DialoguePalette.inkBlue)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            drillCard(
+                title: "Punctuation Fix-It",
+                subtitle: "Tap the correctly-punctuated line. Seven quick dialogue rules.",
+                symbol: "quote.bubble",
+                accessibilityID: "drill.punctuation.entry",
+                deckID: CraftDrillLoader.punctuationFixIt
+            )
+        }
+    }
+
+    /// One tappable drill card — presents `CraftDrillView` for `deckID`.
+    private func drillCard(
+        title: String,
+        subtitle: String,
+        symbol: String,
+        accessibilityID: String,
+        deckID: String
+    ) -> some View {
+        Button {
+            activeDrill = DrillDeckRef(id: deckID)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: symbol)
+                    .foregroundStyle(DialoguePalette.rust)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundStyle(DialoguePalette.inkBlue)
+                    Text(subtitle)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(DialoguePalette.rust)
+            }
+            .padding()
+            .background(DialoguePalette.cream.opacity(0.75))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(accessibilityID)
+        .accessibilityHint(Text("Open the \(title) practice drill."))
     }
 
     @ViewBuilder
