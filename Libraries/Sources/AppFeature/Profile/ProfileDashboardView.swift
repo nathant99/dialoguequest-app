@@ -15,6 +15,13 @@ struct ProfileDashboardView: View {
     @State private var isStudioOpen: Bool = false
     @State private var isSeeded: Bool = false
 
+    /// Owns the decoded audio-drama catalog + `ForgeAudio.AudioDramaPlayer`.
+    /// Built once. The "Listen to the audio drama" row is gated on catalog
+    /// membership (`!catalog.dramas.isEmpty`), so an app with no bundled
+    /// dramas silently omits the row rather than shipping a dead surface.
+    @State private var audioDramaService = AudioDramaService()
+    @State private var isAudioDramaOpen: Bool = false
+
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
@@ -24,11 +31,18 @@ struct ProfileDashboardView: View {
                 avatarTeaser
                 anthologyRow
                 curationRow
+                audioDramaRow
                 settingsLinkRow
             }
             .padding()
         }
         .background(DialoguePalette.cream.opacity(0.6))
+        .sheet(isPresented: $isAudioDramaOpen) {
+            AudioDramaPlayerSheet(
+                dramas: audioDramaService.catalog.dramas,
+                player: audioDramaService.player
+            )
+        }
         .sheet(isPresented: $isStudioOpen) {
             AvatarStudioView(
                 initialConfig: currentAvatar,
@@ -154,6 +168,40 @@ struct ProfileDashboardView: View {
         .buttonStyle(.plain)
         .foregroundStyle(DialoguePalette.inkBlue)
         .accessibilityIdentifier("profile.curationEntry")
+    }
+
+    /// "Listen to the audio drama" entry — surfaces the bundled cast
+    /// audio dramas (Sprig / Glance / Weigh / Brogue / Rest). Gated on
+    /// catalog membership so it never renders when no dramas ship.
+    @ViewBuilder
+    private var audioDramaRow: some View {
+        if !audioDramaService.catalog.dramas.isEmpty {
+            Button {
+                isAudioDramaOpen = true
+            } label: {
+                HStack {
+                    Image(systemName: "headphones")
+                        .foregroundStyle(DialoguePalette.rust)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Listen to the audio drama")
+                            .font(.headline)
+                        Text("Hear the cast bring the craft to life — \(audioDramaService.catalog.dramas.count) stories.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundStyle(.secondary)
+                }
+                .padding()
+                .background(panelBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(DialoguePalette.inkBlue)
+            .accessibilityIdentifier("profile.audioDramaEntry")
+            .accessibilityHint("Opens the audio drama player.")
+        }
     }
 
     private var settingsLinkRow: some View {
