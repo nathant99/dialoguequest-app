@@ -1,0 +1,104 @@
+{
+  "id": "write_in_character",
+  "title": "Write It in Character",
+  "subtitle": "Read the character + moment. Pick the line they'd really say.",
+  "symbolName": "theatermasks",
+  "drills": [
+    {
+      "id": "ic-shy",
+      "kindLabel": "Write it in character",
+      "setup": "Mara, a shy new kid who hides her nerves.",
+      "prompt": "Someone finally invites her to sit with them at lunch. Choose the line she'd really say.",
+      "options": [
+        { "id": "ic-shy-a", "text": "“FINALLY! I thought you’d never ask me, this is the best day ever!”", "correct": false, "why": "That’s loud and gushing — a shy kid hiding her nerves wouldn’t burst out like this." },
+        { "id": "ic-shy-b", "text": "“Oh — um, sure. Thanks.” She slid onto the very edge of the seat.", "correct": true, "why": null },
+        { "id": "ic-shy-c", "text": "“I already have a hundred friends, but okay, I guess.”", "correct": false, "why": "Boastful and cool is the opposite of a nervous new kid who’s glad to be included." }
+      ],
+      "teach": "A shy character shows nerves through small, hesitant words + body language (the edge of the seat). The loud and the boastful lines don’t match “shy.”"
+    },
+    {
+      "id": "ic-grumpy",
+      "kindLabel": "Write it in character",
+      "setup": "Mr. Fen, a grumpy shopkeeper with a soft heart.",
+      "prompt": "A kid returns a coin he dropped earlier. Choose the line he'd really say.",
+      "options": [
+        { "id": "ic-grumpy-a", "text": "“Hmph. Least somebody round here has manners.” He almost smiled.", "correct": true, "why": null },
+        { "id": "ic-grumpy-b", "text": "“Oh thank you so much, you are my absolute hero forever!”", "correct": false, "why": "Gushing thanks breaks the grumpy voice — he wouldn’t fawn." },
+        { "id": "ic-grumpy-c", "text": "“Keep it. I don’t care about coins or anything else.”", "correct": false, "why": "Total indifference hides the soft heart — he does care, just gruffly." }
+      ],
+      "teach": "Grumpy-but-kind = a gruff line with a hidden warm beat (“almost smiled”). Gushing thanks breaks the grumpy voice; total indifference hides the soft heart."
+    },
+    {
+      "id": "ic-brave",
+      "kindLabel": "Write it in character",
+      "setup": "Kit, a brave younger sibling covering up fear.",
+      "prompt": "They hear a strange noise in the dark basement. Choose the line they'd really say.",
+      "options": [
+        { "id": "ic-brave-a", "text": "“AAAH! I am NEVER going down there, you can’t make me!”", "correct": false, "why": "Full panic shows only fear — not the courage Kit is covering it with." },
+        { "id": "ic-brave-b", "text": "“I am not scared at all, not even a tiny little bit, nope.”", "correct": false, "why": "Over-insisting “not scared” tells us the feeling instead of showing it through action." },
+        { "id": "ic-brave-c", "text": "“It’s probably nothing.” Kit’s voice shook, but they took the first step down.", "correct": true, "why": null }
+      ],
+      "teach": "Brave-but-scared shows courage AND fear: a steady line undercut by a shaking voice, then action. Panicking or over-insisting “not scared” tells instead of shows."
+    },
+    {
+      "id": "ic-proud",
+      "kindLabel": "Write it in character",
+      "setup": "Ana, a proud athlete who just lost a race.",
+      "prompt": "A teammate says “good try” at the finish line. Choose the line she'd really say.",
+      "options": [
+        { "id": "ic-proud-a", "text": "“Thanks so much! Losing is totally fine and I feel great about it!”", "correct": false, "why": "Cheerful acceptance contradicts a proud competitor stinging from a loss." },
+        { "id": "ic-proud-b", "text": "“Yeah.” Ana stared at the track, jaw tight, and said nothing else.", "correct": true, "why": null },
+        { "id": "ic-proud-c", "text": "“I meant to lose, I was just letting them win, obviously.”", "correct": false, "why": "A boastful excuse is telling, not showing — and it hides the real sting." }
+      ],
+      "teach": "Pride after a loss shows through a clipped word + tense body (jaw tight). Cheerful acceptance and a boastful excuse both contradict a proud competitor stinging from a loss."
+    },
+    {
+      "id": "ic-curious",
+      "kindLabel": "Write it in character",
+      "setup": "Dev, an endlessly curious inventor.",
+      "prompt": "They spot a strange machine humming in the corner. Choose the line they'd really say.",
+      "options": [
+        { "id": "ic-curious-a", "text": "“What does THIS button do?” Dev was already reaching for it.", "correct": true, "why": null },
+        { "id": "ic-curious-b", "text": "“A machine. Boring. Let’s go.” Dev walked straight past.", "correct": false, "why": "Indifference is the opposite of a curious inventor — Dev wouldn’t walk past a mystery." },
+        { "id": "ic-curious-c", "text": "“I hate machines and I never want to know how anything works.”", "correct": false, "why": "“Never want to know” contradicts curiosity itself." }
+      ],
+      "teach": "Curiosity shows in the eager question + the hand already reaching. Indifference and “never want to know” are the opposite of a curious inventor."
+    },
+    {
+      "id": "ic-loyal",
+      "kindLabel": "Write it in character",
+      "setup": "Sam, a fiercely loyal best friend.",
+      "prompt": "Other kids start teasing Sam’s friend. Choose the line Sam would really say.",
+      "options": [
+        { "id": "ic-loyal-a", "text": "“Ha, good one!” Sam laughed along with the teasing.", "correct": false, "why": "Joining the teasing is exactly what a loyal friend would NOT do." },
+        { "id": "ic-loyal-b", "text": "“Not my problem.” Sam looked away and kept walking.", "correct": false, "why": "Walking away abandons the friend — the opposite of fierce loyalty." },
+        { "id": "ic-loyal-c", "text": "Sam stepped in front of them. “You want to say that again? To me?”", "correct": true, "why": null }
+      ],
+      "teach": "Loyalty shows in the action of stepping in + standing up for the friend. Joining the teasing or walking away are exactly what a loyal friend would NOT do."
+    },
+    {
+      "id": "ic-tired",
+      "kindLabel": "Write it in character",
+      "setup": "Rosa, an exhausted parent at the end of a long day.",
+      "prompt": "Her kid asks for one more bedtime story. Choose the line she'd really say.",
+      "options": [
+        { "id": "ic-tired-a", "text": "“One more.” Rosa sank onto the bed, already fighting a yawn. “A short one.”", "correct": true, "why": null },
+        { "id": "ic-tired-b", "text": "“No stories EVER again, I am done with stories forever!”", "correct": false, "why": "A harsh, absolute refusal misses the loving-but-exhausted feeling." },
+        { "id": "ic-tired-c", "text": "“Sure, I have unlimited energy and could read all night long!”", "correct": false, "why": "“Unlimited energy” contradicts an exhausted parent at the end of a long day." }
+      ],
+      "teach": "Tired-but-loving shows through a small yes plus the yawn and sinking down. The harsh refusal and the “unlimited energy” both miss the exhausted-but-still-there feeling."
+    },
+    {
+      "id": "ic-nervous",
+      "kindLabel": "Write it in character",
+      "setup": "Theo, nervous before his first stage performance.",
+      "prompt": "The curtain is about to rise. Choose the line — or action — that fits Theo.",
+      "options": [
+        { "id": "ic-nervous-a", "text": "“I’ve never been nervous once in my entire life about anything.”", "correct": false, "why": "Denying all nerves tells the opposite of what a first-timer feels — and it isn’t shown." },
+        { "id": "ic-nervous-b", "text": "Theo peeked through the curtain, swallowed hard, and whispered, “Okay. Okay.”", "correct": true, "why": null },
+        { "id": "ic-nervous-c", "text": "“I hope I forget every single line and ruin the whole show.”", "correct": false, "why": "Wishing to fail doesn’t fit a nervous performer who wants to do well." }
+      ],
+      "teach": "Stage nerves show through the peek, the hard swallow, and the self-steadying whisper — feeling revealed by action. Denying all nerves or wishing to fail don’t fit a nervous first-timer."
+    }
+  ]
+}
