@@ -15,6 +15,10 @@ struct ProgressDashboardView: View {
     var currentStreak: Int = 0
     var availableFreezes: Int = 2
     var earnedBadgeIDs: Set<String> = []
+    /// Lifetime published-tree count — feeds the "Your progress" learning
+    /// milestones. Passed in (from `dq.publishedTreeCount`) to keep the
+    /// view a pure renderer.
+    var publishedTreeCount: Int = 0
     /// Per-pillar mastery bars (Priority B → P-follow). Loaded by the host
     /// (`ProgressTabView`) from `DialogueCraftMasteryService` so this view stays
     /// a pure renderer. Empty on a fresh install — the "Your craft" section
@@ -59,6 +63,12 @@ struct ProgressDashboardView: View {
                         .accessibilityLabel("\(availableFreezes) streak freeze\(availableFreezes == 1 ? "" : "s") remaining.")
                     Spacer()
                 }
+
+                MasteryProgressSection(
+                    publishedTreeCount: publishedTreeCount,
+                    level: level,
+                    craftBars: craftBars
+                )
 
                 craftSection
 

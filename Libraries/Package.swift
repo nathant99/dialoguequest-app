@@ -159,6 +159,7 @@ let package = Package(
                 "SharedUI",
                 .product(name: "ForgeModels", package: "forgekit"),
                 .product(name: "ForgeIllustrations", package: "forgekit"),
+                .product(name: "ForgeGamification", package: "forgekit"),
             ],
             swiftSettings: defaultSwiftSettings
         ),

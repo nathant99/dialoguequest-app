@@ -11,6 +11,9 @@ struct ProgressTabView: View {
     @AppStorage("dq.currentStreak") private var currentStreak: Int = 0
     @AppStorage("dq.streakFreezes") private var availableFreezes: Int = 2
     @AppStorage("dq.earnedBadgeIDs") private var earnedBadgeIDsRaw: String = ""
+    /// Lifetime published-tree count — feeds the "Your progress" learning
+    /// milestones in `MasteryProgressSection`.
+    @AppStorage("dq.publishedTreeCount") private var publishedTreeCount: Int = 0
 
     /// Per-pillar mastery bars + focus caption (Priority B → P-follow). Loaded
     /// from `DialogueCraftMasteryService` in `.task` so `ProgressDashboardView`
@@ -31,6 +34,7 @@ struct ProgressTabView: View {
                     currentStreak: currentStreak,
                     availableFreezes: availableFreezes,
                     earnedBadgeIDs: earnedBadgeIDs,
+                    publishedTreeCount: publishedTreeCount,
                     craftBars: craftBars,
                     craftFocusName: craftFocusName,
                     craftStartNudge: craftStartNudge
