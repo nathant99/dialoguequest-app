@@ -30,7 +30,7 @@ Cross-refs: `Docs/AUDIT_PORTFOLIO_IOS_CODE_QUALITY_2026-07-28.md` (census + coho
 
 **0.95.0 — `HubContributionConfig.togetherMode` field shipped** + `TogetherMode.Archetype` enum (5 cases: passAndPlay / cooperativePair / bystanderRoleplay / classroomLive / asyncLeaderboard; closes Move T10 for 4 aggregator + ~30 source apps).
 
-**0.94.0 — `ForgeClassroom` module shipped** (LiveKit-Cloud-backed v1 live classroom). 0.86→0.94 added 7 new client modules: `ForgeAvatar` / `ForgeBranding` / `ForgeClassroom` / `ForgeColoringMode` / `ForgeManagedConfiguration` / `ForgeMiniGames` / `ForgePuzzles` + 1 new server module: `ForgeClassroomServer`. Module count post-0.99: **58 total** (45 client + 11 server + 2 shared).
+**0.94.0 — `ForgeClassroom` module shipped** (LiveKit-Cloud-backed v1 live classroom). 0.86→0.94 added 7 new client modules: `ForgeAvatar` / `ForgeBranding` / `ForgeClassroom` / `ForgeColoringMode` / `ForgeManagedConfiguration` / `ForgeMiniGames` / `ForgePuzzles` + 1 new server module: `ForgeClassroomServer`. Module count: **59 total** (46 client + 11 server + 2 shared) — live `Sources/` tree, 2026-08-02; the older "58/50/49" tallies were stale (R-CANONICAL-DOC-GROUND-TRUTH — verify against the live tree + `forgekit/Docs/CHANGELOG.md`, which is authoritative).
 
 **0.89.0 — `DyadicPair` API shipped** (unblocks MindForge / SafetyForge / CardForge / GrammarForge pass-and-play retrofits; lives in `ForgePassAndPlay`).
 
@@ -46,7 +46,7 @@ Cross-refs: `Docs/AUDIT_PORTFOLIO_IOS_CODE_QUALITY_2026-07-28.md` (census + coho
 
 ```
 forgekit/Sources/
-├── Client/   45 modules — UI, gameplay, persistence, on-device AI, accessibility, avatars, classroom, reflection
+├── Client/   46 modules — UI, gameplay, persistence, on-device AI, accessibility, avatars, classroom, reflection
 ├── Server/   11 modules — Hummingbird 2 actors, middleware, matchmaking, email, classroom, leaderboard
 └── Shared/    2 modules — ForgeModels, ForgeServerDTOs (consumed by both)
 ```
@@ -63,7 +63,7 @@ Public API and product names are unchanged — apps still write `.product(name: 
 
 Temporarily switch to `.package(path: "../../forgekit")` for active ForgeKit development — enables edit-build-test without pushing. **Only one workspace can claim a local path dependency** — close other workspaces using ForgeKit locally. Switch back to the remote URL with `from:` when done.
 
-## Module Catalog (50 modules — 39 client + 9 server + 2 shared)
+## Module Catalog (live total 59 modules — 46 client + 11 server + 2 shared; the catalog below is a reference subset — verify against the live `Sources/` tree)
 
 For the authoritative list, run `ls ../forgekit/Sources/{Client,Server,Shared}`. The catalog below names every module and gives a one-line purpose; full APIs are documented in each module's `Tests/` and inline `///` doc-comments.
 
