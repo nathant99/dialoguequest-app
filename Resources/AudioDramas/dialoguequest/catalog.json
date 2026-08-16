@@ -1,0 +1,1395 @@
+{
+  "dramas": [
+    {
+      "id": "c627d007-baa3-4b90-83bc-243b1c00688d",
+      "title": "Aim \u2014 Every Line Is Trying to Do Something",
+      "titleSlug": "aim-line-purpose",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "aim"
+      ],
+      "durationSeconds": 276.08,
+      "bundlePath": "AudioDramas/dialoguequest/aim-line-purpose.caf",
+      "webM4APath": "AudioDramas/dialoguequest/aim-line-purpose.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/aim-line-purpose.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 7850,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 7850,
+          "endMs": 15261,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 15261,
+          "endMs": 23512,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 23512,
+          "endMs": 33523,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 33523,
+          "endMs": 47654,
+          "character": "AIM"
+        },
+        {
+          "index": 6,
+          "startMs": 47654,
+          "endMs": 56345,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 7,
+          "startMs": 56345,
+          "endMs": 75196,
+          "character": "AIM"
+        },
+        {
+          "index": 8,
+          "startMs": 75196,
+          "endMs": 81287,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 9,
+          "startMs": 81287,
+          "endMs": 100618,
+          "character": "AIM"
+        },
+        {
+          "index": 10,
+          "startMs": 100618,
+          "endMs": 116669,
+          "character": "AIM"
+        },
+        {
+          "index": 11,
+          "startMs": 116669,
+          "endMs": 129520,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 12,
+          "startMs": 129520,
+          "endMs": 144611,
+          "character": "AIM"
+        },
+        {
+          "index": 13,
+          "startMs": 144611,
+          "endMs": 155382,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 14,
+          "startMs": 155382,
+          "endMs": 176113,
+          "character": "AIM"
+        },
+        {
+          "index": 15,
+          "startMs": 176113,
+          "endMs": 184684,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 16,
+          "startMs": 184684,
+          "endMs": 210895,
+          "character": "AIM"
+        },
+        {
+          "index": 17,
+          "startMs": 210895,
+          "endMs": 222026,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 18,
+          "startMs": 222026,
+          "endMs": 243277,
+          "character": "AIM"
+        },
+        {
+          "index": 19,
+          "startMs": 243277,
+          "endMs": 251608,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 20,
+          "startMs": 251608,
+          "endMs": 259339,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 21,
+          "startMs": 259339,
+          "endMs": 263910,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 22,
+          "startMs": 263910,
+          "endMs": 276081,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-08-15",
+      "releaseDate": "2026-08-15",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://sparkanvil.org/cast/dialoguequest/aim",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-08-15",
+          "attributionVersion": "v2",
+          "durationMs": 276081,
+          "bundlePath": "AudioDramas/dialoguequest/aim-line-purpose.caf",
+          "webM4APath": "AudioDramas/dialoguequest/aim-line-purpose.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/aim-line-purpose.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
+    },
+    {
+      "id": "d6d01dfe-d970-483e-9f22-b0af790f469f",
+      "title": "Clip \u2014 The Scissors That Trim the Dead Words",
+      "titleSlug": "clip-economy",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "clip"
+      ],
+      "durationSeconds": 208.52,
+      "bundlePath": "AudioDramas/dialoguequest/clip-economy.caf",
+      "webM4APath": "AudioDramas/dialoguequest/clip-economy.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/clip-economy.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 8730,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 8730,
+          "endMs": 15861,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 15861,
+          "endMs": 23552,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 23552,
+          "endMs": 33283,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 33283,
+          "endMs": 35974,
+          "character": "CLIP"
+        },
+        {
+          "index": 6,
+          "startMs": 35974,
+          "endMs": 45985,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 7,
+          "startMs": 45985,
+          "endMs": 58356,
+          "character": "CLIP"
+        },
+        {
+          "index": 8,
+          "startMs": 58356,
+          "endMs": 68927,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 9,
+          "startMs": 68927,
+          "endMs": 80538,
+          "character": "CLIP"
+        },
+        {
+          "index": 10,
+          "startMs": 80538,
+          "endMs": 92589,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 11,
+          "startMs": 92589,
+          "endMs": 101960,
+          "character": "CLIP"
+        },
+        {
+          "index": 12,
+          "startMs": 101960,
+          "endMs": 111691,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 13,
+          "startMs": 111691,
+          "endMs": 123222,
+          "character": "CLIP"
+        },
+        {
+          "index": 14,
+          "startMs": 123222,
+          "endMs": 137913,
+          "character": "CLIP"
+        },
+        {
+          "index": 15,
+          "startMs": 137913,
+          "endMs": 142244,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 16,
+          "startMs": 142244,
+          "endMs": 154295,
+          "character": "CLIP"
+        },
+        {
+          "index": 17,
+          "startMs": 154295,
+          "endMs": 161026,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 18,
+          "startMs": 161026,
+          "endMs": 173877,
+          "character": "CLIP"
+        },
+        {
+          "index": 19,
+          "startMs": 173877,
+          "endMs": 182688,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 20,
+          "startMs": 182688,
+          "endMs": 191139,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 21,
+          "startMs": 191139,
+          "endMs": 195590,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 22,
+          "startMs": 195590,
+          "endMs": 208521,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-08-15",
+      "releaseDate": "2026-08-15",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://sparkanvil.org/cast/dialoguequest/clip",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-08-15",
+          "attributionVersion": "v2",
+          "durationMs": 208521,
+          "bundlePath": "AudioDramas/dialoguequest/clip-economy.caf",
+          "webM4APath": "AudioDramas/dialoguequest/clip-economy.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/clip-economy.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
+    },
+    {
+      "id": "52e38019-9349-45c1-ab4e-4a8645c93083",
+      "title": "Dash \u2014 The Sentences He Couldn't Wait to Finish",
+      "titleSlug": "dash-interruption",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "dash"
+      ],
+      "durationSeconds": 208.54,
+      "bundlePath": "AudioDramas/dialoguequest/dash-interruption.caf",
+      "webM4APath": "AudioDramas/dialoguequest/dash-interruption.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/dash-interruption.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 8770,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 8770,
+          "endMs": 16101,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 16101,
+          "endMs": 23272,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 23272,
+          "endMs": 27963,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 27963,
+          "endMs": 32454,
+          "character": "DASH"
+        },
+        {
+          "index": 6,
+          "startMs": 32454,
+          "endMs": 41265,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 7,
+          "startMs": 41265,
+          "endMs": 54356,
+          "character": "DASH"
+        },
+        {
+          "index": 8,
+          "startMs": 54356,
+          "endMs": 66647,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 9,
+          "startMs": 66647,
+          "endMs": 68258,
+          "character": "DASH"
+        },
+        {
+          "index": 10,
+          "startMs": 68258,
+          "endMs": 70669,
+          "character": "DASH"
+        },
+        {
+          "index": 11,
+          "startMs": 70669,
+          "endMs": 80600,
+          "character": "DASH"
+        },
+        {
+          "index": 12,
+          "startMs": 80600,
+          "endMs": 93011,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 13,
+          "startMs": 93011,
+          "endMs": 100862,
+          "character": "DASH"
+        },
+        {
+          "index": 14,
+          "startMs": 100862,
+          "endMs": 112393,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 15,
+          "startMs": 112393,
+          "endMs": 123004,
+          "character": "DASH"
+        },
+        {
+          "index": 16,
+          "startMs": 123004,
+          "endMs": 136215,
+          "character": "DASH"
+        },
+        {
+          "index": 17,
+          "startMs": 136215,
+          "endMs": 140906,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 18,
+          "startMs": 140906,
+          "endMs": 153957,
+          "character": "DASH"
+        },
+        {
+          "index": 19,
+          "startMs": 153957,
+          "endMs": 161528,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 20,
+          "startMs": 161528,
+          "endMs": 175779,
+          "character": "DASH"
+        },
+        {
+          "index": 21,
+          "startMs": 175779,
+          "endMs": 184670,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 22,
+          "startMs": 184670,
+          "endMs": 191761,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 23,
+          "startMs": 191761,
+          "endMs": 196852,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 24,
+          "startMs": 196852,
+          "endMs": 208543,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-08-15",
+      "releaseDate": "2026-08-15",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://sparkanvil.org/cast/dialoguequest/dash",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-08-15",
+          "attributionVersion": "v2",
+          "durationMs": 208543,
+          "bundlePath": "AudioDramas/dialoguequest/dash-interruption.caf",
+          "webM4APath": "AudioDramas/dialoguequest/dash-interruption.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/dash-interruption.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
+    },
+    {
+      "id": "7dd365a4-2ce4-47c3-a04d-2ea647015872",
+      "title": "Prop \u2014 The Little Acorn He Never Put Down",
+      "titleSlug": "prop-action-beats",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "prop"
+      ],
+      "durationSeconds": 249.08,
+      "bundlePath": "AudioDramas/dialoguequest/prop-action-beats.caf",
+      "webM4APath": "AudioDramas/dialoguequest/prop-action-beats.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/prop-action-beats.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 7890,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 7890,
+          "endMs": 14861,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 14861,
+          "endMs": 27072,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 27072,
+          "endMs": 43283,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 43283,
+          "endMs": 57174,
+          "character": "PROP"
+        },
+        {
+          "index": 6,
+          "startMs": 57174,
+          "endMs": 64465,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 7,
+          "startMs": 64465,
+          "endMs": 81436,
+          "character": "PROP"
+        },
+        {
+          "index": 8,
+          "startMs": 81436,
+          "endMs": 92007,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 9,
+          "startMs": 92007,
+          "endMs": 113858,
+          "character": "PROP"
+        },
+        {
+          "index": 10,
+          "startMs": 113858,
+          "endMs": 125389,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 11,
+          "startMs": 125389,
+          "endMs": 135760,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 12,
+          "startMs": 135760,
+          "endMs": 148091,
+          "character": "PROP"
+        },
+        {
+          "index": 13,
+          "startMs": 148091,
+          "endMs": 152302,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 14,
+          "startMs": 152302,
+          "endMs": 167433,
+          "character": "PROP"
+        },
+        {
+          "index": 15,
+          "startMs": 167433,
+          "endMs": 175924,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 16,
+          "startMs": 175924,
+          "endMs": 187535,
+          "character": "PROP"
+        },
+        {
+          "index": 17,
+          "startMs": 187535,
+          "endMs": 200466,
+          "character": "PROP"
+        },
+        {
+          "index": 18,
+          "startMs": 200466,
+          "endMs": 214597,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 19,
+          "startMs": 214597,
+          "endMs": 223768,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 20,
+          "startMs": 223768,
+          "endMs": 231859,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 21,
+          "startMs": 231859,
+          "endMs": 236590,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 22,
+          "startMs": 236590,
+          "endMs": 249081,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-08-15",
+      "releaseDate": "2026-08-15",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://sparkanvil.org/cast/dialoguequest/prop",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-08-15",
+          "attributionVersion": "v2",
+          "durationMs": 249081,
+          "bundlePath": "AudioDramas/dialoguequest/prop-action-beats.caf",
+          "webM4APath": "AudioDramas/dialoguequest/prop-action-beats.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/prop-action-beats.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
+    },
+    {
+      "id": "390539c4-254b-496c-9974-0b144272e75e",
+      "title": "Spar \u2014 The Two Bubbles That Pushed",
+      "titleSlug": "spar-conflict",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "spar"
+      ],
+      "durationSeconds": 211.72,
+      "bundlePath": "AudioDramas/dialoguequest/spar-conflict.caf",
+      "webM4APath": "AudioDramas/dialoguequest/spar-conflict.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/spar-conflict.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 8210,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 8210,
+          "endMs": 14421,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 14421,
+          "endMs": 25472,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 25472,
+          "endMs": 33323,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 33323,
+          "endMs": 35894,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 6,
+          "startMs": 35894,
+          "endMs": 39025,
+          "character": "SPAR"
+        },
+        {
+          "index": 7,
+          "startMs": 39025,
+          "endMs": 49876,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 8,
+          "startMs": 49876,
+          "endMs": 63807,
+          "character": "SPAR"
+        },
+        {
+          "index": 9,
+          "startMs": 63807,
+          "endMs": 72858,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 10,
+          "startMs": 72858,
+          "endMs": 87189,
+          "character": "SPAR"
+        },
+        {
+          "index": 11,
+          "startMs": 87189,
+          "endMs": 97200,
+          "character": "SPAR"
+        },
+        {
+          "index": 12,
+          "startMs": 97200,
+          "endMs": 110731,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 13,
+          "startMs": 110731,
+          "endMs": 122342,
+          "character": "SPAR"
+        },
+        {
+          "index": 14,
+          "startMs": 122342,
+          "endMs": 136593,
+          "character": "SPAR"
+        },
+        {
+          "index": 15,
+          "startMs": 136593,
+          "endMs": 141804,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 16,
+          "startMs": 141804,
+          "endMs": 155655,
+          "character": "SPAR"
+        },
+        {
+          "index": 17,
+          "startMs": 155655,
+          "endMs": 164106,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 18,
+          "startMs": 164106,
+          "endMs": 179277,
+          "character": "SPAR"
+        },
+        {
+          "index": 19,
+          "startMs": 179277,
+          "endMs": 187528,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 20,
+          "startMs": 187528,
+          "endMs": 194899,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 21,
+          "startMs": 194899,
+          "endMs": 199390,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 22,
+          "startMs": 199390,
+          "endMs": 211721,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-08-15",
+      "releaseDate": "2026-08-15",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://sparkanvil.org/cast/dialoguequest/spar",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-08-15",
+          "attributionVersion": "v2",
+          "durationMs": 211721,
+          "bundlePath": "AudioDramas/dialoguequest/spar-conflict.caf",
+          "webM4APath": "AudioDramas/dialoguequest/spar-conflict.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/spar-conflict.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
+    },
+    {
+      "id": "f1d7f8bc-f468-468d-b52d-d2f69c259a99",
+      "title": "Kernel and Reprise \u2014 Plant and Payoff",
+      "titleSlug": "kernel-and-reprise-callback",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "kernel-and-reprise"
+      ],
+      "durationSeconds": 258.96,
+      "bundlePath": "AudioDramas/dialoguequest/kernel-and-reprise-callback.caf",
+      "webM4APath": "AudioDramas/dialoguequest/kernel-and-reprise-callback.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/kernel-and-reprise-callback.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 8850,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 8850,
+          "endMs": 16181,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 16181,
+          "endMs": 25432,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 25432,
+          "endMs": 41803,
+          "character": "KERNEL"
+        },
+        {
+          "index": 5,
+          "startMs": 41803,
+          "endMs": 46214,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 6,
+          "startMs": 46214,
+          "endMs": 51745,
+          "character": "KERNEL"
+        },
+        {
+          "index": 7,
+          "startMs": 51745,
+          "endMs": 58636,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 8,
+          "startMs": 58636,
+          "endMs": 73807,
+          "character": "REPRISE"
+        },
+        {
+          "index": 9,
+          "startMs": 73807,
+          "endMs": 79618,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 10,
+          "startMs": 79618,
+          "endMs": 84149,
+          "character": "REPRISE"
+        },
+        {
+          "index": 11,
+          "startMs": 84149,
+          "endMs": 97920,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 12,
+          "startMs": 97920,
+          "endMs": 105251,
+          "character": "REPRISE"
+        },
+        {
+          "index": 13,
+          "startMs": 105251,
+          "endMs": 120742,
+          "character": "KERNEL"
+        },
+        {
+          "index": 14,
+          "startMs": 120742,
+          "endMs": 128873,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 15,
+          "startMs": 128873,
+          "endMs": 142444,
+          "character": "KERNEL"
+        },
+        {
+          "index": 16,
+          "startMs": 142444,
+          "endMs": 158375,
+          "character": "REPRISE"
+        },
+        {
+          "index": 17,
+          "startMs": 158375,
+          "endMs": 175706,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 18,
+          "startMs": 175706,
+          "endMs": 192957,
+          "character": "REPRISE"
+        },
+        {
+          "index": 19,
+          "startMs": 192957,
+          "endMs": 206088,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 20,
+          "startMs": 206088,
+          "endMs": 220259,
+          "character": "REPRISE"
+        },
+        {
+          "index": 21,
+          "startMs": 220259,
+          "endMs": 222030,
+          "character": "KERNEL"
+        },
+        {
+          "index": 22,
+          "startMs": 222030,
+          "endMs": 224001,
+          "character": "REPRISE"
+        },
+        {
+          "index": 23,
+          "startMs": 224001,
+          "endMs": 233012,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 24,
+          "startMs": 233012,
+          "endMs": 241183,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 25,
+          "startMs": 241183,
+          "endMs": 246553,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 26,
+          "startMs": 246553,
+          "endMs": 258964,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-08-15",
+      "releaseDate": "2026-08-15",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://sparkanvil.org/cast/dialoguequest/kernel-and-reprise",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-08-15",
+          "attributionVersion": "v2",
+          "durationMs": 258964,
+          "bundlePath": "AudioDramas/dialoguequest/kernel-and-reprise-callback.caf",
+          "webM4APath": "AudioDramas/dialoguequest/kernel-and-reprise-callback.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/kernel-and-reprise-callback.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
+    },
+    {
+      "id": "55d68761-d350-4d20-810a-dc816f05885d",
+      "title": "Listener and Speaker \u2014 Taking Turns in a Hard Conversation",
+      "titleSlug": "listener-speaker-turn-taking",
+      "appSlug": "dialoguequest",
+      "sourceChapterSlugs": [
+        "listener-speaker"
+      ],
+      "durationSeconds": 229.51,
+      "bundlePath": "AudioDramas/dialoguequest/listener-speaker-turn-taking.caf",
+      "webM4APath": "AudioDramas/dialoguequest/listener-speaker-turn-taking.m4a",
+      "webVTTPath": "AudioDramas/dialoguequest/listener-speaker-turn-taking.vtt",
+      "chapters": [
+        {
+          "index": 1,
+          "startMs": 0,
+          "endMs": 8290,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 2,
+          "startMs": 8290,
+          "endMs": 15261,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 3,
+          "startMs": 15261,
+          "endMs": 31432,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 4,
+          "startMs": 31432,
+          "endMs": 42963,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 5,
+          "startMs": 42963,
+          "endMs": 49894,
+          "character": "SPEAKER"
+        },
+        {
+          "index": 6,
+          "startMs": 49894,
+          "endMs": 54545,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 7,
+          "startMs": 54545,
+          "endMs": 63316,
+          "character": "SPEAKER"
+        },
+        {
+          "index": 8,
+          "startMs": 63316,
+          "endMs": 74007,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 9,
+          "startMs": 74007,
+          "endMs": 75058,
+          "character": "LISTENER"
+        },
+        {
+          "index": 10,
+          "startMs": 75058,
+          "endMs": 88309,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 11,
+          "startMs": 88309,
+          "endMs": 99440,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 12,
+          "startMs": 99440,
+          "endMs": 111411,
+          "character": "SPEAKER"
+        },
+        {
+          "index": 13,
+          "startMs": 111411,
+          "endMs": 124582,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 14,
+          "startMs": 124582,
+          "endMs": 137153,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 15,
+          "startMs": 137153,
+          "endMs": 149484,
+          "character": "LISTENER"
+        },
+        {
+          "index": 16,
+          "startMs": 149484,
+          "endMs": 162695,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 17,
+          "startMs": 162695,
+          "endMs": 170306,
+          "character": "SPEAKER"
+        },
+        {
+          "index": 18,
+          "startMs": 170306,
+          "endMs": 177037,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 19,
+          "startMs": 177037,
+          "endMs": 182248,
+          "character": "LISTENER"
+        },
+        {
+          "index": 20,
+          "startMs": 182248,
+          "endMs": 184499,
+          "character": "SPEAKER"
+        },
+        {
+          "index": 21,
+          "startMs": 184499,
+          "endMs": 195110,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 22,
+          "startMs": 195110,
+          "endMs": 204161,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 23,
+          "startMs": 204161,
+          "endMs": 211772,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 24,
+          "startMs": 211772,
+          "endMs": 216263,
+          "character": "NARRATOR"
+        },
+        {
+          "index": 25,
+          "startMs": 216263,
+          "endMs": 229513,
+          "character": "NARRATOR"
+        }
+      ],
+      "moderationSensitivity": "normal",
+      "traumaConstraints": null,
+      "attributionVersion": "v2",
+      "version": "2026-08-15",
+      "releaseDate": "2026-08-15",
+      "aiContentDisclosure": {
+        "vendor": "Gemini 2.5 Flash TTS",
+        "model": "gemini-2.5-flash-preview-tts",
+        "voiceSource": "synthetic",
+        "humanVoiceCloned": false
+      },
+      "coppaDisclosure": {
+        "childVoiceDataCollected": false,
+        "dataRetention": "n/a"
+      },
+      "curriculumAlignment": [
+        "Common Core English Language Arts"
+      ],
+      "ageRecommendation": "9-14",
+      "license": "CC BY-NC-SA 4.0",
+      "studio": "Spark and Anvil",
+      "studioStatus": "501(c)(3) public charity (pending)",
+      "traumaAxis": null,
+      "traumaResources": null,
+      "sensitivityReviewer": null,
+      "culturalAdvisor": null,
+      "funder": null,
+      "writingCredit": "Spark and Anvil writing team",
+      "musicCredit": "Spark and Anvil brand sting (pending)",
+      "episodeArtworkAttribution": "Gemini 2.5 Pro illustration pipeline",
+      "cohortDiscoveryUrl": "https://sparkanvil.org/cast/dialoguequest/listener-speaker",
+      "versions": [
+        {
+          "vendor": "Gemini 2.5 Flash TTS",
+          "tier": "flash",
+          "dateGenerated": "2026-08-15",
+          "attributionVersion": "v2",
+          "durationMs": 229513,
+          "bundlePath": "AudioDramas/dialoguequest/listener-speaker-turn-taking.caf",
+          "webM4APath": "AudioDramas/dialoguequest/listener-speaker-turn-taking.m4a",
+          "webVTTPath": "AudioDramas/dialoguequest/listener-speaker-turn-taking.vtt"
+        }
+      ],
+      "canonicalVersionIndex": 0
+    }
+  ]
+}
