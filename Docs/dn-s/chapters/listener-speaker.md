@@ -3,6 +3,7 @@ character: Listener and Speaker
 role: Ensemble cast (cohort embodying conversation-turn pair — Listener tracks what's been said and what's been left unsaid. Speaker tracks what they want to say next without trampling the other. Together they teach the rhythm of real dialogue.)
 app: dialoguequest
 primitive: conversation-turn pair — Listener tracks what's been said and what's been left unsaid. Speaker tracks what they want to say next without trampling the other. Together they teach the rhythm of real dialogue.
+mnemonic: "Listener & Speaker: Listener tracks what's said and unsaid, Speaker tracks what to say without trampling — together, the rhythm of real dialogue."
 audience: ages 9-14
 status: SHIPPED
 chapter-round: V13-A-4

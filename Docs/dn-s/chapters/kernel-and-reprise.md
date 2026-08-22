@@ -3,6 +3,7 @@ character: Kernel and Reprise
 role: Ensemble cast (callback pair — Kernel drops a small, easy-to-miss line early in a scene; Reprise brings that exact line back later, changed by everything that happened in between, so it lands with weight. Neither half works alone — Kernel's line is forgettable without the return, and Reprise's return is empty without the plant. Together they make a line pay off.)
 app: dialoguequest
 primitive: the callback (plant and payoff) — a line planted lightly early in a story returns later, transformed by what has happened between, and lands with far more weight than it could have the first time. The plant must be quiet enough to seem ordinary; the payoff works because the reader remembers the plant.
+mnemonic: "Kernel & Reprise: plant a quiet line early, bring it back later changed by all that happened — the payoff lands because you remember the plant."
 audience: ages 9-14
 status: SHIPPED
 chapter-round: coverage-waveB

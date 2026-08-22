@@ -3,6 +3,7 @@ character: Clip
 role: Lessons-layer cast (dialogue-craft primitive — economy / cutting the filler)
 app: dialoguequest
 primitive: ECONOMY — real written dialogue cuts the dead words. You skip the "hello, how are you, I'm fine, that's good" and start the scene late, right where it gets interesting. Every line that stays should earn its place.
+mnemonic: "Clip: cut the dead 'hello, how are you' and start the scene late, right where it gets interesting."
 audience: ages 9-14
 register: warmly absurd with subtext — Pattern B (Patter narrates)
 chapter-round: V25 (ELA cast expansion)

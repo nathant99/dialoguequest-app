@@ -3,6 +3,7 @@ character: Dash
 role: Lessons-layer cast (dialogue-craft primitive — interruption / overlap)
 app: dialoguequest
 primitive: INTERRUPTION — in real talk, people cut each other off, finish each other's sentences, and talk over one another. On the page, a dash (—) at the end of a line shows the interruption. Used at the right moment, it makes a conversation feel urgent, excited, or tense.
+mnemonic: "Dash: a dash at a line's end shows one character cutting in — used right, it makes talk feel urgent or tense."
 audience: ages 9-14
 register: warmly absurd with subtext — Pattern B (Patter narrates)
 chapter-round: V25 (ELA cast expansion)

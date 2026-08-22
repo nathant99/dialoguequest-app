@@ -3,6 +3,7 @@ character: Sprig
 role: Lessons-layer cast (dialogue-craft primitive — branch meaningfulness / weighted choice)
 app: dialoguequest
 primitive: BRANCH MEANINGFULNESS — in branching dialogue, every choice should *re-route the story* in a way the reader can feel. Choices that lead to identical outcomes are *unweighted* and feel hollow.
+mnemonic: "Sprig: in branching dialogue, every choice should re-route the story so the reader FEELS it — choices with identical outcomes ring hollow."
 audience: ages 9-14
 register: warmly absurd with subtext (per labsmith DN-S R172 #606 spec) — Pattern B (Patter narrates)
 chapter-round: Round 225 #659

@@ -3,6 +3,7 @@ character: Prop
 role: Lessons-layer cast (dialogue-craft primitive — action beats)
 app: dialoguequest
 primitive: ACTION BEATS — the small bits of action a character does between lines of dialogue (setting down a cup, looking away, tying a shoe). Action beats control the rhythm of a conversation and quietly show how a character feels, without anyone having to say it.
+mnemonic: "Prop: the small action between lines — setting down a cup, looking away — controls the rhythm and shows feeling without saying it."
 audience: ages 9-14
 register: warmly absurd with subtext — Pattern B (Patter narrates)
 chapter-round: V25 (ELA cast expansion)

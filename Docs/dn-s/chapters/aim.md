@@ -2,7 +2,8 @@
 character: Aim
 role: Lessons-layer cast (dialogue-craft primitive — line purpose / objective)
 app: dialoguequest
-primitive: LINE PURPOSE — every line of dialogue should be trying to DO something: to ask, to dodge, to persuade, to wound, to comfort, to hide. A line that only passes along information is dead weight. Real talk is people using words to get what they want.
+primitive: "LINE PURPOSE — every line of dialogue should be trying to DO something: to ask, to dodge, to persuade, to wound, to comfort, to hide. A line that only passes along information is dead weight. Real talk is people using words to get what they want."
+mnemonic: "Aim: every line should be trying to DO something — ask, dodge, persuade, comfort — a line that only passes info is dead weight."
 audience: ages 9-14
 register: warmly absurd with subtext — Pattern B (Patter narrates)
 chapter-round: V25 (ELA cast expansion)

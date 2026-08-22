@@ -3,6 +3,7 @@ character: Weigh
 role: Lessons-layer cast (dialogue-craft primitive — tag balance)
 app: dialoguequest
 primitive: TAG BALANCE — the rhythm of dialogue tags (*he said*, *she whispered*, *he asked, glancing away*). Too many tags slows the dialogue. Too few loses the reader. Balance keeps the dialogue moving and oriented.
+mnemonic: "Weigh: balance the 'he said / she whispered' tags — too many slow the talk, too few lose the reader."
 audience: ages 9-14
 register: warmly absurd with subtext (per labsmith DN-S R172 #606 spec) — Pattern B (Patter narrates)
 chapter-round: Round 226 #660

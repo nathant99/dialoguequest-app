@@ -3,6 +3,7 @@ character: Spar
 role: Lessons-layer cast (dialogue-craft primitive — conflict / friction)
 app: dialoguequest
 primitive: CONFLICT IN DIALOGUE — a good conversation is two characters who want different things, gently pushing against each other. The friction is the engine. When both characters want the exact same thing, the talk goes flat and there is nothing to pull the reader forward.
+mnemonic: "Spar: two characters wanting different things, gently pushing — the friction is the engine; when both want the same, the talk goes flat."
 audience: ages 9-14
 register: warmly absurd with subtext — Pattern B (Patter narrates)
 chapter-round: V25 (ELA cast expansion)

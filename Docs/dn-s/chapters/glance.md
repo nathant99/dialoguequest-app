@@ -3,6 +3,7 @@ character: Glance
 role: Lessons-layer cast (dialogue-craft primitive — subtext)
 app: dialoguequest
 primitive: SUBTEXT — what is actually being communicated *under the surface* of the explicit dialogue. The implied meaning beside the spoken meaning. *"I'm fine."* (spoken) = *"I am not fine, but I do not want to talk about it."* (implied).
+mnemonic: "Glance: 'I'm fine' on the surface can mean 'I'm not, but I won't talk about it' underneath — that's subtext."
 audience: ages 9-14
 register: warmly absurd with subtext (per labsmith DN-S R172 #606 spec) — Pattern B (Patter narrates)
 chapter-round: Round 226 #660

@@ -3,6 +3,7 @@ character: Brogue
 role: Lessons-layer cast (dialogue-craft primitive — voice consistency)
 app: dialoguequest
 primitive: VOICE CONSISTENCY — the same character speaking *recognizably the same* across all their lines. Word-choice, sentence-rhythm, signature phrases stay stable.
+mnemonic: "Brogue: the same character sounds recognizably the same every line — steady word-choice, rhythm, and signature phrases."
 audience: ages 9-14
 register: warmly absurd with subtext (per labsmith DN-S R172 #606 spec) — Pattern B (Patter narrates)
 chapter-round: Round 227 #661

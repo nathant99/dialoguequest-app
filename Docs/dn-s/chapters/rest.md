@@ -3,6 +3,7 @@ character: Rest
 role: Lessons-layer cast (dialogue-craft primitive — rhythm + silence)
 app: dialoguequest
 primitive: RHYTHM + SILENCE — the silence between dialogue lines is *also part of the dialogue.* A held pause communicates as powerfully as a spoken line.
+mnemonic: "Rest: the silence between lines is part of the dialogue — a held pause can speak as loud as a spoken line."
 audience: ages 9-14
 register: warmly absurd with subtext (per labsmith DN-S R172 #606 spec) — Pattern B (Patter narrates)
 chapter-round: Round 227 #661
