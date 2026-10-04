@@ -967,7 +967,7 @@
       "sourceChapterSlugs": [
         "weigh"
       ],
-      "durationSeconds": 148.92,
+      "durationSeconds": 149.27,
       "bundlePath": "AudioDramas/dialoguequest/weigh-tag-balance.caf",
       "webM4APath": "AudioDramas/dialoguequest/weigh-tag-balance.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/weigh-tag-balance.vtt",
@@ -999,85 +999,85 @@
         {
           "index": 5,
           "startMs": 32323,
-          "endMs": 38054,
+          "endMs": 38374,
           "character": "WEIGH"
         },
         {
           "index": 6,
-          "startMs": 38054,
-          "endMs": 46505,
+          "startMs": 38374,
+          "endMs": 46825,
           "character": "WEIGH"
         },
         {
           "index": 7,
-          "startMs": 46505,
-          "endMs": 53956,
+          "startMs": 46825,
+          "endMs": 54276,
           "character": "WEIGH"
         },
         {
           "index": 8,
-          "startMs": 53956,
-          "endMs": 64207,
+          "startMs": 54276,
+          "endMs": 64527,
           "character": "NARRATOR"
         },
         {
           "index": 9,
-          "startMs": 64207,
-          "endMs": 72738,
+          "startMs": 64527,
+          "endMs": 73058,
           "character": "NARRATOR"
         },
         {
           "index": 10,
-          "startMs": 72738,
-          "endMs": 80149,
+          "startMs": 73058,
+          "endMs": 80469,
           "character": "NARRATOR"
         },
         {
           "index": 11,
-          "startMs": 80149,
-          "endMs": 88800,
+          "startMs": 80469,
+          "endMs": 89120,
           "character": "WEIGH"
         },
         {
           "index": 12,
-          "startMs": 88800,
-          "endMs": 99091,
+          "startMs": 89120,
+          "endMs": 99411,
           "character": "NARRATOR"
         },
         {
           "index": 13,
-          "startMs": 99091,
-          "endMs": 107502,
+          "startMs": 99411,
+          "endMs": 107822,
           "character": "NARRATOR"
         },
         {
           "index": 14,
-          "startMs": 107502,
-          "endMs": 114593,
+          "startMs": 107822,
+          "endMs": 114913,
           "character": "WEIGH"
         },
         {
           "index": 15,
-          "startMs": 114593,
-          "endMs": 123244,
+          "startMs": 114913,
+          "endMs": 123564,
           "character": "NARRATOR"
         },
         {
           "index": 16,
-          "startMs": 123244,
-          "endMs": 130935,
+          "startMs": 123564,
+          "endMs": 131255,
           "character": "NARRATOR"
         },
         {
           "index": 17,
-          "startMs": 130935,
-          "endMs": 135706,
+          "startMs": 131255,
+          "endMs": 136026,
           "character": "NARRATOR"
         },
         {
           "index": 18,
-          "startMs": 135706,
-          "endMs": 148917,
+          "startMs": 136026,
+          "endMs": 149237,
           "character": "NARRATOR"
         }
       ],
