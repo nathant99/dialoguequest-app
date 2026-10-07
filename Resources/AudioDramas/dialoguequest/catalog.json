@@ -8,7 +8,7 @@
       "sourceChapterSlugs": [
         "aim"
       ],
-      "durationSeconds": 276.08,
+      "durationSeconds": 270.83,
       "bundlePath": "AudioDramas/dialoguequest/aim-line-purpose.caf",
       "webM4APath": "AudioDramas/dialoguequest/aim-line-purpose.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/aim-line-purpose.vtt",
@@ -130,19 +130,19 @@
         {
           "index": 20,
           "startMs": 251608,
-          "endMs": 259339,
+          "endMs": 254080,
           "character": "NARRATOR"
         },
         {
           "index": 21,
-          "startMs": 259339,
-          "endMs": 263910,
+          "startMs": 254080,
+          "endMs": 258651,
           "character": "NARRATOR"
         },
         {
           "index": 22,
-          "startMs": 263910,
-          "endMs": 276081,
+          "startMs": 258651,
+          "endMs": 270822,
           "character": "NARRATOR"
         }
       ],
@@ -199,7 +199,7 @@
       "sourceChapterSlugs": [
         "clip"
       ],
-      "durationSeconds": 208.52,
+      "durationSeconds": 202.67,
       "bundlePath": "AudioDramas/dialoguequest/clip-economy.caf",
       "webM4APath": "AudioDramas/dialoguequest/clip-economy.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/clip-economy.vtt",
@@ -315,25 +315,25 @@
         {
           "index": 19,
           "startMs": 173877,
-          "endMs": 182688,
+          "endMs": 182630,
           "character": "NARRATOR"
         },
         {
           "index": 20,
-          "startMs": 182688,
-          "endMs": 191139,
+          "startMs": 182630,
+          "endMs": 185261,
           "character": "NARRATOR"
         },
         {
           "index": 21,
-          "startMs": 191139,
-          "endMs": 195590,
+          "startMs": 185261,
+          "endMs": 189712,
           "character": "NARRATOR"
         },
         {
           "index": 22,
-          "startMs": 195590,
-          "endMs": 208521,
+          "startMs": 189712,
+          "endMs": 202643,
           "character": "NARRATOR"
         }
       ],
@@ -390,7 +390,7 @@
       "sourceChapterSlugs": [
         "dash"
       ],
-      "durationSeconds": 208.54,
+      "durationSeconds": 203.8,
       "bundlePath": "AudioDramas/dialoguequest/dash-interruption.caf",
       "webM4APath": "AudioDramas/dialoguequest/dash-interruption.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/dash-interruption.vtt",
@@ -518,25 +518,25 @@
         {
           "index": 21,
           "startMs": 175779,
-          "endMs": 184670,
+          "endMs": 184664,
           "character": "NARRATOR"
         },
         {
           "index": 22,
-          "startMs": 184670,
-          "endMs": 191761,
+          "startMs": 184664,
+          "endMs": 187006,
           "character": "NARRATOR"
         },
         {
           "index": 23,
-          "startMs": 191761,
-          "endMs": 196852,
+          "startMs": 187006,
+          "endMs": 192097,
           "character": "NARRATOR"
         },
         {
           "index": 24,
-          "startMs": 196852,
-          "endMs": 208543,
+          "startMs": 192097,
+          "endMs": 203788,
           "character": "NARRATOR"
         }
       ],
@@ -593,7 +593,7 @@
       "sourceChapterSlugs": [
         "prop"
       ],
-      "durationSeconds": 249.08,
+      "durationSeconds": 243.97,
       "bundlePath": "AudioDramas/dialoguequest/prop-action-beats.caf",
       "webM4APath": "AudioDramas/dialoguequest/prop-action-beats.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/prop-action-beats.vtt",
@@ -715,19 +715,19 @@
         {
           "index": 20,
           "startMs": 223768,
-          "endMs": 231859,
+          "endMs": 226744,
           "character": "NARRATOR"
         },
         {
           "index": 21,
-          "startMs": 231859,
-          "endMs": 236590,
+          "startMs": 226744,
+          "endMs": 231475,
           "character": "NARRATOR"
         },
         {
           "index": 22,
-          "startMs": 236590,
-          "endMs": 249081,
+          "startMs": 231475,
+          "endMs": 243966,
           "character": "NARRATOR"
         }
       ],
@@ -784,7 +784,7 @@
       "sourceChapterSlugs": [
         "spar"
       ],
-      "durationSeconds": 211.72,
+      "durationSeconds": 206.77,
       "bundlePath": "AudioDramas/dialoguequest/spar-conflict.caf",
       "webM4APath": "AudioDramas/dialoguequest/spar-conflict.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/spar-conflict.vtt",
@@ -900,25 +900,25 @@
         {
           "index": 19,
           "startMs": 179277,
-          "endMs": 187528,
+          "endMs": 187518,
           "character": "NARRATOR"
         },
         {
           "index": 20,
-          "startMs": 187528,
-          "endMs": 194899,
+          "startMs": 187518,
+          "endMs": 189918,
           "character": "NARRATOR"
         },
         {
           "index": 21,
-          "startMs": 194899,
-          "endMs": 199390,
+          "startMs": 189918,
+          "endMs": 194409,
           "character": "NARRATOR"
         },
         {
           "index": 22,
-          "startMs": 199390,
-          "endMs": 211721,
+          "startMs": 194409,
+          "endMs": 206740,
           "character": "NARRATOR"
         }
       ],
@@ -975,7 +975,7 @@
       "sourceChapterSlugs": [
         "kernel-and-reprise"
       ],
-      "durationSeconds": 258.96,
+      "durationSeconds": 253.7,
       "bundlePath": "AudioDramas/dialoguequest/kernel-and-reprise-callback.caf",
       "webM4APath": "AudioDramas/dialoguequest/kernel-and-reprise-callback.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/kernel-and-reprise-callback.vtt",
@@ -1115,25 +1115,25 @@
         {
           "index": 23,
           "startMs": 224001,
-          "endMs": 233012,
+          "endMs": 232987,
           "character": "NARRATOR"
         },
         {
           "index": 24,
-          "startMs": 233012,
-          "endMs": 241183,
+          "startMs": 232987,
+          "endMs": 235899,
           "character": "NARRATOR"
         },
         {
           "index": 25,
-          "startMs": 241183,
-          "endMs": 246553,
+          "startMs": 235899,
+          "endMs": 241269,
           "character": "NARRATOR"
         },
         {
           "index": 26,
-          "startMs": 246553,
-          "endMs": 258964,
+          "startMs": 241269,
+          "endMs": 253680,
           "character": "NARRATOR"
         }
       ],
@@ -1190,7 +1190,7 @@
       "sourceChapterSlugs": [
         "listener-speaker"
       ],
-      "durationSeconds": 229.51,
+      "durationSeconds": 224.15,
       "bundlePath": "AudioDramas/dialoguequest/listener-speaker-turn-taking.caf",
       "webM4APath": "AudioDramas/dialoguequest/listener-speaker-turn-taking.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/listener-speaker-turn-taking.vtt",
@@ -1324,25 +1324,25 @@
         {
           "index": 22,
           "startMs": 195110,
-          "endMs": 204161,
+          "endMs": 204151,
           "character": "NARRATOR"
         },
         {
           "index": 23,
-          "startMs": 204161,
-          "endMs": 211772,
+          "startMs": 204151,
+          "endMs": 206374,
           "character": "NARRATOR"
         },
         {
           "index": 24,
-          "startMs": 211772,
-          "endMs": 216263,
+          "startMs": 206374,
+          "endMs": 210865,
           "character": "NARRATOR"
         },
         {
           "index": 25,
-          "startMs": 216263,
-          "endMs": 229513,
+          "startMs": 210865,
+          "endMs": 224115,
           "character": "NARRATOR"
         }
       ],

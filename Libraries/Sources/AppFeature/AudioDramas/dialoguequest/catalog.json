@@ -8,7 +8,7 @@
       "sourceChapterSlugs": [
         "weigh"
       ],
-      "durationSeconds": 421.22,
+      "durationSeconds": 416.08,
       "bundlePath": "AudioDramas/dialoguequest/weigh-balance-scale.caf",
       "webM4APath": "AudioDramas/dialoguequest/weigh-balance-scale.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/weigh-balance-scale.vtt",
@@ -202,25 +202,25 @@
         {
           "index": 32,
           "startMs": 387739,
-          "endMs": 396790,
+          "endMs": 396571,
           "character": "NARRATOR"
         },
         {
           "index": 33,
-          "startMs": 396790,
-          "endMs": 404081,
+          "startMs": 396571,
+          "endMs": 398915,
           "character": "NARRATOR"
         },
         {
           "index": 34,
-          "startMs": 404081,
-          "endMs": 408972,
+          "startMs": 398915,
+          "endMs": 403806,
           "character": "NARRATOR"
         },
         {
           "index": 35,
-          "startMs": 408972,
-          "endMs": 421223,
+          "startMs": 403806,
+          "endMs": 416057,
           "character": "NARRATOR"
         }
       ],
@@ -287,7 +287,7 @@
       "sourceChapterSlugs": [
         "brogue"
       ],
-      "durationSeconds": 194.53,
+      "durationSeconds": 189.41,
       "bundlePath": "AudioDramas/dialoguequest/brogue-voice-consistency.caf",
       "webM4APath": "AudioDramas/dialoguequest/brogue-voice-consistency.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/brogue-voice-consistency.vtt",
@@ -385,25 +385,25 @@
         {
           "index": 16,
           "startMs": 162444,
-          "endMs": 170775,
+          "endMs": 170732,
           "character": "NARRATOR"
         },
         {
           "index": 17,
-          "startMs": 170775,
-          "endMs": 178306,
+          "startMs": 170732,
+          "endMs": 173156,
           "character": "NARRATOR"
         },
         {
           "index": 18,
-          "startMs": 178306,
-          "endMs": 182917,
+          "startMs": 173156,
+          "endMs": 177767,
           "character": "NARRATOR"
         },
         {
           "index": 19,
-          "startMs": 182917,
-          "endMs": 194528,
+          "startMs": 177767,
+          "endMs": 189378,
           "character": "NARRATOR"
         }
       ],
@@ -460,7 +460,7 @@
       "sourceChapterSlugs": [
         "glance"
       ],
-      "durationSeconds": 163.48,
+      "durationSeconds": 158.13,
       "bundlePath": "AudioDramas/dialoguequest/glance-subtext.caf",
       "webM4APath": "AudioDramas/dialoguequest/glance-subtext.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/glance-subtext.vtt",
@@ -552,25 +552,25 @@
         {
           "index": 15,
           "startMs": 129073,
-          "endMs": 137804,
+          "endMs": 137665,
           "character": "NARRATOR"
         },
         {
           "index": 16,
-          "startMs": 137804,
-          "endMs": 145775,
+          "startMs": 137665,
+          "endMs": 140405,
           "character": "NARRATOR"
         },
         {
           "index": 17,
-          "startMs": 145775,
-          "endMs": 150346,
+          "startMs": 140405,
+          "endMs": 144976,
           "character": "NARRATOR"
         },
         {
           "index": 18,
-          "startMs": 150346,
-          "endMs": 163477,
+          "startMs": 144976,
+          "endMs": 158107,
           "character": "NARRATOR"
         }
       ],
@@ -627,7 +627,7 @@
       "sourceChapterSlugs": [
         "rest"
       ],
-      "durationSeconds": 192.29,
+      "durationSeconds": 187.04,
       "bundlePath": "AudioDramas/dialoguequest/rest-rhythm-silence.caf",
       "webM4APath": "AudioDramas/dialoguequest/rest-rhythm-silence.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/rest-rhythm-silence.vtt",
@@ -725,25 +725,25 @@
         {
           "index": 16,
           "startMs": 158164,
-          "endMs": 166775,
+          "endMs": 166761,
           "character": "NARRATOR"
         },
         {
           "index": 17,
-          "startMs": 166775,
-          "endMs": 174826,
+          "startMs": 166761,
+          "endMs": 169572,
           "character": "NARRATOR"
         },
         {
           "index": 18,
-          "startMs": 174826,
-          "endMs": 179477,
+          "startMs": 169572,
+          "endMs": 174223,
           "character": "NARRATOR"
         },
         {
           "index": 19,
-          "startMs": 179477,
-          "endMs": 192288,
+          "startMs": 174223,
+          "endMs": 187034,
           "character": "NARRATOR"
         }
       ],
@@ -800,7 +800,7 @@
       "sourceChapterSlugs": [
         "sprig"
       ],
-      "durationSeconds": 152.84,
+      "durationSeconds": 147.83,
       "bundlePath": "AudioDramas/dialoguequest/sprig-branch-meaningfulness.caf",
       "webM4APath": "AudioDramas/dialoguequest/sprig-branch-meaningfulness.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/sprig-branch-meaningfulness.vtt",
@@ -892,25 +892,25 @@
         {
           "index": 15,
           "startMs": 120673,
-          "endMs": 128924,
+          "endMs": 128874,
           "character": "NARRATOR"
         },
         {
           "index": 16,
-          "startMs": 128924,
-          "endMs": 136375,
+          "startMs": 128874,
+          "endMs": 131329,
           "character": "NARRATOR"
         },
         {
           "index": 17,
-          "startMs": 136375,
-          "endMs": 141346,
+          "startMs": 131329,
+          "endMs": 136300,
           "character": "NARRATOR"
         },
         {
           "index": 18,
-          "startMs": 141346,
-          "endMs": 152837,
+          "startMs": 136300,
+          "endMs": 147791,
           "character": "NARRATOR"
         }
       ],
@@ -967,7 +967,7 @@
       "sourceChapterSlugs": [
         "weigh"
       ],
-      "durationSeconds": 149.27,
+      "durationSeconds": 144.17,
       "bundlePath": "AudioDramas/dialoguequest/weigh-tag-balance.caf",
       "webM4APath": "AudioDramas/dialoguequest/weigh-tag-balance.m4a",
       "webVTTPath": "AudioDramas/dialoguequest/weigh-tag-balance.vtt",
@@ -1059,25 +1059,25 @@
         {
           "index": 15,
           "startMs": 114913,
-          "endMs": 123564,
+          "endMs": 123540,
           "character": "NARRATOR"
         },
         {
           "index": 16,
-          "startMs": 123564,
-          "endMs": 131255,
+          "startMs": 123540,
+          "endMs": 126135,
           "character": "NARRATOR"
         },
         {
           "index": 17,
-          "startMs": 131255,
-          "endMs": 136026,
+          "startMs": 126135,
+          "endMs": 130906,
           "character": "NARRATOR"
         },
         {
           "index": 18,
-          "startMs": 136026,
-          "endMs": 149237,
+          "startMs": 130906,
+          "endMs": 144117,
           "character": "NARRATOR"
         }
       ],
