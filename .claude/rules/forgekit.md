@@ -2,45 +2,23 @@
 
 Shared SPM framework at `../forgekit/`. Apps import only the modules they need.
 
+> **⚡ THIS IS A CARD (ADR-111 always-on-context budget fold, 2026-08-17).** Each section below keeps its heading (so `§ <heading>` cross-refs still resolve) + its load-bearing INVARIANT. The FULL detail — the per-release changelog, the pin-cohort census, the module-catalog tables, the ForgeUI/ForgeGamification/ForgeModels quick-reference API tables + snippets, the ForgePedagogy scaffolding-theory tables + citations, the Avatar-system design detail, the Server `/version` implementation recipe, and the long-form Common Gotcha — lives in **`Docs/REFERENCE_FORGEKIT.md`** (fetch on demand; same `## ` headings).
+
 ## Versioning
 
-ForgeKit uses **semantic versioning** with annotated git tags (**current CHANGELOG floor: `1.0.0-rc.3`, 2026-06-17** — the 1.0.0 release-candidate line; the older 0.99.x entries below are historical). Breaking changes are expected before 1.0. **`forgekit/Docs/CHANGELOG.md` is authoritative** — hub rule/CLAUDE.md text drifts; verify CHANGELOG before quoting a specific version. *(Headline reconciled 2026-07-28, V629 Wave-2 audit — the prior "current: 0.99.1" lagged the CHANGELOG; R-CANONICAL-DOC-GROUND-TRUTH.)*
+ForgeKit uses **semantic versioning** with annotated git tags (**highest PUBLISHED git tag: `1.0.0-rc.6`, 2026-08-14**; older historical). Breaking changes expected before 1.0. **`CHANGELOG.md` is authoritative for CONTENT; the highest PUBLISHED GIT TAG is authoritative for a `from:` PIN FLOOR** (SPM resolves `from:` against tags, not the version-string). ⚠ **DRIFT (reconciled 2026-08-18):** the old "rc.5 untagged" gap is RESOLVED — `rc.5`+`rc.6` are BOTH now tagged; floor = `rc.6`. (`ForgeKitVersion.swift` lags at `rc.5` — cosmetic; SPM resolves by tag. Detail → `REFERENCE_FORGEKIT.md`.)
 
-### R-FORGEKIT-PIN-CONSISTENCY — the fleet converges to ONE coordinated pin floor = `from: "1.0.0-rc.3"` (founder-decided latest pre-release, 2026-07-28); the ≤0.94 stale cohort MUST bump (2026-07-28)
+- **Runtime check**: `ForgeKitVersion.version` / `.major` / `.minor` / `.patch` in ForgeModels · **CHANGELOG**: `forgekit/Docs/CHANGELOG.md` · **Release**: bump `ForgeKitVersion.swift` → `CHANGELOG.md` → commit → `git tag -a X.Y.Z` → `git push origin main --tags`.
 
-**The portfolio's ForgeKit `Package.swift` pins DRIFT badly.** A V629 Wave-2 census (`Docs/AUDIT_PORTFOLIO_IOS_CODE_QUALITY_2026-07-28.md`) found 81 pinned apps spanning **`0.66.0` → `1.0.0-rc.3`** with no coordinated floor: 20 on `from:"0.99.0"`, 19+1 on `0.86.0`, 24 on the `rc.3` line (11 `from:` + 11 `exact:` + rc.2/rc.1), plus a `from:` vs `exact:` STYLE split (some hard-pin while siblings float). A **~24-app stale cohort sits at ≤`0.94.0`** (0.66/0.86/0.87/0.94) and is missing every 0.95→rc.3 primitive (`ForgeServerLeaderboard`, `HubContributionConfig.togetherMode`, `CastDialog`, `CastEncounter`, `ReflectionPromptModifier`, `ForgeMasteryEngine`, `PolyaScaffold`). The policy:
+→ **Full detail (per-release changelog 0.85→0.99.1 + release housekeeping):** `Docs/REFERENCE_FORGEKIT.md` § Versioning.
 
-- **Each app SHOULD pin to a single coordinated floor** (a consistent `from: "<floor>"`), not a scattered mix — pin drift means siblings resolve different ForgeKit APIs and a shared-primitive handoff can't assume a floor.
-- **The ≤`0.94.0` stale cohort MUST bump** to at least the current stable line so the 0.95→rc.3 primitives are available — this is the drift's real, actionable cost.
-- **✅ DECIDED FLOOR (founder-direct 2026-07-28): the coordinated floor is `from: "1.0.0-rc.3"` — the LATEST pre-release line.** Verified against ForgeKit ground truth (git tags `1.0.0-rc.1/rc.2/rc.3`, no rc.4; `ForgeKitVersion.swift = "1.0.0-rc.3"`). ⚠ **SPM pre-release semantics — this moves MORE than the ≤0.94 cohort:** `from: "1.0.0-rc.3"` resolves rc.3 + any later `1.0.0` pre-release (rc.4…) + `1.0.0` final + `1.x` (so it AUTO-UPGRADES to the stable 1.0.0 when it ships), whereas `from: "0.99.0"` EXCLUDES the rc line — therefore the **20 apps on `from:"0.99.0"` (and every app below the rc line, ~all 81) must move UP to `from:"1.0.0-rc.3"`**, not just the ≤0.94 stale cohort. Re-verify the latest CHANGELOG tag at each app's bump time (a newer rc or the `1.0.0` final may have shipped — then that becomes the floor; `from:` already auto-includes it, so no re-pin needed once on the rc line).
-- **Prefer `from:` over `exact:`** unless a specific app has a pinning reason (an `exact:` pin freezes the app off future compatible fixes; the mixed `from:`/`exact:` on one tag IS the drift).
-- **Hub NEVER edits an app `Package.swift`** (`portfolio.md` § R-HUB-OWNS-APP-RESOURCES never-write-source boundary) — a pin bump is authored per-app via `HANDOFF_FROM_HUB_FORGEKIT_PIN_CONSISTENCY.md`; the app's own CC session updates its manifest + runs `File > Packages > Update`.
+### R-FORGEKIT-PIN-CONSISTENCY — the fleet converges to ONE coordinated pin floor = `from: "1.0.0-rc.6"` (highest PUBLISHED tag; re-verified 2026-08-18); the sub-rc-line cohort MUST bump (2026-07-28; floor rc.3→rc.4→rc.6, latest 2026-08-18)
 
-Cross-refs: `Docs/AUDIT_PORTFOLIO_IOS_CODE_QUALITY_2026-07-28.md` (census + cohort list) · `forgekit/Docs/CHANGELOG.md` (authoritative floor) · § Remote GitHub Dependency (the `from:` mechanics) · `workflow.md` § R-CANONICAL-DOC-GROUND-TRUTH.
+> **Keep-current (iOS half of ADR-133; founder-direct 2026-08-14 "for ios too"):** the ForgeKit pin + the CLAUDE.md toolchain floor (**Xcode 26.5+ / Swift 6.3.x**) + SPM deps are kept CURRENT (latest stable) for bug fixes · security · major features, on a standing cadence. **Ownership (unchanged): the FOUNDER updates the local Xcode/Swift toolchain; HUB tracks currency (the pin census) + AUTHORS per-app bump handoffs; the app's own CC session edits its `Package.swift` — hub NEVER bumps another repo's `Package.swift` directly.** Full policy + web sibling: `Docs/ADR-133_KEEP_TOOLCHAIN_DEPENDENCIES_CURRENT.md` + `spark-anvil-website.md` § R-SITE-DEPENDENCY-CURRENCY.
 
-**0.99.1 — patch-only** test rewrite (`ForgeAIGeneratorTests` → `ForgeAIContentCachePublicAPITests`).
+**INVARIANT.** Each app pins to a single coordinated floor — the DECIDED floor is `from: "1.0.0-rc.6"` (founder-direct 2026-07-28; bumped rc.3→rc.4 2026-08-13, rc.4→rc.6 2026-08-18), the LATEST *published* pre-release tag. The floor is the **highest PUBLISHED GIT TAG, never the CHANGELOG/version-string** (SPM resolves `from:` against tags; the version-string can lag). `from: "1.0.0-rc.6"` resolves rc.6 + the `1.0.0` final + `1.x` (auto-upgrades) — so **every app pinned below the rc line (the `0.66/0.86/0.87/0.94/0.99.x` cohort) MUST move UP to `from:"1.0.0-rc.6"`** (apps already on a `from:"1.0.0-rc.N"` pin need NO change; they float up to rc.6). Prefer `from:` over `exact:`. **Hub NEVER edits an app `Package.swift`** (`portfolio.md` § R-HUB-OWNS-APP-RESOURCES) — a pin bump is authored per-app via `HANDOFF_FROM_HUB_FORGEKIT_PIN_CONSISTENCY.md`; the app's own CC session updates the manifest + runs `File > Packages > Update`. Re-verify the highest published tag (`git ls-remote --tags origin` on forgekit) at each bump.
 
-**0.99.0 — `ReflectionPromptModifier` + `ReflectionPromptStorage` shipped** (ForgeUI + ForgePersistence; closes Move R2 — journal hooks / structured reflection prompts for ~22 Reflect-pillar apps).
-
-**0.98.0 — `CastEncounter` primitive shipped** (`ForgePersistence`; SwiftData `@Model` + `CastEncounterStore` actor; closes DN-D12 longitudinal cast progression for ~37 high-priority adopters).
-
-**0.97.0 — `CastDialog` primitive shipped** (`ForgeAI`; FoundationModels-backed cast voice with reviewer-signoff gating + ForgeServerSafety moderation pipeline; closes DN-D3 for ~26 non-trauma + ~25-30 trauma-adjacent apps).
-
-**0.96.0 — `ForgeServerLeaderboard` module shipped** (NEW 11th server module; zero-dep `LeaderboardStore` protocol + `InMemoryLeaderboardStore` reference impl; PostgresLeaderboardStore deferred to forgesync Phase 6; closes Move T8 async leaderboard for ~31 apps).
-
-**0.95.0 — `HubContributionConfig.togetherMode` field shipped** + `TogetherMode.Archetype` enum (5 cases: passAndPlay / cooperativePair / bystanderRoleplay / classroomLive / asyncLeaderboard; closes Move T10 for 4 aggregator + ~30 source apps).
-
-**0.94.0 — `ForgeClassroom` module shipped** (LiveKit-Cloud-backed v1 live classroom). 0.86→0.94 added 7 new client modules: `ForgeAvatar` / `ForgeBranding` / `ForgeClassroom` / `ForgeColoringMode` / `ForgeManagedConfiguration` / `ForgeMiniGames` / `ForgePuzzles` + 1 new server module: `ForgeClassroomServer`. Module count: **59 total** (46 client + 11 server + 2 shared) — live `Sources/` tree, 2026-08-02; the older "58/50/49" tallies were stale (R-CANONICAL-DOC-GROUND-TRUTH — verify against the live tree + `forgekit/Docs/CHANGELOG.md`, which is authoritative).
-
-**0.89.0 — `DyadicPair` API shipped** (unblocks MindForge / SafetyForge / CardForge / GrammarForge pass-and-play retrofits; lives in `ForgePassAndPlay`).
-
-**0.86.0 — DIR/FEDC API gap closure** — 7 new affect-aware types in `ForgeDevelopmental` + `ForgeModels`: `EmotionSnapshot`, `AffectCalibrator`, `CoRegulationEngine`, `SensoryRamp`, `FEDCDemonstrationRecord`, `UserFEDCProfile`, `FEDCPromptContext` + `StreakManager.recordSession(emotionSnapshot:...)` overload + new `StreakResult.heldUnderDistress` case. Apps switching exhaustive `StreakResult` switches must add `.heldUnderDistress` arm OR `@unknown default` — `ExtendedStreakManager` forwards as `.sameDay` so apps using the wrapper are unaffected.
-
-**0.85.0** added Linux platform support via `#if canImport(CoreGraphics)` guard in `AvatarLayer`.
-
-- **Runtime check**: `ForgeKitVersion.version` / `.major` / `.minor` / `.patch` in ForgeModels
-- **CHANGELOG**: `forgekit/Docs/CHANGELOG.md` — Keep a Changelog format
-- **Release checklist**: Update `ForgeKitVersion.swift` → update `CHANGELOG.md` → commit → `git tag -a X.Y.Z -m "message"` → `git push origin main --tags`
+→ **Full detail (the 51-app / 4-cohort pull-verified census + the missing-primitive list + the per-policy-line rationale):** `Docs/REFERENCE_FORGEKIT.md` § R-FORGEKIT-PIN-CONSISTENCY + `Docs/AUDIT_FORGEKIT_PIN_CONSISTENCY_2026-08-18.md` + `Docs/REGISTRY_FORGEKIT_PIN_COVERAGE.txt`.
 
 ## Source Layout (0.57.0 soft-split)
 
@@ -55,380 +33,58 @@ Public API and product names are unchanged — apps still write `.product(name: 
 
 ## Remote GitHub Dependency (Default)
 
-`Libraries/Package.swift` uses `.package(url: "https://github.com/nathant99/forgekit.git", from: "0.99.0")` — pin to minimum version, allows multiple app workspaces open simultaneously. After a ForgeKit release, `File > Packages > Update to Latest Package Versions` in each consuming workspace.
-
-**Migration from `branch: "main"`**: Replace `branch: "main"` with `from: "0.99.0"` in `Libraries/Package.swift`. This pins to the current release and auto-resolves compatible updates (up to 1.0.0).
+`Libraries/Package.swift` uses `.package(url: "https://github.com/nathant99/forgekit.git", from: "0.99.0")` — pin to minimum version (see R-FORGEKIT-PIN-CONSISTENCY for the coordinated floor), allows multiple app workspaces open simultaneously. After a ForgeKit release, `File > Packages > Update to Latest Package Versions` in each consuming workspace. **Migration from `branch: "main"`**: replace with `from: "…"`.
 
 ### Local Development Fallback
 
-Temporarily switch to `.package(path: "../../forgekit")` for active ForgeKit development — enables edit-build-test without pushing. **Only one workspace can claim a local path dependency** — close other workspaces using ForgeKit locally. Switch back to the remote URL with `from:` when done.
+Temporarily switch to `.package(path: "../../forgekit")` for active ForgeKit development. **Only one workspace can claim a local path dependency** — close other workspaces using ForgeKit locally. Switch back to the remote `from:` URL when done.
 
-## Module Catalog (live total 59 modules — 46 client + 11 server + 2 shared; the catalog below is a reference subset — verify against the live `Sources/` tree)
+## Module Catalog (live total 59 modules — 46 client + 11 server + 2 shared)
 
-For the authoritative list, run `ls ../forgekit/Sources/{Client,Server,Shared}`. The catalog below names every module and gives a one-line purpose; full APIs are documented in each module's `Tests/` and inline `///` doc-comments.
+**INVARIANT.** ForgeKit is 59 modules (46 client + 11 server + 2 shared — soft-split `Sources/{Client,Server,Shared}/`, live 2026-08-02; the older "58/50/49" tallies were stale). **The authoritative list is the live tree — `ls ../forgekit/Sources/{Client,Server,Shared}`** + `forgekit/Docs/CHANGELOG.md` (R-CANONICAL-DOC-GROUND-TRUTH); never quote a count from a doc. Every ForgeKit type is `public`; `ForgeModels` types are value types (apps bridge to their own `@Model`).
 
-### Shared (2) — `Sources/Shared/<Module>/`
-
-| Module | Purpose |
-|---|---|
-| `ForgeModels` | Foundational domain types: `StudentProfile`, `AchievementDefinition`, `BloomLevel`, `GradeLevel`, `ProgressRecord`, `ContentItem`, `CurriculumStandard`, `ForgeKitVersion` |
-| `ForgeServerDTOs` | Typed JSON payloads on the wire — clients decode these, servers emit them. Reclassified to Shared in 0.57.0 |
-
-### Client (38) — `Sources/Client/<Module>/`
-
-| Module | Depends On | Purpose |
-|---|---|---|
-| `ForgeUI` | ForgeModels | SwiftUI components: buttons, progress bars, HUD, feedback modifiers, onboarding, theming |
-| `ForgeAccessibility` | ForgeUI | COPPA compliance (parental consent with 12-month expiry), session timer, haptics, ADHD mode |
-| `ForgeAdventure` | ForgeModels | Adventure mode framework: 13 game mode engines, map progression, mode availability, multiplayer config. **Hub subdirectory (0.79.0)**: `HubContribution`, `HubContributionRegistry` (actor), `HubContributionConfig` (Codable snake_case + Int `BloomLevel`), `HubGenericChallengeView`, `HubMentorOrchestrator` (+ `HubMentorSession` protocol + `NoOpHubMentorSession`), value types (`ZoneID`, `HubPresentation`, `MentorPersona`, `AudioVoiceProfile`, `HubKitResource`, `EngineCopy`, `HubChallengeResult`, `HubQuestion`/`HubQuestionKit`, `HubChallengeContext`), `Color(hex:)` extension |
-| `ForgeAI` | ForgeModels | FoundationModels helpers: session management, availability gating |
-| `ForgeAnalytics` | ForgeModels | Analytics events, session tracking, engagement metrics |
-| `ForgeAvatar` | ForgeModels | Simplified Apple-Contacts-style avatar (per ADR-022, 2026-06-02). `AvatarConfig` (`tintIndex` + `AvatarGlyph`) lives in `ForgeModels`. Public types: `AvatarRenderer` (SwiftUI, `ZStack { Circle().fill(tint); glyph }`), `AvatarStudioView` (single-presentation editor), `AvatarThemedGlyphProvider` + `ForgeAvatarRegistry` (per-app glyph override seam). **The composable/layered system (`AvatarLayer`/`AvatarAssetCatalog`/`AvatarSpriteNode` + WebP packs) was RETIRED** — gen models can't produce transparent/tintable layers. **See § "Avatar system — simplified Contacts-style tint + glyph" below** |
-| `ForgeAudio` | ForgeModels | Audio playback, SFX management |
-| `ForgeCelebration` | ForgeModels, ForgeIllustrations | Celebration *orchestration* (`CelebrationCoordinator`, `CelebrationOverlayModifier`); separate from `ForgeIllustrations.CelebrationCatalog` which owns the assets |
-| `ForgeContent` | ForgeModels, ForgeNetworking | Content loading, question kit parsing |
-| `ForgeDevelopmental` | ForgeModels | DIR/FEDC developmental scaffolding — 16 levels, capacity-based support |
-| `ForgeEmotionAware` | ForgeModels | Emotion-aware adaptive features |
-| `ForgeEvents` | ForgeModels | Seasonal event lifecycle, 41 built-in holidays, celebration packs |
-| `ForgeExperiments` | ForgeModels | On-device A/B testing, COPPA-compliant experimentation |
-| `ForgeGameCenter` | ForgeModels | GameCenter integration: leaderboards, achievements, turn-based matchmaking |
-| `ForgeGameEngine` | ForgeModels | SpriteKit helpers: scene management, node extensions |
-| `ForgeGamification` | ForgeModels, ForgePersistence | XP, streaks, achievements, economy, spaced repetition |
-| `ForgeIllustrations` | ForgeModels | Illustration registry/loader/resolver, prebuilt SwiftUI views, `CelebrationCatalog` (8 Lottie celebrations), on-device generation bridge |
-| `ForgeIntents` | ForgeModels | App Intents framework integration for Siri / Shortcuts |
-| `ForgeKnowledgeGraph` | ForgeModels | Knowledge-graph traversal for adaptive content suggestion |
-| `ForgeLiveActivities` | ForgeModels | Dynamic Island + Lock Screen Live Activity support |
-| `ForgeMasteryEngine` (SHIPPED 1.0.0-rc.2 per ADR-026) | ForgeModels, ForgeKnowledgeGraph, ForgeGamification | Adaptive mastery practice spine: `MasteryGraph<Topic>` DAG (with cycle / duplicate / unknown-prereq detection at init; stable `topologicalOrder` via lexicographic DFS) + `TopicMasteryState` (FSRS-6 + attemptCount + rolling `recentOutcomes` window; derived `masteryScore` = 60% FSRS retrievability + 40% recent accuracy; `isRacingAhead` / `isStuck` convenience flags) + `NextProblemPicker.recommendations` (extend / consolidate / stretch with `SelectionRationale`) + `MasteryUpdater`. Pure value-type API; all `nonisolated`. Edge-of-competence heuristic (Vygotsky ZPD; target difficulty in [mastery + 0.10, 0.20] band). First consumer: AlcumusForge. Spec: `forgekit/Docs/HANDOFF_FROM_LABSMITH_FORGEMASTERYENGINE.md`. SHIPPED: `forgekit/Docs/HANDOFF_FROM_FORGEKIT_FORGEMASTERYENGINE_SHIPPED.md` |
-| `ForgeLocalization` | — | String catalog management, pluralization, brand guard, date formatting |
-| `ForgeMath` | ForgeModels | Math utilities, expression evaluation, number formatting |
-| `ForgeMultipeerKit` | ForgeModels | MultipeerConnectivity wrapper (distinct from ForgeMultiplayer) |
-| `ForgeMultiplayer` | ForgeModels | Multiplayer session management, turn-based and real-time modes |
-| `ForgeNavigation` | ForgeModels, ForgeUI | Navigation patterns, tab/sidebar coordination |
-| `ForgeNetworking` | ForgeModels | Network layer, API client |
-| `ForgePartyGames` | ForgeModels | Local-multiplayer mini-game engines: ForbiddenWords, ForeheadReveal, HotPotato, RapidRecall |
-| `ForgePassAndPlay` | ForgeModels | Pass-and-play state machine + 4-stage privacy curtain |
-| `ForgePedagogy` | ForgeModels | Pedagogical strategies, bloom-level targeting, hint scaffolding. **PolyaScaffold SHIPPED 1.0.0-rc.2 per ADR-026** (`Sources/Client/ForgePedagogy/Polya/`): `PolyaScaffold` protocol + `PolyaPhase` 4-case enum (understand / plan / execute / lookBack with `Understanding` / `StrategyPlan` / `ExecutionState` / `Reflection` associated structs) + `StrategyTag` enum (14 canonical + `.custom`) + `PolyaMachine` state-machine + 3 `Configuration` presets (.default / .strict / .permissive). Load-bearing `hintsAllowedBeforePlan: 0` default = articulate-before-hint enforcement. First consumers: MathCircle + NumberSense. Spec: `forgekit/Docs/HANDOFF_FROM_LABSMITH_POLYASCAFFOLD.md`. SHIPPED: `forgekit/Docs/HANDOFF_FROM_FORGEKIT_POLYASCAFFOLD_SHIPPED.md` |
-| `ForgePersistence` | ForgeModels | SwiftData helpers: container configuration, migration utilities |
-| `ForgeProgression` | ForgeModels | Session-based content gating, calendar-aware session counting, debug bypass |
-| `ForgeReporting` | ForgeModels | Progress reports, standards-mapped analytics dashboards |
-| `ForgeSensory` | ForgeModels | Multi-modal feedback coordination (visual + audio + haptic) |
-| `ForgeSettings` | ForgeModels | Settings / preferences storage |
-| `ForgeSocial` | ForgeModels | Social features (leaderboards, friend codes — COPPA-bound) |
-| `ForgeSpotlight` | ForgeModels | Spotlight search integration via `ForgeSpotlightIndexer` actor |
-| `ForgeStateMachine` | ForgeModels | Generic finite state machine helpers |
-| `ForgeSync` | ForgeModels | Cross-app progression sync, XP tracking, streak tracking, achievements |
-| `ForgeWidgets` | ForgeModels | Home-screen widget support (WidgetKit) |
-
-### Server (9) — `Sources/Server/<Module>/`
-
-For Hummingbird 2 microservices (`CuriosityQuestServer`, `forgesync`, etc.). See `Docs/TEMPLATE_IMPLEMENTATION_HANDOFF_SERVER.md` (in any server-bearing app repo) for verified APIs. See `@Docs/GUIDE_FORGESERVER_ADOPTION.md` for the thin-wrapper adoption playbook.
-
-| Module | Purpose |
-|---|---|
-| `ForgeServerActors` | `HTTPRateLimiter`, `WebSocketRateLimiter`, `HistoryStore`, `VerificationCodeStore` (0.58.0 `issue(_:for:)` overload), `PeriodicCleanupService`, `RoomCodeAlphabet`, `RoomManager`, `MessageWriter`, **`ConnectionRegistry<Writer>` (0.60.0)**, **`SingleFlightJobQueue<Key,Value>` (0.63.0)**, **`RoomRegistry<Room: ForgeRoom>` (0.68.0)** |
-| `ForgeServerMatchmaking` | Skill-based queue, match formation |
-| `ForgeServerMiddleware` | `APIKeyValidator` (nonisolated struct), `CORSPolicy`, `HeaderTokenValidator`, **`SecurityHeaders` (0.60.1)** |
-| `ForgeServerMultiplayer` | Anti-cheat heuristics, elimination brackets, server-authoritative content |
-| `ForgeServerRealTime` | `CountdownService`, game-state anchor primitives |
-| `ForgeServerSafety` | `InputSafetyService` (`nonisolated struct` since 0.59.1), `OutputModerationService`, `CrisisResource.description` (0.59.0), **`SSEStreamModerator` + `SyntheticSSEResponseBuilder` (0.61.0)**, `SafetyConfig` output-side fields (0.66.0) |
-| `ForgeServerTracking` | `APIUsageTracker` + `CallRecord` grouped summary (0.66.0), `EventStore<Event>` + `.remove(where:)/.remove(for:where:)` (0.66.0), **`APIQuotaTracker` (0.62.0)** |
-| `ForgeServerWebSocket` | `BroadcastService` fan-out (+ stored-encoder init in 0.74.0), `GameMessageProtocol` envelope, **`FloorController<Speaker>` (0.64.0; `.pause()/.resume()` in 0.66.0)**, **`MessageRelay` static helpers (0.68.0)** |
-| **`ForgeServerEmail` (0.65.0)** | `EmailMessage` / `EmailSender` protocol / `InMemoryEmailSender` / `VerificationEmailBuilder`. Vendor-agnostic — apps ship concrete Mailgun/SES/etc. adapters |
+→ **Full detail (the full per-module purpose tables — Shared·Client·Server, incl. `ForgeMasteryEngine` / `PolyaScaffold` / `ForgeAdventure` Hub subdirectory / the Server actors + APIs):** `Docs/REFERENCE_FORGEKIT.md` § Module Catalog.
 
 ## ForgeUI Quick Reference
 
-### Theming
+`ForgeTheme` protocol injected via `.environment(\.forgeTheme, MyTheme())` (theme injection is REQUIRED — `DefaultForgeTheme` applies if none). Components: `ForgePrimaryButton` · `ForgeXPBar` · `ForgeProgressBar` · `ForgeScoreHUD` · `ForgeCurrencyHUD` · `ForgeStreakBadge` · `ForgeTimerRing` · `ForgeEmptyState` · `ForgeCard` · `ForgeOnboardingFlow` · `ForgeAchievementPopup`. Feedback modifiers use `isActive:` **NOT `trigger:`** (`.correctFeedback(isActive:)` / `.incorrectFeedback(isActive:)` / `.hudOverlay(alignment:content:)`).
 
-Implement `ForgeTheme` protocol and inject via `.environment(\.forgeTheme, MyTheme())`:
-
-```swift
-protocol ForgeTheme: Sendable {
-    var primaryColor: Color { get }
-    var accentColor: Color { get }
-    var backgroundColor: Color { get }
-    var fontFamily: String? { get }
-    var cornerRadius: CGFloat { get }
-}
-```
-
-### Components
-
-| Component | Init Parameters | Notes |
-|---|---|---|
-| `ForgePrimaryButton` | `title: String`, `isLoading: Bool = false`, `action: () -> Void` | Liquid Glass material, auto-disables when loading |
-| `ForgeXPBar` | `currentXP: Int`, `xpForNextLevel: Int`, `level: Int` | Gradient fill, numeric text transitions |
-| `ForgeProgressBar` | `value: Double`, `total: Double`, `label: String? = nil`, `showPercentage: Bool = true` | Generic progress, capsule shape |
-| `ForgeScoreHUD` | `score: Int`, `totalQuestions: Int`, `streak: Int? = nil`, `currency: Int? = nil` | Composable game HUD overlay |
-| `ForgeCurrencyHUD` | `amount: Int`, `label: String = ""` | Coin display with glass capsule |
-| `ForgeStreakBadge` | `streak: Int`, `isActive: Bool` | Flame icon, pulse at milestones (5/10/25/50/100) |
-| `ForgeTimerRing` | `remaining: TimeInterval`, `total: TimeInterval`, `warningThreshold: TimeInterval = 60` | Color shifts orange→red |
-| `ForgeEmptyState` | `systemImage: String`, `title: String`, `description: String`, `action: (() -> Void)? = nil`, `actionTitle: String? = nil` | Wraps `ContentUnavailableView` |
-| `ForgeCard` | `@ViewBuilder content: () -> Content` | Material card with theme corner radius |
-| `ForgeOnboardingFlow` | `pages: [Page]`, `onComplete: () -> Void` | Multi-step with skip, parent handoff support |
-| `ForgeAchievementPopup` | `badge: BadgeDisplayData`, `onDismiss: () -> Void` | Auto-dismisses after 3s, spring animation |
-
-### View Modifiers
-
-| Modifier | Parameter | Notes |
-|---|---|---|
-| `.correctFeedback(isActive:)` | `isActive: Bool` | Green flash + bounce. **NOT `trigger:`** |
-| `.incorrectFeedback(isActive:)` | `isActive: Bool` | Red flash + shake |
-| `.hudOverlay(alignment:content:)` | `alignment: Alignment`, `@ViewBuilder content` | Safe area-aware HUD positioning |
+→ **Full detail (the `ForgeTheme` protocol body + the full init-parameter + view-modifier tables):** `Docs/REFERENCE_FORGEKIT.md` § ForgeUI Quick Reference.
 
 ## ForgeGamification Quick Reference
 
-### XPEngine
+Pure value-type engines — callers manage persistence (except `StreakManager`, an actor — all access `async`): `XPEngine` (curves `.standard`/`.accelerated`/`.custom`) · `StreakManager` (→ `StreakResult` enum) · `AchievementEngine` · `EconomyEngine` · `SpacedRepetitionEngine` (FSRS-6) · central `GamificationConfig`.
 
-Pure value type — replaces custom level threshold arrays:
-
-```swift
-let engine = XPEngine(config: GamificationConfig())
-engine.level(for: totalXP)         // Int
-engine.xpRequired(forLevel: 5)    // Int (total XP needed)
-engine.xpProgress(currentXP: xp)  // Double (0.0–1.0 within current level)
-```
-
-XP curves: `.standard` (level = sqrt(xp/100)), `.accelerated` (sqrt(xp/50)), `.custom((Int) -> Int)`.
-
-### StreakManager
-
-Actor — pure in-memory state, callers handle persistence:
-
-```swift
-let manager = StreakManager(currentStreak: 0, availableFreezes: 2)
-let result = await manager.recordSession()  // StreakResult enum
-```
-
-Returns `.continued(streak:)`, `.frozenAndContinued(streak:freezesRemaining:)`, `.reset(previousStreak:)`, or `.sameDay(streak:)`.
-
-### AchievementEngine
-
-```swift
-let engine = AchievementEngine()
-let newBadges = engine.evaluate(definitions: defs, earnedIDs: earned) { def in
-    // App-specific criteria check
-}
-```
-
-### EconomyEngine
-
-```swift
-let engine = EconomyEngine(pricingCurve: ExponentialPricingCurve())
-let newBalance = try engine.earn(amount: 50, currentBalance: balance)
-let newBalance = try engine.spend(amount: 30, currentBalance: balance)
-let (balance, upgrade) = try engine.purchaseUpgrade(upgrade: state, currentBalance: balance)
-```
-
-### SpacedRepetitionEngine (FSRS-6)
-
-```swift
-let srs = SpacedRepetitionEngine(desiredRetention: 0.9)
-let newState = srs.reviewItem(state: fsrsState, quality: 4)  // quality 1-5
-let isDue = srs.isItemDue(state)
-let nextDate = srs.nextReviewDate(for: state)
-```
-
-### GamificationConfig
-
-Central config passed to engines:
-
-```swift
-GamificationConfig(
-    sessionTargetMinutes: 10...15,
-    streakFreezeCount: 2,
-    desiredRetention: 0.9,
-    xpCurve: .standard,
-    achievementDefinitions: [...]
-)
-```
+→ **Full detail (the API snippets + `StreakResult` cases + `GamificationConfig` fields):** `Docs/REFERENCE_FORGEKIT.md` § ForgeGamification Quick Reference.
 
 ## ForgeModels Quick Reference
 
-| Type | Properties | Notes |
-|---|---|---|
-| `StudentProfile` | `id`, `displayName`, `gradeLevel`, `avatarAssetName?`, `createdAt` | Value type, not SwiftData — apps bridge to `@Model` |
-| `AchievementDefinition` | `id`, `title`, `description`, `iconAssetName`, `xpValue`, `standard?` | Used by `AchievementEngine.evaluate()` |
-| `BloomLevel` | `.remember` through `.create` | `Comparable` by cognitive complexity |
-| `GradeLevel` | Grade band enum | Controls DDA difficulty |
-| `BadgeDisplayData` | `id`, `title`, `iconAssetName`, `earnedAt` | UI display struct from `AchievementEngine.displayData()` |
-| `FSRSState` | `stability`, `difficulty`, `lastReview`, `repetitions` | Spaced repetition memory state |
+Foundational value types (NOT `@Model` — apps bridge): `StudentProfile` · `AchievementDefinition` · `BloomLevel` (Comparable) · `GradeLevel` · `BadgeDisplayData` · `FSRSState`.
+
+→ **Full detail (the property + notes table):** `Docs/REFERENCE_FORGEKIT.md` § ForgeModels Quick Reference.
 
 ## ForgePedagogy — scaffolding theory alignment (R-FORGEPEDAGOGY-SCAFFOLDING; 2026-06-13)
 
-ForgePedagogy's `PolyaScaffold` primitives are grounded in a converging cluster of developmental-psych + learning-science frameworks. The alignment is load-bearing for portfolio brand-positioning (competing surfaces — Khanmigo / Synthesis / Sizzle / Khan Academy — surface "Socratic" / "scaffolding" prominently; the portfolio's existing primitives quietly outperform them on articulate-before-hint discipline + cast-character delivery, but the alignment is under-named in canonical refs). Per `Docs/RESEARCH_DEVELOPMENTAL_SCAFFOLDING_APP_EQUIVALENTS_2026-06-13.md` Phase 1.
+**INVARIANT.** ForgePedagogy's `PolyaScaffold` primitives operationalize a converging developmental-psych + learning-science cluster; three alignments are load-bearing when authoring/reviewing a per-app handoff:
+- **Follow-the-learner's-lead (R1)** — modules CURATE offerings the learner chooses from; they never force linear curriculum or hint-on-demand-without-articulation (the failure mode). Realized across Move-B `castCameos[]` · `CastDialog` · `ForgeKnowledgeGraph` · `ForgeMasteryEngine.NextProblemPicker` · `PolyaScaffold.hintsAllowedBeforePlan: 0`.
+- **Articulate-before-hint (R3)** — `hintsAllowedBeforePlan: 0` = the learner surfaces a plan before any hint (articulation method + productive failure + desirable difficulties). Only works PAIRED with the anti-shame register (`distributed-narrative.md` § Voice register).
+- **Per-cluster preset (R2)** — `.default` (Play/Practice) · `.permissive` (Create) · `.strict` (Reflect) · `.default` (Together); **ages 9-10 route to `.permissive` regardless of cluster** (cognitive-load overlay).
 
-### Follow-the-learner's-lead (R1)
+**When it applies:** authoring a per-app PolyaScaffold handoff (name R1/R3 + pick the R2 preset) · reviewing a CastDialog Move-D handoff (R1 test) · defending competitive position on a public surface.
 
-DIR/Floortime (Greenspan + Wieder 1998) + Vygotsky ZPD (1978) + Collins-Brown-Newman cognitive apprenticeship (1989) converge on the SAME design principle: **adaptive systems follow the learner's choice + initiative; they do NOT push curriculum-first**. The portfolio operationalizes this across 5 primitives:
-
-| Primitive | Where | How it follows the learner's lead |
-|---|---|---|
-| Per-kit `castCameos[]` variant selection (Move B) | Per-app kit JSON; selector keyed off `ForgeMasteryEngine.TopicMasteryState.masteryScore` | extend / consolidate / stretch variants surface based on learner-revealed competence, NOT a fixed kit-N → cameo-N mapping |
-| `CastDialog` open-ended responses (Move D) | `ForgeAI.CastDialog` per-character voice | Dialog follows the conversation thread the learner opens; doesn't redirect to scripted curriculum |
-| `ForgeKnowledgeGraph` next-content suggestions | `ForgeKnowledgeGraph` traversal | Suggestions respect learner interest signals (recent traversal + dwell time) over flat sequence |
-| `ForgeMasteryEngine.NextProblemPicker` | `Sources/Client/ForgeMasteryEngine/` | extend / consolidate / stretch keyed off learner-revealed mastery; Vygotsky ZPD edge-of-competence (target difficulty in [mastery + 0.10, 0.20] band) |
-| `PolyaScaffold.hintsAllowedBeforePlan: 0` | `ForgePedagogy.PolyaScaffold` `Configuration` | Articulation precedes any hint — the learner must surface their thinking before the scaffold acts |
-
-**Why this matters**: ForgeKit modules don't override learner choice; they curate offerings the learner can choose from. When authoring per-app handoffs, name this seam — apps that bypass it (forced linear curriculum / hint-on-demand without articulation) regress to the failure mode the research literature consistently flags.
-
-### Articulate-before-hint trio (R3)
-
-`PolyaScaffold`'s `hintsAllowedBeforePlan: 0` default operationalizes three converging research frameworks. The trio surfaces the SAME pedagogical principle from different angles:
-
-| Framework | Reference | Mechanism | Portfolio operationalization |
-|---|---|---|---|
-| **Articulation method** | Collins + Brown + Newman 1989 § cognitive apprenticeship | Learner surfaces reasoning explicitly; articulation IS the metacognitive scaffold | `PolyaPhase.plan` requires `StrategyPlan` struct populated before `.execute` transitions |
-| **Productive failure** | Kapur 2008; Sinha + Kapur 2021 meta-analysis | Pre-instruction problem-attempt activates + differentiates prior knowledge; subsequent instruction maps onto richer substrate | The learner's (likely-incomplete) plan IS the productive-failure activation step; subsequent CastDialog hints map onto articulated misconceptions |
-| **Desirable difficulties** | Schmidt + Bjork 1992; Bjork + Bjork 2020 | Challenging conditions that initially reduce performance enhance long-term learning + transfer | Articulation effort + delayed hint = desirable difficulty; pairs with `ForgeGamification.SpacedRepetitionEngine` (FSRS-6) on the spacing axis |
-
-**Companion guardrail — failure-reluctance pattern**: Pan et al. 2020 + Zepeda et al. 2020 surface that learners are often reluctant to engage failure-bearing activities. The portfolio's anti-shame discipline mitigates this — cast voice register normalizes failure as learning (per `.claude/rules/distributed-narrative.md` § Voice register card); the CQ `CONTENT_STYLE_GUIDE.md` § 4.5 anti-credentialism gate applies portfolio-wide. The articulate-before-hint discipline ONLY works when paired with anti-shame; surface this when authoring per-app PolyaScaffold handoffs.
-
-### Per-cluster `Configuration` preset guidance (R2)
-
-`PolyaScaffold` ships 3 `Configuration` presets. Cluster fit:
-
-| Cluster | Recommended preset | Why |
-|---|---|---|
-| Play / Practice (Math / Science / Logic) | `.default` (1 hint after plan articulation) | Mathematical correctness rewards articulation; learner benefits from scaffold once stuck |
-| Create (Writing / Music / Art) | `.permissive` (hints earlier; lower articulation barrier) | Iteration ≠ correctness; writing-craft scaffolds work via continuous nudge rather than gated reveal |
-| Reflect (Journaling / Awareness / Mindfulness) | `.strict` (`hintsAllowedBeforePlan: 0`; no shortcut past articulation) | Reflection IS the work; hints undermine the surface area being practiced |
-| Together (Pass-and-play / Multipeer / Classroom) | `.default` | Peer mediation handles affect; standard scaffold sufficient |
-
-**Younger-cluster overlay (ages 9-10)**: cognitive-load research (Sweller; failure mode #3 per RESEARCH_DEVELOPMENTAL_SCAFFOLDING_APP_EQUIVALENTS_2026-06-13 § Q2) suggests `.permissive` as the recommended default for ages 9-10 across ALL clusters, with cluster-specific defaults activating at ages 11+. When authoring per-app handoffs, route ages 9-10 apps to `.permissive` regardless of cluster.
-
-### When this rule applies
-
-- Authoring a new per-app PolyaScaffold adoption handoff: name the three R1 / R3 alignments explicitly + pick the R2 preset matching the cluster + audience age
-- Reviewing a CastDialog Move D handoff: verify the dialog responds to learner-articulated thinking, NOT a curriculum-driven script (R1 follow-the-learner's-lead test)
-- Defending the portfolio's competitive position in a public-facing artifact (site `/method`, parent-facing copy, press): cite the alignment to legitimate the existing primitives (Khanmigo / Synthesis surface Socratic prominently; the portfolio's articulate-before-hint discipline is the same family with stronger guardrails)
-
-### What this rule does NOT cover
-
-- **CastDialog Move D-specific per-character voice register**: lives in `.claude/rules/distributed-narrative.md` § DN-S + per-character chapter MD voice cards
-- **ReflectionPromptModifier consumption pattern for Reflect-pillar apps**: codified 2026-06-13 as `Docs/TEMPLATE_HANDOFF_FROM_LABSMITH_REFLECTION_EXPLORATION_PATTERNS.md` v1 — pairs Move R2 (journal hooks) with R1 follow-the-learner's-lead via 3 learner-choice patterns (A end-of-question choice card / B open-world hub / C pacing-aware re-entry). Per-app filing flows through the standard per-app handoff workflow
-- **Screen-Floortime co-regulation patterns (R7)**: codified 2026-06-13 as `Docs/RESEARCH_SCREEN_FLOORTIME_PATTERNS_2026-06-13.md` — synthesizes 7 design patterns (attuned latency / embodied stand-in caregiver / shared attention anchor / calibrated challenge / visible regulation / asynchronous caregiver bridge / sensory ramp) for DIR/Floortime alignment in solo-screen contexts. NOT yet a standing rule — re-review after 60d field-test
-- **Pattern 5 (Visible Regulation) Move R3 mood-body check-in template**: codified 2026-06-15 as `Docs/TEMPLATE_HANDOFF_FROM_LABSMITH_MOOD_BODY_CHECK_IN.md` v1 — operationalizes the visible-regulation gap surfaced in the R7 research. 3-surface pattern (session-start / mid-session affect-mismatch / session-close sidecar) wires `EmotionSnapshot` + `AffectCalibrator` + cluster-specific quadrant register. Per-app filing via standard per-app handoff workflow. Trauma-axis-flagged apps MUST use body-sensation register (not emotion register) per SAMHSA TIP 57. Affect-labeling research foundation (Lieberman 2007 + Torre + Lieberman 2018 + Greenspan + Wieder 1998 + SAMHSA TIP 57 + Porges 2011) cited in template body
-
-### Cross-references
-
-- `Docs/RESEARCH_DEVELOPMENTAL_SCAFFOLDING_APP_EQUIVALENTS_2026-06-13.md` — parent research (Q1 + Q3 + Q4 source the R1 / R3 alignments; Q2 sources the R2 cluster guidance)
-- `.claude/rules/distributed-narrative.md` § Academic foundation — sister rule (Naul + Liu 4-feature framework; the 4th feature (adaptive storytelling) consumes the same R1 follow-the-learner's-lead primitive set)
-- `forgekit/Docs/HANDOFF_FROM_LABSMITH_POLYASCAFFOLD.md` + `HANDOFF_FROM_FORGEKIT_POLYASCAFFOLD_SHIPPED.md` — PolyaScaffold spec + ship receipt
-- `Docs/PORTFOLIO_PATTERNS.md` § App-creation checklist — per-cluster preset guidance lives here for app-author surface
+→ **Full detail (the R1/R3/R2 theory tables + citations [Collins-Brown-Newman · Kapur · Bjork · Vygotsky · DIR/Floortime] + the "does NOT cover" list + cross-refs):** `Docs/REFERENCE_FORGEKIT.md` § ForgePedagogy — scaffolding theory alignment.
 
 ## Avatar system — simplified Contacts-style tint + glyph (ADR-022; supersedes the composable/accessory design)
 
-> **⚠ The layered-composable avatar (8 layers + accessory packs + `.lite`/`.full` + `AvatarAssetCatalog`) is RETIRED per `Docs/ADR-022_AVATAR_SIMPLIFIED_CONTACTS_STYLE.md` (ACCEPTED, founder ACK 2026-06-02) — shipped in ForgeKit 1.0.0-rc.** Root cause: **image-gen models (Gemini Nano Banana Pro / Imagen 4) cannot reliably produce transparent backgrounds or monochrome-tintable layers**, so the 108-WebP composable pipeline was structurally unfixable at the source (founder bug-saga screenshot CDAAA247, 2026-06-01→02). This section is the CURRENT design; the accessory convention below is RETIRED (do NOT generate new packs). ADR-022 supersedes `DECISION_AVATAR_EDIT_AUTHORITY.md` + parts of `PLAN_COMPOSABLE_AVATAR_PIPELINE.md`.
+**INVARIANT.** The avatar is `AvatarConfig` = **2 fields** (`tintIndex: Int` 0..<12 + `glyph: AvatarGlyph` = `.initial`/`.symbol`/`.emoji`), rendered by `AvatarRenderer` (`ZStack { Circle().fill(tint); glyph }`) and edited via `ForgeAvatar.AvatarStudioView` (single presentation — **never hand-roll a per-app tint/glyph picker**). Per-app identity flavor goes through `AvatarThemedGlyphProvider` + `ForgeAvatarRegistry` (a themed glyph), **NOT** bundled accessory WebPs. 🛑 **The layered-composable avatar (8 layers + accessory packs + `AvatarAssetCatalog` + `.lite`/`.full`) is RETIRED** (ADR-022 — gen models can't produce transparent/tintable layers); **do NOT generate new accessory packs**. Inert `AvatarShared/accessories/*.webp` + `avatar_accessories.json` may be `git rm`'d directly by HUB (resource-owned, R-HUB-OWNS-APP-RESOURCES; the Swift/Xcode SOURCE prohibition is unchanged).
 
-### Current design (ForgeKit 1.0.0-rc line)
-
-- **`AvatarConfig`** (in `ForgeModels`) — just **2 fields**: `tintIndex: Int` (0..<12, clamped; 12 Material-You HCT tone-locked colors, WCAG AA 4.5:1+ vs white) + `glyph: AvatarGlyph`. `.default` = Sky tint + "A". `deterministicTintIndex(seed:)` (djb2) for stable cross-app tint from a UUID seed.
-- **`AvatarGlyph`** enum — `.initial(Character)` / `.symbol(String)` / `.emoji(String)`. `portfolioSymbols` (30 curated SF Symbols) + `portfolioEmojis` (30 kid-friendly emoji).
-- **`AvatarRenderer`** (SwiftUI, `@MainActor`) — pure `ZStack { Circle().fill(tint); glyph }`. Consults `ForgeAvatarRegistry.shared` for themed per-app glyph overrides; sets `accessibilityLabel` automatically. **There is NO layered/accessory rendering** (rc.3 `AvatarRenderer` draws a tinted circle + one glyph only).
-- **`AvatarStudioView`** — SINGLE presentation (no `.lite`/`.full`, no `Presentation` enum, no `catalog:` param): 120-pt preview + 4×3 tint-swatch grid + Initial/Symbol/Emoji segmented picker.
-- **`AvatarThemedGlyphProvider`** protocol + **`ForgeAvatarRegistry`** (`@MainActor` singleton) — apps return an `AnyView?` to substitute a custom glyph (e.g., CubeSensei → Rubik's cube) per `AvatarRenderContext` (`.profile` / `.toolbar` / `.multiplayerHUD` / …) WITHOUT forking `AvatarConfig`. This is the sanctioned per-app personalization seam, replacing accessory packs.
-
-### Edit-authority essentials (still hold)
-
-- **Any app MAY edit the shared avatar**; render the editor via `ForgeAvatar.AvatarStudioView`, not hand-rolled UI. Last-write-wins on `avatarEditedAt`. Concurrent-edit conflict alerts are built into the view.
-- **No hand-rolled avatar editors** — don't build a per-app tint/glyph picker that bypasses `AvatarStudioView`.
-- **Per-app identity flavor goes through `AvatarThemedGlyphProvider`** (a themed glyph), NOT through bundled accessory WebPs.
-- **Local cosmetics outside the avatar** (mascot tint, username color, HUD palette) remain fine in the app's own SwiftData — in-app only, no `AppGroupStore` writes, no `Avatar*` namespace (use `AppMascot…` / `AppHUDPalette…`).
-
-### RETIRED — the "portfolio-canonical 8-accessory convention" (R147/R150) — do NOT follow (2026-07-08, V38)
-
-**The 8-themed-accessory convention (bundle at `AvatarShared/accessories/`, wire via `AvatarAssetCatalog(appBundles:)` + `.full` picker) is RETIRED.** The API it depended on (`AvatarAssetCatalog`, `AvatarLayer`, `AvatarStudioView.Presentation.full`) no longer exists in ForgeKit 1.0-rc. Resolved per `Docs/DECISION_AVATAR_ACCESSORY_1_0_DIRECTION_2026-07-08.md` (Option B), which ratifies ADR-022 against the inbound FractionForge report (`HANDOFF_FROM_APP_AVATAR_ACCESSORY_SURFACE_RC3_REMOVAL.md`).
-
-- **Do NOT generate new accessory packs.** The `~$0.36/app accessory pipeline is retired for the avatar surface.
-- **Apps that shipped an 8-pack (the M9 rollout, ~62 apps)** may **delete** the now-dead `AvatarShared/accessories/*.webp` + `avatar_accessories.json` (+ any `loading_hint` pointing at the removed API) for a small bundle-size win. The assets are inert (excluded from build / un-wireable), so deletion is optional cleanup, not urgent — but do NOT re-wire them. **HUB MAY `git rm` these directly** — resource assets are hub-owned end-to-end per `.claude/rules/portfolio.md` § R-HUB-OWNS-APP-RESOURCES (2026-07-27, founder-direct "hub owns app resources"). This SUPERSEDES the prior "app-owned cleanup; hub does not `git rm` app resources" note — a commit message suffices for a provably-inert asset (no handoff required); the app session may also delete them, but hub is not blocked from doing so. (The Swift/Xcode SOURCE prohibition is unchanged — hub still never `git rm`s `.swift`/project files.)
-- **Want per-app avatar flavor?** Use `AvatarThemedGlyphProvider` (a themed glyph), not accessories.
-
-Migration reference: `Docs/HANDOFF_FROM_LABSMITH_AVATAR_SIMPLIFIED_MIGRATION.md`.
+→ **Full detail (the current-design field/renderer detail + edit-authority essentials + the retired-accessory convention + migration ref):** `Docs/REFERENCE_FORGEKIT.md` § Avatar system.
 
 ## Server `/version` endpoint (R151 #582; lifted from CuriosityQuest 2026-05-29)
 
-Every portfolio server MUST expose a `GET /api/v1/version` endpoint behind the existing `X-API-Key` middleware. Codified after CQ TTS cascade (PRs #130 → #138) where build-identity ambiguity ("is PR #132 actually deployed?") blocked diagnosis for hours across 6+ debug cycles.
+**INVARIANT.** Every portfolio server MUST expose `GET /api/v1/version` (→ `{version, versionFull, branch, builtAt}`) **behind the existing `X-API-Key` middleware**, for deploy verification. 🛑 **Public `/health` MUST NOT contain build/system info** (commit SHA, OS/runtime/hardware) — CVE-2026-29787 was exactly this leak; authenticated `/version` is the right home for build metadata.
 
-### Pattern
-
-| Endpoint | Auth | Body | Why |
-|---|---|---|---|
-| `GET /health` | none | `{"server":"ok",...}` | Load-balancer probe — public, minimal, fast |
-| `GET /api/v1/version` | `X-API-Key` | `{version, versionFull, branch, builtAt}` | Deploy verification — clients have the key, no public exposure |
-
-### Security guardrail (CVE-2026-29787)
-
-**Public `/health` MUST NOT contain build/system info** (commit SHA, OS version, language version, hardware specs, etc.). CVE-2026-29787 (mcp-memory-service, filed 2026) was for exactly this anti-pattern — leaking OS/runtime/hardware specs via unauthenticated health endpoint. **Authenticated `/version` is the right place** for build metadata; behind the existing API-key middleware, exposure is limited to clients that already authenticate.
-
-### Implementation recipe
-
-1. **Committed placeholder file** `Sources/BuildInfo.swift`:
-
-```swift
-public enum BuildInfo {
-    public static let gitSHA: String = "dev-local"
-    public static let gitSHAFull: String = "dev-local"
-    public static let builtAt: String = "dev-local"
-    public static let gitBranch: String = "dev-local"
-}
-```
-
-2. **Dockerfile** overwrites the file with real metadata before `swift build`:
-
-```dockerfile
-ARG RAILWAY_GIT_COMMIT_SHA=""
-ARG RAILWAY_GIT_BRANCH=""
-RUN BUILD_SHA="${RAILWAY_GIT_COMMIT_SHA:-dev-local}" && \
-    BUILD_SHA_SHORT=$(echo "${BUILD_SHA}" | cut -c1-7) && \
-    BUILD_BRANCH="${RAILWAY_GIT_BRANCH:-dev-local}" && \
-    BUILD_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ") && \
-    cat > Sources/BuildInfo.swift <<EOF
-import Foundation
-public enum BuildInfo {
-    public static let gitSHA: String = "${BUILD_SHA_SHORT}"
-    public static let gitSHAFull: String = "${BUILD_SHA}"
-    public static let builtAt: String = "${BUILD_TIMESTAMP}"
-    public static let gitBranch: String = "${BUILD_BRANCH}"
-}
-EOF
-```
-
-3. **Route registration** inside the existing API-key-protected group:
-
-```swift
-apiGroup.get("version") { _, _ -> [String: String] in
-    return [
-        "version": BuildInfo.gitSHA,
-        "versionFull": BuildInfo.gitSHAFull,
-        "branch": BuildInfo.gitBranch,
-        "builtAt": BuildInfo.builtAt
-    ]
-}
-```
-
-### Platform-specific env var names
-
-The Dockerfile recipe assumes Railway. Other platforms expose the SHA under different env var names:
-
-| Platform | Env var |
-|---|---|
-| Railway | `RAILWAY_GIT_COMMIT_SHA` + `RAILWAY_GIT_BRANCH` |
-| Render | `RENDER_GIT_COMMIT` |
-| Fly.io | `FLY_GIT_COMMIT` (or `--build-arg` from CI) |
-| GitHub Actions | `GITHUB_SHA` |
-| Generic Docker | `--build-arg GIT_SHA=$(git rev-parse HEAD)` |
-
-### Reference impl
-
-CuriosityQuestServer (CQ PR #135):
-- `Server/CuriosityQuestServer/Sources/BuildInfo.swift` — committed placeholder
-- `Server/CuriosityQuestServer/Dockerfile` — Railway recipe
-- `Server/CuriosityQuestServer/Sources/Application+build.swift` — route registration
-
-### Cross-references
-
-- `spark-anvil-hub/Docs/RESEARCH_SERVER_VERSION_ENDPOINT_2026-05-29.md` — sources + security analysis + methodology lesson
-- `spark-anvil-hub/.claude/rules/audio-pipeline.md` — companion rule from the same CQ cascade
+→ **Full detail (the endpoint table + the `BuildInfo.swift` placeholder + Dockerfile + route-registration recipe + per-platform env-var names + CQ reference impl):** `Docs/REFERENCE_FORGEKIT.md` § Server `/version` endpoint.
 
 ## Cast asset filename convention (DN methodology)
 
@@ -441,33 +97,11 @@ Packages/Libraries/Sources/AppFeature/Resources/Illustrations/
 ├── cast_lexa_thinking.webp
 ```
 
-**Why**:
-- `ForgeIllustrations.IllustrationRegistry` resolves via `Bundle.module` flat lookup; subdirectory paths fail silently
-- The `cast_` prefix disambiguates cast members from existing mascot files (`<mascot_name>_<pose>.webp`)
-- Per-character poses share the prefix so registry filtering can group by character (`registry.assets(prefix: "cast_etyma_")`)
-
-Codified per QuillSpell `HANDOFF_FROM_APP_CAST_FILENAME_CONVENTION.md` (Round 93 #479-A42, 2026-05-27). Applies to all DN-cast retrofit apps.
+**Why**: `ForgeIllustrations.IllustrationRegistry` resolves via `Bundle.module` flat lookup (subdirectory paths fail silently); the `cast_` prefix disambiguates cast members from mascot files (`<mascot_name>_<pose>.webp`); per-character poses share the prefix so registry filtering can group by character (`registry.assets(prefix: "cast_etyma_")`). Codified per QuillSpell `HANDOFF_FROM_APP_CAST_FILENAME_CONVENTION.md` (Round 93 #479-A42, 2026-05-27). Applies to all DN-cast retrofit apps.
 
 ## Common Gotchas
 
-- **`AvatarStudioView` requires `getOrCreateForgeID` seeding** (R489 2026-06-02; lifted from CQ `HANDOFF_FROM_APP_LIFT_AVATAR_STORE_FORGEID_SEED.md`) — `AppGroupStore.setAvatar(_:editedAt:)` throws `AppGroupStoreError.forgeIDMissing` (surfaces as cryptic `ForgeSync.AppGroupStoreError error 0`) if no identity has been seeded. `AvatarStudioView` internally calls `setAvatar` on user Save — apps that adopt the editor MUST seed the identity BEFORE the editor opens, via:
-
-  ```swift
-  // Inside your AvatarStudioView host (e.g., ForgeAvatarStudioShell.body):
-  AvatarStudioView(initialConfig: ..., catalog: ..., presentation: ..., appGroupStore: store, onSaved: ..., onCancelled: ...)
-      .task {
-          // CRITICAL: AvatarStudioView internally calls appGroupStore.setAvatar(_:editedAt:)
-          // which throws .forgeIDMissing (= "error 0") unless a ForgeID has already
-          // been created. Seed before the user can interact with Save.
-          let id = await appGroupStore.getOrCreateForgeID(displayName: profile.name)
-          DebugLog.lifecycle("ForgeAvatarStudioShell.task — seeded ForgeID: \(id.id.uuidString)")
-      }
-  ```
-
-  **Why this hits non-ForgeSync apps the hardest**: apps that don't use ForgeSync for XP / streaks / achievements never trigger ForgeID seeding through other code paths (CQ has its own SwiftData-backed `StudentProfile` so this gotcha bit on first AvatarStudioView adoption). `.task` is the canonical SwiftUI hook — runs on view appear, async-friendly, completes before the user can tap Save.
-
-  **`AppGroupStoreError` is single-case** (`forgeIDMissing`) — `case 0 = forgeIDMissing`. The numeric surface in SwiftUI's error toast is the rawValue; if you see `ForgeSync.AppGroupStoreError error 0` anywhere, it's this gotcha. Reference impl: `curiosityquest-app/Packages/Libraries/Sources/SharedUI/Onboarding/ForgeAvatarStudioShell.swift`.
-
+- **`AvatarStudioView` requires `getOrCreateForgeID` seeding** (R489 2026-06-02) — `AppGroupStore.setAvatar(_:editedAt:)` throws `AppGroupStoreError.forgeIDMissing` (surfaces as cryptic `ForgeSync.AppGroupStoreError error 0`) unless an identity is seeded FIRST; `AvatarStudioView` calls `setAvatar` on Save, so seed via `.task { await appGroupStore.getOrCreateForgeID(...) }` before the editor opens. Hits non-ForgeSync apps hardest. → **code block + rationale:** `Docs/REFERENCE_FORGEKIT.md` § Common Gotchas — long-form.
 - **`ForgeUI.CorrectFeedbackModifier`**: parameter is `isActive:`, **NOT** `trigger:`
 - **All ForgeKit types are `public`** — app code imports them directly
 - **`ForgeModels` types are value types** — not `@Model`. Apps create their own SwiftData models and convert to/from ForgeModels types

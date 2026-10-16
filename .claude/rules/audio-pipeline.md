@@ -164,14 +164,7 @@ Codified after `Docs/AUDIT_AUDIO_BITRATE_DEDUP_2026-06-17.md` (Option OD) surfac
 
 **Reversibility**: a future rule supersession can restore 64 kbps. Re-encoding 48 → 64 is a non-recoverable lossy step (information lost in the 64 → 48 pass); if quality issues surface in the field, re-gen from source via `gen_dn_s_audio_drama.py --regen-all`. Source TTS PCM bytes are not retained, but Gemini API determinism for the same prompt is high enough that re-gen approximates the original within imperceptible margin.
 
-**Bitrate selection** (why 48 not 32 or 56):
-
-- 32 kbps mono AAC-LC: borderline for kid dialog clarity — perceptual audits flag artifact at high-energy plosives + sibilance
-- 48 kbps mono AAC-LC: well within transparent band for 24 kHz spoken-word; chosen default
-- 56 kbps mono AAC-LC: imperceptibly different from 48 kbps for spoken-word; not worth the 8 kbps headroom delta
-- 64 kbps mono AAC-LC: prior portfolio default; transparent but over-spec for kid TTS narration register
-
-**Empirical validation**: ffmpeg AAC-LC encoder hits actual ~50 kbps on portfolio TTS source when targeting 48k (VBR closes within tolerance); ~23% file-size reduction vs prior 64 kbps default observed in single-file smoke test (PR #932 verification).
+**Why 48 (not 32/56/64) + the empirical validation:** `Docs/REFERENCE_AUDIO_PIPELINE.md` § Web M4A bitrate.
 
 ### Cost discipline (R410 #888)
 
@@ -183,6 +176,8 @@ Codified after `Docs/AUDIT_AUDIO_BITRATE_DEDUP_2026-06-17.md` (Option OD) surfac
 ### Script-format convention
 
 Audio drama scripts live at `spark-anvil-hub/Resources/AudioDramaScripts/<app>/<drama-title>.script.md` with YAML front-matter (`drama-title:` + `app:` + `source-chapter:` + `duration-target-seconds:`) followed by `[CHARACTER, voice-directive]: dialogue` markers. The format is consumed by `gen_dn_s_audio_drama.py` automatically.
+
+**🔴 Speaker labels MUST be BARE uppercase — a parenthetical role SILENTLY DROPS that speaker's lines (R-DRAMA-SPEAKER-LABEL-BARE; 2026-08-14).** The parser regex character class is `[A-Z][A-Z\s\-']+` — it allows uppercase letters, spaces, hyphens, apostrophes, but NOT parentheses. So `[BERM, calm]` parses, but `[BERM (BUILDER), calm]` does NOT: the `(` stops the match, the line fails the pattern, and `finditer` skips it entirely — that character's every line is silently omitted from the generated audio (no error; the drama just ships missing a voice). The tell is a **dry-run parsed-line count LESS than the authored `^\[` line count** — ALWAYS verify `grep -cE '^\[[A-Z]' <script>` == the dry-run's `Parsed: N` before firing paid gen. Use a plain uppercase name (`[GATHER, ...]`, `[NARRATOR, ...]`); put any role flavor in the voice-directive, never in the speaker label. Ensembles get one bare label per speaker (`[SLOW, ...]` / `[BREATH, ...]`) → the gen assigns a distinct voice per unique label.
 
 ### Register sourcing — UPPER tier (FK 7-8), NOT lower tier
 
@@ -251,6 +246,14 @@ python3 scripts/gen_dn_s_audio_drama.py --regen-all --apply --start-at activefor
 ```
 
 `--regen-all` implies `--overwrite-canonical`. Without `--overwrite-canonical`, single-drama runs skip if the canonical CAF already exists. Scripts whose target `<app>-app` repo doesn't exist on disk are silently skipped (no place to ship).
+
+### A narration must SAY the prose its reader shows — verify by listening, and re-narrate whenever the prose changes (R-NARRATION-SAYS-THE-PROSE; 2026-09-29)
+
+**A chapter's VTT line cues are estimates, so neither the rate scan nor the karaoke proves the audio speaks the text. Rewriting a narrated snapshot without re-narrating it leaves the reader telling two stories (the 2026-07-13 Advanced propagation: 31 chapters). Any edit to a narrated snapshot's words regenerates its narration in the same wave. `check_narration_audio_freshness.py --ci-mode` flags a newly stale chapter; `check_narration_coverage_asr.py` (local ASR, calibrated on a control) is the verdict. An empty beat is never waivable, and re-rolling does not fix a passage TTS drops on a long beat (the pilot chunks long beats).** → `GUIDE_DIM8` items 26–31 · `REFERENCE_AUDIO_PIPELINE` § this rule · ADR-298 §S10–§S11.
+
+### Web-only-app dramas (no `-app` repo) — `PORTFOLIO_ROOT` redirect + manual web wire (R-DRAMA-WEB-ONLY-APP; 2026-09-05)
+
+**A web-pioneered clone (R-WEB-CLONE-MAY-PRECEDE-IOS — e.g. the PBL spawns causequest/planpals/helppals) has NO `<app>-app` repo, so `gen_dn_s_audio_drama.py` (which writes `.caf` to `PORTFOLIO_ROOT/<app>-app/Resources/AudioDramas/`) and `distribute_audio_dramas_v2.sh` (which walks `<app>-app` repos) both SKIP it. The web-only path: (1) author the hub `Resources/AudioDramaScripts/<app>/<char>-<slug>.script.md`; (2) gen with `PORTFOLIO_ROOT=/tmp/dramagen` + pre-create `/tmp/dramagen/<app>-app/` so `--apply` writes `.caf/.m4a/.vtt` there (NOT a real repo — a throwaway); (3) upload the `.m4a` AND `.vtt` to R2 `audio/<app>/<slug>.{m4a,vtt}` (boto3, `~/.r2-env.sh`); (4) commit the `.vtt` to the SITE `public/audio/<app>/<slug>.vtt` (the manifest builder enumerates by `.vtt` when `PUBLIC_AUDIO_CDN_URL` is set — R2 mode); (5) regen `src/data/audio-drama-manifest.json` (`node scripts/build-audio-drama-manifest.mjs` WITH the CDN env set); (6) site PR base=STAGING → `/cast/<app>/<char>` surfaces the drama. The `<char>-<slug>` naming lets both the deep-build guard (`has_drama` matches `startswith(char+'-')`) and the web manifest (`<app>/<char>` key from the leading `<char>-` group) resolve. No iOS bundle/`.copy`/wiring applies (no app). Reference: #111 causequest/planpals/helppals (14 dramas, site #3397/#3399).**
 
 ### Pre-gen vs runtime — orthogonal axes
 

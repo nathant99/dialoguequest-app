@@ -19,6 +19,8 @@ The portfolio has three local multiplayer transports in production:
 
 Use `ForgeMultipeerKit` (when extracted) with the appropriate backend. Never mix backends in a single app without a strong reason.
 
+> **⚠ Freshness correction (2026-08-19, ADR-160 / `RESEARCH_OFFLINE_NEARBY_MULTIPLAYER_2026-08-19.md`):** the table's MCSession-first ordering is superseded — as of iOS 26, Apple DTS **steers away from MultipeerConnectivity** (unsupported-vs-Network, flaky `.connecting`↔`.notConnected` on iOS 26) toward the **Network framework** (`NWListener`/`NWBrowser`/`NWConnection` + `includePeerToPeer`, Bonjour; TN3179 Local-Network privacy). For NEW native nearby work, **Network framework is primary, MCSession is the legacy/compat backend** behind the same `MultipeerTransport` protocol. Strategic cross-platform substrate (web + iOS + Android, one libp2p wire) = the founder's **`peer-kit`** SDK when it ships. This is the offline fallback for the no-internet POB case (R-OFFLINE-NEARBY-MULTIPLAYER).
+
 ## MultipeerConnectivity (MCSession) Rules
 
 ### Threading
